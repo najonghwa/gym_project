@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#09090b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>회사 헬스 가이드</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Pretendard Variable"', 'Pretendard', 'system-ui', 'sans-serif'],
+            disp: ['"Black Han Sans"', 'Pretendard', 'sans-serif'],
+          },
+          colors: {
+            base: '#050505',       // 순수 블랙에 가깝게
+            card: '#101010',
+            card2: '#1a1a1a',
+            line: '#262626',
+            mut: '#9ca3af',
+            pri: '#ccff00',        // 볼트(형광 라임) — NRC 시그니처 무드
+            pri2: '#e2ff66',
+            gold: '#f59e0b',
+          },
+          keyframes: {
+            fadeUp: { '0%': { opacity: 0, transform: 'translateY(10px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+            slideUp: { '0%': { transform: 'translate(-50%, 100%)' }, '100%': { transform: 'translate(-50%, 0)' } },
+          },
+          animation: { fadeUp: 'fadeUp .3s ease both', slideUp: 'slideUp .25s ease both' },
+        }
+      }
+    }
+  </script>
+  <style>
+    html { background: #050505 }
+    ::-webkit-scrollbar { display: none }
+    * { -webkit-tap-highlight-color: transparent; scrollbar-width: none }
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none }
+    /* 디스플레이 타이포 (큰 숫자·제목) */
+    .disp { font-family: "Black Han Sans", Pretendard, sans-serif; font-weight: 400; letter-spacing: -0.01em }
+    /* 마이크로 라벨 */
+    .lab { font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: #9ca3af; font-weight: 700 }
+    /* 달성률 링 */
+    .ring { background: conic-gradient(#ccff00 calc(var(--p) * 1%), #1e1e1e 0); border-radius: 9999px;
+            display: flex; align-items: center; justify-content: center; position: relative;
+            box-shadow: none !important }  /* tailwind .ring 유틸과 이름 충돌 방지 */
+    .ring::before { content: ""; position: absolute; inset: 8px; border-radius: 9999px; background: #101010 }
+    .ring > * { position: relative }
+    .safe-b { padding-bottom: env(safe-area-inset-bottom) }
+    /* 데스크탑 2단 카드 배치 (컬럼 중간에서 카드가 잘리지 않게) */
+    #pane > * { break-inside: avoid }
+    /* 운동 동작 2포즈 교차 애니메이션 */
+    @keyframes poseA { 0%, 42% { opacity: 1 } 50%, 92% { opacity: 0 } 100% { opacity: 1 } }
+    @keyframes poseB { 0%, 42% { opacity: 0 } 50%, 92% { opacity: 1 } 100% { opacity: 0 } }
+    .poseA { animation: poseA 1.6s infinite }
+    .poseB { animation: poseB 1.6s infinite }
+  </style>
+</head>
+<body class="bg-base text-zinc-100 font-sans antialiased">
+  <div id="root" class="max-w-md mx-auto min-h-screen lg:max-w-none"></div>
+  <div id="sheet-root"></div>
+  <div id="toast" class="hidden fixed left-1/2 -translate-x-1/2 bottom-24 z-[70] bg-pri text-black font-extrabold px-6 py-3.5 rounded-full shadow-2xl shadow-pri/20 text-[15px] whitespace-nowrap"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/supa.js"></script>
+  <script src="/js/quotes.js"></script>
+  <script src="/js/anim.js"></script>
+  <script src="/js/data.js"></script>
+  <script src="/js/programs.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/run.js"></script>
+  <script src="/js/store.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
