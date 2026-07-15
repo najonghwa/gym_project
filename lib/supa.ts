@@ -21,7 +21,12 @@ export type UserData = Record<string, unknown> & {
   routine?: { days?: number } & Record<string, unknown>;
   workouts?: Record<string, { doneSets?: number; scorePct?: number; kcal?: number }>;
   runs?: { date: string; km: number; paceSec?: number | null }[];
-  v2?: { workouts?: Record<string, { items: unknown[] }> };
+  v2?: {
+    workouts?: Record<string, { items: unknown[] }>;
+    savedRoutines?: string[];
+    activeRoutineId?: string;
+  };
+  big3?: { goal: number; logs: { date: string; s: number; b: number; d: number }[] };
 };
 
 export async function pullUser(id: string): Promise<UserData | null> {

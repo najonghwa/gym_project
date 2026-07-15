@@ -31,14 +31,22 @@ function ChipRow({
   );
 }
 
-export function ExploreSection() {
+export function ExploreSection({
+  savedIds = [],
+  onToggleSave,
+  onApply,
+}: {
+  savedIds?: string[];
+  onToggleSave?: (id: string) => void;
+  onApply?: (r: ExploreRoutine) => void;
+}) {
   const reduce = useReducedMotion();
   const [target, setTarget] = useState("전체");
   const [equipment, setEquipment] = useState("전체");
   const [level, setLevel] = useState("전체");
   const [likes, setLikes] = useState<Record<string, boolean>>({});
-  const [saved, setSaved] = useState<Record<string, boolean>>({});
   const [detail, setDetail] = useState<ExploreRoutine | null>(null);
+  const isSaved = (id: string) => savedIds.includes(id);
 
   const list = useMemo(
     () =>
@@ -107,12 +115,12 @@ export function ExploreSection() {
               })}
             </div>
             <button
-              onClick={() => setSaved((p) => ({ ...p, [r.id]: !p[r.id] }))}
+              onClick={() => onToggleSave?.(r.id)}
               className={`mt-3 w-full rounded-full py-2.5 text-[13px] font-extrabold transition ${
-                saved[r.id] ? "bg-volt text-black" : "border border-white/15 bg-white/5 text-zinc-100"
+                isSaved(r.id) ? "bg-volt text-black" : "border border-white/15 bg-white/5 text-zinc-100"
               }`}
             >
-              {saved[r.id] ? "✓ 저장됨 — 내 루틴에서 확인" : "💾 저장하기"}
+              {isSaved(r.id) ? "✓ 저장됨 — 위 '내 루틴'에서 확인" : "💾 저장하기"}
             </button>
           </motion.div>
         ))}
@@ -165,9 +173,13 @@ export function ExploreSection() {
 
             <PillButton
               className="mt-6 w-full py-4"
-              onClick={() => { setSaved((p) => ({ ...p, [detail.id]: true })); setDetail(null); }}
+              onClick={() => {
+                if (!isSaved(detail.id)) onToggleSave?.(detail.id);
+                onApply?.(detail);
+                setDetail(null);
+              }}
             >
-              이 플랜 선택하기 ✅
+              이 플랜으로 오늘 운동 구성 ✅
             </PillButton>
           </>
         )}

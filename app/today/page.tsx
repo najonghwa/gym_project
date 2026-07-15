@@ -11,6 +11,10 @@ import { byId, getMockToday, type TodayItem } from "@/lib/mock/exercises";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { computeStats, useUser, weekCells } from "@/lib/useUser";
 import { LoginCard } from "@/components/auth/LoginCard";
+import { BottomSheet } from "@/components/ui/BottomSheet";
+import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
+import { EXERCISES, itemsFromExercises } from "@/lib/mock/exercises";
+import { EXPLORE } from "@/lib/mock/routines";
 
 const S_DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -33,11 +37,13 @@ function Node({
 }
 
 export default function TodayPage() {
-  const { user, ready, login, signup, saveToday, today } = useUser();
+  const { user, ready, login, signup, saveToday, setActiveRoutine, today } = useUser();
   const [items, setItems] = useState<TodayItem[]>(getMockToday);
   const [openId, setOpenId] = useState<string | null>(null);
   const [celebrated, setCelebrated] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
+  const [showRoutinePick, setShowRoutinePick] = useState(false);
+  const [showAddEx, setShowAddEx] = useState(false);
   const quote = useMemo(() => dailyQuote(), []);
 
   // 로그인되면 오늘 저장분(서버/로컬) 복원
@@ -132,6 +138,20 @@ export default function TodayPage() {
       </Node>
 
       <Node icon="🏋️" label="오늘의 운동 WORKOUT">
+        <div className="mb-2 flex gap-1.5">
+          <button
+            onClick={() => setShowRoutinePick(true)}
+            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
+          >
+            📋 루틴 변경
+          </button>
+          <button
+            onClick={() => setShowAddEx(true)}
+            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
+          >
+            ➕ 운동 추가
+          </button>
+        </div>
         <TodayWorkoutCard embedded items={items} onToggleSet={toggleSet} onOpenExercise={setOpenId} />
       </Node>
 
@@ -181,6 +201,71 @@ export default function TodayPage() {
         emoji="🏋️"
         onClose={() => setShowBadge(false)}
       />
+
+      {/* 루틴 변경 시트 — 저장한 루틴 우선, 나머지 추천 */}
+      <BottomSheet open={showRoutinePick} onClose={() => setShowRoutinePick(false)}>
+        <h3 className="text-lg font-extrabold">오늘 운동, 어떤 루틴으로?</h3>
+        <p className="mt-0.5 text-[12px] text-white/50">체크한 세트는 초기화돼요.</p>
+        <div className="mt-4 space-y-2">
+          {[...EXPLORE].sort((a, b) =>
+            Number((user.v2?.savedRoutines ?? []).includes(b.id)) - Number((user.v2?.savedRoutines ?? []).includes(a.id))
+          ).map((r, i) => {
+            const saved = (user.v2?.savedRoutines ?? []).includes(r.id);
+            const active = user.v2?.activeRoutineId === r.id;
+            return (
+              <button
+                key={r.id}
+                onClick={() => {
+                  updateItems(itemsFromExercises(r.exercises));
+                  setActiveRoutine(r.id);
+                  setShowRoutinePick(false);
+                }}
+                className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left ${
+                  active ? "border-volt/50 bg-volt/[0.06]" : "border-white/10 bg-white/[0.03]"
+                }`}
+              >
+                <ColorInitialBadge text={r.badge} seed={i} />
+                <span className="min-w-0 flex-1">
+                  <b className="block truncate text-[14px]">
+                    {r.title}
+                    {active && <span className="ml-1.5 rounded bg-volt px-1.5 py-0.5 text-[9px] font-extrabold text-black">사용 중</span>}
+                    {saved && !active && <span className="ml-1.5 text-[10px] text-volt">💾 저장됨</span>}
+                  </b>
+                  <span className="text-[11px] text-white/45">{r.exercises.length}종목 · {r.level}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </BottomSheet>
+
+      {/* 운동 추가 시트 */}
+      <BottomSheet open={showAddEx} onClose={() => setShowAddEx(false)}>
+        <h3 className="text-lg font-extrabold">오늘 운동 추가</h3>
+        <p className="mt-0.5 text-[12px] text-white/50">오늘 목록에만 추가돼요.</p>
+        <div className="mt-4 space-y-2">
+          {EXERCISES.filter((ex) => !items.some((it) => it.exerciseId === ex.id)).map((ex) => (
+            <button
+              key={ex.id}
+              onClick={() => {
+                updateItems([...items, ...itemsFromExercises([ex.id])]);
+                setShowAddEx(false);
+              }}
+              className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-left"
+            >
+              <span className="text-[20px]">{ex.em}</span>
+              <span className="min-w-0 flex-1">
+                <b className="block text-[14px]">{ex.name}</b>
+                <span className="text-[11px] text-white/45">{ex.zone}구역 · {ex.equipment}</span>
+              </span>
+              <span className="text-[12px] font-bold text-volt">추가 +</span>
+            </button>
+          ))}
+          {EXERCISES.every((ex) => items.some((it) => it.exerciseId === ex.id)) && (
+            <p className="py-4 text-center text-[13px] text-white/40">모든 운동이 이미 오늘 목록에 있어요 💪</p>
+          )}
+        </div>
+      </BottomSheet>
     </main>
   );
 }

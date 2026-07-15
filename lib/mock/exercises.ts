@@ -98,14 +98,44 @@ export function getMockToday(): TodayItem[] {
   ];
 }
 
-// ── PR 차트 mock (스펙 P0-3) ──
+// 루틴(운동 id 목록) → 오늘 세트 구성 (루틴 적용용)
+export function itemsFromExercises(ids: string[]): TodayItem[] {
+  const BASE_KG: Record<string, number> = {
+    bench_press: 60, back_squat: 80, lat_pulldown: 50,
+    db_shoulder_press: 18, barbell_curl: 20, seated_row: 45,
+  };
+  return ids
+    .map((id) => byId(id))
+    .filter((ex): ex is Exercise => !!ex)
+    .map((ex) => {
+      const kg = BASE_KG[ex.id] ?? 20;
+      return {
+        exerciseId: ex.id,
+        sets: [
+          { kind: "warmup" as const, weightKg: Math.round(kg * 0.6 / 2.5) * 2.5, reps: 12, done: false },
+          { kind: "working" as const, weightKg: kg, reps: 10, done: false },
+          { kind: "working" as const, weightKg: kg, reps: 10, done: false },
+          { kind: "working" as const, weightKg: kg + 2.5, reps: 8, done: false },
+        ],
+      };
+    });
+}
+
+// ── PR 차트 mock (스펙 P0-3) — 운동별로 다른 시드 ──
 export interface PRRow { date: string; value: number; isPR?: boolean }
-export function getMockPR(metric: "1rm" | "weight" | "volume"): PRRow[] {
-  const base = metric === "volume" ? 2800 : metric === "1rm" ? 72 : 60;
-  const steps = [0, 2, 1, 4, 3, 6, 5, 9]; // 상승 흐름 + 굴곡
+const PR_BASE: Record<string, number> = {
+  bench_press: 72, back_squat: 105, lat_pulldown: 60,
+  db_shoulder_press: 26, barbell_curl: 32, seated_row: 55,
+};
+export function getMockPR(metric: "1rm" | "weight" | "volume", exId = "bench_press"): PRRow[] {
+  const b = PR_BASE[exId] ?? 50;
+  const base = metric === "volume" ? b * 38 : metric === "1rm" ? b : Math.round(b * 0.85);
+  // 운동 id 해시로 굴곡 패턴 변형
+  const seed = exId.split("").reduce((s, c) => s + c.charCodeAt(0), 0);
+  const steps = [0, 2, 1, 4, 3, 6, 5, 9].map((v, i) => v + ((seed + i) % 3) - 1);
   let best = -Infinity;
   return steps.map((s, i) => {
-    const value = Math.round(base + s * (metric === "volume" ? 120 : 2.5));
+    const value = Math.round(base + Math.max(0, s) * (metric === "volume" ? b * 1.6 : 2.5));
     const isPR = value > best;
     if (isPR) best = value;
     const d = new Date(); d.setDate(d.getDate() - (steps.length - 1 - i) * 4);

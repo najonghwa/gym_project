@@ -170,5 +170,39 @@ export function useUser() {
     });
   }, [persist]);
 
-  return { user, ready, login, signup, logout, saveToday, today };
+  // 루틴 저장/적용 (v2.savedRoutines / v2.activeRoutineId)
+  const toggleSaveRoutine = useCallback((id: string) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const cur = (prev.v2?.savedRoutines as string[] | undefined) ?? [];
+      const next = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
+      const u: UserData = { ...prev, v2: { ...prev.v2, savedRoutines: next } };
+      persist(u);
+      return u;
+    });
+  }, [persist]);
+
+  const setActiveRoutine = useCallback((id: string | null) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const u: UserData = { ...prev, v2: { ...prev.v2, activeRoutineId: id ?? undefined } };
+      persist(u);
+      return u;
+    });
+  }, [persist]);
+
+  // 3대 측정 기록 (구버전 big3와 같은 형태 — 데이터 호환)
+  const saveBig3 = useCallback((goal: number, log?: { s: number; b: number; d: number }) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const old = (prev.big3 as { goal: number; logs: { date: string; s: number; b: number; d: number }[] } | undefined);
+      const logs = (old?.logs ?? []).filter((l) => !log || l.date !== today());
+      if (log) logs.push({ date: today(), ...log });
+      const u: UserData = { ...prev, big3: { goal, logs } };
+      persist(u);
+      return u;
+    });
+  }, [persist]);
+
+  return { user, ready, login, signup, logout, saveToday, toggleSaveRoutine, setActiveRoutine, saveBig3, today };
 }

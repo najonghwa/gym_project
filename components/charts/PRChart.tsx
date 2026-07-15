@@ -5,7 +5,7 @@ import {
   Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis,
 } from "recharts";
 import { useReducedMotion } from "framer-motion";
-import { getMockPR, PRRow } from "@/lib/mock/exercises";
+import { EXERCISES, getMockPR, PRRow } from "@/lib/mock/exercises";
 
 const METRICS = [
   { id: "1rm", t: "1RM", chip: "BEST 1RM" },
@@ -14,10 +14,17 @@ const METRICS = [
 ] as const;
 type Metric = (typeof METRICS)[number]["id"];
 
-export function PRChart({ rows }: { rows?: PRRow[] }) {
+export function PRChart({
+  rows,
+  selectable = false,   // 운동 선택 칩 표시 (분석 탭)
+}: {
+  rows?: PRRow[];
+  selectable?: boolean;
+}) {
   const reduce = useReducedMotion();
   const [metric, setMetric] = useState<Metric>("1rm");
-  const data = useMemo(() => rows ?? getMockPR(metric), [rows, metric]);
+  const [exId, setExId] = useState("bench_press");
+  const data = useMemo(() => rows ?? getMockPR(metric, exId), [rows, metric, exId]);
   const best = Math.max(...data.map((d) => d.value));
   const unit = metric === "volume" ? "kg·vol" : "kg";
   // 주의: 차트 자체에서 confetti 금지 — 마운트/전환마다 터져서 스팸이 됨.
@@ -25,6 +32,22 @@ export function PRChart({ rows }: { rows?: PRRow[] }) {
 
   return (
     <div>
+      {/* 운동 선택 (벤치 고정 X — 6종 전환) */}
+      {selectable && (
+        <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
+          {EXERCISES.map((ex) => (
+            <button
+              key={ex.id}
+              onClick={() => setExId(ex.id)}
+              className={`shrink-0 rounded-full border px-3 py-1.5 text-[11.5px] font-bold ${
+                exId === ex.id ? "border-volt bg-volt text-black" : "border-white/15 bg-white/5 text-white/55"
+              }`}
+            >
+              {ex.em} {ex.name.replace("바벨 ", "").replace("덤벨 ", "")}
+            </button>
+          ))}
+        </div>
+      )}
       {/* 요약 칩 + metric 전환 */}
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="rounded-xl border border-gold/40 bg-gold/10 px-3 py-1.5">
