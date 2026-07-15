@@ -22,8 +22,8 @@ export function TabBar() {
     >
       <div className="flex lg:mx-auto lg:h-16 lg:max-w-5xl lg:items-stretch lg:gap-1 lg:px-6">
         {/* 데스크탑 로고 */}
-        <Link href="/today" className="hidden items-center pr-8 font-display text-[19px] tracking-tight lg:flex">
-          GYM<span className="text-volt">&</span>RUN
+        <Link href="/today" className="hidden items-center pr-8 font-display text-[20px] tracking-tight lg:flex">
+          PULSE<span className="text-volt">.</span>
         </Link>
         {TABS.map((tab) => {
           const on = path === tab.href || (tab.href === "/today" && path === "/");

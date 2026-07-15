@@ -29,14 +29,14 @@ export function LoginCard({
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center">
-      <div className="text-center font-display text-[20px] tracking-tight text-white/90">
-        GYM<span className="text-volt">&</span>RUN
+      <div className="text-center font-display text-[24px] tracking-tight text-white/90">
+        PULSE<span className="text-volt">.</span>
       </div>
       <h1 className="mt-3 text-center font-display text-[34px] leading-tight">
         오늘도 <span className="text-volt">한 세트</span> 더.
       </h1>
       <p className="mt-1 text-center text-[12.5px] text-white/50">
-        기존 헬스 가이드 아이디로 그대로 로그인돼요
+        헬스 · 러닝 통합 대시보드 — 기존 아이디 그대로
       </p>
       <div className="mt-6 grid grid-cols-2 gap-1 rounded-full border border-white/10 bg-white/5 p-1">
         {(["login", "signup"] as const).map((m) => (

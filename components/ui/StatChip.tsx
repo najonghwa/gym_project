@@ -25,8 +25,14 @@ export function StatChip({
           {icon ? `${icon} ` : ""}{label}
         </div>
         <div className="mt-0.5 flex items-baseline gap-1">
-          <span className="font-display text-[22px] leading-none tabular-nums">{value}</span>
-          {unit && <span className="text-[11px] text-white/55">{unit}</span>}
+          <span
+            className={`whitespace-nowrap font-display leading-none tabular-nums ${
+              String(value).length > 5 ? "text-[15px]" : String(value).length > 3 ? "text-[18px]" : "text-[22px]"
+            }`}
+          >
+            {value}
+          </span>
+          {unit && <span className="shrink-0 text-[10px] text-white/55">{unit}</span>}
           {delta != null && delta !== 0 && (
             <span className={`ml-1 text-[11px] font-bold ${delta > 0 ? "text-volt" : "text-danger"}`}>
               {delta > 0 ? "▲" : "▼"}{Math.abs(delta)}

@@ -3,12 +3,12 @@ import "./globals.css";
 import { TabBar } from "@/components/nav/TabBar";
 
 export const metadata: Metadata = {
-  title: "GYM&RUN — 헬스 가이드",
-  description: "회사 헬스장 맞춤 루틴 · 러닝 · 기록 · 랭킹",
+  title: "PULSE — 헬스·러닝 대시보드",
+  description: "회사 헬스장 맞춤 루틴 · 러닝 분석 · 기록 · 랭킹",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050505",
+  themeColor: "#070c16",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

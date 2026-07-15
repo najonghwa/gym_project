@@ -156,7 +156,7 @@ export default function RunPage() {
           <div className="mt-2 h-44">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={s.monthly} margin={{ top: 14 }}>
-                <XAxis dataKey="m" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9.5 }} axisLine={false} tickLine={false} interval={0} />
+                <XAxis dataKey="m" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 8.5 }} axisLine={false} tickLine={false} interval={0} />
                 <Tooltip
                   cursor={{ fill: "rgba(255,255,255,0.04)" }}
                   contentStyle={{ background: "#0d1526", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}
