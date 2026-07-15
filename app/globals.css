@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/* ── GYM&RUN 디자인 토큰 (스펙 §1) ── */
+@theme {
+  --color-bg: #050505;
+  --color-card: #101010;
+  --color-volt: #ccff00;
+  --color-gold: #f59e0b;
+  --color-danger: #ef4444;
+  --font-sans: "Pretendard Variable", Pretendard, system-ui, sans-serif;
+  --font-display: "Black Han Sans", Pretendard, sans-serif;
+}
+
+html { background: #050505; }
+body {
+  background: #050505;
+  color: #fafafa;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { display: none }
+* { -webkit-tap-highlight-color: transparent; scrollbar-width: none }
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none }
+
+/* 마이크로 라벨 (10px uppercase, 넓은 자간) */
+.lab {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  font-weight: 700;
+}
