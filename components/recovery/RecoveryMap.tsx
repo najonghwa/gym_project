@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { BodySvg, REGION_VIEW } from "./BodySvg";
 import { MuscleSheet } from "./MuscleSheet";
-import { Mascot } from "@/components/mascot/Mascot";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import {
   MUSCLE_KR, daysAgoLabel, recoveryColor,
@@ -102,8 +101,8 @@ export function RecoveryMap({ data }: { data: MuscleRecovery[] }) {
       </div>
 
       {/* 마스코트 코멘트 */}
-      <div className="mt-3 flex items-center gap-2.5 rounded-2xl bg-white/[0.04] px-3.5 py-2">
-        <Mascot state={mascotState} size={44} />
+      <div className="mt-3 flex items-center gap-2.5 rounded-2xl bg-white/[0.04] px-3.5 py-2.5">
+        <span className="text-[15px]">{mascotState === "cheer" ? "✅" : mascotState === "tired" ? "⚠️" : "💡"}</span>
         <p className="text-[12.5px] leading-relaxed text-white/70">
           {mascotState === "cheer"
             ? "전부 쌩쌩해요! 오늘은 뭘 치든 최고 컨디션 🎉"

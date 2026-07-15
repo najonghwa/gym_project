@@ -1,7 +1,6 @@
 "use client";
 // id + PIN 로그인/가입 (구 gym_web 계정 그대로 사용 가능)
 import { useState } from "react";
-import { Mascot } from "@/components/mascot/Mascot";
 import { PillButton } from "@/components/ui/PillButton";
 import { GrowthCompare } from "@/components/charts/GrowthCompare";
 import { signInWithGoogle } from "@/lib/supa";
@@ -30,8 +29,10 @@ export function LoginCard({
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center">
-      <div className="flex justify-center"><Mascot state="talk" size={96} /></div>
-      <h1 className="mt-2 text-center font-display text-[34px] leading-tight">
+      <div className="text-center font-display text-[20px] tracking-tight text-white/90">
+        GYM<span className="text-volt">&</span>RUN
+      </div>
+      <h1 className="mt-3 text-center font-display text-[34px] leading-tight">
         오늘도 <span className="text-volt">한 세트</span> 더.
       </h1>
       <p className="mt-1 text-center text-[12.5px] text-white/50">

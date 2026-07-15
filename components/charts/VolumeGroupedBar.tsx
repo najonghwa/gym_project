@@ -26,7 +26,7 @@ export function VolumeGroupedBar() {
             <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} axisLine={false} tickLine={false} />
             <Bar dataKey="volume" radius={[6, 6, 0, 0]} animationDuration={reduce ? 0 : 600}>
               {data.map((_, i) => (
-                <Cell key={i} fill={i === data.length - 1 ? "#ccff00" : "rgba(255,255,255,0.18)"} />
+                <Cell key={i} fill={i === data.length - 1 ? "#ff9432" : "rgba(255,255,255,0.18)"} />
               ))}
               <LabelList dataKey="volume" position="top" formatter={(v) => Number(v).toLocaleString()} style={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }} />
             </Bar>

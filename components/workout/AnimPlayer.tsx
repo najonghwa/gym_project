@@ -47,7 +47,7 @@ function PoseG({ p, cls, dur }: { p: Pose; cls: "poseA" | "poseB"; dur: number }
       {p.l.map((L, i) => (
         <line key={i} x1={L[0]} y1={L[1]} x2={L[2]} y2={L[3]} />
       ))}
-      {p.bar && <line x1={p.bar[0]} y1={p.bar[1]} x2={p.bar[2]} y2={p.bar[3]} stroke="#ccff00" strokeWidth={4} />}
+      {p.bar && <line x1={p.bar[0]} y1={p.bar[1]} x2={p.bar[2]} y2={p.bar[3]} stroke="#ff9432" strokeWidth={4} />}
       {p.bench && <line x1={p.bench[0]} y1={p.bench[1]} x2={p.bench[2]} y2={p.bench[3]} stroke="#52525b" strokeWidth={4} />}
     </g>
   );

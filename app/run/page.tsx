@@ -2,7 +2,6 @@
 // 러닝 탭 — P1-8 성향 진단 온보딩 (진행바 + 슬라이더 + 라이브 게이지 + 마스코트 반응)
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Mascot } from "@/components/mascot/Mascot";
 import { PillButton } from "@/components/ui/PillButton";
 import { ProgressBar, FrequencySlider, LiveGauge } from "@/components/onboarding/OnboardKit";
 
@@ -48,7 +47,6 @@ export default function RunPage() {
 
       {/* 마스코트 반응 말풍선 */}
       <div className="flex items-end gap-3">
-        <Mascot state="talk" size={72} />
         <AnimatePresence mode="wait">
           <motion.div
             key={mascotLine}

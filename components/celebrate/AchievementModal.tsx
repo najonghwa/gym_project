@@ -23,7 +23,7 @@ export function AchievementModal({
 
   useEffect(() => {
     if (open && !reduce) {
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ["#ccff00", "#f59e0b", "#ffffff"] });
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ["#ff9432", "#f59e0b", "#ffffff"] });
     }
   }, [open, reduce]);
 

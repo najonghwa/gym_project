@@ -10,15 +10,29 @@ import { VolumeGroupedBar } from "@/components/charts/VolumeGroupedBar";
 import { BalanceRadar, StandardRadar } from "@/components/charts/RadarCompare";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { BALANCE_RADAR, PEER_RADAR } from "@/lib/mock/routines";
-import { useUser } from "@/lib/useUser";
+import { computeStats, useUser } from "@/lib/useUser";
+import { StatChip } from "@/components/ui/StatChip";
 
 export default function AnalysisPage() {
   const router = useRouter();
   const { user, saveBig3 } = useUser();
   const recovery = useMemo(() => getMockRecovery(), []);
+  const st = useMemo(() => (user ? computeStats(user) : null), [user]);
+  const b3last = user?.big3?.logs?.at(-1);
+  const b3total = b3last ? Math.round((b3last.s + b3last.b + b3last.d) * 10) / 10 : 0;
 
   return (
     <main className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0 lg:pt-24">
+      {/* 상단 KPI 스트립 — 한눈 요약 */}
+      <div className="grid grid-cols-3 gap-2 lg:col-span-2 lg:grid-cols-6">
+        <StatChip label="총 운동" value={st?.sessions ?? 0} unit="회" tone="volt" />
+        <StatChip label="연속" value={st?.streak ?? 0} unit="일" tone={st && st.streak > 0 ? "volt" : "mute"} />
+        <StatChip label="4주 출석률" value={st?.att ?? 0} unit="%" tone={st && st.att >= 70 ? "volt" : "gold"} />
+        <StatChip label="이번주 러닝" value={st?.weekKm ?? 0} unit="km" tone="volt" />
+        <StatChip label="3대 합계" value={b3last ? b3total : "—"} unit={b3last ? "kg" : ""} tone="gold" />
+        <StatChip label="레벨" value={`Lv${st?.level ?? 1}`} tone="mute" />
+      </div>
+
       <div className="rounded-3xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
         <RecoveryMap data={recovery} />
       </div>

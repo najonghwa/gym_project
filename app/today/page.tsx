@@ -1,7 +1,6 @@
 "use client";
 // P0-4 오늘 탭 홈 — MascotBubble + Streak + WeekStrip + TodayWorkout + MiniStats
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Mascot } from "@/components/mascot/Mascot";
 import { WeekStrip, type DayCell } from "@/components/today/WeekStrip";
 import { TodayWorkoutCard } from "@/components/today/TodayWorkoutCard";
 import { ExerciseSheet } from "@/components/workout/ExerciseSheet";
@@ -119,7 +118,6 @@ export default function TodayPage() {
       {/* ── 하나로 이어지는 하루 타임라인 ── */}
       <Node icon="☀️" label="오늘 브리핑 BRIEFING">
         <div className="flex items-start gap-3">
-          <Mascot state="talk" size={62} />
           <div className="min-w-0 flex-1">
             <p className="text-[13.5px] font-medium leading-relaxed">💬 {quote}</p>
             <div className="mt-2.5 flex flex-wrap gap-1.5">

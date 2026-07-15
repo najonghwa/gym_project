@@ -90,7 +90,7 @@ export function PRChart({
               animationDuration={reduce ? 0 : 600}
             >
               {data.map((d, i) => (
-                <Cell key={i} fill={d.isPR ? "#f59e0b" : "#ccff00"} fillOpacity={d.isPR ? 1 : 0.75} />
+                <Cell key={i} fill={d.isPR ? "#f59e0b" : "#ff9432"} fillOpacity={d.isPR ? 1 : 0.75} />
               ))}
               <LabelList
                 dataKey="value"

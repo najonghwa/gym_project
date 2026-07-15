@@ -5,7 +5,6 @@ import { motion, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { PillButton } from "@/components/ui/PillButton";
-import { Mascot } from "@/components/mascot/Mascot";
 import type { UserData } from "@/lib/supa";
 
 const GOALS = [200, 250, 300, 350, 400, 500];
@@ -35,14 +34,13 @@ export function Big3Card({
     onSave(goal, { s, b, d });
     setOpen(false);
     if (!reduce && s + b + d >= goal)
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ["#ccff00", "#f59e0b", "#fff"] });
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ["#ff9432", "#f59e0b", "#fff"] });
   };
 
   return (
     <>
       {!last ? (
         <div className="text-center">
-          <div className="flex justify-center"><Mascot state="talk" size={64} /></div>
           <p className="mt-2 text-[13px] leading-relaxed text-white/60">
             스쿼트+벤치+데드 합계로 도전!<br />
             <span className="text-[11.5px] text-white/40">3대 300 = 헬린이 졸업 · 400 = 중수 · 500 = 헬창 인증</span>

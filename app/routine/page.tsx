@@ -2,7 +2,6 @@
 // 루틴 탭 — 내 루틴(저장·적용) + AI 생성 리빌 + Explore
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mascot } from "@/components/mascot/Mascot";
 import { PillButton } from "@/components/ui/PillButton";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
 import { RoutineGenerating } from "@/components/routine/RoutineGenerating";
@@ -83,7 +82,6 @@ export default function RoutinePage() {
       {/* AI 생성 */}
       {phase === "idle" && (
         <section className="flex flex-col items-center gap-3 rounded-3xl border border-white/[0.06] bg-card px-6 py-8 text-center">
-          <Mascot state="talk" size={88} />
           <h2 className="font-display text-[24px] leading-snug">
             이번 주 루틴,<br /><span className="text-volt">AI가 짜드릴까요?</span>
           </h2>

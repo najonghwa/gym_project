@@ -5,7 +5,7 @@ export interface FloorItem { eq: string; zone: string; x: number; y: number; ico
 export interface EquipInfo { desc: string; tip: string }
 
 export const ZONES: Zone[] = [
-  { id: "A", name: "프리웨이트존", desc: "파워랙 / 벤치 / 덤벨 / 바벨", color: "#ccff00" },
+  { id: "A", name: "프리웨이트존", desc: "파워랙 / 벤치 / 덤벨 / 바벨", color: "#ff9432" },
   { id: "B", name: "머신존", desc: "웨이트 머신 8대", color: "#60a5fa" },
   { id: "C", name: "케이블존", desc: "케이블 머신", color: "#c084fc" },
   { id: "D", name: "유산소존", desc: "트레드밀 / 사이클 / 로잉", color: "#fbbf24" },

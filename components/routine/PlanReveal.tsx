@@ -6,7 +6,6 @@ import { fadeUp, staggerContainer } from "@/lib/motion";
 import { PillButton } from "@/components/ui/PillButton";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
 import { RecoveryStrip } from "@/components/ui/RecoveryStrip";
-import { Mascot } from "@/components/mascot/Mascot";
 import { GrowthCompare } from "@/components/charts/GrowthCompare";
 import { byId } from "@/lib/mock/exercises";
 import { getMockRecovery } from "@/lib/mock/recovery";
@@ -42,7 +41,6 @@ export function PlanReveal({ onRetry }: { onRetry: () => void }) {
         className="mb-4 rounded-3xl border border-volt/30 bg-card p-4"
       >
         <div className="flex items-center gap-3">
-          <Mascot state="cheer" size={72} />
           <div>
             <div className="lab">코치 볼트의 처방 COACH</div>
             <h3 className="font-display text-[22px] leading-snug">

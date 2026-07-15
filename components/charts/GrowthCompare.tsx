@@ -37,7 +37,7 @@ export function GrowthCompare({ compact = false }: { compact?: boolean }) {
         />
         {/* 플랜 */}
         <motion.path
-          d={path(PLAN)} fill="none" stroke="#ccff00" strokeWidth={4} strokeLinecap="round"
+          d={path(PLAN)} fill="none" stroke="#ff9432" strokeWidth={4} strokeLinecap="round"
           initial={reduce ? false : { pathLength: 0 }}
           whileInView={{ pathLength: 1 }} viewport={{ once: true }}
           transition={{ duration: 1.2 }}
@@ -48,7 +48,7 @@ export function GrowthCompare({ compact = false }: { compact?: boolean }) {
           whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
           transition={{ delay: 1.1, type: "spring", stiffness: 260 }}
         >
-          <rect x={x(4) + 4} y={y(PLAN[4]) - 11} width={52} height={20} rx={10} fill="#ccff00" />
+          <rect x={x(4) + 4} y={y(PLAN[4]) - 11} width={52} height={20} rx={10} fill="#ff9432" />
           <text x={x(4) + 30} y={y(PLAN[4]) + 3} fontSize={10.5} fontWeight={800} textAnchor="middle" fill="#000">+10.8%</text>
           <rect x={x(4) + 4} y={y(AVG[4]) - 10} width={48} height={19} rx={9.5} fill="rgba(255,255,255,0.18)" />
           <text x={x(4) + 28} y={y(AVG[4]) + 3} fontSize={10} fontWeight={700} textAnchor="middle" fill="rgba(255,255,255,0.75)">+5.1%</text>

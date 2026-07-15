@@ -69,7 +69,7 @@ export function FrequencySlider({
 // ── 라이브 BMI 게이지 (색 세그먼트 + 마커 + 카운트업) ──
 const SEGMENTS = [
   { to: 18.5, color: "#38bdf8", label: "저체중" },
-  { to: 23, color: "#ccff00", label: "정상" },
+  { to: 23, color: "#ff9432", label: "정상" },
   { to: 25, color: "#f59e0b", label: "과체중" },
   { to: 35, color: "#ef4444", label: "비만" },
 ];

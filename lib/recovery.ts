@@ -29,8 +29,9 @@ export function recoveryPct(muscle: Muscle, lastTrainedAt: string, now = Date.no
 }
 
 // danger(0) → gold(0.5) → volt(1)
+// 피로(빨강) → 회복 중(주황) → 회복 완료(초록) — 액센트 오렌지와 구분되게 완료는 그린
 const lowHalf = interpolateRgb("#ef4444", "#f59e0b");
-const highHalf = interpolateRgb("#f59e0b", "#ccff00");
+const highHalf = interpolateRgb("#f59e0b", "#2dd4a0");
 export function recoveryColor(pct: number): string {
   const p = Math.min(1, Math.max(0, pct));
   return p < 0.5 ? lowHalf(p * 2) : highHalf((p - 0.5) * 2);

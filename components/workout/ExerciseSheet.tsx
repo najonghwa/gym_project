@@ -61,7 +61,7 @@ export function ExerciseSheet({
       if (!celebrate) {
         setCelebrate(true);
         if (!reduce)
-          confetti({ particleCount: 90, spread: 70, origin: { y: 0.75 }, colors: ["#ccff00", "#f59e0b", "#fff"] });
+          confetti({ particleCount: 90, spread: 70, origin: { y: 0.75 }, colors: ["#ff9432", "#f59e0b", "#fff"] });
       }
     } else if (patch.done) {
       startRest();
