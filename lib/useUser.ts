@@ -191,6 +191,38 @@ export function useUser() {
     });
   }, [persist]);
 
+  // 러닝 기록 추가 (구버전 runs와 같은 형태 — 데이터 호환)
+  const saveRun = useCallback((run: { date: string; km: number; paceSec: number | null }) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const runs = [...(prev.runs ?? []), { rid: "r" + Date.now(), ...run }];
+      runs.sort((a, b) => (a.date < b.date ? -1 : 1));
+      const u: UserData = { ...prev, runs };
+      persist(u);
+      return u;
+    });
+  }, [persist]);
+
+  // 연간 목표 거리
+  const setRunGoal = useCallback((km: number) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const u: UserData = { ...prev, v2: { ...prev.v2, runGoalKm: km } };
+      persist(u);
+      return u;
+    });
+  }, [persist]);
+
+  // 러닝 성향 프로필 (진단 결과)
+  const saveRunProfile = useCallback((profile: Record<string, unknown>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const u: UserData = { ...prev, runProfile: { ...prev.runProfile, ...profile } };
+      persist(u);
+      return u;
+    });
+  }, [persist]);
+
   // 3대 측정 기록 (구버전 big3와 같은 형태 — 데이터 호환)
   const saveBig3 = useCallback((goal: number, log?: { s: number; b: number; d: number }) => {
     setUser((prev) => {
@@ -204,5 +236,9 @@ export function useUser() {
     });
   }, [persist]);
 
-  return { user, ready, login, signup, logout, saveToday, toggleSaveRoutine, setActiveRoutine, saveBig3, today };
+  return {
+    user, ready, login, signup, logout, saveToday,
+    toggleSaveRoutine, setActiveRoutine, saveBig3,
+    saveRun, setRunGoal, saveRunProfile, today,
+  };
 }

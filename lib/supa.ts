@@ -20,11 +20,13 @@ export type UserData = Record<string, unknown> & {
   profile?: { days?: number; style?: string; weight?: number } & Record<string, unknown>;
   routine?: { days?: number } & Record<string, unknown>;
   workouts?: Record<string, { doneSets?: number; scorePct?: number; kcal?: number }>;
-  runs?: { date: string; km: number; paceSec?: number | null }[];
+  runs?: { rid?: string; date: string; km: number; paceSec?: number | null }[];
+  runProfile?: Record<string, unknown>;
   v2?: {
     workouts?: Record<string, { items: unknown[] }>;
     savedRoutines?: string[];
     activeRoutineId?: string;
+    runGoalKm?: number;   // 연간 목표 거리
   };
   big3?: { goal: number; logs: { date: string; s: number; b: number; d: number }[] };
 };
