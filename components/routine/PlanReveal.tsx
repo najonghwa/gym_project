@@ -6,10 +6,22 @@ import { fadeUp, staggerContainer } from "@/lib/motion";
 import { PillButton } from "@/components/ui/PillButton";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
 import { RecoveryStrip } from "@/components/ui/RecoveryStrip";
+import { Mascot } from "@/components/mascot/Mascot";
+import { GrowthCompare } from "@/components/charts/GrowthCompare";
 import { byId } from "@/lib/mock/exercises";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { ALT_DAYS, GENERATED_PLAN, type PlanDay } from "@/lib/mock/routines";
 import { MUSCLE_KR } from "@/lib/recovery";
+
+// PT 코치식 요약 (Planfit "personalized program ready" 패턴)
+const COACH_SUMMARY = [
+  ["🎯 목표", "벌크업"],
+  ["📆 주당", "4회"],
+  ["📊 레벨", "중급"],
+  ["🏢 장비", "회사 헬스장"],
+  ["⏱️ 회당", "약 55분"],
+  ["🔥 예상", "380~520kcal"],
+];
 
 export function PlanReveal({ onRetry }: { onRetry: () => void }) {
   const reduce = useReducedMotion();
@@ -22,10 +34,40 @@ export function PlanReveal({ onRetry }: { onRetry: () => void }) {
 
   return (
     <div>
+      {/* PT 코치 요약 카드 */}
+      <motion.div
+        variants={reduce ? undefined : fadeUp}
+        initial={reduce ? false : "hidden"}
+        animate="show"
+        className="mb-4 rounded-3xl border border-volt/30 bg-card p-4"
+      >
+        <div className="flex items-center gap-3">
+          <Mascot state="cheer" size={72} />
+          <div>
+            <div className="lab">코치 볼트의 처방 COACH</div>
+            <h3 className="font-display text-[22px] leading-snug">
+              맞춤 플랜이 <span className="text-volt">준비됐어요!</span>
+            </h3>
+            <p className="text-[11.5px] text-white/50">회복도·장비·목표를 반영했어요</p>
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-1.5">
+          {COACH_SUMMARY.map(([l, v]) => (
+            <div key={l} className="rounded-xl bg-white/[0.05] px-2 py-2 text-center">
+              <div className="text-[9.5px] text-white/45">{l}</div>
+              <div className="mt-0.5 text-[12.5px] font-extrabold">{v}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 border-t border-white/[0.06] pt-3">
+          <GrowthCompare compact />
+        </div>
+      </motion.div>
+
       <div className="mb-3 flex items-center justify-between">
         <div>
           <div className="lab">이번 주 플랜 READY</div>
-          <h3 className="font-display text-[22px]">주 {days.length}회 · 벌크업 루틴 완성! 🎉</h3>
+          <h3 className="font-display text-[22px]">주 {days.length}회 구성</h3>
         </div>
         <PillButton variant="ghost" className="!px-4 !py-2 !text-[12.5px]" onClick={onRetry}>
           🎲 AI 다시

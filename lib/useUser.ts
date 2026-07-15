@@ -1,7 +1,7 @@
 "use client";
 // 사용자 훅 — id+PIN 로그인(구 gym_web 규칙 호환), localStorage 캐시 + Supabase 동기화
 import { useCallback, useEffect, useRef, useState } from "react";
-import { pullUser, pushUser, type UserData } from "./supa";
+import { getOAuthEmail, pullUser, pushUser, type UserData } from "./supa";
 import type { TodayItem } from "./mock/exercises";
 
 const KEY = "gymrun_v1";
@@ -99,8 +99,26 @@ export function useUser() {
 
   useEffect(() => {
     const db = loadDB();
-    if (db.currentId && db.users[db.currentId]) setUser(db.users[db.currentId]);
-    setReady(true);
+    if (db.currentId && db.users[db.currentId]) {
+      setUser(db.users[db.currentId]);
+      setReady(true);
+      return;
+    }
+    // Google OAuth 복귀 감지 → 이메일 앞부분을 아이디로 자동 로그인/가입
+    getOAuthEmail().then(async (email) => {
+      if (email) {
+        const id = email.split("@")[0];
+        const server = await pullUser(id);
+        const u: UserData = server
+          ? { ...server, id, oauth: "google" }
+          : { id, oauth: "google", created: today(), v2: { workouts: {} } };
+        const db2 = loadDB();
+        db2.users[uid(id)] = u; db2.currentId = uid(id); saveDB(db2);
+        setUser(u);
+        pushUser(uid(id), u, computeStats(u));
+      }
+      setReady(true);
+    });
   }, []);
 
   const persist = useCallback((u: UserData) => {

@@ -38,6 +38,7 @@ export interface ExploreRoutine {
   badge: string;               // 이니셜 뱃지 (LD/ST/QF)
   title: string;
   desc: string;
+  overview: string;            // 상세 페이지 Overview
   target: string;              // 필터: 부위
   equipment: string;           // 필터: 장비
   level: "초급" | "중급" | "고급";
@@ -46,14 +47,26 @@ export interface ExploreRoutine {
   likes: number;
   weeks: number;
   daysPerWeek: number;
+  durationMin: number;         // 회당 소요
+  kcal: string;                // 예상 칼로리
 }
 
 export const EXPLORE: ExploreRoutine[] = [
-  { id: "legday", badge: "LD", title: "이번 주, 다리 집중 🔥", desc: "스쿼트 중심 하체 볼륨 주간", target: "하체", equipment: "바벨", level: "중급", muscles: ["legs", "glutes"], exercises: ["back_squat"], likes: 42, weeks: 4, daysPerWeek: 3 },
-  { id: "st55", badge: "ST", title: "스트롱리프트 5×5", desc: "초보 근력의 정석 A/B 루틴", target: "전신", equipment: "바벨", level: "초급", muscles: ["legs", "chest", "back"], exercises: ["back_squat", "bench_press", "seated_row"], likes: 128, weeks: 12, daysPerWeek: 3 },
-  { id: "ppl", badge: "PP", title: "PPL 6일 분할", desc: "밀·당·다리 주 2바퀴 고볼륨", target: "전신", equipment: "머신+바벨", level: "중급", muscles: ["chest", "back", "legs", "shoulders"], exercises: ["bench_press", "lat_pulldown", "back_squat"], likes: 96, weeks: 12, daysPerWeek: 6 },
-  { id: "quickfit", badge: "QF", title: "점심 30분 스피드핏", desc: "바쁜 날을 위한 머신 서킷", target: "상체", equipment: "머신", level: "초급", muscles: ["chest", "back", "shoulders"], exercises: ["lat_pulldown", "seated_row", "db_shoulder_press"], likes: 61, weeks: 4, daysPerWeek: 5 },
-  { id: "arms", badge: "AR", title: "소매가 터지는 팔 루틴", desc: "이두·삼두 집중 펌핑", target: "팔", equipment: "덤벨", level: "중급", muscles: ["biceps", "triceps"], exercises: ["barbell_curl", "bench_press"], likes: 55, weeks: 6, daysPerWeek: 2 },
+  { id: "legday", badge: "LD", title: "이번 주, 다리 집중 🔥", desc: "스쿼트 중심 하체 볼륨 주간",
+    overview: "하체가 부족하다고 느껴진다면 이 플랜. 스쿼트를 축으로 4주간 하체 볼륨을 끌어올려요. 상체는 유지 볼륨만 — 다리에 모든 에너지를 씁니다.",
+    target: "하체", equipment: "바벨", level: "중급", muscles: ["legs", "glutes"], exercises: ["back_squat"], likes: 42, weeks: 4, daysPerWeek: 3, durationMin: 50, kcal: "300~420" },
+  { id: "st55", badge: "ST", title: "스트롱리프트 5×5", desc: "초보 근력의 정석 A/B 루틴",
+    overview: "헬스장이 처음이라 뭘 해야 할지 모르겠다면 여기서 시작하세요. 딱 5가지 운동을 5세트×5회 — 단순하지만 전 세계에서 가장 검증된 초보 근력 프로그램이에요.",
+    target: "전신", equipment: "바벨", level: "초급", muscles: ["legs", "chest", "back"], exercises: ["back_squat", "bench_press", "seated_row"], likes: 128, weeks: 12, daysPerWeek: 3, durationMin: 45, kcal: "250~380" },
+  { id: "ppl", badge: "PP", title: "PPL 6일 분할", desc: "밀·당·다리 주 2바퀴 고볼륨",
+    overview: "미는 날·당기는 날·다리 날을 일주일에 두 바퀴 도는 고볼륨 분할. 부위당 주 2회 자극으로 성장 속도가 빠르지만, 주 6회 출석과 충분한 수면이 필요해요.",
+    target: "전신", equipment: "머신+바벨", level: "중급", muscles: ["chest", "back", "legs", "shoulders"], exercises: ["bench_press", "lat_pulldown", "back_squat"], likes: 96, weeks: 12, daysPerWeek: 6, durationMin: 65, kcal: "400~550" },
+  { id: "quickfit", badge: "QF", title: "점심 30분 스피드핏", desc: "바쁜 날을 위한 머신 서킷",
+    overview: "점심시간에 후딱 치고 나오는 머신 위주 서킷. 세팅이 빠른 머신만 써서 옷 갈아입는 시간 포함 40분 안에 끝나요. 바쁜 주간의 비상용 플랜으로도 좋아요.",
+    target: "상체", equipment: "머신", level: "초급", muscles: ["chest", "back", "shoulders"], exercises: ["lat_pulldown", "seated_row", "db_shoulder_press"], likes: 61, weeks: 4, daysPerWeek: 5, durationMin: 30, kcal: "180~260" },
+  { id: "arms", badge: "AR", title: "소매가 터지는 팔 루틴", desc: "이두·삼두 집중 펌핑",
+    overview: "여름 대비 팔 특화 6주. 이두·삼두를 다양한 각도로 조지는 펌핑 위주 구성이라 초보도 부담 없어요. 기존 루틴에 주 2회 얹어서 쓰는 걸 추천!",
+    target: "팔", equipment: "덤벨", level: "중급", muscles: ["biceps", "triceps"], exercises: ["barbell_curl", "bench_press"], likes: 55, weeks: 6, daysPerWeek: 2, durationMin: 35, kcal: "200~280" },
 ];
 
 export const FILTER = {

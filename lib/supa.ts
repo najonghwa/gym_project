@@ -47,3 +47,24 @@ export async function fetchStats(): Promise<StatRow[] | null> {
     return (data as StatRow[]) ?? [];
   } catch { return null; }
 }
+
+// ── Google OAuth (Supabase 대시보드에서 Google provider 활성화 필요) ──
+export async function signInWithGoogle(): Promise<string | null> {
+  try {
+    const { error } = await supa().auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: typeof window !== "undefined" ? `${location.origin}/today` : undefined },
+    });
+    return error ? error.message : null;
+  } catch (e) {
+    return e instanceof Error ? e.message : "Google 로그인 실패";
+  }
+}
+
+// 현재 OAuth 세션의 이메일 (없으면 null) — 리다이렉트 복귀 시 자동 감지
+export async function getOAuthEmail(): Promise<string | null> {
+  try {
+    const { data } = await supa().auth.getSession();
+    return data.session?.user?.email ?? null;
+  } catch { return null; }
+}
