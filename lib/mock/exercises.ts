@@ -16,54 +16,58 @@ export interface Exercise {
   zone: string;               // 헬스장 구역
   equipment: string;
   level: 1 | 2 | 3 | 4 | 5;   // 난이도 (LevelDots)
-  pattern: MotionPattern;     // AnimPlayer 동작
+  pattern: MotionPattern;     // AnimPlayer 동작 (프레임 없을 때 폴백)
+  frames?: [string, string];  // 실사 2프레임 (free-exercise-db, 퍼블릭 도메인)
   contrib: { muscle: Muscle; pct: number }[]; // 자극 기여% (MuscleDonut)
   tip: string;                // 전문가 한 줄
   howto: string[];
   restSec: number;
 }
 
+const FEDB = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises";
+const frames = (slug: string): [string, string] => [`${FEDB}/${slug}/0.jpg`, `${FEDB}/${slug}/1.jpg`];
+
 export type MotionPattern = "bench" | "squat" | "pulldown" | "curl" | "ohp" | "row";
 
 export const EXERCISES: Exercise[] = [
   {
     id: "bench_press", name: "바벨 벤치프레스", em: "🏋️", zone: "A", equipment: "벤치프레스대",
-    level: 3, pattern: "bench", restSec: 120,
+    level: 3, pattern: "bench", frames: frames("Barbell_Bench_Press_-_Medium_Grip"), restSec: 120,
     contrib: [{ muscle: "chest", pct: 60 }, { muscle: "triceps", pct: 20 }, { muscle: "shoulders", pct: 20 }],
     tip: "바를 내릴 때 팔꿈치가 몸통과 45도를 유지하면 어깨가 안전해요.",
     howto: ["벤치에 누워 견갑을 모으고 발로 바닥 지지", "바를 가슴 중앙까지 천천히", "가슴으로 밀어 올리기"],
   },
   {
     id: "back_squat", name: "바벨 백스쿼트", em: "🦵", zone: "A", equipment: "파워랙",
-    level: 4, pattern: "squat", restSec: 150,
+    level: 4, pattern: "squat", frames: frames("Barbell_Squat"), restSec: 150,
     contrib: [{ muscle: "legs", pct: 55 }, { muscle: "glutes", pct: 30 }, { muscle: "abs", pct: 15 }],
     tip: "무릎이 아니라 엉덩이부터 뒤로 — 의자에 앉는 느낌으로.",
     howto: ["바를 승모근 위에 얹고 랙 아웃", "엉덩이를 뒤로·아래로", "허벅지 평행까지 → 일어서기"],
   },
   {
     id: "lat_pulldown", name: "랫풀다운", em: "⬇️", zone: "B", equipment: "랫풀다운 머신",
-    level: 2, pattern: "pulldown", restSec: 90,
+    level: 2, pattern: "pulldown", frames: frames("Wide-Grip_Lat_Pulldown"), restSec: 90,
     contrib: [{ muscle: "back", pct: 70 }, { muscle: "biceps", pct: 30 }],
     tip: "팔이 아니라 겨드랑이로 당긴다는 느낌.",
     howto: ["무릎 패드 고정, 넓게 그립", "쇄골 쪽으로 당기기", "천천히 올리기"],
   },
   {
     id: "db_shoulder_press", name: "덤벨 숄더프레스", em: "🙆", zone: "A", equipment: "덤벨세트",
-    level: 2, pattern: "ohp", restSec: 90,
+    level: 2, pattern: "ohp", frames: frames("Dumbbell_Shoulder_Press"), restSec: 90,
     contrib: [{ muscle: "shoulders", pct: 70 }, { muscle: "triceps", pct: 30 }],
     tip: "허리를 과하게 젖히지 말고 코어에 힘.",
     howto: ["덤벨을 귀 옆 높이로", "머리 위로 밀어 올리기", "천천히 내리기"],
   },
   {
     id: "barbell_curl", name: "바벨 컬", em: "💪", zone: "A", equipment: "EZ바",
-    level: 1, pattern: "curl", restSec: 60,
+    level: 1, pattern: "curl", frames: frames("Barbell_Curl"), restSec: 60,
     contrib: [{ muscle: "biceps", pct: 85 }, { muscle: "shoulders", pct: 15 }],
     tip: "내릴 때 2초 — 네거티브에 성장이 있어요.",
     howto: ["어깨너비 그립으로 서기", "팔꿈치 고정, 감아올리기", "반동 없이 천천히"],
   },
   {
     id: "seated_row", name: "시티드 로우", em: "🚣", zone: "B", equipment: "시티드로우 머신",
-    level: 2, pattern: "row", restSec: 90,
+    level: 2, pattern: "row", frames: frames("Seated_Cable_Rows"), restSec: 90,
     contrib: [{ muscle: "back", pct: 65 }, { muscle: "biceps", pct: 25 }, { muscle: "shoulders", pct: 10 }],
     tip: "허리를 세우고 팔꿈치를 뒤로 끝까지.",
     howto: ["가슴 패드에 몸 고정", "팔꿈치를 뒤로 당기기", "등 중앙 조인 후 천천히"],

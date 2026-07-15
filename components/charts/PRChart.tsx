@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import {
   Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis,
 } from "recharts";
-import confetti from "canvas-confetti";
 import { useReducedMotion } from "framer-motion";
 import { getMockPR, PRRow } from "@/lib/mock/exercises";
 
@@ -21,11 +20,8 @@ export function PRChart({ rows }: { rows?: PRRow[] }) {
   const data = useMemo(() => rows ?? getMockPR(metric), [rows, metric]);
   const best = Math.max(...data.map((d) => d.value));
   const unit = metric === "volume" ? "kg·vol" : "kg";
-
-  const fireConfetti = () => {
-    if (reduce) return;
-    confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 }, colors: ["#ccff00", "#f59e0b", "#ffffff"] });
-  };
+  // 주의: 차트 자체에서 confetti 금지 — 마운트/전환마다 터져서 스팸이 됨.
+  // 축하는 실제 이벤트(세트 완료·신기록 저장)에서만 (AchievementModal/ExerciseSheet).
 
   return (
     <div>
@@ -69,7 +65,6 @@ export function PRChart({ rows }: { rows?: PRRow[] }) {
               dataKey="value"
               radius={[5, 5, 0, 0]}
               animationDuration={reduce ? 0 : 600}
-              onAnimationEnd={() => data[data.length - 1]?.isPR && fireConfetti()}
             >
               {data.map((d, i) => (
                 <Cell key={i} fill={d.isPR ? "#f59e0b" : "#ccff00"} fillOpacity={d.isPR ? 1 : 0.75} />

@@ -3,21 +3,24 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { GROWTH } from "@/lib/mock/routines";
 
-function toPath(vals: number[], W: number, H: number, pad: number) {
+// 위쪽에 라벨 공간(padTop) 확보 — AFTER 텍스트 잘림 방지
+function makeY(H: number, padTop: number, padBottom: number) {
   const max = Math.max(...GROWTH.withPlan);
-  const x = (i: number) => pad + (i / (vals.length - 1)) * (W - pad * 2);
-  const y = (v: number) => H - pad - (v / max) * (H - pad * 2);
+  return (v: number) => H - padBottom - (v / max) * (H - padBottom - padTop);
+}
+function toPath(vals: number[], W: number, padX: number, y: (v: number) => number) {
+  const x = (i: number) => padX + (i / (vals.length - 1)) * (W - padX * 2);
   return vals.map((v, i) => `${i ? "L" : "M"}${x(i)},${y(v)}`).join(" ");
 }
 
 export function GrowthCurve() {
   const reduce = useReducedMotion();
-  const W = 340, H = 150, pad = 16;
-  const planPath = toPath(GROWTH.withPlan, W, H, pad);
-  const noPath = toPath(GROWTH.withoutPlan, W, H, pad);
-  const max = Math.max(...GROWTH.withPlan);
-  const endY = H - pad - (GROWTH.withPlan.at(-1)! / max) * (H - pad * 2);
-  const endYNo = H - pad - (GROWTH.withoutPlan.at(-1)! / max) * (H - pad * 2);
+  const W = 340, H = 170, padX = 18, padTop = 34, padBottom = 18;
+  const y = makeY(H, padTop, padBottom);
+  const planPath = toPath(GROWTH.withPlan, W, padX, y);
+  const noPath = toPath(GROWTH.withoutPlan, W, padX, y);
+  const endY = y(GROWTH.withPlan.at(-1)!);
+  const endYNo = y(GROWTH.withoutPlan.at(-1)!);
 
   return (
     <div>
@@ -51,11 +54,11 @@ export function GrowthCurve() {
           viewport={{ once: true }}
           transition={{ delay: 1.2, type: "spring", stiffness: 300 }}
         >
-          <circle cx={pad} cy={H - pad} r={5} fill="#ccff00" />
-          <circle cx={W - pad} cy={endY} r={6} fill="#f59e0b" />
-          <text x={pad + 8} y={H - pad - 6} fontSize={10} fill="rgba(255,255,255,0.6)">BEFORE</text>
-          <text x={W - pad - 8} y={endY - 10} fontSize={10} fill="#f59e0b" textAnchor="end" fontWeight={700}>AFTER +{GROWTH.withPlan.at(-1)}%</text>
-          <text x={W - pad - 8} y={endYNo - 8} fontSize={9} fill="rgba(255,255,255,0.35)" textAnchor="end">계획 없이 +{GROWTH.withoutPlan.at(-1)}%</text>
+          <circle cx={padX} cy={y(0)} r={5} fill="#ccff00" />
+          <circle cx={W - padX} cy={endY} r={6} fill="#f59e0b" />
+          <text x={padX + 8} y={y(0) - 8} fontSize={10} fill="rgba(255,255,255,0.6)">BEFORE</text>
+          <text x={W - padX - 12} y={endY - 12} fontSize={11} fill="#f59e0b" textAnchor="end" fontWeight={700}>AFTER +{GROWTH.withPlan.at(-1)}%</text>
+          <text x={W - padX - 12} y={endYNo - 10} fontSize={9} fill="rgba(255,255,255,0.35)" textAnchor="end">계획 없이 +{GROWTH.withoutPlan.at(-1)}%</text>
         </motion.g>
       </svg>
       <p className="mt-1 text-center text-[12px] text-white/55">

@@ -25,14 +25,14 @@ export function TabBar() {
           <Link
             key={tab.href}
             href={tab.href}
-            className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2.5 lg:max-w-28 lg:flex-row lg:justify-center lg:gap-2 ${
-              on ? "text-volt" : "text-zinc-600"
+            className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2.5 lg:max-w-36 lg:flex-row lg:justify-center lg:gap-2.5 lg:rounded-full lg:py-3 lg:my-2 lg:mx-1 lg:px-5 lg:flex-none ${
+              on ? "text-volt lg:bg-volt/10 lg:text-volt" : "text-zinc-600 lg:hover:bg-white/5"
             }`}
           >
-            <span className={`text-[18px] leading-none ${on ? "" : "opacity-70 grayscale"}`}>
+            <span className={`text-[18px] leading-none lg:text-[20px] ${on ? "" : "opacity-70 grayscale"}`}>
               {tab.em}
             </span>
-            <span className="text-[9.5px] font-bold lg:text-[13px]">{tab.t}</span>
+            <span className="text-[9.5px] font-bold lg:text-[14.5px]">{tab.t}</span>
             <span className={`h-1 w-1 rounded-full lg:hidden ${on ? "bg-volt" : "bg-transparent"}`} />
           </Link>
         );

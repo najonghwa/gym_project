@@ -56,12 +56,14 @@ export function ExerciseSheet({
   const update = (i: number, patch: Partial<SetRow>) => {
     const next = sets.map((s, idx) => (idx === i ? { ...s, ...patch } : s));
     onChange(next);
-    // 마지막 세트 완료 → confetti + Mascot cheer (스펙)
+    // 마지막 세트 완료 → confetti + Mascot cheer (운동당 1회만 — 스팸 방지)
     if (patch.done && next.every((s) => s.done)) {
-      setCelebrate(true);
-      if (!reduce)
-        confetti({ particleCount: 90, spread: 70, origin: { y: 0.75 }, colors: ["#ccff00", "#f59e0b", "#fff"] });
-    } else if (patch.done && !next[i].done === false) {
+      if (!celebrate) {
+        setCelebrate(true);
+        if (!reduce)
+          confetti({ particleCount: 90, spread: 70, origin: { y: 0.75 }, colors: ["#ccff00", "#f59e0b", "#fff"] });
+      }
+    } else if (patch.done) {
       startRest();
     }
   };
@@ -125,7 +127,7 @@ export function ExerciseSheet({
 
       {/* 플레이어 + 도넛 */}
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <AnimPlayer pattern={ex.pattern} level={ex.level} />
+        <AnimPlayer pattern={ex.pattern} level={ex.level} frames={ex.frames} />
         <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3">
           <div className="lab mb-1">자극 기여</div>
           <MuscleDonut contrib={ex.contrib} />

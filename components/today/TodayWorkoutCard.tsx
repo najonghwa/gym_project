@@ -39,7 +39,7 @@ export function TodayWorkoutCard({
       </div>
 
       <motion.div
-        className="space-y-2.5"
+        className="space-y-2.5 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0"
         variants={reduce ? undefined : staggerContainer}
         initial={reduce ? false : "hidden"}
         animate="show"

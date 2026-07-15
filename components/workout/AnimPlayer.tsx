@@ -56,15 +56,20 @@ function PoseG({ p, cls, dur }: { p: Pose; cls: "poseA" | "poseB"; dur: number }
 export function AnimPlayer({
   pattern,
   level,
+  frames,
 }: {
   pattern: MotionPattern;
   level: 1 | 2 | 3 | 4 | 5;
+  frames?: [string, string]; // 실사 2프레임 (있으면 우선, 스틱피겨는 폴백)
 }) {
   const reduce = useReducedMotion();
   const [playing, setPlaying] = useState(!reduce);
+  const [imgFail, setImgFail] = useState(false);
   const [speed, setSpeed] = useState<1 | 0.5>(1);
   const pt = P[pattern];
   const dur = 1.6 / speed;
+  const useFrames = !!frames && !imgFail;
+  const playState = playing ? "running" : "paused";
 
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-2">
@@ -72,17 +77,38 @@ export function AnimPlayer({
         @keyframes poseA { 0%,42%{opacity:1} 50%,92%{opacity:0} 100%{opacity:1} }
         @keyframes poseB { 0%,42%{opacity:0} 50%,92%{opacity:1} 100%{opacity:0} }
       `}</style>
-      <div className="h-36" style={playing ? undefined : { opacity: 0.85 }}>
-        <svg viewBox="0 0 120 120" className="h-full w-full">
-          {playing ? (
-            <>
-              <PoseG p={pt.a} cls="poseA" dur={dur} />
-              <PoseG p={pt.b} cls="poseB" dur={dur} />
-            </>
-          ) : (
-            <PoseG p={pt.a} cls="poseA" dur={9999} />
-          )}
-        </svg>
+      <div className="relative h-40 overflow-hidden rounded-xl">
+        {useFrames ? (
+          <>
+            {/* 실사 크로스페이드 — 흰 배경 사진이라 밝은 패널 위에 */}
+            <div className="absolute inset-0 rounded-xl bg-white" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={frames![0]} alt="동작 프레임 1"
+              onError={() => setImgFail(true)}
+              className="absolute inset-0 h-full w-full object-contain"
+              style={{ animation: `poseA ${dur}s infinite`, animationPlayState: playState }}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={frames![1]} alt="동작 프레임 2"
+              onError={() => setImgFail(true)}
+              className="absolute inset-0 h-full w-full object-contain"
+              style={{ animation: `poseB ${dur}s infinite`, animationPlayState: playState }}
+            />
+          </>
+        ) : (
+          <svg viewBox="0 0 120 120" className="h-full w-full">
+            {playing ? (
+              <>
+                <PoseG p={pt.a} cls="poseA" dur={dur} />
+                <PoseG p={pt.b} cls="poseB" dur={dur} />
+              </>
+            ) : (
+              <PoseG p={pt.a} cls="poseA" dur={9999} />
+            )}
+          </svg>
+        )}
       </div>
       <div className="flex items-center justify-between px-1 pb-1">
         <LevelDots level={level} />
