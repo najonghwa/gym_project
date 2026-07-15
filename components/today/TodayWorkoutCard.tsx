@@ -8,10 +8,12 @@ export function TodayWorkoutCard({
   items,
   onToggleSet,
   onOpenExercise,
+  embedded = false,
 }: {
   items: TodayItem[];
   onToggleSet: (exerciseId: string, setIndex: number) => void;
   onOpenExercise: (exerciseId: string) => void;
+  embedded?: boolean; // 타임라인 노드 안에 들어갈 때 (자체 카드 테두리 없이)
 }) {
   const reduce = useReducedMotion();
   const totalSets = items.reduce((s, it) => s + it.sets.length, 0);
@@ -19,11 +21,10 @@ export function TodayWorkoutCard({
   const pct = totalSets ? Math.round((doneSets / totalSets) * 100) : 0;
 
   return (
-    <div className="rounded-3xl border border-white/[0.06] bg-card p-4">
+    <div className={embedded ? "" : "rounded-3xl border border-white/[0.06] bg-card p-4"}>
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <div className="lab">오늘의 운동 TODAY</div>
-          <div className="mt-0.5 text-[13px] text-white/55">
+          <div className="text-[13px] text-white/55">
             {doneSets}/{totalSets} 세트 완료
           </div>
         </div>

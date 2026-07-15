@@ -1,9 +1,7 @@
 "use client";
 // P0-4 오늘 탭 홈 — MascotBubble + Streak + WeekStrip + TodayWorkout + MiniStats
-import { useEffect, useMemo, useState } from "react";
-import { MascotBubble } from "@/components/mascot/MascotBubble";
-import { StreakNumber } from "@/components/ui/StreakNumber";
-import { StatChip } from "@/components/ui/StatChip";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Mascot } from "@/components/mascot/Mascot";
 import { WeekStrip, type DayCell } from "@/components/today/WeekStrip";
 import { TodayWorkoutCard } from "@/components/today/TodayWorkoutCard";
 import { ExerciseSheet } from "@/components/workout/ExerciseSheet";
@@ -13,6 +11,26 @@ import { byId, getMockToday, type TodayItem } from "@/lib/mock/exercises";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { computeStats, useUser, weekCells } from "@/lib/useUser";
 import { LoginCard } from "@/components/auth/LoginCard";
+
+const S_DAYS = ["일", "월", "화", "수", "목", "금", "토"];
+
+// 타임라인 노드 — 세로 연결선으로 카드들을 하나의 흐름으로
+function Node({
+  icon, label, last = false, children,
+}: { icon: string; label: string; last?: boolean; children: ReactNode }) {
+  return (
+    <div className="relative pl-12 pb-5">
+      {!last && (
+        <span className="absolute bottom-0 left-[17px] top-11 w-px bg-gradient-to-b from-volt/40 via-white/10 to-white/10" />
+      )}
+      <span className="absolute left-0 top-0 grid h-9 w-9 place-items-center rounded-full border border-volt/40 bg-card text-[15px]">
+        {icon}
+      </span>
+      <div className="lab mb-2 pt-2">{label}</div>
+      <div className="rounded-3xl border border-white/[0.06] bg-card p-4">{children}</div>
+    </div>
+  );
+}
 
 export default function TodayPage() {
   const { user, ready, login, signup, saveToday, today } = useUser();
@@ -83,44 +101,64 @@ export default function TodayPage() {
   }
 
   return (
-    <main className="space-y-4 lg:grid lg:grid-cols-5 lg:items-start lg:gap-5 lg:space-y-0 lg:pt-20">
-      {/* 왼쪽 컬럼 (데스크탑) / 순서대로 (모바일) */}
-      <div className="space-y-4 lg:col-span-2">
-        {/* P2-10 헤더 칩: 예상 소요 + 컨디션%(회복맵 연동) */}
-        <div className="flex gap-2">
-          <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[12px] font-bold">
-            ⏱️ 예상 <b className="text-volt">{estMin}분</b>
-          </span>
-          <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[12px] font-bold">
-            ⚡ 컨디션 <b className={condition >= 80 ? "text-volt" : condition >= 50 ? "text-gold" : "text-danger"}>{condition}%</b>
-          </span>
-        </div>
+    <main className="mx-auto max-w-2xl lg:pt-24">
+      {/* 인사 헤더 */}
+      <div className="mb-5">
+        <div className="lab">{S_DAYS[new Date().getDay()]}요일 · TODAY</div>
+        <h1 className="font-display text-[30px] leading-tight">
+          {String(user.id)}님, <span className="text-volt">오늘도 갑시다</span>
+        </h1>
+      </div>
 
-        <MascotBubble quote={quote} />
-
-        <div className="rounded-3xl border border-white/[0.06] bg-card p-4">
-          <div className="lab mb-1">연속 운동 STREAK · {String(user.id)}</div>
-          <StreakNumber value={stats?.streak ?? 0} />
-          <div className="mt-4">
-            <WeekStrip
-              days={week}
-              target={`4주 출석률 ${stats?.att ?? 0}%`}
-            />
+      {/* ── 하나로 이어지는 하루 타임라인 ── */}
+      <Node icon="☀️" label="오늘 브리핑 BRIEFING">
+        <div className="flex items-start gap-3">
+          <Mascot state="talk" size={62} />
+          <div className="min-w-0 flex-1">
+            <p className="text-[13.5px] font-medium leading-relaxed">💬 {quote}</p>
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
+                ⏱️ 예상 <b className="text-volt">{estMin}분</b>
+              </span>
+              <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
+                ⚡ 컨디션 <b className={condition >= 80 ? "text-volt" : condition >= 50 ? "text-gold" : "text-danger"}>{condition}%</b>
+              </span>
+              <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
+                🏋️ {items.length}종목 · {totalSets}세트
+              </span>
+            </div>
           </div>
         </div>
+      </Node>
 
-        {/* MiniStats — 실데이터 */}
-        <div className="grid grid-cols-3 gap-2">
-          <StatChip icon="🏋️" label="총 운동" value={stats?.sessions ?? 0} unit="회" tone="volt" />
-          <StatChip icon="⭐" label="레벨" value={`Lv${stats?.level ?? 1}`} tone="gold" />
-          <StatChip icon="🏃" label="이번주 러닝" value={stats?.weekKm ?? 0} unit="km" tone="volt" />
+      <Node icon="🏋️" label="오늘의 운동 WORKOUT">
+        <TodayWorkoutCard embedded items={items} onToggleSet={toggleSet} onOpenExercise={setOpenId} />
+      </Node>
+
+      <Node icon="🏁" label={doneSets >= totalSets && totalSets > 0 ? "오늘의 결과 RESULT" : "오늘 끝나면 REWARD"} last>
+        <div className="flex items-end gap-3">
+          <div>
+            <div className="text-[11px] text-white/45">연속 운동</div>
+            <div className="flex items-end gap-1.5">
+              <span className="font-display text-[38px] leading-none text-white/35">{stats?.streak ?? 0}</span>
+              <span className="pb-1 font-display text-[20px] text-white/35">→</span>
+              <span className="font-display text-[38px] leading-none text-volt">{(stats?.streak ?? 0) + (doneSets >= totalSets && totalSets > 0 ? 0 : 1)}</span>
+              <span className="pb-1 text-[13px] font-bold text-white/55">일 🔥</span>
+            </div>
+          </div>
+          <div className="ml-auto text-right text-[11.5px] text-white/45">
+            4주 출석률 <b className="text-zinc-100">{stats?.att ?? 0}%</b>
+          </div>
         </div>
-      </div>
-
-      {/* 오른쪽 컬럼: 오늘의 운동 (데스크탑에서 넓게) */}
-      <div className="lg:col-span-3">
-        <TodayWorkoutCard items={items} onToggleSet={toggleSet} onOpenExercise={setOpenId} />
-      </div>
+        <div className="mt-4">
+          <WeekStrip days={week} target={`총 ${stats?.sessions ?? 0}회 · Lv${stats?.level ?? 1}`} />
+        </div>
+        {doneSets >= totalSets && totalSets > 0 && (
+          <p className="mt-3 rounded-2xl bg-volt/10 px-3.5 py-2.5 text-center text-[13px] font-bold text-volt">
+            오늘 몫 완료! 내일 스트릭이 이어집니다 🎉
+          </p>
+        )}
+      </Node>
 
       <ExerciseSheet
         exercise={openId ? byId(openId) ?? null : null}
