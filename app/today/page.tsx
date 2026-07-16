@@ -160,7 +160,7 @@ export default function TodayPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl lg:pt-10">
+    <main className="mx-auto max-w-2xl lg:max-w-4xl lg:pt-10">
       {/* 페이지 헤더 */}
       <div className="mb-6 flex items-start justify-between">
         <div>
@@ -178,7 +178,72 @@ export default function TodayPage() {
         </button>
       </div>
 
+      {/* ── 기록 대시보드 (러닝 탭과 같은 카드 패턴) — 상단 배치 ── */}
+      {gymDash && (
+        <section className="mb-6 space-y-3">
+          <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
+            <StatChip label="총 운동" value={stats?.sessions ?? 0} unit="회" tone="volt" />
+            <StatChip label="이번 달" value={gymDash.thisMonth} unit="회" tone="mute" />
+            <StatChip label="연속" value={stats?.streak ?? 0} unit="일" tone={stats && stats.streak > 0 ? "volt" : "mute"} />
+            <StatChip label="4주 출석률" value={stats?.att ?? 0} unit="%" tone={stats && stats.att >= 70 ? "volt" : "gold"} />
+            <StatChip label="총 세트" value={gymDash.totalSets} unit="세트" tone="mute" />
+            <StatChip label="레벨" value={`Lv${stats?.level ?? 1}`} tone="gold" />
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            {/* 월별 운동 횟수 */}
+            <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+              <b className="text-[15px] font-extrabold">월별 운동 횟수</b>
+              <p className="text-[11.5px] text-white/45">{new Date().getFullYear()}년 · 운동한 날 기준</p>
+              <div className="mt-2 h-36">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={gymDash.monthly} margin={{ top: 6, right: 0, left: -26 }}>
+                    <XAxis dataKey="m" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 8.5 }} axisLine={false} tickLine={false} interval={0} />
+                    <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip
+                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                      contentStyle={{ background: "#0d1526", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                      formatter={(v) => [`${Number(v ?? 0)}회`, "운동"]}
+                    />
+                    <Bar dataKey="n" radius={[3, 3, 0, 0]} isAnimationActive={false}>
+                      {gymDash.monthly.map((x, i) => (
+                        <Cell key={i} fill={x.isNow ? "#ff9432" : "rgba(255,255,255,0.18)"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* 주간 세트 볼륨 */}
+            <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+              <b className="text-[15px] font-extrabold">주간 세트 볼륨</b>
+              <p className="text-[11.5px] text-white/45">최근 8주 · 완료한 세트 합계</p>
+              <div className="mt-2 h-36">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={gymDash.weekly} margin={{ top: 6, right: 0, left: -26 }}>
+                    <XAxis dataKey="w" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} interval={0} />
+                    <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip
+                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                      contentStyle={{ background: "#0d1526", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                      formatter={(v) => [`${Number(v ?? 0)}세트`, "볼륨"]}
+                    />
+                    <Bar dataKey="sets" radius={[3, 3, 0, 0]} isAnimationActive={false}>
+                      {gymDash.weekly.map((x, i) => (
+                        <Cell key={i} fill={x.isNow ? "#ff9432" : "rgba(255,255,255,0.18)"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── 하나로 이어지는 하루 타임라인 ── */}
+      <div className="lab mb-2">오늘 TODAY</div>
       <Node icon="01" label="오늘 브리핑 BRIEFING">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
@@ -266,72 +331,6 @@ export default function TodayPage() {
           </p>
         )}
       </Node>
-
-      {/* ── 기록 대시보드 (러닝 탭과 같은 카드 패턴) ── */}
-      {gymDash && (
-        <section className="mt-2 space-y-4">
-          <div className="lab">기록 RECORDS</div>
-
-          <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
-            <StatChip label="총 운동" value={stats?.sessions ?? 0} unit="회" tone="volt" />
-            <StatChip label="이번 달" value={gymDash.thisMonth} unit="회" tone="mute" />
-            <StatChip label="연속" value={stats?.streak ?? 0} unit="일" tone={stats && stats.streak > 0 ? "volt" : "mute"} />
-            <StatChip label="4주 출석률" value={stats?.att ?? 0} unit="%" tone={stats && stats.att >= 70 ? "volt" : "gold"} />
-            <StatChip label="총 세트" value={gymDash.totalSets} unit="세트" tone="mute" />
-            <StatChip label="레벨" value={`Lv${stats?.level ?? 1}`} tone="gold" />
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            {/* 월별 운동 횟수 */}
-            <div className="rounded-xl border border-white/[0.06] bg-card p-4">
-              <b className="text-[15px] font-extrabold">월별 운동 횟수</b>
-              <p className="text-[11.5px] text-white/45">{new Date().getFullYear()}년 · 운동한 날 기준</p>
-              <div className="mt-2 h-36">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={gymDash.monthly} margin={{ top: 6, right: 0, left: -26 }}>
-                    <XAxis dataKey="m" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 8.5 }} axisLine={false} tickLine={false} interval={0} />
-                    <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <Tooltip
-                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                      contentStyle={{ background: "#0d1526", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
-                      formatter={(v) => [`${Number(v ?? 0)}회`, "운동"]}
-                    />
-                    <Bar dataKey="n" radius={[3, 3, 0, 0]} isAnimationActive={false}>
-                      {gymDash.monthly.map((x, i) => (
-                        <Cell key={i} fill={x.isNow ? "#ff9432" : "rgba(255,255,255,0.18)"} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* 주간 세트 볼륨 */}
-            <div className="rounded-xl border border-white/[0.06] bg-card p-4">
-              <b className="text-[15px] font-extrabold">주간 세트 볼륨</b>
-              <p className="text-[11.5px] text-white/45">최근 8주 · 완료한 세트 합계</p>
-              <div className="mt-2 h-36">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={gymDash.weekly} margin={{ top: 6, right: 0, left: -26 }}>
-                    <XAxis dataKey="w" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} interval={0} />
-                    <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <Tooltip
-                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                      contentStyle={{ background: "#0d1526", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
-                      formatter={(v) => [`${Number(v ?? 0)}세트`, "볼륨"]}
-                    />
-                    <Bar dataKey="sets" radius={[3, 3, 0, 0]} isAnimationActive={false}>
-                      {gymDash.weekly.map((x, i) => (
-                        <Cell key={i} fill={x.isNow ? "#ff9432" : "rgba(255,255,255,0.18)"} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       <ExerciseSheet
         exercise={openId ? byId(openId) ?? null : null}
