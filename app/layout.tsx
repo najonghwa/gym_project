@@ -28,7 +28,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full bg-bg text-zinc-50 antialiased">
         <div className="pt-12 lg:pl-56">
-          <div className="mx-auto min-h-screen max-w-md px-4 pb-28 pt-4 lg:max-w-6xl lg:px-10 lg:pb-10">
+          <div className="mx-auto min-h-screen max-w-md px-4 pb-28 pt-4 lg:max-w-none lg:px-10 lg:pb-10">
             {children}
           </div>
         </div>

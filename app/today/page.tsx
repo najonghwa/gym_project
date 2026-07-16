@@ -206,7 +206,7 @@ export default function TodayPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl lg:max-w-6xl lg:pt-10">
+    <main className="mx-auto max-w-2xl lg:max-w-none lg:pt-10">
       {/* 페이지 헤더 */}
       <div className="mb-6 flex items-start justify-between">
         <div>

@@ -134,7 +134,7 @@ export default function RunPage() {
   const R = 44, C = 2 * Math.PI * R;
 
   return (
-    <main className="mx-auto max-w-2xl space-y-4 lg:max-w-4xl lg:pt-10">
+    <main className="mx-auto max-w-2xl space-y-4 lg:max-w-none lg:pt-10">
       {/* 헤더 */}
       <div className="flex items-end justify-between">
         <div>
