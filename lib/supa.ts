@@ -26,6 +26,7 @@ export type UserData = Record<string, unknown> & {
   v2?: {
     workouts?: Record<string, { items: unknown[] }>;
     primaryMode?: "gym" | "run";
+    routineStart?: string; // 루틴 적용 시작일 — 전체 진행률 계산용
     savedRoutines?: string[];
     activeRoutineId?: string;
     runGoalKm?: number;   // 연간 목표 거리

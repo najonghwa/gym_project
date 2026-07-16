@@ -99,13 +99,13 @@ export default function AnalysisPage() {
   }, [user]);
 
   if (!ready) return null;
-  if (!user) return <main className="lg:pt-20"><LoginCard onLogin={login} onSignup={signup} /></main>;
+  if (!user) return <main className="lg:pt-10"><LoginCard onLogin={login} onSignup={signup} /></main>;
 
   const b3last = user.big3?.logs?.at(-1);
   const b3total = b3last ? Math.round((b3last.s + b3last.b + b3last.d) * 10) / 10 : 0;
 
   return (
-    <main className="space-y-4 lg:mx-auto lg:max-w-4xl lg:pt-24">
+    <main className="space-y-4 lg:mx-auto lg:max-w-4xl lg:pt-10">
       {/* 모드 전환 */}
       <div className="grid grid-cols-2 gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
         {(["gym", "run"] as const).map((m) => (

@@ -11,7 +11,7 @@ export default function GymPage() {
   const zone = item ? ZONES.find((z) => z.id === item.zone) : null;
 
   return (
-    <main className="lg:mx-auto lg:max-w-3xl lg:pt-20">
+    <main className="lg:mx-auto lg:max-w-3xl lg:pt-10">
       <div className="lab mb-1">FLOOR MAP 헬스장 평면도</div>
       <h2 className="font-display text-[26px]">장비를 눌러보세요</h2>
       <p className="mt-0.5 text-[12px] text-white/45">설명과 사용 팁이 나와요 · 현재는 예시 배치</p>

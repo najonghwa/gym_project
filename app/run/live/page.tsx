@@ -160,12 +160,12 @@ export default function LiveRunPage() {
   };
 
   if (!ready) return null;
-  if (!user) return <main className="lg:pt-20"><LoginCard onLogin={login} onSignup={signup} /></main>;
+  if (!user) return <main className="lg:pt-10"><LoginCard onLogin={login} onSignup={signup} /></main>;
 
   return (
-    <main className="mx-auto flex min-h-[78vh] max-w-md flex-col lg:pt-24">
-      <div className="lab">GPS RUN</div>
-      <h1 className="font-display text-[26px] leading-tight tracking-tight">라이브 러닝</h1>
+    <main className="mx-auto flex min-h-[78vh] max-w-md flex-col lg:pt-10">
+      <h1 className="font-display text-[26px] leading-tight tracking-tight">Live Run</h1>
+      <p className="mt-0.5 text-[12.5px] text-white/45">GPS로 거리·페이스 자동 기록</p>
 
       {/* 대시보드 숫자 */}
       <div className="mt-6 rounded-xl border border-white/[0.06] bg-card p-6 text-center">

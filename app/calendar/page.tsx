@@ -47,13 +47,13 @@ export default function CalendarPage() {
 
   if (!ready) return null;
   if (!user)
-    return <main className="lg:pt-20"><LoginCard onLogin={login} onSignup={signup} /></main>;
+    return <main className="lg:pt-10"><LoginCard onLogin={login} onSignup={signup} /></main>;
 
   const gymDays = cells.filter((c) => c.pct != null).length;
   const runKm = cells.reduce((s, c) => s + (c.km ?? 0), 0);
 
   return (
-    <main className="lg:mx-auto lg:max-w-2xl lg:pt-20">
+    <main className="lg:mx-auto lg:max-w-2xl lg:pt-10">
       <div className="mb-3 flex items-center justify-between">
         <button
           className="h-10 w-10 rounded-full border border-white/10 bg-white/5 font-bold"

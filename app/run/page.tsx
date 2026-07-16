@@ -120,7 +120,7 @@ export default function RunPage() {
   const goalPct = Math.min(100, Math.round((s.yearKm / goal) * 100));
 
   if (!ready) return null;
-  if (!user) return <main className="lg:pt-20"><LoginCard onLogin={login} onSignup={signup} /></main>;
+  if (!user) return <main className="lg:pt-10"><LoginCard onLogin={login} onSignup={signup} /></main>;
 
   const submitLog = () => {
     const km = parseFloat(fKm);
@@ -134,12 +134,12 @@ export default function RunPage() {
   const R = 44, C = 2 * Math.PI * R;
 
   return (
-    <main className="mx-auto max-w-2xl space-y-4 lg:max-w-4xl lg:pt-24">
+    <main className="mx-auto max-w-2xl space-y-4 lg:max-w-4xl lg:pt-10">
       {/* 헤더 */}
       <div className="flex items-end justify-between">
         <div>
-          <div className="lab">RUN DASHBOARD</div>
-          <h1 className="font-display text-[26px] leading-tight tracking-tight">러닝</h1>
+          <h1 className="font-display text-[26px] leading-tight tracking-tight">Running</h1>
+          <p className="mt-0.5 text-[12.5px] text-white/45">GPS · 기록 · 목표</p>
         </div>
         <div className="flex items-center gap-2">
           <button

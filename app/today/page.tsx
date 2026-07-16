@@ -64,6 +64,21 @@ export default function TodayPage() {
     [user, items]
   );
 
+  // 진행 중 루틴 전체 진행률 — 적용일 이후 운동한 날 / (주차×주당횟수)
+  const routineProg = useMemo(() => {
+    const r = EXPLORE.find((x) => x.id === user?.v2?.activeRoutineId);
+    if (!r || !user) return null;
+    const start = user.v2?.routineStart;
+    const total = r.weeks * r.daysPerWeek;
+    const done = Object.entries(user.v2?.workouts ?? {}).filter(([d, w]) =>
+      (!start || d >= start) && (w.items as TodayItem[]).some((it) => it.sets.some((s) => s.done))
+    ).length;
+    const week = start
+      ? Math.max(1, Math.min(r.weeks, Math.floor((Date.now() - new Date(start + "T00:00:00").getTime()) / (7 * 864e5)) + 1))
+      : Math.min(r.weeks, Math.floor(done / r.daysPerWeek) + 1);
+    return { title: r.title, week, weeks: r.weeks, done: Math.min(done, total), total, pct: Math.min(100, Math.round((done / total) * 100)) };
+  }, [user]);
+
   // P2-10 컨디션% = 회복맵 평균 연동, 예상 시간 = 세트 수 × 2.5분
   const condition = useMemo(() => {
     const rec = getMockRecovery();
@@ -101,18 +116,18 @@ export default function TodayPage() {
   if (!ready) return null;
   if (!user) {
     return (
-      <main className="lg:pt-20">
+      <main className="lg:pt-10">
         <LoginCard onLogin={login} onSignup={signup} />
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-2xl lg:pt-24">
+    <main className="mx-auto max-w-2xl lg:pt-10">
       {/* 페이지 헤더 */}
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="font-display text-[26px] leading-tight tracking-tight">헬스</h1>
+          <h1 className="font-display text-[26px] leading-tight tracking-tight">Workout</h1>
           <p className="mt-0.5 text-[12.5px] text-white/45">
             {new Date().getMonth() + 1}월 {new Date().getDate()}일 {S_DAYS[new Date().getDay()]}요일 · {String(user.id)}
           </p>
@@ -142,6 +157,32 @@ export default function TodayPage() {
                 🏋️ {items.length}종목 · {totalSets}세트
               </span>
             </div>
+
+            {/* 진행 중 루틴 전체 진행률 */}
+            {routineProg ? (
+              <div className="mt-3 rounded-lg border border-white/[0.08] bg-white/[0.03] p-3">
+                <div className="flex items-baseline justify-between">
+                  <b className="text-[12.5px]">📋 {routineProg.title}</b>
+                  <span className="text-[11px] text-white/45">
+                    {routineProg.week}주차 <span className="text-white/25">/ {routineProg.weeks}주</span>
+                  </span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/[0.07]">
+                  <div className="h-full rounded-full bg-volt" style={{ width: `${routineProg.pct}%` }} />
+                </div>
+                <div className="mt-1.5 flex justify-between text-[10.5px] text-white/45">
+                  <span>세션 <b className="text-white/70">{routineProg.done}</b>/{routineProg.total}회 완료</span>
+                  <b className="text-volt">{routineProg.pct}%</b>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowRoutinePick(true)}
+                className="mt-3 flex w-full items-center justify-between rounded-lg border border-white/[0.08] bg-white/[0.03] p-3 text-[12px] font-bold text-white/55"
+              >
+                진행할 루틴을 골라보세요 <span className="text-volt">→</span>
+              </button>
+            )}
           </div>
         </div>
       </Node>
@@ -164,7 +205,7 @@ export default function TodayPage() {
         <TodayWorkoutCard embedded items={items} onToggleSet={toggleSet} onOpenExercise={setOpenId} />
       </Node>
 
-      <Node icon="03" label={doneSets >= totalSets && totalSets > 0 ? "오늘의 결과 RESULT" : "오늘 끝나면 REWARD"} last>
+      <Node icon="03" label={doneSets >= totalSets && totalSets > 0 ? "결과 RESULT" : "리워드 REWARD"} last>
         <div className="flex items-end gap-3">
           <div>
             <div className="text-[11px] text-white/45">연속 운동</div>

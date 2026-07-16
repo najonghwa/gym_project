@@ -43,7 +43,7 @@ export default function RankingPage() {
   const m = METRICS.find((x) => x.id === metric)!;
 
   return (
-    <main className="lg:mx-auto lg:max-w-xl lg:pt-20">
+    <main className="lg:mx-auto lg:max-w-xl lg:pt-10">
       <div className="lab mb-1">RANKING 사내 랭킹 {demo && "· 예시"}</div>
       <h2 className="font-display text-[26px]">누가 제일 꾸준할까?</h2>
 

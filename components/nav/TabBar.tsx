@@ -1,5 +1,5 @@
 "use client";
-// 하단 7탭 내비 (모바일) / 데스크탑은 상단 가로 탭
+// 내비 — 모바일: 하단 7탭 / 데스크탑: 좌측 사이드바
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,37 +15,58 @@ const TABS = [
 
 export function TabBar() {
   const path = usePathname();
+  const isOn = (href: string) => path === href || (href === "/today" && path === "/");
+
   return (
-    <nav
-      className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 border-t border-white/10 bg-black/90 backdrop-blur-xl lg:top-0 lg:bottom-auto lg:max-w-none lg:border-b lg:border-t-0"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
-      <div className="flex lg:mx-auto lg:h-16 lg:max-w-5xl lg:items-stretch lg:gap-1 lg:px-6">
-        {/* 데스크탑 로고 */}
-        <Link href="/today" className="hidden items-center pr-8 font-display text-[20px] tracking-tight lg:flex">
+    <>
+      {/* 모바일 하단 탭 */}
+      <nav
+        className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 border-t border-white/10 bg-black/90 backdrop-blur-xl lg:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="flex">
+          {TABS.map((tab) => {
+            const on = isOn(tab.href);
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2.5 ${on ? "text-volt" : "text-zinc-600"}`}
+              >
+                <span className={`text-[18px] leading-none ${on ? "" : "opacity-70 grayscale"}`}>{tab.em}</span>
+                <span className="text-[9.5px] font-bold">{tab.t}</span>
+                <span className={`h-1 w-1 rounded-full ${on ? "bg-volt" : "bg-transparent"}`} />
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* 데스크탑 좌측 사이드바 */}
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-56 flex-col border-r border-white/[0.08] bg-[#0a111f] lg:flex">
+        <Link href="/today" className="flex items-center px-5 pb-2 pt-6 font-display text-[20px] tracking-tight">
           FitPlan<span className="text-volt">.</span>
         </Link>
-        {TABS.map((tab) => {
-          const on = path === tab.href || (tab.href === "/today" && path === "/");
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2.5 lg:relative lg:max-w-none lg:flex-none lg:flex-row lg:gap-2 lg:px-4 lg:py-0 ${
-                on ? "text-volt lg:text-zinc-50" : "text-zinc-600 lg:text-zinc-500 lg:hover:text-zinc-200"
-              }`}
-            >
-              <span className={`text-[18px] leading-none lg:text-[16px] ${on ? "" : "opacity-70 grayscale"}`}>
-                {tab.em}
-              </span>
-              <span className="text-[9.5px] font-bold lg:text-[14px]">{tab.t}</span>
-              <span className={`h-1 w-1 rounded-full lg:hidden ${on ? "bg-volt" : "bg-transparent"}`} />
-              {/* 데스크탑 활성 언더라인 */}
-              <span className={`hidden lg:block lg:absolute lg:inset-x-3 lg:bottom-0 lg:h-[3px] lg:rounded-t-full ${on ? "lg:bg-volt" : "lg:bg-transparent"}`} />
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+        <nav className="mt-4 flex flex-1 flex-col gap-0.5 px-3">
+          {TABS.map((tab) => {
+            const on = isOn(tab.href);
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-bold transition ${
+                  on ? "bg-white/[0.07] text-zinc-50" : "text-zinc-500 hover:bg-white/[0.04] hover:text-zinc-200"
+                }`}
+              >
+                {on && <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-volt" />}
+                <span className={`text-[16px] leading-none ${on ? "" : "opacity-70 grayscale"}`}>{tab.em}</span>
+                {tab.t}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="px-5 pb-5 text-[10.5px] text-white/25">헬스 · 러닝 통합 대시보드</div>
+      </aside>
+    </>
   );
 }

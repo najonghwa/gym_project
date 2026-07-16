@@ -195,7 +195,10 @@ export function useUser() {
   const setActiveRoutine = useCallback((id: string | null) => {
     setUser((prev) => {
       if (!prev) return prev;
-      const u: UserData = { ...prev, v2: { ...prev.v2, activeRoutineId: id ?? undefined } };
+      const u: UserData = {
+        ...prev,
+        v2: { ...prev.v2, activeRoutineId: id ?? undefined, routineStart: id ? today() : undefined },
+      };
       persist(u);
       return u;
     });

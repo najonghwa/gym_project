@@ -30,7 +30,7 @@ export default function RoutinePage() {
   };
 
   return (
-    <main className="space-y-6 lg:mx-auto lg:max-w-2xl lg:pt-24">
+    <main className="space-y-6 lg:mx-auto lg:max-w-2xl lg:pt-10">
       {/* 내 루틴 (저장한 것들) */}
       <section>
         <div className="lab mb-2">MY ROUTINES 내 루틴</div>
