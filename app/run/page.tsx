@@ -74,6 +74,23 @@ function calc(runs: Run[]) {
     if (diffW >= 0 && diffW < 12) heat[dow][11 - diffW] += r.km;
   });
 
+  // 주간 거리 (최근 12주) — 스트라바식
+  const weekly12 = Array.from({ length: 12 }, (_, i) => {
+    const start = new Date(mon0); start.setDate(mon0.getDate() - (11 - i) * 7);
+    return { w: `${start.getMonth() + 1}/${start.getDate()}`, km: 0, isNow: i === 11 };
+  });
+  runs.forEach((r) => {
+    const diffW = Math.round((mon0.getTime() - new Date(weekKey(r.date) + "T00:00:00").getTime()) / (7 * 864e5));
+    if (diffW >= 0 && diffW < 12) weekly12[11 - diffW].km = r1(weekly12[11 - diffW].km + r.km);
+  });
+
+  // 올해 누적 거리 (월별 누적, 미래 달은 비움)
+  let acc = 0;
+  const cum = monthly.map((m, i) => {
+    if (i <= now.getMonth()) { acc = r1(acc + m.km); return { m: m.m, km: acc }; }
+    return { m: m.m, km: null as number | null };
+  });
+
   // AI 코치: 최근 4주 vs 이전 4주 / 페이스 추세 / 10% 룰
   const kmIn = (from: number, to: number) =>
     r1(
@@ -92,7 +109,7 @@ function calc(runs: Run[]) {
 
   return {
     count: runs.length, total, yearKm, monthKm, avgPace, bestPace, bestPaceRun,
-    longest: r1(longest), longestRun, monthly, bestMonth, bestWeek, heat,
+    longest: r1(longest), longestRun, monthly, bestMonth, bestWeek, heat, weekly12, cum,
     last4, mileageDelta, paceTrend, nextTarget,
     paceSeries: paced.slice(-20).map((r) => ({ d: r.date.slice(5), sec: r.paceSec! })),
   };
@@ -236,6 +253,50 @@ export default function RunPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+      </div>
+
+      {/* 주간 거리 + 올해 누적 (스트라바식) */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl border border-white/[0.06] bg-card p-4">
+          <b className="text-[15px] font-extrabold">주간 거리</b>
+          <p className="text-[11.5px] text-white/45">최근 12주 · 주별 합계 (km)</p>
+          <div className="mt-2 h-36">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={s.weekly12} margin={{ top: 6, right: 0, left: -26 }}>
+                <XAxis dataKey="w" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 8.5 }} axisLine={false} tickLine={false} interval={0} />
+                <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                  contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(v) => [`${Number(v ?? 0)}km`, "거리"]}
+                />
+                <Bar dataKey="km" radius={[3, 3, 0, 0]} isAnimationActive={false}>
+                  {s.weekly12.map((x, i) => (
+                    <Cell key={i} fill={x.isNow ? "#c8ff00" : "rgba(255,255,255,0.18)"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/[0.06] bg-card p-4">
+          <b className="text-[15px] font-extrabold">올해 누적 거리</b>
+          <p className="text-[11.5px] text-white/45">{new Date().getFullYear()}년 · 목표 {goal}km</p>
+          <div className="mt-2 h-36">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={s.cum} margin={{ top: 8, right: 8, left: -22 }}>
+                <XAxis dataKey="m" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 8.5 }} axisLine={false} tickLine={false} interval={1} />
+                <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(v) => [`${Number(v ?? 0)}km`, "누적"]}
+                />
+                <Line type="monotone" dataKey="km" stroke="#c8ff00" strokeWidth={2.5} dot={false} connectNulls={false} isAnimationActive={false} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </section>
       </div>

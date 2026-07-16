@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Scatter, ScatterChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ZAxis,
+  Line, LineChart, Scatter, ScatterChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ZAxis,
 } from "recharts";
 import { AnalysisCard } from "@/components/analysis/AnalysisCard";
 import { Big3Card } from "@/components/analysis/Big3Card";
@@ -95,7 +95,21 @@ export default function AnalysisPage() {
       return { l, avg: xs.length ? Math.round(xs.reduce((s, r) => s + r.paceSec!, 0) / xs.length) : null, n: xs.length };
     });
     const bestDow = dow.filter((d) => d.avg).sort((a, b) => a.avg! - b.avg!)[0];
-    return { count: runs.length, scatter, buckets, maxBucket, dow, bestDow };
+    // 페이스 존 분포 (분/km 구간별 러닝 수)
+    const zoneDefs = [
+      { l: `5'00" 미만`, min: 0, max: 300 }, { l: `5'00"~5'30"`, min: 300, max: 330 },
+      { l: `5'30"~6'00"`, min: 330, max: 360 }, { l: `6'00"~6'30"`, min: 360, max: 390 },
+      { l: `6'30" 이상`, min: 390, max: 99999 },
+    ];
+    const zones = zoneDefs.map((z) => ({ l: z.l, n: paced.filter((r) => r.paceSec! >= z.min && r.paceSec! < z.max).length }));
+    const maxZone = Math.max(1, ...zones.map((z) => z.n));
+    // 월별 평균 페이스 (올해, 기록 있는 달만)
+    const y = new Date().getFullYear();
+    const monthlyPace = Array.from({ length: 12 }, (_, i) => {
+      const xs = paced.filter((r) => r.date.startsWith(`${y}-${String(i + 1).padStart(2, "0")}`));
+      return { m: `${i + 1}월`, sec: xs.length ? Math.round(xs.reduce((s, r) => s + r.paceSec!, 0) / xs.length) : null };
+    }).filter((x) => x.sec != null);
+    return { count: runs.length, scatter, buckets, maxBucket, dow, bestDow, zones, maxZone, monthlyPace };
   }, [user]);
 
   if (!ready) return null;
@@ -298,6 +312,50 @@ export default function AnalysisPage() {
               <p className="mt-2.5 text-center text-[12px] text-white/55">
                 <b className="text-volt">{runExtra.bestDow.l}요일</b>에 가장 빨라요 ({paceStr(runExtra.bestDow.avg)}) — 중요한 러닝은 이날에!
               </p>
+            )}
+          </AnalysisCard>
+
+          {/* 신규: 페이스 존 분포 */}
+          <AnalysisCard question="나는 주로 어떤 페이스로 달릴까?">
+            {runExtra.zones.some((z) => z.n > 0) ? (
+              <div className="space-y-2">
+                {runExtra.zones.map((z) => (
+                  <div key={z.l} className="flex items-center gap-2.5">
+                    <span className="w-24 shrink-0 text-[11.5px] font-bold tabular-nums text-white/60">{z.l}</span>
+                    <div className="h-3.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                      <div className="h-full rounded-full bg-volt" style={{ width: `${(z.n / runExtra.maxZone) * 100}%` }} />
+                    </div>
+                    <b className="w-9 shrink-0 text-right text-[12px] tabular-nums">{z.n}회</b>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="py-4 text-center text-[12.5px] text-white/40">페이스가 있는 기록이 아직 없어요</p>
+            )}
+          </AnalysisCard>
+
+          {/* 신규: 월별 평균 페이스 추이 */}
+          <AnalysisCard question="달이 갈수록 빨라지고 있을까?" cta="러닝 기록 추가하기" onCta={() => router.push("/run")}>
+            {runExtra.monthlyPace.length >= 2 ? (
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={runExtra.monthlyPace} margin={{ top: 8, right: 8, left: -8 }}>
+                    <XAxis dataKey="m" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} />
+                    <YAxis
+                      reversed domain={["dataMin - 15", "dataMax + 15"]}
+                      tickFormatter={(v) => paceStr(Number(v))}
+                      tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} width={44}
+                    />
+                    <Tooltip
+                      contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                      formatter={(v) => [`${paceStr(Number(v))}/km`, "평균 페이스"]}
+                    />
+                    <Line type="monotone" dataKey="sec" stroke="#c8ff00" strokeWidth={2.5} dot={{ r: 3, fill: "#c8ff00" }} isAnimationActive={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <p className="py-4 text-center text-[12.5px] text-white/40">두 달 이상 기록이 쌓이면 추이가 나와요 · 위로 갈수록 빠름</p>
             )}
           </AnalysisCard>
         </div>

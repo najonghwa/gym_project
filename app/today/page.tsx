@@ -23,19 +23,16 @@ import { MUSCLE_KR, type Muscle } from "@/lib/recovery";
 
 const S_DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-// 타임라인 노드 — 세로 연결선으로 카드들을 하나의 흐름으로 (스텝 번호 칩)
+// 섹션 카드 — 볼트 틱 + 라벨 헤더 (구 번호칩 타임라인 대체)
 function Node({
-  icon, label, last = false, children,
-}: { icon: string; label: string; last?: boolean; children: ReactNode }) {
+  label, children,
+}: { icon?: string; label: string; last?: boolean; children: ReactNode }) {
   return (
-    <div className="relative pl-11 pb-5">
-      {!last && (
-        <span className="absolute bottom-0 left-[15px] top-10 w-px bg-white/[0.08]" />
-      )}
-      <span className="grid absolute left-0 top-0 h-8 w-8 place-items-center rounded-full border border-white/10 bg-card text-[11px] font-bold tabular-nums text-volt">
-        {icon}
-      </span>
-      <div className="lab mb-2 pt-2">{label}</div>
+    <div className="pb-4">
+      <div className="mb-2 flex items-center gap-2">
+        <span className="h-3.5 w-[3px] rounded-full bg-volt" />
+        <span className="lab">{label}</span>
+      </div>
       <div className="rounded-2xl border border-white/[0.06] bg-card p-4">{children}</div>
     </div>
   );
@@ -257,34 +254,42 @@ export default function TodayPage() {
               </div>
             </div>
 
-            {/* 이번 주 러닝 */}
+            {/* 루틴 진행 */}
             <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card p-4">
-              <div className="lab">이번 주 러닝</div>
-              {(() => {
-                const weekGoal = Math.round(((user.v2?.runGoalKm ?? 300) / 52) * 10) / 10;
-                const wk = stats?.weekKm ?? 0;
-                const pct = Math.min(100, Math.round((wk / weekGoal) * 100));
-                return (
-                  <>
-                    <div className="mt-1 flex items-end gap-1.5">
-                      <span className="font-display text-[38px] leading-none">{wk}</span>
-                      <span className="pb-1 text-[12.5px] text-white/45">/ {weekGoal}km</span>
-                    </div>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.07]">
-                      <div className="h-full rounded-full bg-volt" style={{ width: `${pct}%` }} />
-                    </div>
-                    <div className="mt-1.5 flex justify-between text-[10.5px] text-white/45">
-                      <span>이번 달 {stats?.monthKm ?? 0}km</span><b className="text-volt">{pct}%</b>
-                    </div>
-                    <button
-                      onClick={() => router.push("/run")}
-                      className="mt-auto w-full rounded-full border border-white/15 bg-white/[0.05] py-2.5 pt-2.5 text-[12.5px] font-bold text-white/80"
-                    >
-                      기록 입력 →
-                    </button>
-                  </>
-                );
-              })()}
+              <div className="lab">루틴 진행</div>
+              {routineProg ? (
+                <>
+                  <b className="mt-1.5 truncate text-[13.5px]">📋 {routineProg.title}</b>
+                  <div className="mt-1 flex items-end gap-1.5">
+                    <span className="font-display text-[38px] leading-none text-volt">{routineProg.week}</span>
+                    <span className="pb-1 text-[12.5px] text-white/45">/ {routineProg.weeks}주차</span>
+                  </div>
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.07]">
+                    <div className="h-full rounded-full bg-volt" style={{ width: `${routineProg.pct}%` }} />
+                  </div>
+                  <div className="mt-1.5 flex justify-between text-[10.5px] text-white/45">
+                    <span>세션 {routineProg.done}/{routineProg.total}회</span><b className="text-volt">{routineProg.pct}%</b>
+                  </div>
+                  <button
+                    onClick={() => setShowRoutinePick(true)}
+                    className="mt-auto w-full rounded-full border border-white/15 bg-white/[0.05] py-2.5 text-[12.5px] font-bold text-white/80"
+                  >
+                    루틴 변경 →
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="mt-2 text-[12.5px] leading-relaxed text-white/60">
+                    진행 중인 루틴이 없어요.<br />검증된 프로그램으로 시작해 보세요.
+                  </p>
+                  <button
+                    onClick={() => setShowRoutinePick(true)}
+                    className="mt-auto w-full rounded-full bg-volt py-3 text-[13.5px] font-extrabold text-black"
+                  >
+                    루틴 고르기 📋
+                  </button>
+                </>
+              )}
             </div>
 
             {/* 3대 챌린지 */}
@@ -430,53 +435,19 @@ export default function TodayPage() {
 
       <div className="lg:grid lg:grid-cols-3 lg:gap-6">
       <div className="lg:col-span-2">
-      {/* ── 하나로 이어지는 하루 타임라인 ── */}
-      <div className="lab mb-2">오늘 TODAY</div>
-      <Node icon="01" label="오늘 브리핑 BRIEFING">
-        <div className="flex items-start gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap gap-1.5">
-              <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
-                ⏱️ 예상 <b className="text-volt">{estMin}분</b>
-              </span>
-              <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
-                ⚡ 컨디션 <b className={condition >= 80 ? "text-volt" : condition >= 50 ? "text-gold" : "text-danger"}>{condition}%</b>
-              </span>
-              <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
-                🏋️ {items.length}종목 · {totalSets}세트
-              </span>
-            </div>
-
-            {/* 진행 중 루틴 전체 진행률 */}
-            {routineProg ? (
-              <div className="mt-3 rounded-lg border border-white/[0.08] bg-white/[0.03] p-3">
-                <div className="flex items-baseline justify-between">
-                  <b className="text-[12.5px]">📋 {routineProg.title}</b>
-                  <span className="text-[11px] text-white/45">
-                    {routineProg.week}주차 <span className="text-white/25">/ {routineProg.weeks}주</span>
-                  </span>
-                </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/[0.07]">
-                  <div className="h-full rounded-full bg-volt" style={{ width: `${routineProg.pct}%` }} />
-                </div>
-                <div className="mt-1.5 flex justify-between text-[10.5px] text-white/45">
-                  <span>세션 <b className="text-white/70">{routineProg.done}</b>/{routineProg.total}회 완료</span>
-                  <b className="text-volt">{routineProg.pct}%</b>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowRoutinePick(true)}
-                className="mt-3 flex w-full items-center justify-between rounded-lg border border-white/[0.08] bg-white/[0.03] p-3 text-[12px] font-bold text-white/55"
-              >
-                진행할 루틴을 골라보세요 <span className="text-volt">→</span>
-              </button>
-            )}
-          </div>
+      <Node label="오늘의 운동 WORKOUT">
+        {/* 오늘 브리핑 칩 */}
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
+            ⏱️ 예상 <b className="text-volt">{estMin}분</b>
+          </span>
+          <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
+            ⚡ 컨디션 <b className={condition >= 80 ? "text-volt" : condition >= 50 ? "text-gold" : "text-danger"}>{condition}%</b>
+          </span>
+          <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
+            🏋️ {items.length}종목 · {totalSets}세트
+          </span>
         </div>
-      </Node>
-
-      <Node icon="02" label="오늘의 운동 WORKOUT">
         <div className="mb-2 flex gap-1.5">
           <button
             onClick={() => setShowRoutinePick(true)}
@@ -494,7 +465,7 @@ export default function TodayPage() {
         <TodayWorkoutCard embedded items={items} onToggleSet={toggleSet} onOpenExercise={setOpenId} />
       </Node>
 
-      <Node icon="03" label={doneSets >= totalSets && totalSets > 0 ? "결과 RESULT" : "리워드 REWARD"} last>
+      <Node label={doneSets >= totalSets && totalSets > 0 ? "결과 RESULT" : "리워드 REWARD"} last>
         <div className="flex items-end gap-3">
           <div>
             <div className="text-[11px] text-white/45">연속 운동</div>
