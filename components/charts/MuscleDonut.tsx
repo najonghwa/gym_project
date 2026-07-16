@@ -4,7 +4,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { useReducedMotion } from "framer-motion";
 import { MUSCLE_KR, type Muscle } from "@/lib/recovery";
 
-const COLORS = ["#ff9432", "#f59e0b", "#38bdf8", "#a78bfa"];
+const COLORS = ["#c8ff00", "#f59e0b", "#38bdf8", "#a78bfa"];
 
 export function MuscleDonut({ contrib }: { contrib: { muscle: Muscle; pct: number }[] }) {
   const reduce = useReducedMotion();

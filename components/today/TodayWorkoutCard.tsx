@@ -21,7 +21,7 @@ export function TodayWorkoutCard({
   const pct = totalSets ? Math.round((doneSets / totalSets) * 100) : 0;
 
   return (
-    <div className={embedded ? "" : "rounded-xl border border-white/[0.06] bg-card p-4"}>
+    <div className={embedded ? "" : "rounded-2xl border border-white/[0.06] bg-card p-4"}>
       <div className="mb-3 flex items-center justify-between">
         <div>
           <div className="text-[13px] text-white/55">
@@ -76,7 +76,7 @@ export function TodayWorkoutCard({
                   <button
                     key={i}
                     onClick={() => onToggleSet(it.exerciseId, i)}
-                    className={`grid h-10 w-10 place-items-center rounded-xl border-2 text-[12.5px] font-extrabold transition ${
+                    className={`grid h-10 w-10 place-items-center rounded-2xl border-2 text-[12.5px] font-extrabold transition ${
                       s.done
                         ? "border-volt bg-volt text-black"
                         : s.kind === "warmup"

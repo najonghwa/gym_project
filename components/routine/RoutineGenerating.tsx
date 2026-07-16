@@ -24,12 +24,12 @@ export function RoutineGenerating({ onDone }: { onDone: () => void }) {
   const R = 52, C = 2 * Math.PI * R;
 
   return (
-    <div className="flex flex-col items-center gap-4 rounded-xl border border-white/[0.06] bg-card px-6 py-10">
+    <div className="flex flex-col items-center gap-4 rounded-2xl border border-white/[0.06] bg-card px-6 py-10">
       <div className="relative">
         <svg width={140} height={140} viewBox="0 0 140 140" className="-rotate-90">
           <circle cx={70} cy={70} r={R} stroke="rgba(255,255,255,0.08)" strokeWidth={8} fill="none" />
           <circle
-            cx={70} cy={70} r={R} stroke="#ff9432" strokeWidth={8} fill="none" strokeLinecap="round"
+            cx={70} cy={70} r={R} stroke="#c8ff00" strokeWidth={8} fill="none" strokeLinecap="round"
             strokeDasharray={C} strokeDashoffset={C * (1 - pct / 100)}
             style={{ transition: "stroke-dashoffset .25s ease" }}
           />

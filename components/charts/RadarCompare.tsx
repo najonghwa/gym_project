@@ -62,9 +62,9 @@ export function BalanceRadar({ data }: { data: { part: string; me: number }[] })
             <PolarGrid stroke="rgba(255,255,255,0.08)" />
             <PolarAngleAxis
               dataKey="part"
-              tick={makeTick(valueOf, (p) => (p === weakest.part ? "#f59e0b" : "#ff9432"))}
+              tick={makeTick(valueOf, (p) => (p === weakest.part ? "#f59e0b" : "#c8ff00"))}
             />
-            <Radar dataKey="me" stroke="#ff9432" fill="#ff9432" fillOpacity={0.28} animationDuration={reduce ? 0 : 700} />
+            <Radar dataKey="me" stroke="#c8ff00" fill="#c8ff00" fillOpacity={0.28} animationDuration={reduce ? 0 : 700} />
           </RadarChart>
         </ResponsiveContainer>
       </div>
@@ -94,12 +94,12 @@ export function StandardRadar({ data }: { data: { part: string; me: number; peer
               dataKey="part"
               tick={makeTick(valueOf, (p) => {
                 const row = data.find((d) => d.part === p);
-                return row && row.me >= row.peer ? "#ff9432" : "#f59e0b";
+                return row && row.me >= row.peer ? "#c8ff00" : "#f59e0b";
               })}
             />
             <Radar name="권장 기준" dataKey="peer" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.1}
               strokeDasharray="5 4" animationDuration={reduce ? 0 : 700} />
-            <Radar name="나" dataKey="me" stroke="#ff9432" fill="#ff9432" fillOpacity={0.28}
+            <Radar name="나" dataKey="me" stroke="#c8ff00" fill="#c8ff00" fillOpacity={0.28}
               animationDuration={reduce ? 0 : 700} />
           </RadarChart>
         </ResponsiveContainer>

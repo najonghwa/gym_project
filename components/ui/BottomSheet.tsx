@@ -29,7 +29,7 @@ export function BottomSheet({
           />
           <div className="pointer-events-none fixed inset-0 z-[60] flex items-end justify-center lg:items-center lg:p-8">
             <motion.div
-              className={`pointer-events-auto relative w-full max-w-md overflow-y-auto rounded-t-2xl border-x border-t border-white/10 bg-card lg:max-w-xl lg:rounded-xl lg:border ${
+              className={`pointer-events-auto relative w-full max-w-md overflow-y-auto rounded-t-2xl border-x border-t border-white/10 bg-card lg:max-w-xl lg:rounded-2xl lg:border ${
                 tall ? "max-h-[calc(100vh-24px)] lg:max-h-[90vh]" : "max-h-[85vh]"
               }`}
               variants={reduce ? undefined : sheetUp}

@@ -67,10 +67,10 @@ export function Mascot({ state = "idle", size = 96 }: { state?: MascotState; siz
           <rect x="84" y={cheerArms ? 22 : droop ? 66 : 51} width="10" height="14" rx="3" />
         </g>
         {/* 몸통 (볼트색 블롭) */}
-        <ellipse cx="52" cy="54" rx="30" ry="32" fill="#ff9432" />
+        <ellipse cx="52" cy="54" rx="30" ry="32" fill="#c8ff00" />
         <ellipse cx="52" cy="54" rx="30" ry="32" fill="none" stroke="#a3cc00" strokeWidth="2" />
         {/* 헤어(번개 꼭지) */}
-        <path d="M50 22 l8 -10 -3 8 7 -3 -9 11z" fill="#ff9432" stroke="#a3cc00" strokeWidth="1.5" />
+        <path d="M50 22 l8 -10 -3 8 7 -3 -9 11z" fill="#c8ff00" stroke="#a3cc00" strokeWidth="1.5" />
         {/* 얼굴 */}
         {eyes}
         {mouth}
@@ -79,7 +79,7 @@ export function Mascot({ state = "idle", size = 96 }: { state?: MascotState; siz
         <circle cx="70" cy="55" r="3.5" fill="#a3cc00" opacity="0.55" />
         {/* 상태 소품 */}
         {state === "think" && (
-          <g fill="#ff9432">
+          <g fill="#c8ff00">
             <circle cx="86" cy="24" r="3" /><circle cx="93" cy="16" r="4.5" /><circle cx="80" cy="30" r="2" />
           </g>
         )}

@@ -81,7 +81,7 @@ export function ExploreSection({
           <motion.div
             key={r.id}
             variants={reduce ? undefined : fadeUp}
-            className="rounded-xl border border-white/[0.06] bg-card p-4"
+            className="rounded-2xl border border-white/[0.06] bg-card p-4"
           >
             <div className="flex items-start gap-3">
               <ColorInitialBadge text={r.badge} seed={i} />

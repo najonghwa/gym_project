@@ -47,7 +47,7 @@ function PoseG({ p, cls, dur }: { p: Pose; cls: "poseA" | "poseB"; dur: number }
       {p.l.map((L, i) => (
         <line key={i} x1={L[0]} y1={L[1]} x2={L[2]} y2={L[3]} />
       ))}
-      {p.bar && <line x1={p.bar[0]} y1={p.bar[1]} x2={p.bar[2]} y2={p.bar[3]} stroke="#ff9432" strokeWidth={4} />}
+      {p.bar && <line x1={p.bar[0]} y1={p.bar[1]} x2={p.bar[2]} y2={p.bar[3]} stroke="#c8ff00" strokeWidth={4} />}
       {p.bench && <line x1={p.bench[0]} y1={p.bench[1]} x2={p.bench[2]} y2={p.bench[3]} stroke="#52525b" strokeWidth={4} />}
     </g>
   );
@@ -77,11 +77,11 @@ export function AnimPlayer({
         @keyframes poseA { 0%,42%{opacity:1} 50%,92%{opacity:0} 100%{opacity:1} }
         @keyframes poseB { 0%,42%{opacity:0} 50%,92%{opacity:1} 100%{opacity:0} }
       `}</style>
-      <div className="relative h-40 overflow-hidden rounded-xl">
+      <div className="relative h-40 overflow-hidden rounded-2xl">
         {useFrames ? (
           <>
             {/* 실사 크로스페이드 — 흰 배경 사진이라 밝은 패널 위에 */}
-            <div className="absolute inset-0 rounded-xl bg-white" />
+            <div className="absolute inset-0 rounded-2xl bg-white" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={frames![0]} alt="동작 프레임 1"

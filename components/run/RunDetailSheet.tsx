@@ -26,7 +26,7 @@ function RouteMap({ route }: { route: number[][] }) {
       L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
         attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19,
       }).addTo(map);
-      L.polyline(pts, { color: "#ff9432", weight: 4, opacity: 0.9 }).addTo(map);
+      L.polyline(pts, { color: "#c8ff00", weight: 4, opacity: 0.9 }).addTo(map);
       L.circleMarker(pts[0], { radius: 6, color: "#2dd4a0", fillColor: "#2dd4a0", fillOpacity: 1 }).addTo(map); // 출발
       L.circleMarker(pts[pts.length - 1], { radius: 6, color: "#ef4444", fillColor: "#ef4444", fillOpacity: 1 }).addTo(map); // 도착
       map.fitBounds(L.latLngBounds(pts), { padding: [24, 24] });

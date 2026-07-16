@@ -83,7 +83,7 @@ export function RecoveryMap({ data }: { data: MuscleRecovery[] }) {
                 setView(REGION_VIEW[d.muscle]);
                 setSel(d);
               }}
-              className="flex w-full items-center gap-2.5 rounded-xl bg-white/[0.04] px-3 py-2 text-left"
+              className="flex w-full items-center gap-2.5 rounded-2xl bg-white/[0.04] px-3 py-2 text-left"
             >
               <span
                 className="h-3 w-3 shrink-0 rounded-full"

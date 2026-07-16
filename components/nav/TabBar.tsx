@@ -1,7 +1,8 @@
 "use client";
-// 내비 — 모바일: 하단 7탭 / 데스크탑: 좌측 사이드바
+// 내비 — 상단 헤더바(로고+유저칩) / 모바일: 하단 7탭 / 데스크탑: 좌측 사이드바(볼트 필 활성)
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { computeStats, useUser } from "@/lib/useUser";
 
 const TABS = [
   { href: "/today", em: "🏋️", t: "헬스" },
@@ -15,10 +16,25 @@ const TABS = [
 
 export function TabBar() {
   const path = usePathname();
+  const { user } = useUser();
+  const level = user ? computeStats(user).level : null;
   const isOn = (href: string) => path === href || (href === "/today" && path === "/");
 
   return (
     <>
+      {/* 상단 헤더바 */}
+      <header className="fixed inset-x-0 top-0 z-40 flex h-12 items-center justify-between border-b border-white/[0.07] bg-black/90 px-4 backdrop-blur-xl lg:px-5">
+        <Link href="/today" className="font-display text-[19px] tracking-tight">
+          FitPlan<span className="text-volt">.</span>
+        </Link>
+        {user && (
+          <span className="flex items-center gap-2">
+            <span className="text-[12.5px] font-bold text-white/70">{String(user.id)}</span>
+            <span className="rounded-full bg-volt px-2.5 py-1 text-[11px] font-extrabold text-black">Lv{level}</span>
+          </span>
+        )}
+      </header>
+
       {/* 모바일 하단 탭 */}
       <nav
         className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 border-t border-white/10 bg-black/90 backdrop-blur-xl lg:hidden"
@@ -42,24 +58,20 @@ export function TabBar() {
         </div>
       </nav>
 
-      {/* 데스크탑 좌측 사이드바 */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-56 flex-col border-r border-white/[0.08] bg-[#0a111f] lg:flex">
-        <Link href="/today" className="flex items-center px-5 pb-2 pt-6 font-display text-[20px] tracking-tight">
-          FitPlan<span className="text-volt">.</span>
-        </Link>
-        <nav className="mt-4 flex flex-1 flex-col gap-0.5 px-3">
+      {/* 데스크탑 좌측 사이드바 — 활성 탭 = 볼트 필 */}
+      <aside className="fixed bottom-0 left-0 top-12 z-40 hidden w-56 flex-col border-r border-white/[0.07] bg-[#0b0b0b] lg:flex">
+        <nav className="mt-5 flex flex-1 flex-col gap-1.5 px-3.5">
           {TABS.map((tab) => {
             const on = isOn(tab.href);
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-bold transition ${
-                  on ? "bg-white/[0.07] text-zinc-50" : "text-zinc-500 hover:bg-white/[0.04] hover:text-zinc-200"
+                className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-[14.5px] font-extrabold transition ${
+                  on ? "bg-volt text-black" : "text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200"
                 }`}
               >
-                {on && <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-volt" />}
-                <span className={`text-[16px] leading-none ${on ? "" : "opacity-70 grayscale"}`}>{tab.em}</span>
+                <span className={`text-[17px] leading-none ${on ? "" : "opacity-70 grayscale"}`}>{tab.em}</span>
                 {tab.t}
               </Link>
             );

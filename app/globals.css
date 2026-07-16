@@ -2,9 +2,9 @@
 
 /* ── GYM&RUN 디자인 토큰 (스펙 §1) ── */
 @theme {
-  --color-bg: #070c16;
-  --color-card: #0d1526;
-  --color-volt: #ff9432;
+  --color-bg: #050505;
+  --color-card: #121212;
+  --color-volt: #c8ff00;
   --color-gold: #f59e0b;
   --color-danger: #ef4444;
   --font-sans: "Pretendard Variable", Pretendard, system-ui, sans-serif;
@@ -14,9 +14,9 @@
 /* 디스플레이 숫자/타이틀 — 깔끔한 세미볼드+타이트 자간 (구 Black Han Sans 대체) */
 .font-display { font-weight: 800; letter-spacing: -0.02em; }
 
-html { background: #070c16; }
+html { background: #050505; }
 body {
-  background: #070c16;
+  background: #050505;
   color: #fafafa;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;

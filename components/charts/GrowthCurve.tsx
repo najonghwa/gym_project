@@ -27,7 +27,7 @@ export function GrowthCurve() {
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
         <defs>
           <linearGradient id="growth" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#ff9432" />
+            <stop offset="0%" stopColor="#c8ff00" />
             <stop offset="100%" stopColor="#f59e0b" />
           </linearGradient>
         </defs>
@@ -54,7 +54,7 @@ export function GrowthCurve() {
           viewport={{ once: true }}
           transition={{ delay: 1.2, type: "spring", stiffness: 300 }}
         >
-          <circle cx={padX} cy={y(0)} r={5} fill="#ff9432" />
+          <circle cx={padX} cy={y(0)} r={5} fill="#c8ff00" />
           <circle cx={W - padX} cy={endY} r={6} fill="#f59e0b" />
           <text x={padX + 8} y={y(0) - 8} fontSize={10} fill="rgba(255,255,255,0.6)">BEFORE</text>
           <text x={W - padX - 12} y={endY - 12} fontSize={11} fill="#f59e0b" textAnchor="end" fontWeight={700}>AFTER +{GROWTH.withPlan.at(-1)}%</text>

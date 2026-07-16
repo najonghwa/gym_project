@@ -1,7 +1,9 @@
 "use client";
 // 헬스 홈 — 하루 타임라인(브리핑/운동/리워드) + 기록 대시보드(KPI·월별·주간 볼륨)
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { fetchStats } from "@/lib/supa";
 import { StatChip } from "@/components/ui/StatChip";
 import { WeekStrip, type DayCell } from "@/components/today/WeekStrip";
 import { TodayWorkoutCard } from "@/components/today/TodayWorkoutCard";
@@ -30,17 +32,31 @@ function Node({
       {!last && (
         <span className="absolute bottom-0 left-[15px] top-10 w-px bg-white/[0.08]" />
       )}
-      <span className="grid absolute left-0 top-0 h-8 w-8 place-items-center rounded-lg border border-white/10 bg-card text-[11px] font-bold tabular-nums text-volt">
+      <span className="grid absolute left-0 top-0 h-8 w-8 place-items-center rounded-full border border-white/10 bg-card text-[11px] font-bold tabular-nums text-volt">
         {icon}
       </span>
       <div className="lab mb-2 pt-2">{label}</div>
-      <div className="rounded-xl border border-white/[0.06] bg-card p-4">{children}</div>
+      <div className="rounded-2xl border border-white/[0.06] bg-card p-4">{children}</div>
     </div>
   );
 }
 
 export default function TodayPage() {
+  const router = useRouter();
   const { user, ready, login, signup, logout, saveToday, setActiveRoutine, setPrimaryMode, today } = useUser();
+  const [rankRows, setRankRows] = useState<{ id: string; att: number }[]>([]);
+  useEffect(() => {
+    fetchStats().then((rows) => {
+      if (!rows) return;
+      setRankRows(
+        rows
+          .map((r) => ({ id: String(r.id), att: Number((r.stats as { att?: number } | null)?.att ?? 0) }))
+          .filter((r) => r.att > 0)
+          .sort((a, b) => b.att - a.att)
+          .slice(0, 5)
+      );
+    });
+  }, []);
   const [items, setItems] = useState<TodayItem[]>(getMockToday);
   const [openId, setOpenId] = useState<string | null>(null);
   const [celebrated, setCelebrated] = useState(false);
@@ -137,7 +153,12 @@ export default function TodayPage() {
     });
     const weekMuscles = [...byMuscle.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
     const maxMuscle = Math.max(1, ...weekMuscles.map(([, n]) => n));
-    return { monthly, weekly, totalSets, thisMonth, recent, weekMuscles, maxMuscle };
+    // 이번 달 운동한 날짜(미니 달력용)
+    const ym = `${y}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const daysThisMonth = new Set(
+      [...map.keys()].filter((d) => d.startsWith(ym)).map((d) => parseInt(d.slice(8), 10))
+    );
+    return { monthly, weekly, totalSets, thisMonth, recent, weekMuscles, maxMuscle, daysThisMonth };
   }, [user]);
 
   // P2-10 컨디션% = 회복맵 평균 연동, 예상 시간 = 세트 수 × 2.5분
@@ -196,7 +217,7 @@ export default function TodayPage() {
         </div>
         <button
           onClick={() => setShowSettings(true)}
-          className="mt-1 grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-card text-[16px]"
+          className="mt-1 grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-card text-[16px]"
           aria-label="설정"
         >
           ⚙️
@@ -215,9 +236,116 @@ export default function TodayPage() {
             <StatChip label="레벨" value={`Lv${stats?.level ?? 1}`} tone="gold" />
           </div>
 
+          {/* 피처 카드 4종 — 구 GYM&RUN 대시보드 배치 */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {/* 연속 STREAK */}
+            <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
+              <div className="lab">연속 STREAK</div>
+              <div className="mt-1 flex items-end gap-1">
+                <span className={`font-display text-[44px] leading-none ${stats && stats.streak > 0 ? "text-volt" : "text-white/30"}`}>
+                  {stats?.streak ?? 0}
+                </span>
+                <span className="pb-1 text-[14px] font-bold text-white/55">일 🔥</span>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-1.5">
+                {([[stats?.sessions ?? 0, "총 운동"], [gymDash.totalSets, "총 세트"], [`${stats?.att ?? 0}%`, "4주 출석"], [`Lv${stats?.level ?? 1}`, "레벨"]] as const).map(([v, l]) => (
+                  <div key={l} className="rounded-2xl bg-white/[0.05] py-2 text-center">
+                    <div className="font-display text-[15px] leading-none tabular-nums">{v}</div>
+                    <div className="mt-1 text-[9.5px] text-white/45">{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 이번 주 러닝 */}
+            <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card p-4">
+              <div className="lab">이번 주 러닝</div>
+              {(() => {
+                const weekGoal = Math.round(((user.v2?.runGoalKm ?? 300) / 52) * 10) / 10;
+                const wk = stats?.weekKm ?? 0;
+                const pct = Math.min(100, Math.round((wk / weekGoal) * 100));
+                return (
+                  <>
+                    <div className="mt-1 flex items-end gap-1.5">
+                      <span className="font-display text-[38px] leading-none">{wk}</span>
+                      <span className="pb-1 text-[12.5px] text-white/45">/ {weekGoal}km</span>
+                    </div>
+                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.07]">
+                      <div className="h-full rounded-full bg-volt" style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="mt-1.5 flex justify-between text-[10.5px] text-white/45">
+                      <span>이번 달 {stats?.monthKm ?? 0}km</span><b className="text-volt">{pct}%</b>
+                    </div>
+                    <button
+                      onClick={() => router.push("/run")}
+                      className="mt-auto w-full rounded-full border border-white/15 bg-white/[0.05] py-2.5 pt-2.5 text-[12.5px] font-bold text-white/80"
+                    >
+                      기록 입력 →
+                    </button>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* 3대 챌린지 */}
+            <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card p-4">
+              <div className="lab">3대 챌린지</div>
+              {(() => {
+                const logs = (user.big3 as { goal?: number; logs?: { s: number; b: number; d: number }[] } | undefined)?.logs;
+                const last = logs?.[logs.length - 1];
+                const goal = (user.big3 as { goal?: number } | undefined)?.goal ?? 300;
+                if (last) {
+                  const sum = Math.round((last.s + last.b + last.d) * 10) / 10;
+                  const pct = Math.min(100, Math.round((sum / goal) * 100));
+                  return (
+                    <>
+                      <div className="mt-1 flex items-end gap-1.5">
+                        <span className="font-display text-[38px] leading-none text-gold">{sum}</span>
+                        <span className="pb-1 text-[12.5px] text-white/45">/ {goal}kg</span>
+                      </div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.07]">
+                        <div className="h-full rounded-full bg-gold" style={{ width: `${pct}%` }} />
+                      </div>
+                      <div className="mt-1.5 text-right text-[10.5px] font-bold text-gold">{pct}%</div>
+                      <button
+                        onClick={() => router.push("/analysis")}
+                        className="mt-auto w-full rounded-full border border-white/15 bg-white/[0.05] py-2.5 text-[12.5px] font-bold text-white/80"
+                      >
+                        측정 기록 →
+                      </button>
+                    </>
+                  );
+                }
+                return (
+                  <>
+                    <p className="mt-2 text-[12.5px] leading-relaxed text-white/60">
+                      스쿼트+벤치+데드 합계 도전.<br />3대 300부터 시작해 볼까요?
+                    </p>
+                    <button
+                      onClick={() => router.push("/analysis")}
+                      className="mt-auto w-full rounded-full bg-volt py-3 text-[13.5px] font-extrabold text-black"
+                    >
+                      도전 시작 🏆
+                    </button>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* 오늘의 한마디 */}
+            <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card p-4">
+              <div className="lab">오늘의 한마디</div>
+              <p className="mt-2 text-[13.5px] font-medium leading-relaxed">💬 {quote}</p>
+              <div className="mt-auto flex items-center justify-between pt-3 text-[11px] text-white/45">
+                <span>🏋️ {items.length}종목 · {totalSets}세트 예정</span>
+                <b className="text-white/70">XP {stats?.xp ?? 0}</b>
+              </div>
+            </div>
+          </div>
+
           <div className="grid gap-3 lg:grid-cols-3">
             {/* 이번 달 목표 달성 도넛 */}
-            <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+            <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
               <b className="text-[15px] font-extrabold">이번 달 목표</b>
               <p className="text-[11.5px] text-white/45">
                 {routineProg ? `주 ${EXPLORE.find((x) => x.id === user.v2?.activeRoutineId)?.daysPerWeek ?? 3}회 페이스 기준` : "주 3회 페이스 기준"}
@@ -227,7 +355,7 @@ export default function TodayPage() {
                 const target = perWeek * 4;
                 const pct = Math.min(100, Math.round((gymDash.thisMonth / target) * 100));
                 const R = 40, C = 2 * Math.PI * R;
-                const color = pct >= 100 ? "#2dd4a0" : "#ff9432";
+                const color = pct >= 100 ? "#2dd4a0" : "#c8ff00";
                 return (
                   <div className="mt-2 flex h-36 items-center justify-center gap-5">
                     <svg width="112" height="112" viewBox="0 0 112 112">
@@ -250,7 +378,7 @@ export default function TodayPage() {
             </div>
 
             {/* 월별 운동 횟수 */}
-            <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+            <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
               <b className="text-[15px] font-extrabold">월별 운동 횟수</b>
               <p className="text-[11.5px] text-white/45">{new Date().getFullYear()}년 · 운동한 날 기준</p>
               <div className="mt-2 h-36">
@@ -260,12 +388,12 @@ export default function TodayPage() {
                     <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <Tooltip
                       cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                      contentStyle={{ background: "#0d1526", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                      contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
                       formatter={(v) => [`${Number(v ?? 0)}회`, "운동"]}
                     />
                     <Bar dataKey="n" radius={[3, 3, 0, 0]} isAnimationActive={false}>
                       {gymDash.monthly.map((x, i) => (
-                        <Cell key={i} fill={x.isNow ? "#ff9432" : "rgba(255,255,255,0.18)"} />
+                        <Cell key={i} fill={x.isNow ? "#c8ff00" : "rgba(255,255,255,0.18)"} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -274,7 +402,7 @@ export default function TodayPage() {
             </div>
 
             {/* 주간 세트 볼륨 */}
-            <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+            <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
               <b className="text-[15px] font-extrabold">주간 세트 볼륨</b>
               <p className="text-[11.5px] text-white/45">최근 8주 · 완료한 세트 합계</p>
               <div className="mt-2 h-36">
@@ -284,12 +412,12 @@ export default function TodayPage() {
                     <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <Tooltip
                       cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                      contentStyle={{ background: "#0d1526", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                      contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
                       formatter={(v) => [`${Number(v ?? 0)}세트`, "볼륨"]}
                     />
                     <Bar dataKey="sets" radius={[3, 3, 0, 0]} isAnimationActive={false}>
                       {gymDash.weekly.map((x, i) => (
-                        <Cell key={i} fill={x.isNow ? "#ff9432" : "rgba(255,255,255,0.18)"} />
+                        <Cell key={i} fill={x.isNow ? "#c8ff00" : "rgba(255,255,255,0.18)"} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -307,8 +435,7 @@ export default function TodayPage() {
       <Node icon="01" label="오늘 브리핑 BRIEFING">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-[13.5px] font-medium leading-relaxed">💬 {quote}</p>
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1.5">
               <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
                 ⏱️ 예상 <b className="text-volt">{estMin}분</b>
               </span>
@@ -395,7 +522,69 @@ export default function TodayPage() {
 
       {/* ── 우측 요약 컬럼 ── */}
       <aside className="space-y-3 lg:pt-7">
-        <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+        {/* 이번 달 미니 달력 */}
+        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
+          <div className="flex items-baseline justify-between">
+            <b className="text-[15px] font-extrabold">{new Date().getFullYear()}년 {new Date().getMonth() + 1}월</b>
+            <button onClick={() => router.push("/calendar")} className="text-[11.5px] font-bold text-white/45">달력 →</button>
+          </div>
+          {(() => {
+            const now = new Date();
+            const first = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const pad = first.getDay(); // 일요일 시작
+            const cells: (number | null)[] = [...Array(pad).fill(null), ...Array.from({ length: lastDay }, (_, i) => i + 1)];
+            return (
+              <div className="mt-2.5 grid grid-cols-7 gap-1 text-center">
+                {["일", "월", "화", "수", "목", "금", "토"].map((d) => (
+                  <span key={d} className="text-[9px] text-white/35">{d}</span>
+                ))}
+                {cells.map((d, i) => {
+                  const worked = d != null && gymDash?.daysThisMonth.has(d);
+                  const isToday = d === now.getDate();
+                  return (
+                    <span
+                      key={i}
+                      className={`grid aspect-square place-items-center rounded-lg text-[10.5px] tabular-nums ${
+                        d == null ? "" : worked ? "bg-volt font-extrabold text-black" : isToday ? "border border-volt/60 text-volt" : "bg-white/[0.04] text-white/45"
+                      }`}
+                    >
+                      {d ?? ""}
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* 출석률 랭킹 TOP5 */}
+        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
+          <div className="flex items-baseline justify-between">
+            <b className="text-[15px] font-extrabold">출석률 랭킹</b>
+            <button onClick={() => router.push("/ranking")} className="text-[11.5px] font-bold text-white/45">전체 →</button>
+          </div>
+          {rankRows.length ? (
+            <div className="mt-1.5 divide-y divide-white/[0.06]">
+              {rankRows.map((r, i) => {
+                const me = String(user.id).toLowerCase() === r.id.toLowerCase();
+                return (
+                  <div key={r.id} className="flex items-center gap-2.5 py-2">
+                    <span className="w-6 text-center text-[13px]">{["🥇", "🥈", "🥉"][i] ?? <b className="text-[12px] text-white/40">{i + 1}</b>}</span>
+                    <span className={`min-w-0 flex-1 truncate text-[13px] font-bold ${me ? "text-volt" : "text-white/80"}`}>
+                      {r.id}{me ? " (나)" : ""}
+                    </span>
+                    <b className="text-[13px] tabular-nums">{r.att}%</b>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="py-4 text-center text-[12.5px] text-white/40">랭킹을 불러오는 중이에요</p>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
           <b className="text-[15px] font-extrabold">최근 운동</b>
           {gymDash?.recent.length ? (
             <div className="mt-1.5 divide-y divide-white/[0.06]">
@@ -414,7 +603,7 @@ export default function TodayPage() {
           )}
         </div>
 
-        <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
           <b className="text-[15px] font-extrabold">이번 주 부위별 세트</b>
           {gymDash?.weekMuscles.length ? (
             <div className="mt-2.5 space-y-2">
@@ -434,7 +623,7 @@ export default function TodayPage() {
         </div>
 
         {/* 이번 주 요일 스트립 — 리워드 카드와 별개로 사이드에서 상시 확인 */}
-        <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
           <b className="text-[15px] font-extrabold">이번 주</b>
           <div className="mt-3">
             <WeekStrip days={week} target={`총 ${stats?.sessions ?? 0}회 · Lv${stats?.level ?? 1}`} />
@@ -442,7 +631,7 @@ export default function TodayPage() {
         </div>
 
         {/* 부위별 회복 상태 */}
-        <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
           <div className="flex items-baseline justify-between">
             <b className="text-[15px] font-extrabold">부위별 회복</b>
             <span className="text-[11px] text-white/45">컨디션 {condition}%</span>
@@ -457,7 +646,7 @@ export default function TodayPage() {
                   <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
                     <div
                       className="h-full rounded-full"
-                      style={{ width: `${Math.min(100, pct)}%`, background: full ? "#2dd4a0" : "#ff9432" }}
+                      style={{ width: `${Math.min(100, pct)}%`, background: full ? "#2dd4a0" : "#c8ff00" }}
                     />
                   </div>
                   <b className="w-11 shrink-0 text-right text-[12px] tabular-nums" style={{ color: full ? "#2dd4a0" : undefined }}>

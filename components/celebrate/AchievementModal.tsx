@@ -23,7 +23,7 @@ export function AchievementModal({
 
   useEffect(() => {
     if (open && !reduce) {
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ["#ff9432", "#f59e0b", "#ffffff"] });
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ["#c8ff00", "#f59e0b", "#ffffff"] });
     }
   }, [open, reduce]);
 
@@ -41,7 +41,7 @@ export function AchievementModal({
             animate={{ scale: 1, y: 0 }}
             exit={reduce ? undefined : { scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="w-full max-w-xs rounded-xl border border-gold/40 bg-card p-6 text-center"
+            className="w-full max-w-xs rounded-2xl border border-gold/40 bg-card p-6 text-center"
           >
             <div className="flex justify-center"><Mascot state="cheer" size={88} /></div>
             {/* 금속 뱃지 */}

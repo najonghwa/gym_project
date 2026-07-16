@@ -23,7 +23,7 @@ export function AnalysisCard({
       initial={reduce ? false : "hidden"}
       whileInView="show"
       viewport={{ once: true, margin: "-40px" }}
-      className="rounded-xl border border-white/[0.06] bg-card p-4"
+      className="rounded-2xl border border-white/[0.06] bg-card p-4"
     >
       <h3 className="font-display text-[20px] leading-snug">{question}</h3>
       <div className="mt-3">{children}</div>

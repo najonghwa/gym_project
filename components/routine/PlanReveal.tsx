@@ -38,7 +38,7 @@ export function PlanReveal({ onRetry }: { onRetry: () => void }) {
         variants={reduce ? undefined : fadeUp}
         initial={reduce ? false : "hidden"}
         animate="show"
-        className="mb-4 rounded-xl border border-volt/30 bg-card p-4"
+        className="mb-4 rounded-2xl border border-volt/30 bg-card p-4"
       >
         <div className="flex items-center gap-3">
           <div>
@@ -51,7 +51,7 @@ export function PlanReveal({ onRetry }: { onRetry: () => void }) {
         </div>
         <div className="mt-3 grid grid-cols-3 gap-1.5">
           {COACH_SUMMARY.map(([l, v]) => (
-            <div key={l} className="rounded-xl bg-white/[0.05] px-2 py-2 text-center">
+            <div key={l} className="rounded-2xl bg-white/[0.05] px-2 py-2 text-center">
               <div className="text-[9.5px] text-white/45">{l}</div>
               <div className="mt-0.5 text-[12.5px] font-extrabold">{v}</div>
             </div>
@@ -82,7 +82,7 @@ export function PlanReveal({ onRetry }: { onRetry: () => void }) {
           <motion.div
             key={d.day + d.title}
             variants={reduce ? undefined : fadeUp}
-            className="rounded-xl border border-white/[0.06] bg-card p-4"
+            className="rounded-2xl border border-white/[0.06] bg-card p-4"
           >
             <div className="flex items-center gap-3">
               <ColorInitialBadge text={d.day} seed={i} />
@@ -108,7 +108,7 @@ export function PlanReveal({ onRetry }: { onRetry: () => void }) {
               {d.exercises.map((id) => {
                 const ex = byId(id);
                 return ex ? (
-                  <span key={id} className="shrink-0 rounded-xl border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[11.5px]">
+                  <span key={id} className="shrink-0 rounded-2xl border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[11.5px]">
                     {ex.em} {ex.name}
                   </span>
                 ) : null;

@@ -111,7 +111,7 @@ export function LoginCard({
 
       {/* 가입 소구: 일반 대비 성장 비교 */}
       {mode === "signup" && (
-        <div className="mt-4 rounded-xl border border-white/[0.06] bg-card p-4">
+        <div className="mt-4 rounded-2xl border border-white/[0.06] bg-card p-4">
           <GrowthCompare />
         </div>
       )}

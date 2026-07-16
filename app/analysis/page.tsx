@@ -130,7 +130,7 @@ export default function AnalysisPage() {
             <StatChip label="레벨" value={`Lv${st?.level ?? 1}`} tone="mute" />
           </div>
 
-          <div className="rounded-xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
+          <div className="rounded-2xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
             <RecoveryMap data={recovery} />
           </div>
 
@@ -186,7 +186,7 @@ export default function AnalysisPage() {
                           <div
                             key={wi}
                             className="aspect-square rounded-[4px]"
-                            style={{ background: n > 0 ? `rgba(255,148,50,${0.25 + 0.75 * (n / gymExtra.maxHeat)})` : "rgba(255,255,255,0.05)" }}
+                            style={{ background: n > 0 ? `rgba(200,255,0,${0.25 + 0.75 * (n / gymExtra.maxHeat)})` : "rgba(255,255,255,0.05)" }}
                             title={n > 0 ? `${n}세트` : ""}
                           />
                         ))}
@@ -242,10 +242,10 @@ export default function AnalysisPage() {
                     />
                     <ZAxis range={[70, 71]} />
                     <Tooltip
-                      contentStyle={{ background: "#0d1526", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}
+                      contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}
                       formatter={(v, name) => name === "거리" ? [`${v}km`, ""] : [paceStr(Number(v)) + "/km", ""]}
                     />
-                    <Scatter data={runExtra.scatter} fill="#ff9432" fillOpacity={0.85} />
+                    <Scatter data={runExtra.scatter} fill="#c8ff00" fillOpacity={0.85} />
                   </ScatterChart>
                 </ResponsiveContainer>
               </div>
@@ -281,7 +281,7 @@ export default function AnalysisPage() {
               {runExtra.dow.map((d) => (
                 <div
                   key={d.l}
-                  className={`rounded-xl border py-2.5 text-center ${
+                  className={`rounded-2xl border py-2.5 text-center ${
                     runExtra.bestDow && d.l === runExtra.bestDow.l
                       ? "border-volt/60 bg-volt/10" : "border-white/[0.06] bg-white/[0.03]"
                   }`}

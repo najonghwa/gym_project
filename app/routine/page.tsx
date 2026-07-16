@@ -35,7 +35,7 @@ export default function RoutinePage() {
       <section>
         <div className="lab mb-2">MY ROUTINES 내 루틴</div>
         {savedRoutines.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-6 text-center">
+          <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-6 text-center">
             <p className="text-[13px] text-white/50">
               아직 저장한 루틴이 없어요.<br />아래에서 💾 저장하면 여기 모여요.
             </p>
@@ -47,7 +47,7 @@ export default function RoutinePage() {
               return (
                 <div
                   key={r.id}
-                  className={`flex items-center gap-3 rounded-xl border p-3.5 ${
+                  className={`flex items-center gap-3 rounded-2xl border p-3.5 ${
                     active ? "border-volt/50 bg-volt/[0.06]" : "border-white/[0.06] bg-card"
                   }`}
                 >
@@ -81,7 +81,7 @@ export default function RoutinePage() {
 
       {/* AI 생성 */}
       {phase === "idle" && (
-        <section className="flex flex-col items-center gap-3 rounded-xl border border-white/[0.06] bg-card px-6 py-8 text-center">
+        <section className="flex flex-col items-center gap-3 rounded-2xl border border-white/[0.06] bg-card px-6 py-8 text-center">
           <h2 className="font-display text-[24px] leading-snug">
             이번 주 루틴,<br /><span className="text-volt">AI가 짜드릴까요?</span>
           </h2>
