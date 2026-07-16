@@ -38,7 +38,7 @@ export function PlanReveal({ onRetry }: { onRetry: () => void }) {
         variants={reduce ? undefined : fadeUp}
         initial={reduce ? false : "hidden"}
         animate="show"
-        className="mb-4 rounded-3xl border border-volt/30 bg-card p-4"
+        className="mb-4 rounded-xl border border-volt/30 bg-card p-4"
       >
         <div className="flex items-center gap-3">
           <div>
@@ -82,7 +82,7 @@ export function PlanReveal({ onRetry }: { onRetry: () => void }) {
           <motion.div
             key={d.day + d.title}
             variants={reduce ? undefined : fadeUp}
-            className="rounded-3xl border border-white/[0.06] bg-card p-4"
+            className="rounded-xl border border-white/[0.06] bg-card p-4"
           >
             <div className="flex items-center gap-3">
               <ColorInitialBadge text={d.day} seed={i} />
@@ -93,7 +93,7 @@ export function PlanReveal({ onRetry }: { onRetry: () => void }) {
                 </span>
               </div>
               <button
-                className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
+                className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
                 onClick={() => replaceDay(d.day)}
               >
                 🔄 AI 교체

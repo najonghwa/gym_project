@@ -16,8 +16,8 @@ export default function GymPage() {
       <h2 className="font-display text-[26px]">장비를 눌러보세요</h2>
       <p className="mt-0.5 text-[12px] text-white/45">설명과 사용 팁이 나와요 · 현재는 예시 배치</p>
 
-      <div className="mt-4 rounded-3xl border border-white/[0.06] bg-card p-3">
-        <svg viewBox="0 0 400 310" className="w-full rounded-2xl bg-black/40">
+      <div className="mt-4 rounded-xl border border-white/[0.06] bg-card p-3">
+        <svg viewBox="0 0 400 310" className="w-full rounded-lg bg-black/40">
           {FLOOR_ZONES.map((fz) => {
             const z = ZONES.find((x) => x.id === fz.id)!;
             return (
@@ -78,14 +78,14 @@ export default function GymPage() {
         {item && info && zone && (
           <>
             <div className="flex items-center gap-3.5">
-              <div className="grid h-14 w-14 place-items-center rounded-2xl border border-white/10 bg-white/[0.05] text-3xl">{item.icon}</div>
+              <div className="grid h-14 w-14 place-items-center rounded-lg border border-white/10 bg-white/[0.05] text-3xl">{item.icon}</div>
               <div>
                 <h3 className="text-lg font-extrabold">{item.eq}</h3>
                 <span className="text-[12px] font-bold" style={{ color: zone.color }}>{zone.id}구역 · {zone.name}</span>
               </div>
             </div>
             <p className="mt-3 text-[14px] leading-relaxed">{info.desc}</p>
-            <div className="mt-3 rounded-2xl border border-gold/40 bg-gold/10 p-3 text-[13px] leading-relaxed">
+            <div className="mt-3 rounded-lg border border-gold/40 bg-gold/10 p-3 text-[13px] leading-relaxed">
               💡 <b>팁</b> — {info.tip}
             </div>
           </>

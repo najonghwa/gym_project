@@ -8,8 +8,11 @@
   --color-gold: #f59e0b;
   --color-danger: #ef4444;
   --font-sans: "Pretendard Variable", Pretendard, system-ui, sans-serif;
-  --font-display: "Black Han Sans", Pretendard, sans-serif;
+  --font-display: "Pretendard Variable", Pretendard, system-ui, sans-serif;
 }
+
+/* 디스플레이 숫자/타이틀 — 깔끔한 세미볼드+타이트 자간 (구 Black Han Sans 대체) */
+.font-display { font-weight: 800; letter-spacing: -0.02em; }
 
 html { background: #070c16; }
 body {

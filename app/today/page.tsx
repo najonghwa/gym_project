@@ -18,20 +18,20 @@ import { EXPLORE } from "@/lib/mock/routines";
 
 const S_DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-// 타임라인 노드 — 세로 연결선으로 카드들을 하나의 흐름으로
+// 타임라인 노드 — 세로 연결선으로 카드들을 하나의 흐름으로 (스텝 번호 칩)
 function Node({
   icon, label, last = false, children,
 }: { icon: string; label: string; last?: boolean; children: ReactNode }) {
   return (
-    <div className="relative pl-12 pb-5">
+    <div className="relative pl-11 pb-5">
       {!last && (
-        <span className="absolute bottom-0 left-[17px] top-11 w-px bg-gradient-to-b from-volt/40 via-white/10 to-white/10" />
+        <span className="absolute bottom-0 left-[15px] top-10 w-px bg-white/[0.08]" />
       )}
-      <span className="absolute left-0 top-0 grid h-9 w-9 place-items-center rounded-full border border-volt/40 bg-card text-[15px]">
+      <span className="grid absolute left-0 top-0 h-8 w-8 place-items-center rounded-lg border border-white/10 bg-card text-[11px] font-bold tabular-nums text-volt">
         {icon}
       </span>
       <div className="lab mb-2 pt-2">{label}</div>
-      <div className="rounded-3xl border border-white/[0.06] bg-card p-4">{children}</div>
+      <div className="rounded-xl border border-white/[0.06] bg-card p-4">{children}</div>
     </div>
   );
 }
@@ -109,17 +109,17 @@ export default function TodayPage() {
 
   return (
     <main className="mx-auto max-w-2xl lg:pt-24">
-      {/* 인사 헤더 */}
-      <div className="mb-5 flex items-start justify-between">
+      {/* 페이지 헤더 */}
+      <div className="mb-6 flex items-start justify-between">
         <div>
-          <div className="lab">{S_DAYS[new Date().getDay()]}요일 · TODAY</div>
-          <h1 className="font-display text-[30px] leading-tight">
-            {String(user.id)}님, <span className="text-volt">오늘도 갑시다</span>
-          </h1>
+          <h1 className="font-display text-[26px] leading-tight tracking-tight">헬스</h1>
+          <p className="mt-0.5 text-[12.5px] text-white/45">
+            {new Date().getMonth() + 1}월 {new Date().getDate()}일 {S_DAYS[new Date().getDay()]}요일 · {String(user.id)}
+          </p>
         </div>
         <button
           onClick={() => setShowSettings(true)}
-          className="mt-1 grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-card text-[16px]"
+          className="mt-1 grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-card text-[16px]"
           aria-label="설정"
         >
           ⚙️
@@ -127,7 +127,7 @@ export default function TodayPage() {
       </div>
 
       {/* ── 하나로 이어지는 하루 타임라인 ── */}
-      <Node icon="☀️" label="오늘 브리핑 BRIEFING">
+      <Node icon="01" label="오늘 브리핑 BRIEFING">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[13.5px] font-medium leading-relaxed">💬 {quote}</p>
@@ -146,17 +146,17 @@ export default function TodayPage() {
         </div>
       </Node>
 
-      <Node icon="🏋️" label="오늘의 운동 WORKOUT">
+      <Node icon="02" label="오늘의 운동 WORKOUT">
         <div className="mb-2 flex gap-1.5">
           <button
             onClick={() => setShowRoutinePick(true)}
-            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
+            className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
           >
             📋 루틴 변경
           </button>
           <button
             onClick={() => setShowAddEx(true)}
-            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
+            className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
           >
             ➕ 운동 추가
           </button>
@@ -164,7 +164,7 @@ export default function TodayPage() {
         <TodayWorkoutCard embedded items={items} onToggleSet={toggleSet} onOpenExercise={setOpenId} />
       </Node>
 
-      <Node icon="🏁" label={doneSets >= totalSets && totalSets > 0 ? "오늘의 결과 RESULT" : "오늘 끝나면 REWARD"} last>
+      <Node icon="03" label={doneSets >= totalSets && totalSets > 0 ? "오늘의 결과 RESULT" : "오늘 끝나면 REWARD"} last>
         <div className="flex items-end gap-3">
           <div>
             <div className="text-[11px] text-white/45">연속 운동</div>
@@ -183,7 +183,7 @@ export default function TodayPage() {
           <WeekStrip days={week} target={`총 ${stats?.sessions ?? 0}회 · Lv${stats?.level ?? 1}`} />
         </div>
         {doneSets >= totalSets && totalSets > 0 && (
-          <p className="mt-3 rounded-2xl bg-volt/10 px-3.5 py-2.5 text-center text-[13px] font-bold text-volt">
+          <p className="mt-3 rounded-lg bg-volt/10 px-3.5 py-2.5 text-center text-[13px] font-bold text-volt">
             오늘 몫 완료! 내일 스트릭이 이어집니다 🎉
           </p>
         )}
@@ -229,7 +229,7 @@ export default function TodayPage() {
                   setActiveRoutine(r.id);
                   setShowRoutinePick(false);
                 }}
-                className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left ${
+                className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left ${
                   active ? "border-volt/50 bg-volt/[0.06]" : "border-white/10 bg-white/[0.03]"
                 }`}
               >
@@ -260,7 +260,7 @@ export default function TodayPage() {
                 updateItems([...items, ...itemsFromExercises([ex.id])]);
                 setShowAddEx(false);
               }}
-              className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-left"
+              className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-left"
             >
               <span className="text-[20px]">{ex.em}</span>
               <span className="min-w-0 flex-1">

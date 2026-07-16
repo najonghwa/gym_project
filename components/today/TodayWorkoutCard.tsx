@@ -21,7 +21,7 @@ export function TodayWorkoutCard({
   const pct = totalSets ? Math.round((doneSets / totalSets) * 100) : 0;
 
   return (
-    <div className={embedded ? "" : "rounded-3xl border border-white/[0.06] bg-card p-4"}>
+    <div className={embedded ? "" : "rounded-xl border border-white/[0.06] bg-card p-4"}>
       <div className="mb-3 flex items-center justify-between">
         <div>
           <div className="text-[13px] text-white/55">
@@ -54,7 +54,7 @@ export function TodayWorkoutCard({
             <motion.div
               key={it.exerciseId}
               variants={reduce ? undefined : fadeUp}
-              className={`rounded-2xl border p-3 ${
+              className={`rounded-lg border p-3 ${
                 allDone ? "border-volt/50 bg-volt/[0.07]" : "border-white/[0.06] bg-white/[0.03]"
               }`}
             >

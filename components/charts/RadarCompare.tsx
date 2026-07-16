@@ -10,7 +10,7 @@ const PERIODS = ["주", "월", "년", "전체"] as const;
 
 function PeriodPills({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="mx-auto flex w-fit gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+    <div className="mx-auto flex w-fit gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
       {PERIODS.map((p) => (
         <button
           key={p}

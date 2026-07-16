@@ -38,7 +38,7 @@ export function MuscleSheet({
               ["최고 중량", `${MOCK_SUMMARY.bestKg}kg`],
               ["평균 반복", `${MOCK_SUMMARY.avgReps}회`],
             ].map(([l, v]) => (
-              <div key={l} className="rounded-2xl bg-white/[0.05] py-2.5 text-center">
+              <div key={l} className="rounded-lg bg-white/[0.05] py-2.5 text-center">
                 <div className="font-display text-[16px] leading-none">{v}</div>
                 <div className="mt-1 text-[10px] text-white/55">{l}</div>
               </div>

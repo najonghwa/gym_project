@@ -19,7 +19,7 @@ export function MascotBubble({
         variants={reduce ? undefined : fadeUp}
         initial={reduce ? false : "hidden"}
         animate="show"
-        className="relative flex-1 rounded-3xl rounded-bl-md border border-white/[0.06] bg-card px-4 py-3.5"
+        className="relative flex-1 rounded-xl rounded-bl-md border border-white/[0.06] bg-card px-4 py-3.5"
       >
         <p className="text-[14px] font-medium leading-relaxed">💬 {quote}</p>
       </motion.div>

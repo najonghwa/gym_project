@@ -47,7 +47,7 @@ export default function RankingPage() {
       <div className="lab mb-1">RANKING 사내 랭킹 {demo && "· 예시"}</div>
       <h2 className="font-display text-[26px]">누가 제일 꾸준할까?</h2>
 
-      <div className="mt-4 grid grid-cols-4 gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+      <div className="mt-4 grid grid-cols-4 gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
         {METRICS.map((mm) => (
           <button
             key={mm.id}
@@ -76,7 +76,7 @@ export default function RankingPage() {
               <motion.div
                 key={r.id}
                 variants={reduce ? undefined : fadeUp}
-                className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
+                className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
                   isMe ? "border-volt bg-volt/10" : "border-white/[0.06] bg-card"
                 }`}
               >

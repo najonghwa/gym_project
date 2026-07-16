@@ -9,7 +9,7 @@ const TONES = [
 export function ColorInitialBadge({ text, seed = 0 }: { text: string; seed?: number }) {
   return (
     <span
-      className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl font-display text-[15px] ${TONES[seed % TONES.length]}`}
+      className={`grid h-11 w-11 shrink-0 place-items-center rounded-lg font-display text-[15px] ${TONES[seed % TONES.length]}`}
     >
       {text}
     </span>

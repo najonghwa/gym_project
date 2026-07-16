@@ -18,10 +18,10 @@ export function PillButton({
 }) {
   const reduce = useReducedMotion();
   const base =
-    "min-h-11 rounded-full px-5 py-3 text-[15px] font-extrabold transition disabled:opacity-40";
+    "min-h-11 rounded-lg px-5 py-3 text-[15px] font-bold transition disabled:opacity-40";
   const look =
     variant === "volt"
-      ? "bg-volt text-black shadow-lg shadow-volt/10"
+      ? "bg-volt text-black"
       : "border border-white/15 bg-white/5 text-zinc-100";
   return (
     <motion.button

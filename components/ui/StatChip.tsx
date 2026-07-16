@@ -18,7 +18,7 @@ export function StatChip({
   const bar =
     tone === "volt" ? "bg-volt" : tone === "gold" ? "bg-gold" : tone === "danger" ? "bg-danger" : "bg-zinc-700";
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.04] px-3.5 py-2.5">
+    <div className="relative overflow-hidden rounded-lg border border-white/[0.06] bg-white/[0.04] px-3.5 py-2.5">
       <span className={`absolute left-0 top-0 h-full w-1 ${bar}`} />
       <div className="pl-1.5">
         <div className="text-[10.5px] font-bold text-white/55">

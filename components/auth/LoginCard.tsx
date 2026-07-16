@@ -30,21 +30,18 @@ export function LoginCard({
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center">
-      <div className="text-center font-display text-[24px] tracking-tight text-white/90">
+      <h1 className="text-center font-display text-[34px] tracking-tight">
         FitPlan<span className="text-volt">.</span>
-      </div>
-      <h1 className="mt-3 text-center font-display text-[34px] leading-tight">
-        오늘도 <span className="text-volt">한 세트</span> 더.
       </h1>
-      <p className="mt-1 text-center text-[12.5px] text-white/50">
+      <p className="mt-1.5 text-center text-[12.5px] text-white/45">
         헬스 · 러닝 통합 대시보드 — 기존 아이디 그대로
       </p>
-      <div className="mt-6 grid grid-cols-2 gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+      <div className="mt-6 grid grid-cols-2 gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
         {(["login", "signup"] as const).map((m) => (
           <button
             key={m}
             onClick={() => { setMode(m); setMsg(""); }}
-            className={`rounded-full py-2.5 text-[14px] font-bold ${mode === m ? "bg-volt text-black" : "text-white/50"}`}
+            className={`rounded-md py-2.5 text-[14px] font-bold ${mode === m ? "bg-volt text-black" : "text-white/50"}`}
           >
             {m === "login" ? "로그인" : "처음이에요"}
           </button>
@@ -53,13 +50,13 @@ export function LoginCard({
       <input
         value={id} onChange={(e) => setId(e.target.value)}
         placeholder="아이디" autoComplete="off"
-        className="mt-4 w-full rounded-2xl border border-white/10 bg-card px-4 py-4 text-center outline-none placeholder:text-white/30 focus:border-volt"
+        className="mt-4 w-full rounded-lg border border-white/10 bg-card px-4 py-4 text-center outline-none placeholder:text-white/30 focus:border-volt"
       />
       <input
         value={pin} onChange={(e) => setPin(e.target.value)}
         type="password" inputMode="numeric" maxLength={4} placeholder="PIN 4자리"
         onKeyDown={(e) => e.key === "Enter" && go()}
-        className="mt-2.5 w-full rounded-2xl border border-white/10 bg-card px-4 py-4 text-center tracking-[8px] outline-none placeholder:tracking-normal placeholder:text-white/30 focus:border-volt"
+        className="mt-2.5 w-full rounded-lg border border-white/10 bg-card px-4 py-4 text-center tracking-[8px] outline-none placeholder:tracking-normal placeholder:text-white/30 focus:border-volt"
       />
 
       {/* 가입 시 주 종목 선택 → 첫 화면 결정 (설정에서 변경 가능) */}
@@ -71,7 +68,7 @@ export function LoginCard({
               <button
                 key={v}
                 onClick={() => setPrimary(v)}
-                className={`rounded-2xl border p-3.5 text-left ${
+                className={`rounded-lg border p-3.5 text-left ${
                   primary === v ? "border-volt bg-volt/10" : "border-white/10 bg-card"
                 }`}
               >
@@ -100,7 +97,7 @@ export function LoginCard({
           const err = await signInWithGoogle();
           if (err) setMsg("Google 로그인 미설정 — 관리자에게 문의 (" + err.slice(0, 40) + ")");
         }}
-        className="flex w-full items-center justify-center gap-2.5 rounded-full border border-white/15 bg-white py-3.5 text-[14.5px] font-bold text-black active:scale-[0.98]"
+        className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-white/15 bg-white py-3.5 text-[14.5px] font-bold text-black active:scale-[0.98]"
       >
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/>
@@ -114,7 +111,7 @@ export function LoginCard({
 
       {/* 가입 소구: 일반 대비 성장 비교 */}
       {mode === "signup" && (
-        <div className="mt-4 rounded-3xl border border-white/[0.06] bg-card p-4">
+        <div className="mt-4 rounded-xl border border-white/[0.06] bg-card p-4">
           <GrowthCompare />
         </div>
       )}

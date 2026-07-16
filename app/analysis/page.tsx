@@ -107,12 +107,12 @@ export default function AnalysisPage() {
   return (
     <main className="space-y-4 lg:mx-auto lg:max-w-4xl lg:pt-24">
       {/* 모드 전환 */}
-      <div className="grid grid-cols-2 gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+      <div className="grid grid-cols-2 gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
         {(["gym", "run"] as const).map((m) => (
           <button
             key={m}
             onClick={() => setMode(m)}
-            className={`rounded-full py-2.5 text-[14px] font-bold ${mode === m ? "bg-volt text-black" : "text-white/50"}`}
+            className={`rounded-md py-2.5 text-[14px] font-bold ${mode === m ? "bg-volt text-black" : "text-white/50"}`}
           >
             {m === "gym" ? "🏋️ 헬스 분석" : "🏃 러닝 분석"}
           </button>
@@ -130,7 +130,7 @@ export default function AnalysisPage() {
             <StatChip label="레벨" value={`Lv${st?.level ?? 1}`} tone="mute" />
           </div>
 
-          <div className="rounded-3xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
+          <div className="rounded-xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
             <RecoveryMap data={recovery} />
           </div>
 

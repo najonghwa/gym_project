@@ -165,17 +165,17 @@ export default function LiveRunPage() {
   return (
     <main className="mx-auto flex min-h-[78vh] max-w-md flex-col lg:pt-24">
       <div className="lab">GPS RUN</div>
-      <h1 className="font-display text-[30px] leading-tight">라이브 러닝</h1>
+      <h1 className="font-display text-[26px] leading-tight tracking-tight">라이브 러닝</h1>
 
       {/* 대시보드 숫자 */}
-      <div className="mt-6 rounded-3xl border border-white/[0.06] bg-card p-6 text-center">
+      <div className="mt-6 rounded-xl border border-white/[0.06] bg-card p-6 text-center">
         <div className="lab">거리</div>
         <div className="font-display text-[64px] leading-none text-volt tabular-nums">
           {km.toFixed(2)}<span className="text-[20px] text-white/40"> km</span>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-2">
           {([["시간", fmtT(elapsed)], ["현재 페이스", paceStr(curPace)], ["평균 페이스", paceStr(avgPace)]] as const).map(([l, v]) => (
-            <div key={l} className="rounded-2xl bg-white/[0.05] py-3">
+            <div key={l} className="rounded-lg bg-white/[0.05] py-3">
               <div className="font-display text-[19px] leading-none tabular-nums">{v}</div>
               <div className="mt-1.5 text-[9.5px] text-white/45">{l}</div>
             </div>
@@ -188,7 +188,7 @@ export default function LiveRunPage() {
         )}
       </div>
 
-      {err && <p className="mt-3 rounded-2xl border border-danger/30 bg-danger/10 p-3 text-[12.5px] text-danger">{err}</p>}
+      {err && <p className="mt-3 rounded-lg border border-danger/30 bg-danger/10 p-3 text-[12.5px] text-danger">{err}</p>}
 
       {/* 컨트롤 */}
       <div className="mt-auto pt-6">
@@ -205,19 +205,19 @@ export default function LiveRunPage() {
         )}
         {phase === "live" && (
           <div className="grid grid-cols-2 gap-2.5">
-            <button className="rounded-full border border-white/15 bg-white/[0.06] py-4 text-[15px] font-extrabold" onClick={pause}>⏸ 일시정지</button>
-            <button className="rounded-full bg-danger py-4 text-[15px] font-extrabold text-white" onClick={finish}>■ 종료</button>
+            <button className="rounded-lg border border-white/15 bg-white/[0.06] py-4 text-[15px] font-extrabold" onClick={pause}>⏸ 일시정지</button>
+            <button className="rounded-lg bg-danger py-4 text-[15px] font-extrabold text-white" onClick={finish}>■ 종료</button>
           </div>
         )}
         {phase === "paused" && (
           <div className="grid grid-cols-2 gap-2.5">
             <PillButton className="!py-4" onClick={resume}>▶ 계속</PillButton>
-            <button className="rounded-full bg-danger py-4 text-[15px] font-extrabold text-white" onClick={finish}>■ 종료</button>
+            <button className="rounded-lg bg-danger py-4 text-[15px] font-extrabold text-white" onClick={finish}>■ 종료</button>
           </div>
         )}
         {phase === "done" && (
           <>
-            <div className="rounded-3xl border border-volt/30 bg-volt/[0.07] p-4 text-center">
+            <div className="rounded-xl border border-volt/30 bg-volt/[0.07] p-4 text-center">
               <b className="text-[15px]">🏁 수고했어요!</b>
               <p className="mt-1 text-[13px] text-white/60">
                 {km.toFixed(2)}km · {fmtT(elapsed)} · 평균 {paceStr(avgPace)}/km
@@ -226,7 +226,7 @@ export default function LiveRunPage() {
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2.5">
               <button
-                className="rounded-full border border-white/15 py-4 text-[14px] font-bold text-white/50"
+                className="rounded-lg border border-white/15 py-4 text-[14px] font-bold text-white/50"
                 onClick={() => { if (window.confirm("이 러닝을 저장하지 않고 버릴까요?")) router.push("/run"); }}
               >
                 폐기

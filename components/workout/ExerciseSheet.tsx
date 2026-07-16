@@ -111,7 +111,7 @@ export function ExerciseSheet({
     <BottomSheet open={!!exercise} onClose={onClose} tall>
       {/* 헤더 */}
       <div className="flex items-center gap-3">
-        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-white/[0.06] bg-white/[0.04] text-2xl">{ex.em}</div>
+        <div className="grid h-12 w-12 place-items-center rounded-lg border border-white/[0.06] bg-white/[0.04] text-2xl">{ex.em}</div>
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-lg font-extrabold">{ex.name}</h3>
           <div className="text-[12px] text-white/55">{ex.zone}구역 · {ex.equipment} · 휴식 {ex.restSec}초</div>
@@ -119,7 +119,7 @@ export function ExerciseSheet({
       </div>
 
       {celebrate && (
-        <div className="mt-3 flex items-center gap-3 rounded-2xl border border-volt/40 bg-volt/10 px-4 py-2.5">
+        <div className="mt-3 flex items-center gap-3 rounded-lg border border-volt/40 bg-volt/10 px-4 py-2.5">
           <Mascot state="cheer" size={52} />
           <b className="text-[14px]">전 세트 완료! 오늘도 해냈다 🎉</b>
         </div>
@@ -128,7 +128,7 @@ export function ExerciseSheet({
       {/* 플레이어 + 도넛 */}
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <AnimPlayer pattern={ex.pattern} level={ex.level} frames={ex.frames} />
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3">
+        <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-3">
           <div className="lab mb-1">자극 기여</div>
           <MuscleDonut contrib={ex.contrib} />
         </div>
@@ -136,7 +136,7 @@ export function ExerciseSheet({
 
       {/* 휴식 타이머 */}
       {rest !== null && (
-        <div className="mt-3 flex items-center gap-3 rounded-2xl border border-volt/50 bg-card px-4 py-2.5">
+        <div className="mt-3 flex items-center gap-3 rounded-lg border border-volt/50 bg-card px-4 py-2.5">
           <span className="text-[18px]">⏱️</span>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
             <div className="h-full bg-volt transition-all" style={{ width: `${(rest / ex.restSec) * 100}%` }} />
@@ -173,15 +173,15 @@ export function ExerciseSheet({
         onChange={(e) => setNote(e.target.value)}
         placeholder="개인 노트 (그립 넓이, 느낌 등)"
         rows={2}
-        className="mt-4 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-[13px] outline-none placeholder:text-white/30 focus:border-volt"
+        className="mt-4 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-[13px] outline-none placeholder:text-white/30 focus:border-volt"
       />
-      <div className="mt-2 rounded-2xl border border-gold/40 bg-gold/10 px-3.5 py-2.5 text-[12.5px] leading-relaxed">
+      <div className="mt-2 rounded-lg border border-gold/40 bg-gold/10 px-3.5 py-2.5 text-[12.5px] leading-relaxed">
         💡 <b>전문가 팁</b> — {ex.tip}
       </div>
       <ol className="mt-3 space-y-1.5">
         {ex.howto.map((h, i) => (
           <li key={i} className="flex gap-2 text-[12.5px] leading-relaxed text-white/70">
-            <span className="grid h-4.5 w-4.5 shrink-0 place-items-center rounded-full bg-volt text-[10px] font-extrabold text-black">{i + 1}</span>
+            <span className="grid h-4.5 w-4.5 shrink-0 place-items-center rounded-lg bg-volt text-[10px] font-extrabold text-black">{i + 1}</span>
             {h}
           </li>
         ))}

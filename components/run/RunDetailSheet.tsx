@@ -35,7 +35,7 @@ function RouteMap({ route }: { route: number[][] }) {
     return () => { dead = true; mapRef.current?.remove(); mapRef.current = null; };
   }, [route]);
 
-  return <div ref={divRef} className="h-52 w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]" />;
+  return <div ref={divRef} className="h-52 w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03]" />;
 }
 
 export function RunDetailSheet({
@@ -60,7 +60,7 @@ export function RunDetailSheet({
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2">
             {([["거리", `${run.km}km`], ["평균 페이스", `${paceStr(run.paceSec)}/km`], ["시간", run.durSec ? fmtT(run.durSec) : "—"]] as const).map(([l, v]) => (
-              <div key={l} className="rounded-2xl bg-white/[0.05] py-2.5 text-center">
+              <div key={l} className="rounded-lg bg-white/[0.05] py-2.5 text-center">
                 <div className="font-display text-[16px] leading-none tabular-nums">{v}</div>
                 <div className="mt-1 text-[9.5px] text-white/45">{l}</div>
               </div>
@@ -71,7 +71,7 @@ export function RunDetailSheet({
           {run.route && run.route.length >= 2 ? (
             <div className="mt-3"><RouteMap route={run.route} /></div>
           ) : (
-            <p className="mt-3 rounded-2xl bg-white/[0.04] p-3 text-center text-[12px] text-white/40">
+            <p className="mt-3 rounded-lg bg-white/[0.04] p-3 text-center text-[12px] text-white/40">
               수동 기록이라 경로가 없어요 — GPS 러닝으로 뛰면 지도가 나와요 🗺️
             </p>
           )}
@@ -105,7 +105,7 @@ export function RunDetailSheet({
               <div className="lab mb-2">이 러닝의 최고 구간</div>
               <div className="grid grid-cols-2 gap-2">
                 {bests.map((b) => (
-                  <div key={b.m} className="flex items-baseline justify-between rounded-2xl bg-white/[0.05] px-3.5 py-2.5">
+                  <div key={b.m} className="flex items-baseline justify-between rounded-lg bg-white/[0.05] px-3.5 py-2.5">
                     <span className="text-[12px] font-bold text-white/55">{b.m / 1000}km</span>
                     <b className="font-display text-[15px] text-volt tabular-nums">{paceStr(Math.round(b.sec! / (b.m / 1000)))}<span className="text-[10px] text-white/40">/km</span></b>
                   </div>
@@ -116,7 +116,7 @@ export function RunDetailSheet({
 
           <button
             onClick={() => { if (window.confirm(`${run.date} · ${run.km}km 기록을 삭제할까요?`)) { onDelete(run); onClose(); } }}
-            className="mt-5 w-full rounded-full border border-danger/30 py-3 text-[13px] font-bold text-danger/80"
+            className="mt-5 w-full rounded-lg border border-danger/30 py-3 text-[13px] font-bold text-danger/80"
           >
             🗑 이 기록 삭제
           </button>

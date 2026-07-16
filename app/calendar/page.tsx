@@ -66,7 +66,7 @@ export default function CalendarPage() {
         >›</button>
       </div>
 
-      <div className="rounded-3xl border border-white/[0.06] bg-card p-3.5">
+      <div className="rounded-xl border border-white/[0.06] bg-card p-3.5">
         <div className="grid grid-cols-7 gap-1.5">
           {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
             <div key={d} className={`py-1 text-center text-[10px] font-bold ${i === 0 ? "text-danger/70" : "text-white/35"}`}>{d}</div>

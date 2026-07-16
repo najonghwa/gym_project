@@ -56,7 +56,7 @@ export function PRChart({
             {best.toLocaleString()}<span className="ml-0.5 text-[11px]">{unit}</span>
           </div>
         </div>
-        <div className="flex gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+        <div className="flex gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
           {METRICS.map((m) => (
             <button
               key={m.id}

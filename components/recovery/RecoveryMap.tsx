@@ -43,7 +43,7 @@ export function RecoveryMap({ data }: { data: MuscleRecovery[] }) {
             )}
           </div>
         </div>
-        <div className="flex gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+        <div className="flex gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
           {(["front", "back"] as const).map((v) => (
             <button
               key={v}
@@ -101,7 +101,7 @@ export function RecoveryMap({ data }: { data: MuscleRecovery[] }) {
       </div>
 
       {/* 마스코트 코멘트 */}
-      <div className="mt-3 flex items-center gap-2.5 rounded-2xl bg-white/[0.04] px-3.5 py-2.5">
+      <div className="mt-3 flex items-center gap-2.5 rounded-lg bg-white/[0.04] px-3.5 py-2.5">
         <span className="text-[15px]">{mascotState === "cheer" ? "✅" : mascotState === "tired" ? "⚠️" : "💡"}</span>
         <p className="text-[12.5px] leading-relaxed text-white/70">
           {mascotState === "cheer"

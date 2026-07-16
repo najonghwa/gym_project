@@ -81,7 +81,7 @@ export function ExploreSection({
           <motion.div
             key={r.id}
             variants={reduce ? undefined : fadeUp}
-            className="rounded-3xl border border-white/[0.06] bg-card p-4"
+            className="rounded-xl border border-white/[0.06] bg-card p-4"
           >
             <div className="flex items-start gap-3">
               <ColorInitialBadge text={r.badge} seed={i} />
@@ -152,7 +152,7 @@ export function ExploreSection({
                 ["⏱️ 소요", `${detail.durationMin}분`],
                 ["🔥 칼로리", `${detail.kcal} kcal`],
               ].map(([l, v]) => (
-                <div key={l} className="rounded-2xl bg-white/[0.05] px-3 py-3 text-center">
+                <div key={l} className="rounded-lg bg-white/[0.05] px-3 py-3 text-center">
                   <div className="text-[10.5px] text-white/45">{l}</div>
                   <div className="mt-1 font-display text-[17px]">{v}</div>
                 </div>

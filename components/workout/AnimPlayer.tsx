@@ -72,7 +72,7 @@ export function AnimPlayer({
   const playState = playing ? "running" : "paused";
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-2">
+    <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-2">
       <style>{`
         @keyframes poseA { 0%,42%{opacity:1} 50%,92%{opacity:0} 100%{opacity:1} }
         @keyframes poseB { 0%,42%{opacity:0} 50%,92%{opacity:1} 100%{opacity:0} }
@@ -121,7 +121,7 @@ export function AnimPlayer({
           </button>
           <button
             onClick={() => setPlaying(!playing)}
-            className="grid h-8 w-8 place-items-center rounded-full bg-volt text-[13px] text-black"
+            className="grid h-8 w-8 place-items-center rounded-lg bg-volt text-[13px] text-black"
             aria-label={playing ? "일시정지" : "재생"}
           >
             {playing ? "⏸" : "▶"}

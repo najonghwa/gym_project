@@ -72,7 +72,7 @@ export function Big3Card({
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2">
             {([["스쿼트 SQ", last.s], ["벤치 BP", last.b], ["데드 DL", last.d]] as const).map(([l, v]) => (
-              <div key={l} className="rounded-2xl bg-white/[0.05] py-2.5 text-center">
+              <div key={l} className="rounded-lg bg-white/[0.05] py-2.5 text-center">
                 <div className="font-display text-[18px] leading-none">{v}<span className="text-[10px] text-white/40">kg</span></div>
                 <div className="mt-1 text-[9.5px] text-white/45">{l}</div>
               </div>

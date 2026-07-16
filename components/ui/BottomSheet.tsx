@@ -28,7 +28,7 @@ export function BottomSheet({
             onClick={onClose}
           />
           <motion.div
-            className={`fixed bottom-0 left-1/2 z-[60] w-full max-w-md -translate-x-1/2 overflow-y-auto rounded-t-[28px] border-x border-t border-white/10 bg-card lg:max-w-lg ${
+            className={`fixed bottom-0 left-1/2 z-[60] w-full max-w-md -translate-x-1/2 overflow-y-auto rounded-t-2xl border-x border-t border-white/10 bg-card lg:max-w-lg ${
               tall ? "top-6" : "max-h-[85vh]"
             }`}
             variants={reduce ? undefined : sheetUp}

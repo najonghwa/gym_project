@@ -25,10 +25,6 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap"
-        />
       </head>
       <body className="min-h-full bg-bg text-zinc-50 antialiased">
         <div className="mx-auto min-h-screen max-w-md px-4 pb-28 pt-4 lg:max-w-6xl lg:px-8 lg:pb-10">

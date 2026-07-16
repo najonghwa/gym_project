@@ -139,19 +139,19 @@ export default function RunPage() {
       <div className="flex items-end justify-between">
         <div>
           <div className="lab">RUN DASHBOARD</div>
-          <h1 className="font-display text-[30px] leading-tight">러닝</h1>
+          <h1 className="font-display text-[26px] leading-tight tracking-tight">러닝</h1>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowSettings(true)}
-            className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-card text-[16px]"
+            className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-card text-[16px]"
             aria-label="설정"
           >
             ⚙️
           </button>
           <button
             onClick={() => setShowLog(true)}
-            className="rounded-full border border-white/15 bg-white/[0.06] px-4 py-2.5 text-[13px] font-extrabold"
+            className="rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2.5 text-[13px] font-extrabold"
           >
             ✍️ 수동 기록
           </button>
@@ -161,9 +161,9 @@ export default function RunPage() {
       {/* GPS 라이브 러닝 시작 */}
       <button
         onClick={() => router.push("/run/live")}
-        className="flex w-full items-center gap-3 rounded-3xl border border-volt/30 bg-gradient-to-r from-volt/15 to-transparent p-4 text-left active:scale-[0.99]"
+        className="flex w-full items-center gap-3 rounded-xl border border-volt/30 bg-gradient-to-r from-volt/15 to-transparent p-4 text-left active:scale-[0.99]"
       >
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-volt text-[19px]">📡</span>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-volt text-[19px]">📡</span>
         <span className="min-w-0 flex-1">
           <b className="block text-[15.5px]">GPS 러닝 시작</b>
           <span className="text-[11.5px] text-white/50">폰 위치로 거리·페이스 자동 기록 — 시작/일시정지/종료</span>
@@ -183,7 +183,7 @@ export default function RunPage() {
 
       <div className="grid gap-4 lg:grid-cols-5">
         {/* 월별 러닝 거리 */}
-        <section className="rounded-3xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
+        <section className="rounded-xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
           <b className="text-[15px] font-extrabold">월별 러닝 거리</b>
           <p className="text-[11.5px] text-white/45">{new Date().getFullYear()}년 · 이번 달 강조</p>
           <div className="mt-2 h-44">
@@ -206,7 +206,7 @@ export default function RunPage() {
         </section>
 
         {/* 올해 목표 도넛 */}
-        <section className="rounded-3xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
+        <section className="rounded-xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
               <b className="text-[15px] font-extrabold">올해 누적 목표</b>
@@ -242,7 +242,7 @@ export default function RunPage() {
 
       <div className="grid gap-4 lg:grid-cols-5">
         {/* 개인 최고 기록 */}
-        <section className="rounded-3xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
+        <section className="rounded-xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
           <b className="text-[15px] font-extrabold">
             개인 최고 기록 <span className="text-[10px] font-normal text-white/40">Personal Best</span>
           </b>
@@ -267,7 +267,7 @@ export default function RunPage() {
           <div className="lab mt-4 mb-1.5">거리별 최고 페이스</div>
           <div className="grid grid-cols-2 gap-2">
             {bests.map((b) => (
-              <div key={b.m} className="rounded-2xl bg-white/[0.05] px-3.5 py-2.5">
+              <div key={b.m} className="rounded-lg bg-white/[0.05] px-3.5 py-2.5">
                 <div className="flex items-baseline justify-between">
                   <span className="text-[12px] font-bold text-white/55">{b.m / 1000}km</span>
                   <b className={`font-display text-[15px] tabular-nums ${b.paceSec ? "text-gold" : "text-white/25"}`}>
@@ -283,7 +283,7 @@ export default function RunPage() {
         </section>
 
         {/* 페이스 발전 흐름 */}
-        <section className="rounded-3xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
+        <section className="rounded-xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
           <b className="text-[15px] font-extrabold">페이스 발전 흐름</b>
           <p className="text-[11.5px] text-white/45">최근 {s.paceSeries.length}회 · 위로 갈수록 빠름</p>
           <div className="mt-2 h-40">
@@ -317,7 +317,7 @@ export default function RunPage() {
 
       <div className="grid gap-4 lg:grid-cols-5">
         {/* 요일 히트맵 (최근 12주) */}
-        <section className="rounded-3xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
+        <section className="rounded-xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
           <b className="text-[15px] font-extrabold">러닝 빈도 히트맵</b>
           <p className="text-[11.5px] text-white/45">최근 12주 · 요일별 달린 거리</p>
           <div className="mt-3 flex gap-1.5">
@@ -354,11 +354,11 @@ export default function RunPage() {
         </section>
 
         {/* AI 코치 어드바이스 */}
-        <section className="rounded-3xl border border-indigo-400/25 bg-indigo-950/25 p-4 lg:col-span-2">
+        <section className="rounded-xl border border-indigo-400/25 bg-indigo-950/25 p-4 lg:col-span-2">
           <b className="text-[15px] font-extrabold">🤖 러닝 AI 코치 어드바이스</b>
           <p className="text-[11px] text-white/45">최근 기록 기반 맞춤 피드백</p>
           <div className="mt-3 space-y-2.5">
-            <div className="rounded-2xl bg-white/[0.05] p-3">
+            <div className="rounded-lg bg-white/[0.05] p-3">
               <div className="text-[11px] font-bold text-indigo-300">최근 4주 마일리지</div>
               <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
                 4주간 <b className="text-volt">{s.last4}km</b>
@@ -367,7 +367,7 @@ export default function RunPage() {
                   : " — 비교할 이전 기록이 아직 없어요"}
               </p>
             </div>
-            <div className="rounded-2xl bg-white/[0.05] p-3">
+            <div className="rounded-lg bg-white/[0.05] p-3">
               <div className="text-[11px] font-bold text-indigo-300">페이스 진단</div>
               <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
                 {s.paceTrend === null
@@ -379,7 +379,7 @@ export default function RunPage() {
                   : "페이스를 안정적으로 유지 중이에요."}
               </p>
             </div>
-            <div className="rounded-2xl bg-white/[0.05] p-3">
+            <div className="rounded-lg bg-white/[0.05] p-3">
               <div className="text-[11px] font-bold text-indigo-300">🎯 향후 4주 추천</div>
               <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
                 주당 <b className="text-gold">{s.nextTarget}km</b> 수준으로 10% 이내에서 서서히 올려보세요.
@@ -390,7 +390,7 @@ export default function RunPage() {
       </div>
 
       {/* 최근 기록 (삭제 가능) */}
-      <section className="rounded-3xl border border-white/[0.06] bg-card p-4">
+      <section className="rounded-xl border border-white/[0.06] bg-card p-4">
         <b className="text-[15px] font-extrabold">최근 기록</b>
         <p className="text-[11.5px] text-white/45">기록을 누르면 지도·구간 페이스가 나와요 · ✕로 삭제</p>
         {runs.length === 0 ? (
@@ -431,7 +431,7 @@ export default function RunPage() {
             <span className="lab">날짜</span>
             <input
               type="date" value={fDate} max={today()} onChange={(e) => setFDate(e.target.value)}
-              className="mt-1 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 outline-none [color-scheme:dark] focus:border-volt"
+              className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 outline-none [color-scheme:dark] focus:border-volt"
             />
           </label>
           <div className="grid grid-cols-2 gap-2.5">
@@ -440,7 +440,7 @@ export default function RunPage() {
               <input
                 type="number" step="0.1" inputMode="decimal" placeholder="5.0" value={fKm}
                 onChange={(e) => setFKm(e.target.value)}
-                className="mt-1 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center outline-none placeholder:text-white/25 focus:border-volt"
+                className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-center outline-none placeholder:text-white/25 focus:border-volt"
               />
             </label>
             <label className="block">
@@ -448,12 +448,12 @@ export default function RunPage() {
               <div className="mt-1 flex items-center gap-1.5">
                 <input
                   type="number" inputMode="numeric" placeholder="6" value={fMin} onChange={(e) => setFMin(e.target.value)}
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-2 py-3 text-center outline-none placeholder:text-white/25 focus:border-volt"
+                  className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-3 text-center outline-none placeholder:text-white/25 focus:border-volt"
                 />
                 <span className="text-white/40">&apos;</span>
                 <input
                   type="number" inputMode="numeric" placeholder="30" value={fSec} onChange={(e) => setFSec(e.target.value)}
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-2 py-3 text-center outline-none placeholder:text-white/25 focus:border-volt"
+                  className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-3 text-center outline-none placeholder:text-white/25 focus:border-volt"
                 />
                 <span className="text-white/40">&quot;</span>
               </div>
