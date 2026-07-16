@@ -30,7 +30,7 @@ export function MuscleSheet({
           </h3>
           <p className="mt-0.5 text-[12.5px] text-white/55">
             마지막 훈련 {daysAgoLabel(data.lastTrainedAt)}
-            {data.pct >= 1 ? " · 싱싱해요! 오늘 치기 좋은 날 💪" : data.pct < 0.5 ? " · 아직 회복 중 — 다른 부위 추천" : ""}
+            {data.pct >= 1 ? " · 회복 완료 — 오늘 운동하기 좋아요" : data.pct < 0.5 ? " · 아직 회복 중 — 다른 부위를 권해요" : ""}
           </p>
           <div className="mt-4 grid grid-cols-3 gap-2">
             {[

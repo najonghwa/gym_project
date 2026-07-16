@@ -62,7 +62,7 @@ export function LoginCard({
       {/* 가입 시 주 종목 선택 → 첫 화면 결정 (설정에서 변경 가능) */}
       {mode === "signup" && (
         <div className="mt-4">
-          <div className="lab mb-1.5">주로 어떤 운동을 하세요? <span className="font-normal text-white/35">— 첫 화면이 돼요</span></div>
+          <div className="lab mb-1.5">주로 하는 운동 <span className="font-normal text-white/35">— 첫 화면으로 설정돼요</span></div>
           <div className="grid grid-cols-2 gap-2">
             {([["gym", "🏋️", "헬스 위주", "웨이트 · 루틴 · 3대"], ["run", "🏃", "러닝 위주", "거리 · 페이스 · 목표"]] as const).map(([v, em, t, d]) => (
               <button

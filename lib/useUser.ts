@@ -137,8 +137,8 @@ export function useUser() {
     const db = loadDB();
     const local = db.users[uid(id)];
     const base = server ?? local;
-    if (!base) return "없는 아이디예요. '처음이에요'에서 만들어 주세요.";
-    if (base.pin && base.pin !== pin) return "PIN이 달라요.";
+    if (!base) return "등록되지 않은 아이디예요. '처음이에요'에서 만들 수 있어요.";
+    if (base.pin && base.pin !== pin) return "PIN이 일치하지 않아요.";
     const u: UserData = { ...base, id: id.trim(), pin: base.pin || pin };
     persist(u);
     return null;

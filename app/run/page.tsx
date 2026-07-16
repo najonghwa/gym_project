@@ -166,7 +166,7 @@ export default function RunPage() {
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-volt text-[19px]">📡</span>
         <span className="min-w-0 flex-1">
           <b className="block text-[15.5px]">GPS 러닝 시작</b>
-          <span className="text-[11.5px] text-white/50">폰 위치로 거리·페이스 자동 기록 — 시작/일시정지/종료</span>
+          <span className="text-[11.5px] text-white/50">위치 기반으로 거리와 페이스를 자동 기록합니다</span>
         </span>
         <span className="font-display text-[20px] text-volt">▶</span>
       </button>
@@ -392,7 +392,7 @@ export default function RunPage() {
       {/* 최근 기록 (삭제 가능) */}
       <section className="rounded-xl border border-white/[0.06] bg-card p-4">
         <b className="text-[15px] font-extrabold">최근 기록</b>
-        <p className="text-[11.5px] text-white/45">기록을 누르면 지도·구간 페이스가 나와요 · ✕로 삭제</p>
+        <p className="text-[11.5px] text-white/45">기록을 누르면 경로 지도와 구간 페이스를 볼 수 있어요</p>
         {runs.length === 0 ? (
           <p className="py-5 text-center text-[12.5px] text-white/35">아직 기록이 없어요 — 첫 러닝을 저장해 보세요!</p>
         ) : (

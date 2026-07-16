@@ -169,7 +169,7 @@ export default function AnalysisPage() {
                 })}
               </div>
             ) : (
-              <p className="py-4 text-center text-[12.5px] text-white/40">기록이 쌓이면 랭킹이 나와요</p>
+              <p className="py-4 text-center text-[12.5px] text-white/40">아직 운동 기록이 없어요</p>
             )}
           </AnalysisCard>
 
@@ -199,7 +199,7 @@ export default function AnalysisPage() {
                 </p>
               </>
             ) : (
-              <p className="py-4 text-center text-[12.5px] text-white/40">기록이 쌓이면 잔디가 자라나요 🌱</p>
+              <p className="py-4 text-center text-[12.5px] text-white/40">운동한 날이 색으로 표시돼요</p>
             )}
           </AnalysisCard>
 

@@ -29,7 +29,7 @@ export function SettingsSheet({
           </button>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-white/40">가입할 때 고른 값이에요 — 언제든 바꿀 수 있어요.</p>
+      <p className="mt-2 text-[11px] text-white/40">언제든 바꿀 수 있어요.</p>
       <button
         onClick={() => { onClose(); onLogout(); }}
         className="mt-5 w-full rounded-lg border border-white/10 py-3 text-[13.5px] font-bold text-white/50"

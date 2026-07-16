@@ -72,7 +72,7 @@ export function RunDetailSheet({
             <div className="mt-3"><RouteMap route={run.route} /></div>
           ) : (
             <p className="mt-3 rounded-lg bg-white/[0.04] p-3 text-center text-[12px] text-white/40">
-              수동 기록이라 경로가 없어요 — GPS 러닝으로 뛰면 지도가 나와요 🗺️
+              직접 입력한 기록에는 경로가 없어요. GPS 러닝으로 기록하면 지도가 표시됩니다.
             </p>
           )}
 

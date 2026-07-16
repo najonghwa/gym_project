@@ -17,6 +17,7 @@ import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
 import { EXERCISES, itemsFromExercises } from "@/lib/mock/exercises";
 import { EXPLORE } from "@/lib/mock/routines";
+import { MUSCLE_KR, type Muscle } from "@/lib/recovery";
 
 const S_DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -113,7 +114,29 @@ export default function TodayPage() {
     });
     const totalSets = [...map.values()].reduce((s, n) => s + n, 0);
     const thisMonth = monthly[now.getMonth()].n;
-    return { monthly, weekly, totalSets, thisMonth };
+    // 최근 운동 5건 (v2는 운동명 포함)
+    const recent = [...map.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1)).slice(0, 5).map(([d, sets]) => {
+      const v2day = user.v2?.workouts?.[d];
+      const names = v2day
+        ? (v2day.items as TodayItem[]).filter((it) => it.sets.some((s) => s.done)).map((it) => byId(it.exerciseId)?.name ?? "").filter(Boolean)
+        : [];
+      return { date: d, sets, names };
+    });
+    // 이번 주(최근 7일) 부위별 세트
+    const cutoff = new Date(now); cutoff.setDate(now.getDate() - 6); cutoff.setHours(0, 0, 0, 0);
+    const byMuscle = new Map<Muscle, number>();
+    Object.entries(user.v2?.workouts ?? {}).forEach(([d, w]) => {
+      if (new Date(d + "T00:00:00") < cutoff) return;
+      (w.items as TodayItem[]).forEach((it) => {
+        const done = it.sets.filter((s) => s.done).length;
+        if (!done) return;
+        const m = byId(it.exerciseId)?.contrib[0].muscle;
+        if (m) byMuscle.set(m, (byMuscle.get(m) ?? 0) + done);
+      });
+    });
+    const weekMuscles = [...byMuscle.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const maxMuscle = Math.max(1, ...weekMuscles.map(([, n]) => n));
+    return { monthly, weekly, totalSets, thisMonth, recent, weekMuscles, maxMuscle };
   }, [user]);
 
   // P2-10 컨디션% = 회복맵 평균 연동, 예상 시간 = 세트 수 × 2.5분
@@ -160,7 +183,7 @@ export default function TodayPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl lg:max-w-4xl lg:pt-10">
+    <main className="mx-auto max-w-2xl lg:max-w-6xl lg:pt-10">
       {/* 페이지 헤더 */}
       <div className="mb-6 flex items-start justify-between">
         <div>
@@ -242,6 +265,8 @@ export default function TodayPage() {
         </section>
       )}
 
+      <div className="lg:grid lg:grid-cols-3 lg:gap-6">
+      <div className="lg:col-span-2">
       {/* ── 하나로 이어지는 하루 타임라인 ── */}
       <div className="lab mb-2">오늘 TODAY</div>
       <Node icon="01" label="오늘 브리핑 BRIEFING">
@@ -327,10 +352,61 @@ export default function TodayPage() {
         </div>
         {doneSets >= totalSets && totalSets > 0 && (
           <p className="mt-3 rounded-lg bg-volt/10 px-3.5 py-2.5 text-center text-[13px] font-bold text-volt">
-            오늘 몫 완료! 내일 스트릭이 이어집니다 🎉
+            오늘 운동 완료! 연속 기록이 이어집니다 🎉
           </p>
         )}
       </Node>
+      </div>
+
+      {/* ── 우측 요약 컬럼 ── */}
+      <aside className="space-y-3 lg:pt-7">
+        <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+          <b className="text-[15px] font-extrabold">최근 운동</b>
+          {gymDash?.recent.length ? (
+            <div className="mt-1.5 divide-y divide-white/[0.06]">
+              {gymDash.recent.map((r) => (
+                <div key={r.date} className="flex items-center gap-2.5 py-2.5">
+                  <span className="w-12 shrink-0 text-[12px] tabular-nums text-white/50">{r.date.slice(5).replace("-", ".")}</span>
+                  <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-white/80">
+                    {r.names.length ? r.names.slice(0, 3).join(" · ") : "운동 기록"}
+                  </span>
+                  <b className="shrink-0 text-[12px] text-volt">{r.sets}세트</b>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="py-5 text-center text-[12.5px] text-white/40">아직 운동 기록이 없어요</p>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+          <b className="text-[15px] font-extrabold">이번 주 부위별 세트</b>
+          {gymDash?.weekMuscles.length ? (
+            <div className="mt-2.5 space-y-2">
+              {gymDash.weekMuscles.map(([m, n]) => (
+                <div key={m} className="flex items-center gap-2.5">
+                  <span className="w-14 shrink-0 text-[12px] font-bold text-white/60">{MUSCLE_KR[m]}</span>
+                  <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                    <div className="h-full rounded-full bg-volt" style={{ width: `${(n / gymDash.maxMuscle) * 100}%` }} />
+                  </div>
+                  <b className="w-11 shrink-0 text-right text-[12px] tabular-nums">{n}세트</b>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="py-5 text-center text-[12.5px] text-white/40">이번 주 완료한 세트가 없어요</p>
+          )}
+        </div>
+
+        {/* 이번 주 요일 스트립 — 리워드 카드와 별개로 사이드에서 상시 확인 */}
+        <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+          <b className="text-[15px] font-extrabold">이번 주</b>
+          <div className="mt-3">
+            <WeekStrip days={week} target={`총 ${stats?.sessions ?? 0}회 · Lv${stats?.level ?? 1}`} />
+          </div>
+        </div>
+      </aside>
+      </div>
 
       <ExerciseSheet
         exercise={openId ? byId(openId) ?? null : null}
@@ -348,8 +424,8 @@ export default function TodayPage() {
 
       <AchievementModal
         open={showBadge}
-        title="오늘 완주!"
-        desc={`${totalSets}세트 전부 클리어 — 스트릭 +1 🔥`}
+        title="오늘 운동 완료!"
+        desc={`${totalSets}세트 모두 완료 — 연속 기록 +1 🔥`}
         emoji="🏋️"
         onClose={() => setShowBadge(false)}
       />

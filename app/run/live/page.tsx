@@ -183,7 +183,7 @@ export default function LiveRunPage() {
         </div>
         {(phase === "live" || phase === "paused") && (
           <p className="mt-4 text-[11.5px] text-white/40">
-            {gpsOk ? (phase === "paused" ? "⏸ 일시정지 중" : "📡 GPS 추적 중 — 화면을 켠 채로 뛰어주세요") : "📡 GPS 신호 잡는 중…"}
+            {gpsOk ? (phase === "paused" ? "⏸ 일시정지 중" : "📡 GPS 기록 중 — 화면을 켠 상태로 유지해 주세요") : "📡 GPS 신호 잡는 중…"}
           </p>
         )}
       </div>
@@ -196,7 +196,7 @@ export default function LiveRunPage() {
           <>
             <PillButton className="w-full !py-4 !text-[16px]" onClick={start}>▶ 러닝 시작</PillButton>
             <p className="mt-2.5 text-center text-[11px] text-white/35">
-              시작하면 위치 권한을 물어봐요 · 위치는 러닝 기록에만 사용
+              시작할 때 위치 권한을 요청해요 · 위치 정보는 러닝 기록에만 사용됩니다
             </p>
             <button className="mt-3 w-full py-2 text-[12.5px] font-bold text-white/40" onClick={() => router.push("/run")}>
               ← 러닝 대시보드로
@@ -222,7 +222,7 @@ export default function LiveRunPage() {
               <p className="mt-1 text-[13px] text-white/60">
                 {km.toFixed(2)}km · {fmtT(elapsed)} · 평균 {paceStr(avgPace)}/km
               </p>
-              {km <= 0.05 && <p className="mt-1 text-[11.5px] text-gold">거리가 너무 짧아요 — 저장하지 않는 걸 추천</p>}
+              {km <= 0.05 && <p className="mt-1 text-[11.5px] text-gold">거리가 너무 짧아 기록으로 남기기 어려워요</p>}
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2.5">
               <button
