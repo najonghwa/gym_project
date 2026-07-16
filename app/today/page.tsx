@@ -46,6 +46,7 @@ export default function TodayPage() {
   const [celebrated, setCelebrated] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
   const [showRoutinePick, setShowRoutinePick] = useState(false);
+  const [pickDetail, setPickDetail] = useState<string | null>(null); // 루틴 시트에서 펼쳐본 루틴
   const [showAddEx, setShowAddEx] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const quote = useMemo(() => dailyQuote(), []);
@@ -140,10 +141,11 @@ export default function TodayPage() {
   }, [user]);
 
   // P2-10 컨디션% = 회복맵 평균 연동, 예상 시간 = 세트 수 × 2.5분
-  const condition = useMemo(() => {
-    const rec = getMockRecovery();
-    return Math.round((rec.reduce((s, r) => s + r.pct, 0) / rec.length) * 100);
-  }, []);
+  const recovery = useMemo(() => getMockRecovery(), []);
+  const condition = useMemo(
+    () => Math.round((recovery.reduce((s, r) => s + r.pct, 0) / recovery.length) * 100),
+    [recovery]
+  );
   const totalSets = items.reduce((s, it) => s + it.sets.length, 0);
   const doneSets = items.reduce((s, it) => s + it.sets.filter((x) => x.done).length, 0);
   const estMin = Math.round(totalSets * 2.5);
@@ -213,7 +215,40 @@ export default function TodayPage() {
             <StatChip label="레벨" value={`Lv${stats?.level ?? 1}`} tone="gold" />
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-3 lg:grid-cols-3">
+            {/* 이번 달 목표 달성 도넛 */}
+            <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+              <b className="text-[15px] font-extrabold">이번 달 목표</b>
+              <p className="text-[11.5px] text-white/45">
+                {routineProg ? `주 ${EXPLORE.find((x) => x.id === user.v2?.activeRoutineId)?.daysPerWeek ?? 3}회 페이스 기준` : "주 3회 페이스 기준"}
+              </p>
+              {(() => {
+                const perWeek = EXPLORE.find((x) => x.id === user.v2?.activeRoutineId)?.daysPerWeek ?? 3;
+                const target = perWeek * 4;
+                const pct = Math.min(100, Math.round((gymDash.thisMonth / target) * 100));
+                const R = 40, C = 2 * Math.PI * R;
+                const color = pct >= 100 ? "#2dd4a0" : "#ff9432";
+                return (
+                  <div className="mt-2 flex h-36 items-center justify-center gap-5">
+                    <svg width="112" height="112" viewBox="0 0 112 112">
+                      <circle cx="56" cy="56" r={R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="11" />
+                      <circle
+                        cx="56" cy="56" r={R} fill="none" stroke={color} strokeWidth="11" strokeLinecap="round"
+                        strokeDasharray={`${(pct / 100) * C} ${C}`} transform="rotate(-90 56 56)"
+                      />
+                      <text x="56" y="53" textAnchor="middle" fill="#fafafa" fontSize="21" fontWeight="800">{pct}%</text>
+                      <text x="56" y="70" textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="9.5">달성</text>
+                    </svg>
+                    <div className="space-y-1.5 text-[12px]">
+                      <div><b className="font-display text-[18px]" style={{ color }}>{gymDash.thisMonth}</b><span className="text-white/40"> / {target}회</span></div>
+                      <div className="text-white/45">남은 <b className="text-white/75">{Math.max(0, target - gymDash.thisMonth)}회</b></div>
+                      <div className="text-white/45">이번 주 <b className="text-white/75">{week.filter((c) => (c.pct ?? 0) > 0).length}회</b></div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* 월별 운동 횟수 */}
             <div className="rounded-xl border border-white/[0.06] bg-card p-4">
               <b className="text-[15px] font-extrabold">월별 운동 횟수</b>
@@ -405,6 +440,35 @@ export default function TodayPage() {
             <WeekStrip days={week} target={`총 ${stats?.sessions ?? 0}회 · Lv${stats?.level ?? 1}`} />
           </div>
         </div>
+
+        {/* 부위별 회복 상태 */}
+        <div className="rounded-xl border border-white/[0.06] bg-card p-4">
+          <div className="flex items-baseline justify-between">
+            <b className="text-[15px] font-extrabold">부위별 회복</b>
+            <span className="text-[11px] text-white/45">컨디션 {condition}%</span>
+          </div>
+          <div className="mt-2.5 space-y-2">
+            {[...recovery].sort((a, b) => a.pct - b.pct).slice(0, 5).map((r) => {
+              const pct = Math.round(r.pct * 100);
+              const full = r.pct >= 1;
+              return (
+                <div key={r.muscle} className="flex items-center gap-2.5">
+                  <span className="w-14 shrink-0 text-[12px] font-bold text-white/60">{MUSCLE_KR[r.muscle]}</span>
+                  <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${Math.min(100, pct)}%`, background: full ? "#2dd4a0" : "#ff9432" }}
+                    />
+                  </div>
+                  <b className="w-11 shrink-0 text-right text-[12px] tabular-nums" style={{ color: full ? "#2dd4a0" : undefined }}>
+                    {Math.min(100, pct)}%
+                  </b>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-[10.5px] text-white/35">회복이 덜 된 부위 순 · 100%면 오늘 운동하기 좋아요</p>
+        </div>
       </aside>
       </div>
 
@@ -433,35 +497,68 @@ export default function TodayPage() {
       {/* 루틴 변경 시트 — 저장한 루틴 우선, 나머지 추천 */}
       <BottomSheet open={showRoutinePick} onClose={() => setShowRoutinePick(false)}>
         <h3 className="text-lg font-extrabold">오늘 운동, 어떤 루틴으로?</h3>
-        <p className="mt-0.5 text-[12px] text-white/50">체크한 세트는 초기화돼요.</p>
+        <p className="mt-0.5 text-[12px] text-white/50">루틴을 누르면 설명과 구성 종목을 확인할 수 있어요.</p>
         <div className="mt-4 space-y-2">
           {[...EXPLORE].sort((a, b) =>
             Number((user.v2?.savedRoutines ?? []).includes(b.id)) - Number((user.v2?.savedRoutines ?? []).includes(a.id))
           ).map((r, i) => {
             const saved = (user.v2?.savedRoutines ?? []).includes(r.id);
             const active = user.v2?.activeRoutineId === r.id;
+            const expanded = pickDetail === r.id;
             return (
-              <button
+              <div
                 key={r.id}
-                onClick={() => {
-                  updateItems(itemsFromExercises(r.exercises));
-                  setActiveRoutine(r.id);
-                  setShowRoutinePick(false);
-                }}
-                className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left ${
-                  active ? "border-volt/50 bg-volt/[0.06]" : "border-white/10 bg-white/[0.03]"
+                className={`overflow-hidden rounded-lg border ${
+                  expanded ? "border-volt/50 bg-volt/[0.04]" : active ? "border-volt/40 bg-volt/[0.06]" : "border-white/10 bg-white/[0.03]"
                 }`}
               >
-                <ColorInitialBadge text={r.badge} seed={i} />
-                <span className="min-w-0 flex-1">
-                  <b className="block truncate text-[14px]">
-                    {r.title}
-                    {active && <span className="ml-1.5 rounded bg-volt px-1.5 py-0.5 text-[9px] font-extrabold text-black">사용 중</span>}
-                    {saved && !active && <span className="ml-1.5 text-[10px] text-volt">💾 저장됨</span>}
-                  </b>
-                  <span className="text-[11px] text-white/45">{r.exercises.length}종목 · {r.level}</span>
-                </span>
-              </button>
+                <button
+                  onClick={() => setPickDetail(expanded ? null : r.id)}
+                  className="flex w-full items-center gap-3 p-3 text-left"
+                >
+                  <ColorInitialBadge text={r.badge} seed={i} />
+                  <span className="min-w-0 flex-1">
+                    <b className="block truncate text-[14px]">
+                      {r.title}
+                      {active && <span className="ml-1.5 rounded bg-volt px-1.5 py-0.5 text-[9px] font-extrabold text-black">사용 중</span>}
+                      {saved && !active && <span className="ml-1.5 text-[10px] text-volt">💾 저장됨</span>}
+                    </b>
+                    <span className="text-[11px] text-white/45">
+                      {r.weeks}주 · 주 {r.daysPerWeek}회 · 회당 ~{r.durationMin}분 · {r.level}
+                    </span>
+                  </span>
+                  <span className={`shrink-0 text-[12px] text-white/30 transition-transform ${expanded ? "rotate-90" : ""}`}>›</span>
+                </button>
+
+                {/* 상세: 설명 + 구성 종목 + 시작 버튼 */}
+                {expanded && (
+                  <div className="border-t border-white/[0.07] px-3.5 pb-3.5 pt-3">
+                    <p className="text-[12.5px] leading-relaxed text-white/70">{r.overview}</p>
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      {r.exercises.map((exId) => {
+                        const ex = byId(exId);
+                        return ex ? (
+                          <span key={exId} className="rounded bg-white/[0.07] px-2 py-1 text-[11px] font-bold text-white/70">
+                            {ex.em} {ex.name}
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
+                    <button
+                      onClick={() => {
+                        updateItems(itemsFromExercises(r.exercises));
+                        setActiveRoutine(r.id);
+                        setPickDetail(null);
+                        setShowRoutinePick(false);
+                      }}
+                      className="mt-3 w-full rounded-lg bg-volt py-2.5 text-[13.5px] font-bold text-black"
+                    >
+                      이 루틴으로 시작
+                    </button>
+                    <p className="mt-1.5 text-center text-[10.5px] text-white/35">시작하면 오늘 체크한 세트는 초기화돼요</p>
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
