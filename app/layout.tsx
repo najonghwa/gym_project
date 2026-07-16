@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import { TabBar } from "@/components/nav/TabBar";
 
 export const metadata: Metadata = {

@@ -39,7 +39,7 @@ export default function LiveRunPage() {
   const lastRef = useRef<Pt | null>(null);
   const distRef = useRef(0);
   const winRef = useRef<{ t: number; d: number }[]>([]); // 최근 이동 버퍼(현재 페이스용)
-  const routeRef = useRef<[number, number][]>([]);
+  const routeRef = useRef<number[][]>([]); // [lat, lng, 경과초] — 구간 페이스 계산용
   const startRef = useRef(0);
   const pausedMsRef = useRef(0);
   const pauseAtRef = useRef(0);
@@ -88,16 +88,18 @@ export default function LiveRunPage() {
         distRef.current += d;
         setDistM(distRef.current);
         winRef.current.push({ t: pt.t, d });
-        // 경로: 마지막 저장점에서 15m 이상 이동 시 기록
+        // 경로: 마지막 저장점에서 15m 이상 이동 시 [lat, lng, 경과초] 기록
         const route = routeRef.current;
         const lastR = route[route.length - 1];
         if (!lastR || hav({ lat: lastR[0], lng: lastR[1], t: 0 }, pt) >= 15) {
-          route.push([Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5]);
+          const tSec = Math.max(0, Math.round((pt.t - startRef.current - pausedMsRef.current) / 1000));
+          route.push([Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5, tSec]);
           if (route.length > 2000) routeRef.current = route.filter((_, i) => i % 2 === 0);
         }
       }
     } else {
-      routeRef.current.push([Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5]);
+      routeRef.current.push([Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5,
+        Math.max(0, Math.round((pt.t - startRef.current - pausedMsRef.current) / 1000))]);
     }
     lastRef.current = pt;
     // 현재 페이스: 최근 45초 이동량

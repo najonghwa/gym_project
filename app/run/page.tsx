@@ -11,6 +11,8 @@ import { PillButton } from "@/components/ui/PillButton";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { SettingsSheet } from "@/components/settings/SettingsSheet";
+import { RunDetailSheet } from "@/components/run/RunDetailSheet";
+import { allBests } from "@/lib/runmath";
 import { useUser } from "@/lib/useUser";
 
 type Run = { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: [number, number][] };
@@ -112,6 +114,8 @@ export default function RunPage() {
 
   const runs = useMemo(() => (user?.runs ?? []) as Run[], [user]);
   const s = useMemo(() => calc(runs), [runs]);
+  const bests = useMemo(() => allBests(runs), [runs]);
+  const [detail, setDetail] = useState<Run | null>(null);
   const goal = user?.v2?.runGoalKm ?? 300;
   const goalPct = Math.min(100, Math.round((s.yearKm / goal) * 100));
 
@@ -258,6 +262,24 @@ export default function RunPage() {
               </div>
             ))}
           </div>
+
+          {/* 거리별 최고 페이스 — 전체 기록에서 자동 계산 (GPS=구간, 수동=평균 기준) */}
+          <div className="lab mt-4 mb-1.5">거리별 최고 페이스</div>
+          <div className="grid grid-cols-2 gap-2">
+            {bests.map((b) => (
+              <div key={b.m} className="rounded-2xl bg-white/[0.05] px-3.5 py-2.5">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[12px] font-bold text-white/55">{b.m / 1000}km</span>
+                  <b className={`font-display text-[15px] tabular-nums ${b.paceSec ? "text-gold" : "text-white/25"}`}>
+                    {b.paceSec ? paceStr(b.paceSec) : "도전!"}
+                  </b>
+                </div>
+                <div className="mt-0.5 text-right text-[9px] text-white/35">
+                  {b.date ? `${b.gps ? "📡" : "✍️"} ${b.date}` : `${b.m / 1000}km 이상 뛰면 기록돼요`}
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* 페이스 발전 흐름 */}
@@ -370,22 +392,25 @@ export default function RunPage() {
       {/* 최근 기록 (삭제 가능) */}
       <section className="rounded-3xl border border-white/[0.06] bg-card p-4">
         <b className="text-[15px] font-extrabold">최근 기록</b>
-        <p className="text-[11.5px] text-white/45">잘못 입력한 기록은 ✕로 삭제하세요</p>
+        <p className="text-[11.5px] text-white/45">기록을 누르면 지도·구간 페이스가 나와요 · ✕로 삭제</p>
         {runs.length === 0 ? (
           <p className="py-5 text-center text-[12.5px] text-white/35">아직 기록이 없어요 — 첫 러닝을 저장해 보세요!</p>
         ) : (
           <div className="mt-1.5 divide-y divide-white/[0.06]">
             {[...runs].reverse().slice(0, 10).map((r, i) => (
               <div key={r.rid ?? `${r.date}-${r.km}-${i}`} className="flex items-center gap-3 py-2.5">
-                <span title={r.route ? "GPS 기록" : "수동 기록"} className="shrink-0 text-[12px]">{r.route ? "📡" : "✍️"}</span>
-                <span className="w-[76px] shrink-0 text-[12.5px] text-white/55">{r.date}</span>
-                <b className="text-[14px]">{r.km}km</b>
-                <span className="text-[12px] text-white/45">{paceStr(r.paceSec)}/km</span>
+                <button onClick={() => setDetail(r)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                  <span title={r.route ? "GPS 기록" : "수동 기록"} className="shrink-0 text-[12px]">{r.route ? "📡" : "✍️"}</span>
+                  <span className="w-[76px] shrink-0 text-[12.5px] text-white/55">{r.date}</span>
+                  <b className="text-[14px]">{r.km}km</b>
+                  <span className="text-[12px] text-white/45">{paceStr(r.paceSec)}/km</span>
+                  <span className="ml-auto text-[11px] text-white/25">›</span>
+                </button>
                 <button
                   onClick={() => {
                     if (window.confirm(`${r.date} · ${r.km}km 기록을 삭제할까요?`)) deleteRun(r);
                   }}
-                  className="ml-auto grid h-7 w-7 place-items-center rounded-full text-[13px] text-white/30 hover:bg-white/5 hover:text-danger"
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[13px] text-white/30 hover:bg-white/5 hover:text-danger"
                   aria-label="기록 삭제"
                 >
                   ✕
@@ -464,6 +489,8 @@ export default function RunPage() {
         onChangeMode={setPrimaryMode}
         onLogout={logout}
       />
+
+      <RunDetailSheet run={detail} onClose={() => setDetail(null)} onDelete={(r) => deleteRun(r as Run)} />
     </main>
   );
 }

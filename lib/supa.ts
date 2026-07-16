@@ -20,7 +20,8 @@ export type UserData = Record<string, unknown> & {
   profile?: { days?: number; style?: string; weight?: number } & Record<string, unknown>;
   routine?: { days?: number } & Record<string, unknown>;
   workouts?: Record<string, { doneSets?: number; scorePct?: number; kcal?: number }>;
-  runs?: { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: [number, number][] }[];
+  // route: [lat, lng, 경과초?] — 경과초는 구간 페이스 계산용 (GPS 기록만)
+  runs?: { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: number[][] }[];
   runProfile?: Record<string, unknown>;
   v2?: {
     workouts?: Record<string, { items: unknown[] }>;

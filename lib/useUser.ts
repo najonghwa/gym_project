@@ -202,7 +202,7 @@ export function useUser() {
   }, [persist]);
 
   // 러닝 기록 추가 (구버전 runs와 같은 형태 — 데이터 호환, GPS는 durSec/route 추가)
-  const saveRun = useCallback((run: { date: string; km: number; paceSec: number | null; durSec?: number; route?: [number, number][] }) => {
+  const saveRun = useCallback((run: { date: string; km: number; paceSec: number | null; durSec?: number; route?: number[][] }) => {
     setUser((prev) => {
       if (!prev) return prev;
       const runs = [...(prev.runs ?? []), { rid: "r" + Date.now(), ...run }];
