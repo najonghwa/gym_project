@@ -203,6 +203,22 @@ export function useUser() {
     });
   }, [persist]);
 
+  // 러닝 기록 삭제 (rid 우선, 없으면 날짜+거리 첫 매치)
+  const deleteRun = useCallback((target: { rid?: string; date: string; km: number }) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const runs = [...(prev.runs ?? [])];
+      const idx = runs.findIndex((r) =>
+        target.rid ? r.rid === target.rid : r.date === target.date && r.km === target.km
+      );
+      if (idx < 0) return prev;
+      runs.splice(idx, 1);
+      const u: UserData = { ...prev, runs };
+      persist(u);
+      return u;
+    });
+  }, [persist]);
+
   // 연간 목표 거리
   const setRunGoal = useCallback((km: number) => {
     setUser((prev) => {
@@ -239,6 +255,6 @@ export function useUser() {
   return {
     user, ready, login, signup, logout, saveToday,
     toggleSaveRoutine, setActiveRoutine, saveBig3,
-    saveRun, setRunGoal, saveRunProfile, today,
+    saveRun, deleteRun, setRunGoal, saveRunProfile, today,
   };
 }

@@ -52,7 +52,31 @@ export default function AnalysisPage() {
     });
     const weekSets = [...volByMuscle.entries()].sort((a, b) => b[1] - a[1]);
     const top5 = [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-    return { weekSets, top5, maxSet: Math.max(1, ...weekSets.map(([, n]) => n)) };
+
+    // 꾸준함 히트맵 (최근 12주 × 요일, 완료 세트 수) — 구버전 기록도 합산
+    const setsByDate = new Map<string, number>();
+    Object.entries(w).forEach(([date, day]) => {
+      const done = (day.items as TodayItem[]).reduce((s, it) => s + it.sets.filter((x) => x.done).length, 0);
+      if (done) setsByDate.set(date, (setsByDate.get(date) ?? 0) + done);
+    });
+    Object.entries(user?.workouts ?? {}).forEach(([date, day]) => {
+      const done = day.doneSets ?? 0;
+      if (done) setsByDate.set(date, (setsByDate.get(date) ?? 0) + done);
+    });
+    const now = new Date();
+    const mon0 = new Date(now); mon0.setDate(now.getDate() - ((now.getDay() + 6) % 7)); mon0.setHours(0, 0, 0, 0);
+    const heat: number[][] = Array.from({ length: 7 }, () => Array(12).fill(0));
+    setsByDate.forEach((n, date) => {
+      const d = new Date(date + "T00:00:00");
+      const dow = (d.getDay() + 6) % 7;
+      const wk = new Date(d); wk.setDate(d.getDate() - dow);
+      const diffW = Math.round((mon0.getTime() - wk.getTime()) / (7 * 864e5));
+      if (diffW >= 0 && diffW < 12) heat[dow][11 - diffW] += n;
+    });
+    const maxHeat = Math.max(1, ...heat.flat());
+    const activeDays12w = heat.flat().filter((n) => n > 0).length;
+
+    return { weekSets, top5, maxSet: Math.max(1, ...weekSets.map(([, n]) => n)), heat, maxHeat, activeDays12w };
   }, [user]);
 
   // ── 러닝 실데이터 분석 ──
@@ -146,6 +170,36 @@ export default function AnalysisPage() {
               </div>
             ) : (
               <p className="py-4 text-center text-[12.5px] text-white/40">기록이 쌓이면 랭킹이 나와요</p>
+            )}
+          </AnalysisCard>
+
+          {/* 신규: 꾸준함 히트맵 (실데이터, 러닝 탭과 동일 패턴) */}
+          <AnalysisCard question="빠짐없이 꾸준히 다니고 있을까?" cta="오늘 출석 도장 찍기" onCta={() => router.push("/today")}>
+            {gymExtra.activeDays12w > 0 ? (
+              <>
+                <div className="space-y-1">
+                  {gymExtra.heat.map((row, di) => (
+                    <div key={di} className="flex items-center gap-1">
+                      <span className="w-4 shrink-0 text-[9px] text-white/35">{["월", "화", "수", "목", "금", "토", "일"][di]}</span>
+                      <div className="grid flex-1 grid-cols-12 gap-1">
+                        {row.map((n, wi) => (
+                          <div
+                            key={wi}
+                            className="aspect-square rounded-[4px]"
+                            style={{ background: n > 0 ? `rgba(255,148,50,${0.25 + 0.75 * (n / gymExtra.maxHeat)})` : "rgba(255,255,255,0.05)" }}
+                            title={n > 0 ? `${n}세트` : ""}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2.5 text-[11.5px] text-white/45">
+                  최근 12주 중 <b className="text-volt">{gymExtra.activeDays12w}일</b> 운동 · 진할수록 세트가 많은 날 · 오른쪽이 이번 주
+                </p>
+              </>
+            ) : (
+              <p className="py-4 text-center text-[12.5px] text-white/40">기록이 쌓이면 잔디가 자라나요 🌱</p>
             )}
           </AnalysisCard>
 

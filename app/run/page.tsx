@@ -98,7 +98,7 @@ const GOALS = [100, 200, 300, 500, 1000];
 
 export default function RunPage() {
   const reduce = useReducedMotion();
-  const { user, ready, login, signup, saveRun, setRunGoal, today } = useUser();
+  const { user, ready, login, signup, saveRun, deleteRun, setRunGoal, today } = useUser();
   const [showLog, setShowLog] = useState(false);
   const [showGoal, setShowGoal] = useState(false);
   const [fDate, setFDate] = useState(() => fmtDate(new Date()));
@@ -337,6 +337,35 @@ export default function RunPage() {
           </div>
         </section>
       </div>
+
+      {/* 최근 기록 (삭제 가능) */}
+      <section className="rounded-3xl border border-white/[0.06] bg-card p-4">
+        <b className="text-[15px] font-extrabold">최근 기록</b>
+        <p className="text-[11.5px] text-white/45">잘못 입력한 기록은 ✕로 삭제하세요</p>
+        {runs.length === 0 ? (
+          <p className="py-5 text-center text-[12.5px] text-white/35">아직 기록이 없어요 — 첫 러닝을 저장해 보세요!</p>
+        ) : (
+          <div className="mt-1.5 divide-y divide-white/[0.06]">
+            {[...runs].reverse().slice(0, 10).map((r, i) => (
+              <div key={r.rid ?? `${r.date}-${r.km}-${i}`} className="flex items-center gap-3 py-2.5">
+                <span className="w-24 shrink-0 text-[12.5px] text-white/55">{r.date}</span>
+                <b className="text-[14px]">{r.km}km</b>
+                <span className="text-[12px] text-white/45">{paceStr(r.paceSec)}/km</span>
+                <button
+                  onClick={() => {
+                    if (window.confirm(`${r.date} · ${r.km}km 기록을 삭제할까요?`)) deleteRun(r);
+                  }}
+                  className="ml-auto grid h-7 w-7 place-items-center rounded-full text-[13px] text-white/30 hover:bg-white/5 hover:text-danger"
+                  aria-label="기록 삭제"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        {runs.length > 10 && <p className="mt-2 text-[10.5px] text-white/30">최근 10개만 표시 · 전체 {runs.length}개</p>}
+      </section>
 
       {/* 기록 입력 시트 */}
       <BottomSheet open={showLog} onClose={() => setShowLog(false)}>
