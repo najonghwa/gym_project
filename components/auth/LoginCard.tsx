@@ -10,11 +10,12 @@ export function LoginCard({
   onSignup,
 }: {
   onLogin: (id: string, pin: string) => Promise<string | null>;
-  onSignup: (id: string, pin: string) => Promise<string | null>;
+  onSignup: (id: string, pin: string, primaryMode?: "gym" | "run") => Promise<string | null>;
 }) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [id, setId] = useState("");
   const [pin, setPin] = useState("");
+  const [primary, setPrimary] = useState<"gym" | "run">("gym");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -22,7 +23,7 @@ export function LoginCard({
     if (!id.trim()) return setMsg("아이디를 입력하세요.");
     if (!/^\d{4}$/.test(pin)) return setMsg("PIN은 숫자 4자리예요.");
     setBusy(true); setMsg(mode === "login" ? "확인 중…" : "아이디 확인 중…");
-    const err = await (mode === "login" ? onLogin(id, pin) : onSignup(id, pin));
+    const err = await (mode === "login" ? onLogin(id, pin) : onSignup(id, pin, primary));
     setBusy(false);
     setMsg(err ?? "");
   };
@@ -30,7 +31,7 @@ export function LoginCard({
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center">
       <div className="text-center font-display text-[24px] tracking-tight text-white/90">
-        PULSE<span className="text-volt">.</span>
+        FitPlan<span className="text-volt">.</span>
       </div>
       <h1 className="mt-3 text-center font-display text-[34px] leading-tight">
         오늘도 <span className="text-volt">한 세트</span> 더.
@@ -60,6 +61,29 @@ export function LoginCard({
         onKeyDown={(e) => e.key === "Enter" && go()}
         className="mt-2.5 w-full rounded-2xl border border-white/10 bg-card px-4 py-4 text-center tracking-[8px] outline-none placeholder:tracking-normal placeholder:text-white/30 focus:border-volt"
       />
+
+      {/* 가입 시 주 종목 선택 → 첫 화면 결정 (설정에서 변경 가능) */}
+      {mode === "signup" && (
+        <div className="mt-4">
+          <div className="lab mb-1.5">주로 어떤 운동을 하세요? <span className="font-normal text-white/35">— 첫 화면이 돼요</span></div>
+          <div className="grid grid-cols-2 gap-2">
+            {([["gym", "🏋️", "헬스 위주", "웨이트 · 루틴 · 3대"], ["run", "🏃", "러닝 위주", "거리 · 페이스 · 목표"]] as const).map(([v, em, t, d]) => (
+              <button
+                key={v}
+                onClick={() => setPrimary(v)}
+                className={`rounded-2xl border p-3.5 text-left ${
+                  primary === v ? "border-volt bg-volt/10" : "border-white/10 bg-card"
+                }`}
+              >
+                <div className="text-[20px]">{em}</div>
+                <div className={`mt-1 text-[14px] font-extrabold ${primary === v ? "text-volt" : ""}`}>{t}</div>
+                <div className="mt-0.5 text-[10.5px] text-white/40">{d}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <PillButton className="mt-4 w-full py-4" onClick={go} disabled={busy}>
         {mode === "login" ? "로그인" : "아이디 만들기"}
       </PillButton>

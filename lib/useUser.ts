@@ -144,12 +144,22 @@ export function useUser() {
     return null;
   }, [persist]);
 
-  const signup = useCallback(async (id: string, pin: string): Promise<string | null> => {
+  const signup = useCallback(async (id: string, pin: string, primaryMode: "gym" | "run" = "gym"): Promise<string | null> => {
     const server = await pullUser(id);
     const db = loadDB();
     if (server || db.users[uid(id)]) return "이미 사용 중인 아이디예요.";
-    persist({ id: id.trim(), pin, created: today(), v2: { workouts: {} } });
+    persist({ id: id.trim(), pin, created: today(), v2: { workouts: {}, primaryMode } });
     return null;
+  }, [persist]);
+
+  // 주 종목(첫 화면) 변경 — 설정 시트에서 사용
+  const setPrimaryMode = useCallback((mode: "gym" | "run") => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const u: UserData = { ...prev, v2: { ...prev.v2, primaryMode: mode } };
+      persist(u);
+      return u;
+    });
   }, [persist]);
 
   const logout = useCallback(() => {
@@ -255,6 +265,6 @@ export function useUser() {
   return {
     user, ready, login, signup, logout, saveToday,
     toggleSaveRoutine, setActiveRoutine, saveBig3,
-    saveRun, deleteRun, setRunGoal, saveRunProfile, today,
+    saveRun, deleteRun, setRunGoal, saveRunProfile, setPrimaryMode, today,
   };
 }

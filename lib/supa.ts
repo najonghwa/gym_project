@@ -24,6 +24,7 @@ export type UserData = Record<string, unknown> & {
   runProfile?: Record<string, unknown>;
   v2?: {
     workouts?: Record<string, { items: unknown[] }>;
+    primaryMode?: "gym" | "run";
     savedRoutines?: string[];
     activeRoutineId?: string;
     runGoalKm?: number;   // 연간 목표 거리

@@ -3,7 +3,7 @@ import "./globals.css";
 import { TabBar } from "@/components/nav/TabBar";
 
 export const metadata: Metadata = {
-  title: "PULSE — 헬스·러닝 대시보드",
+  title: "FitPlan — 헬스·러닝 대시보드",
   description: "회사 헬스장 맞춤 루틴 · 러닝 분석 · 기록 · 랭킹",
 };
 

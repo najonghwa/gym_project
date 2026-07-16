@@ -9,6 +9,7 @@ import { StatChip } from "@/components/ui/StatChip";
 import { PillButton } from "@/components/ui/PillButton";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { LoginCard } from "@/components/auth/LoginCard";
+import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { useUser } from "@/lib/useUser";
 
 type Run = { rid?: string; date: string; km: number; paceSec?: number | null };
@@ -98,9 +99,10 @@ const GOALS = [100, 200, 300, 500, 1000];
 
 export default function RunPage() {
   const reduce = useReducedMotion();
-  const { user, ready, login, signup, saveRun, deleteRun, setRunGoal, today } = useUser();
+  const { user, ready, login, signup, logout, saveRun, deleteRun, setRunGoal, setPrimaryMode, today } = useUser();
   const [showLog, setShowLog] = useState(false);
   const [showGoal, setShowGoal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [fDate, setFDate] = useState(() => fmtDate(new Date()));
   const [fKm, setFKm] = useState("");
   const [fMin, setFMin] = useState("");
@@ -133,9 +135,18 @@ export default function RunPage() {
           <div className="lab">RUN DASHBOARD</div>
           <h1 className="font-display text-[30px] leading-tight">러닝</h1>
         </div>
-        <PillButton className="!px-5 !py-2.5 !text-[13.5px]" onClick={() => setShowLog(true)}>
-          + 러닝 기록
-        </PillButton>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSettings(true)}
+            className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-card text-[16px]"
+            aria-label="설정"
+          >
+            ⚙️
+          </button>
+          <PillButton className="!px-5 !py-2.5 !text-[13.5px]" onClick={() => setShowLog(true)}>
+            + 러닝 기록
+          </PillButton>
+        </div>
       </div>
 
       {/* KPI 스트립 */}
@@ -426,6 +437,14 @@ export default function RunPage() {
         </div>
         <p className="mt-3 text-[11.5px] text-white/40">단위: km · 연간 누적 기준</p>
       </BottomSheet>
+
+      <SettingsSheet
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        primaryMode={user.v2?.primaryMode ?? "gym"}
+        onChangeMode={setPrimaryMode}
+        onLogout={logout}
+      />
     </main>
   );
 }

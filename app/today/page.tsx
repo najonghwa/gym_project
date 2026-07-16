@@ -11,6 +11,7 @@ import { getMockRecovery } from "@/lib/mock/recovery";
 import { computeStats, useUser, weekCells } from "@/lib/useUser";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { BottomSheet } from "@/components/ui/BottomSheet";
+import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
 import { EXERCISES, itemsFromExercises } from "@/lib/mock/exercises";
 import { EXPLORE } from "@/lib/mock/routines";
@@ -36,13 +37,14 @@ function Node({
 }
 
 export default function TodayPage() {
-  const { user, ready, login, signup, saveToday, setActiveRoutine, today } = useUser();
+  const { user, ready, login, signup, logout, saveToday, setActiveRoutine, setPrimaryMode, today } = useUser();
   const [items, setItems] = useState<TodayItem[]>(getMockToday);
   const [openId, setOpenId] = useState<string | null>(null);
   const [celebrated, setCelebrated] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
   const [showRoutinePick, setShowRoutinePick] = useState(false);
   const [showAddEx, setShowAddEx] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const quote = useMemo(() => dailyQuote(), []);
 
   // 로그인되면 오늘 저장분(서버/로컬) 복원
@@ -108,11 +110,20 @@ export default function TodayPage() {
   return (
     <main className="mx-auto max-w-2xl lg:pt-24">
       {/* 인사 헤더 */}
-      <div className="mb-5">
-        <div className="lab">{S_DAYS[new Date().getDay()]}요일 · TODAY</div>
-        <h1 className="font-display text-[30px] leading-tight">
-          {String(user.id)}님, <span className="text-volt">오늘도 갑시다</span>
-        </h1>
+      <div className="mb-5 flex items-start justify-between">
+        <div>
+          <div className="lab">{S_DAYS[new Date().getDay()]}요일 · TODAY</div>
+          <h1 className="font-display text-[30px] leading-tight">
+            {String(user.id)}님, <span className="text-volt">오늘도 갑시다</span>
+          </h1>
+        </div>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="mt-1 grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-card text-[16px]"
+          aria-label="설정"
+        >
+          ⚙️
+        </button>
       </div>
 
       {/* ── 하나로 이어지는 하루 타임라인 ── */}
@@ -264,6 +275,14 @@ export default function TodayPage() {
           )}
         </div>
       </BottomSheet>
+
+      <SettingsSheet
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        primaryMode={user.v2?.primaryMode ?? "gym"}
+        onChangeMode={setPrimaryMode}
+        onLogout={logout}
+      />
     </main>
   );
 }
