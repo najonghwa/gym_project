@@ -1,6 +1,7 @@
 "use client";
 // 러닝 탭 — Strava식 풀 대시보드 (KPI·월별·목표 도넛·PB·페이스·히트맵·AI 코치) + 기록 입력
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Bar, BarChart, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
@@ -12,7 +13,7 @@ import { LoginCard } from "@/components/auth/LoginCard";
 import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { useUser } from "@/lib/useUser";
 
-type Run = { rid?: string; date: string; km: number; paceSec?: number | null };
+type Run = { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: [number, number][] };
 
 const paceStr = (sec?: number | null) =>
   sec ? `${Math.floor(sec / 60)}'${String(Math.round(sec % 60)).padStart(2, "0")}"` : "—";
@@ -98,6 +99,7 @@ function calc(runs: Run[]) {
 const GOALS = [100, 200, 300, 500, 1000];
 
 export default function RunPage() {
+  const router = useRouter();
   const reduce = useReducedMotion();
   const { user, ready, login, signup, logout, saveRun, deleteRun, setRunGoal, setPrimaryMode, today } = useUser();
   const [showLog, setShowLog] = useState(false);
@@ -143,11 +145,27 @@ export default function RunPage() {
           >
             ⚙️
           </button>
-          <PillButton className="!px-5 !py-2.5 !text-[13.5px]" onClick={() => setShowLog(true)}>
-            + 러닝 기록
-          </PillButton>
+          <button
+            onClick={() => setShowLog(true)}
+            className="rounded-full border border-white/15 bg-white/[0.06] px-4 py-2.5 text-[13px] font-extrabold"
+          >
+            ✍️ 수동 기록
+          </button>
         </div>
       </div>
+
+      {/* GPS 라이브 러닝 시작 */}
+      <button
+        onClick={() => router.push("/run/live")}
+        className="flex w-full items-center gap-3 rounded-3xl border border-volt/30 bg-gradient-to-r from-volt/15 to-transparent p-4 text-left active:scale-[0.99]"
+      >
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-volt text-[19px]">📡</span>
+        <span className="min-w-0 flex-1">
+          <b className="block text-[15.5px]">GPS 러닝 시작</b>
+          <span className="text-[11.5px] text-white/50">폰 위치로 거리·페이스 자동 기록 — 시작/일시정지/종료</span>
+        </span>
+        <span className="font-display text-[20px] text-volt">▶</span>
+      </button>
 
       {/* KPI 스트립 */}
       <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
@@ -359,7 +377,8 @@ export default function RunPage() {
           <div className="mt-1.5 divide-y divide-white/[0.06]">
             {[...runs].reverse().slice(0, 10).map((r, i) => (
               <div key={r.rid ?? `${r.date}-${r.km}-${i}`} className="flex items-center gap-3 py-2.5">
-                <span className="w-24 shrink-0 text-[12.5px] text-white/55">{r.date}</span>
+                <span title={r.route ? "GPS 기록" : "수동 기록"} className="shrink-0 text-[12px]">{r.route ? "📡" : "✍️"}</span>
+                <span className="w-[76px] shrink-0 text-[12.5px] text-white/55">{r.date}</span>
                 <b className="text-[14px]">{r.km}km</b>
                 <span className="text-[12px] text-white/45">{paceStr(r.paceSec)}/km</span>
                 <button

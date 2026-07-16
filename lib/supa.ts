@@ -20,7 +20,7 @@ export type UserData = Record<string, unknown> & {
   profile?: { days?: number; style?: string; weight?: number } & Record<string, unknown>;
   routine?: { days?: number } & Record<string, unknown>;
   workouts?: Record<string, { doneSets?: number; scorePct?: number; kcal?: number }>;
-  runs?: { rid?: string; date: string; km: number; paceSec?: number | null }[];
+  runs?: { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: [number, number][] }[];
   runProfile?: Record<string, unknown>;
   v2?: {
     workouts?: Record<string, { items: unknown[] }>;
