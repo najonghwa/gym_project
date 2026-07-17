@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Bar, BarChart, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Bar, BarChart, Cell, Line, LineChart, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis,
 } from "recharts";
 import { useReducedMotion } from "framer-motion";
 import { StatChip } from "@/components/ui/StatChip";
@@ -11,7 +11,8 @@ import { PillButton } from "@/components/ui/PillButton";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { SettingsSheet } from "@/components/settings/SettingsSheet";
-import { RunDetailSheet } from "@/components/run/RunDetailSheet";
+import { RunDetailSheet, RouteMap } from "@/components/run/RunDetailSheet";
+import { AnalysisCard } from "@/components/analysis/AnalysisCard";
 import { allBests } from "@/lib/runmath";
 import { useUser } from "@/lib/useUser";
 
@@ -133,6 +134,47 @@ export default function RunPage() {
   const s = useMemo(() => calc(runs), [runs]);
   const bests = useMemo(() => allBests(runs), [runs]);
   const [detail, setDetail] = useState<Run | null>(null);
+
+  // 최근 기록 지도 패널 — 선택 기록 (기본: 경로 있는 최신 기록)
+  const [selRunKey, setSelRunKey] = useState<string | null>(null);
+  const selRun = useMemo(() => {
+    const rev = [...runs].reverse();
+    if (selRunKey) {
+      const f = rev.find((r) => (r.rid ?? `${r.date}-${r.km}`) === selRunKey);
+      if (f) return f;
+    }
+    return rev.find((r) => r.route && r.route.length >= 2) ?? rev[0] ?? null;
+  }, [runs, selRunKey]);
+  const setSelRun = (r: Run) => setSelRunKey(r.rid ?? `${r.date}-${r.km}`);
+
+  // 러닝 분석 (구 분석 탭에서 통합) — 산점도·거리분포·요일페이스·페이스존·월별페이스
+  const anal = useMemo(() => {
+    const paced = runs.filter((r) => r.paceSec);
+    const scatter = paced.map((r) => ({ km: r.km, sec: r.paceSec! }));
+    const buckets = [
+      { l: "~3km", min: 0, max: 3 }, { l: "3~5km", min: 3, max: 5 },
+      { l: "5~7km", min: 5, max: 7 }, { l: "7~10km", min: 7, max: 10 },
+      { l: "10km+", min: 10, max: 999 },
+    ].map((b) => ({ l: b.l, n: runs.filter((r) => r.km >= b.min && r.km < b.max).length }));
+    const maxBucket = Math.max(1, ...buckets.map((b) => b.n));
+    const dow = ["월", "화", "수", "목", "금", "토", "일"].map((l, i) => {
+      const xs = paced.filter((r) => (new Date(r.date + "T00:00:00").getDay() + 6) % 7 === i);
+      return { l, avg: xs.length ? Math.round(xs.reduce((s2, r) => s2 + r.paceSec!, 0) / xs.length) : null, n: xs.length };
+    });
+    const bestDow = dow.filter((d) => d.avg).sort((a, b) => a.avg! - b.avg!)[0];
+    const zones = [
+      { l: `5'00" 미만`, min: 0, max: 300 }, { l: `5'00"~5'30"`, min: 300, max: 330 },
+      { l: `5'30"~6'00"`, min: 330, max: 360 }, { l: `6'00"~6'30"`, min: 360, max: 390 },
+      { l: `6'30" 이상`, min: 390, max: 99999 },
+    ].map((z) => ({ l: z.l, n: paced.filter((r) => r.paceSec! >= z.min && r.paceSec! < z.max).length }));
+    const maxZone = Math.max(1, ...zones.map((z) => z.n));
+    const yy = new Date().getFullYear();
+    const monthlyPace = Array.from({ length: 12 }, (_, i) => {
+      const xs = paced.filter((r) => r.date.startsWith(`${yy}-${String(i + 1).padStart(2, "0")}`));
+      return { m: `${i + 1}월`, sec: xs.length ? Math.round(xs.reduce((s2, r) => s2 + r.paceSec!, 0) / xs.length) : null };
+    }).filter((x) => x.sec != null);
+    return { count: runs.length, scatter, buckets, maxBucket, dow, bestDow, zones, maxZone, monthlyPace };
+  }, [runs]);
   const goal = user?.v2?.runGoalKm ?? 300;
   const goalPct = Math.min(100, Math.round((s.yearKm / goal) * 100));
 
@@ -450,38 +492,203 @@ export default function RunPage() {
         </section>
       </div>
 
-      {/* 최근 기록 (삭제 가능) */}
+      {/* 최근 기록 — 좌: 선택 러닝 지도 / 우: 목록 */}
       <section className="rounded-2xl border border-white/[0.06] bg-card p-4">
         <b className="text-[15px] font-extrabold">최근 기록</b>
-        <p className="text-[11.5px] text-white/45">기록을 누르면 경로 지도와 구간 페이스를 볼 수 있어요</p>
+        <p className="text-[11.5px] text-white/45">목록에서 기록을 고르면 왼쪽에 경로가 나와요</p>
         {runs.length === 0 ? (
           <p className="py-5 text-center text-[12.5px] text-white/35">아직 기록이 없어요 — 첫 러닝을 저장해 보세요!</p>
         ) : (
-          <div className="mt-1.5 divide-y divide-white/[0.06]">
-            {[...runs].reverse().slice(0, 10).map((r, i) => (
-              <div key={r.rid ?? `${r.date}-${r.km}-${i}`} className="flex items-center gap-3 py-2.5">
-                <button onClick={() => setDetail(r)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                  <span title={r.route ? "GPS 기록" : "수동 기록"} className="shrink-0 text-[12px]">{r.route ? "📡" : "✍️"}</span>
-                  <span className="w-[76px] shrink-0 text-[12.5px] text-white/55">{r.date}</span>
-                  <b className="text-[14px]">{r.km}km</b>
-                  <span className="text-[12px] text-white/45">{paceStr(r.paceSec)}/km</span>
-                  <span className="ml-auto text-[11px] text-white/25">›</span>
-                </button>
-                <button
-                  onClick={() => {
-                    if (window.confirm(`${r.date} · ${r.km}km 기록을 삭제할까요?`)) deleteRun(r);
-                  }}
-                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[13px] text-white/30 hover:bg-white/5 hover:text-danger"
-                  aria-label="기록 삭제"
-                >
-                  ✕
-                </button>
+          <div className="mt-3 grid gap-4 lg:grid-cols-2">
+            {/* 지도 패널 */}
+            <div>
+              {selRun?.route && selRun.route.length >= 2 ? (
+                <div key={selRun.rid ?? selRun.date} className="[&>div]:h-72">
+                  <RouteMap route={selRun.route} />
+                </div>
+              ) : (
+                <div className="grid h-72 place-items-center rounded-lg border border-white/10 bg-white/[0.03] px-6 text-center text-[12.5px] leading-relaxed text-white/40">
+                  {selRun
+                    ? "직접 입력한 기록이라 경로가 없어요. GPS 러닝으로 기록하면 여기 지도가 나옵니다."
+                    : "기록을 선택해 주세요"}
+                </div>
+              )}
+              {selRun && (
+                <div className="mt-2.5 flex items-center justify-between">
+                  <div className="text-[13px]">
+                    <b>{selRun.date}</b>
+                    <span className="ml-2 text-white/60">{selRun.km}km · {paceStr(selRun.paceSec)}/km{selRun.durSec ? ` · ${Math.floor(selRun.durSec / 60)}분` : ""}</span>
+                  </div>
+                  <button
+                    onClick={() => setDetail(selRun)}
+                    className="rounded-full border border-white/15 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-bold"
+                  >
+                    구간 페이스 →
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 목록 */}
+            <div className="divide-y divide-white/[0.06]">
+              {[...runs].reverse().slice(0, 10).map((r, i) => {
+                const on = selRun && (selRun.rid ? selRun.rid === r.rid : selRun.date === r.date && selRun.km === r.km);
+                return (
+                  <div key={r.rid ?? `${r.date}-${r.km}-${i}`} className={`flex items-center gap-3 px-2 py-2.5 ${on ? "rounded-lg bg-volt/[0.07]" : ""}`}>
+                    <button onClick={() => setSelRun(r)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                      <span title={r.route ? "GPS 기록" : "수동 기록"} className="shrink-0 text-[12px]">{r.route ? "📡" : "✍️"}</span>
+                      <span className="w-[76px] shrink-0 text-[12.5px] text-white/55">{r.date}</span>
+                      <b className={`text-[14px] ${on ? "text-volt" : ""}`}>{r.km}km</b>
+                      <span className="text-[12px] text-white/45">{paceStr(r.paceSec)}/km</span>
+                    </button>
+                    <button
+                      onClick={() => setDetail(r)}
+                      className="shrink-0 rounded-full px-2 py-1 text-[11px] font-bold text-white/40 hover:text-white"
+                    >
+                      상세
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`${r.date} · ${r.km}km 기록을 삭제할까요?`)) deleteRun(r);
+                      }}
+                      className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[13px] text-white/30 hover:bg-white/5 hover:text-danger"
+                      aria-label="기록 삭제"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+              {runs.length > 10 && <p className="pt-2 text-[10.5px] text-white/30">최근 10개만 표시 · 전체 {runs.length}개</p>}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ── 러닝 분석 (구 분석 탭 통합) ── */}
+      <div className="mt-2 flex items-center gap-2">
+        <span className="h-3.5 w-[3px] rounded-full bg-volt" />
+        <span className="lab">러닝 분석 ANALYSIS</span>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* 페이스 × 거리 산점도 */}
+        <AnalysisCard question="거리가 길어지면 페이스가 얼마나 떨어질까?">
+          {anal.scatter.length >= 3 ? (
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ top: 8, right: 10, left: -8 }}>
+                  <XAxis dataKey="km" name="거리" unit="km" type="number"
+                    tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} />
+                  <YAxis dataKey="sec" name="페이스" type="number" reversed domain={["dataMin - 15", "dataMax + 15"]}
+                    tickFormatter={(v) => paceStr(Number(v))}
+                    tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} width={44} />
+                  <ZAxis range={[70, 71]} />
+                  <Tooltip
+                    contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                    formatter={(v, n) => (n === "페이스" ? [`${paceStr(Number(v))}/km`, n] : [`${v}km`, n])}
+                  />
+                  <Scatter data={anal.scatter} fill="#c8ff00" fillOpacity={0.85} isAnimationActive={false} />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="py-4 text-center text-[12.5px] text-white/40">페이스 기록이 3개 이상 쌓이면 나와요 · 위로 갈수록 빠름</p>
+          )}
+        </AnalysisCard>
+
+        {/* 거리 분포 */}
+        <AnalysisCard question="나는 주로 몇 km를 달릴까?">
+          {anal.count > 0 ? (
+            <>
+              <div className="space-y-2">
+                {anal.buckets.map((b) => (
+                  <div key={b.l} className="flex items-center gap-2.5">
+                    <span className="w-14 shrink-0 text-[11.5px] font-bold text-white/60">{b.l}</span>
+                    <div className="h-3.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                      <div className="h-full rounded-full bg-volt" style={{ width: `${(b.n / anal.maxBucket) * 100}%` }} />
+                    </div>
+                    <b className="w-9 shrink-0 text-right text-[12px] tabular-nums">{b.n}회</b>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2.5 text-[11.5px] text-white/45">
+                총 {anal.count}회 — 편한 거리에 머물러 있다면 가끔 한 구간 위를 노려보세요
+              </p>
+            </>
+          ) : (
+            <p className="py-4 text-center text-[12.5px] text-white/40">아직 기록이 없어요</p>
+          )}
+        </AnalysisCard>
+
+        {/* 요일별 평균 페이스 */}
+        <AnalysisCard question="어느 요일에 제일 잘 달릴까?">
+          <div className="grid grid-cols-7 gap-1.5">
+            {anal.dow.map((d) => (
+              <div
+                key={d.l}
+                className={`rounded-lg border py-2.5 text-center ${
+                  anal.bestDow && d.l === anal.bestDow.l ? "border-volt/60 bg-volt/10" : "border-white/[0.06] bg-white/[0.03]"
+                }`}
+              >
+                <div className="text-[10px] text-white/45">{d.l}</div>
+                <div className={`mt-1 text-[11px] font-extrabold tabular-nums ${d.avg ? "" : "text-white/20"}`}>
+                  {d.avg ? paceStr(d.avg) : "·"}
+                </div>
+                {d.n > 0 && <div className="text-[8.5px] text-white/35">{d.n}회</div>}
               </div>
             ))}
           </div>
-        )}
-        {runs.length > 10 && <p className="mt-2 text-[10.5px] text-white/30">최근 10개만 표시 · 전체 {runs.length}개</p>}
-      </section>
+          {anal.bestDow && (
+            <p className="mt-2.5 text-center text-[12px] text-white/55">
+              <b className="text-volt">{anal.bestDow.l}요일</b>에 가장 빨라요 ({paceStr(anal.bestDow.avg)}) — 중요한 러닝은 이날에!
+            </p>
+          )}
+        </AnalysisCard>
+
+        {/* 페이스 존 분포 */}
+        <AnalysisCard question="나는 주로 어떤 페이스로 달릴까?">
+          {anal.zones.some((z) => z.n > 0) ? (
+            <div className="space-y-2">
+              {anal.zones.map((z) => (
+                <div key={z.l} className="flex items-center gap-2.5">
+                  <span className="w-24 shrink-0 text-[11.5px] font-bold tabular-nums text-white/60">{z.l}</span>
+                  <div className="h-3.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                    <div className="h-full rounded-full bg-volt" style={{ width: `${(z.n / anal.maxZone) * 100}%` }} />
+                  </div>
+                  <b className="w-9 shrink-0 text-right text-[12px] tabular-nums">{z.n}회</b>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="py-4 text-center text-[12.5px] text-white/40">페이스가 있는 기록이 아직 없어요</p>
+          )}
+        </AnalysisCard>
+
+        {/* 월별 평균 페이스 */}
+        <AnalysisCard question="달이 갈수록 빨라지고 있을까?">
+          {anal.monthlyPace.length >= 2 ? (
+            <div className="h-44">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={anal.monthlyPace} margin={{ top: 8, right: 8, left: -8 }}>
+                  <XAxis dataKey="m" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} />
+                  <YAxis
+                    reversed domain={["dataMin - 15", "dataMax + 15"]}
+                    tickFormatter={(v) => paceStr(Number(v))}
+                    tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} width={44}
+                  />
+                  <Tooltip
+                    contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                    formatter={(v) => [`${paceStr(Number(v))}/km`, "평균 페이스"]}
+                  />
+                  <Line type="monotone" dataKey="sec" stroke="#c8ff00" strokeWidth={2.5} dot={{ r: 3, fill: "#c8ff00" }} isAnimationActive={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="py-4 text-center text-[12.5px] text-white/40">두 달 이상 기록이 쌓이면 추이가 나와요 · 위로 갈수록 빠름</p>
+          )}
+        </AnalysisCard>
+      </div>
 
       {/* 기록 입력 시트 */}
       <BottomSheet open={showLog} onClose={() => setShowLog(false)}>

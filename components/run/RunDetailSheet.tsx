@@ -12,7 +12,7 @@ const fmtT = (s: number) => {
   return (h ? `${h}:` : "") + `${String(m).padStart(h ? 2 : 1, "0")}:${String(ss).padStart(2, "0")}`;
 };
 
-function RouteMap({ route }: { route: number[][] }) {
+export function RouteMap({ route }: { route: number[][] }) {
   const divRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
 

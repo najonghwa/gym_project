@@ -1,14 +1,45 @@
 "use client";
-// 헬스장 — SVG 평면도 + 장비 클릭 → 정보 시트 (gym_web 포팅)
-import { useState } from "react";
+// 헬스장 — SVG 평면도 + 장비 클릭 → 정보 + 내 사용 기록 시트
+import { useMemo, useState } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { EQUIP_INFO, FLOOR, FLOOR_ZONES, ZONES } from "@/lib/data/gym";
+import { byId, EXERCISES, type TodayItem } from "@/lib/mock/exercises";
+import { useUser } from "@/lib/useUser";
 
 export default function GymPage() {
+  const { user } = useUser();
   const [sel, setSel] = useState<string | null>(null);
   const info = sel ? EQUIP_INFO[sel] : null;
   const item = sel ? FLOOR.find((f) => f.eq === sel) : null;
   const zone = item ? ZONES.find((z) => z.id === item.zone) : null;
+
+  // 이 장비로 한 내 기록 — 장비명↔운동 equipment 매칭
+  const history = useMemo(() => {
+    if (!sel || !user) return null;
+    const ids = new Set(EXERCISES.filter((e) => e.equipment === sel).map((e) => e.id));
+    if (ids.size === 0) return null; // 유산소·소도구 등 매핑 없는 장비
+    const rows: { date: string; name: string; maxKg: number; reps: number; sets: number }[] = [];
+    Object.entries(user.v2?.workouts ?? {}).forEach(([d, w]) => {
+      (w.items as TodayItem[]).forEach((it) => {
+        if (!ids.has(it.exerciseId)) return;
+        const done = it.sets.filter((s) => s.done);
+        if (!done.length) return;
+        const maxKg = Math.max(0, ...done.map((s) => s.weightKg ?? 0));
+        const top = done.find((s) => (s.weightKg ?? 0) === maxKg);
+        rows.push({ date: d, name: byId(it.exerciseId)?.name ?? it.exerciseId, maxKg, reps: top?.reps ?? 0, sets: done.length });
+      });
+    });
+    rows.sort((a, b) => (a.date < b.date ? 1 : -1));
+    const sessions = new Set(rows.map((r) => r.date)).size;
+    const bestKg = Math.max(0, ...rows.map((r) => r.maxKg));
+    const totalSets = rows.reduce((s, r) => s + r.sets, 0);
+    // 날짜별 최고 중량 추이 (최근 8일)
+    const byDate = new Map<string, number>();
+    [...rows].reverse().forEach((r) => byDate.set(r.date, Math.max(byDate.get(r.date) ?? 0, r.maxKg)));
+    const trend = [...byDate.entries()].slice(-8);
+    const maxTrend = Math.max(1, ...trend.map(([, k]) => k));
+    return { rows: rows.slice(0, 6), sessions, bestKg, totalSets, trend, maxTrend };
+  }, [sel, user]);
 
   return (
     <main className="lg:max-w-none lg:pt-10">
@@ -88,6 +119,58 @@ export default function GymPage() {
             <div className="mt-3 rounded-lg border border-gold/40 bg-gold/10 p-3 text-[13px] leading-relaxed">
               💡 <b>팁</b> — {info.tip}
             </div>
+
+            {/* 이 장비로 한 내 기록 */}
+            {history && (
+              <>
+                <div className="lab mb-2 mt-5">이 장비로 한 내 기록</div>
+                {history.sessions === 0 ? (
+                  <p className="rounded-lg bg-white/[0.04] p-3.5 text-center text-[12.5px] text-white/40">
+                    아직 이 장비로 운동한 기록이 없어요
+                  </p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([[`${history.sessions}회`, "사용한 날"], [`${history.totalSets}세트`, "총 세트"], [history.bestKg ? `${history.bestKg}kg` : "—", "최고 중량"]] as const).map(([v, l]) => (
+                        <div key={l} className="rounded-lg bg-white/[0.05] py-2.5 text-center">
+                          <div className="font-display text-[16px] leading-none tabular-nums">{v}</div>
+                          <div className="mt-1 text-[9.5px] text-white/45">{l}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 날짜별 최고 중량 추이 */}
+                    {history.bestKg > 0 && history.trend.length >= 2 && (
+                      <div className="mt-3 rounded-lg bg-white/[0.04] p-3">
+                        <div className="text-[10.5px] font-bold text-white/45">날짜별 최고 중량 (kg)</div>
+                        <div className="mt-2 flex items-end gap-1.5" style={{ height: 72 }}>
+                          {history.trend.map(([d, kg]) => (
+                            <div key={d} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1">
+                              <span className="text-[9px] font-bold tabular-nums text-volt">{kg}</span>
+                              <div className="w-full rounded-t-[3px] bg-volt/80" style={{ height: `${Math.max(8, (kg / history.maxTrend) * 44)}px` }} />
+                              <span className="text-[8.5px] tabular-nums text-white/35">{d.slice(5).replace("-", ".")}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 최근 세션 */}
+                    <div className="mt-3 divide-y divide-white/[0.06]">
+                      {history.rows.map((r, i) => (
+                        <div key={`${r.date}-${r.name}-${i}`} className="flex items-center gap-2.5 py-2">
+                          <span className="w-12 shrink-0 text-[11.5px] tabular-nums text-white/50">{r.date.slice(5).replace("-", ".")}</span>
+                          <span className="min-w-0 flex-1 truncate text-[12.5px] font-bold text-white/80">{r.name}</span>
+                          <span className="shrink-0 text-[12px] tabular-nums text-white/60">
+                            {r.maxKg > 0 ? <><b className="text-volt">{r.maxKg}kg</b> × {r.reps}회 · </> : ""}{r.sets}세트
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
           </>
         )}
       </BottomSheet>
