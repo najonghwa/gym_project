@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { byId, type TodayItem } from "@/lib/mock/exercises";
+import { ExThumb } from "@/components/ui/ExThumb";
 
 export function TodayWorkoutCard({
   items,
@@ -58,8 +59,8 @@ export function TodayWorkoutCard({
                 allDone ? "border-volt/50 bg-volt/[0.07]" : "border-white/[0.06] bg-white/[0.03]"
               }`}
             >
-              <button className="flex w-full items-center gap-2 text-left" onClick={() => onOpenExercise(it.exerciseId)}>
-                <span className="text-[18px]">{ex.em}</span>
+              <button className="flex w-full items-center gap-2.5 text-left" onClick={() => onOpenExercise(it.exerciseId)}>
+                <ExThumb ex={ex} size={38} />
                 <span className="min-w-0 flex-1">
                   <b className="block truncate text-[14.5px]">{ex.name} <span className="text-[10px] text-white/40">ⓘ</span></b>
                   <span className="text-[11.5px] text-white/50">

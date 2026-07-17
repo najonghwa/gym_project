@@ -39,6 +39,8 @@ export interface ExploreRoutine {
   title: string;
   desc: string;
   overview: string;            // 상세 페이지 Overview
+  who?: string;                // 이런 분께 추천
+  schedule?: string;           // 주간 구성 요약
   target: string;              // 필터: 부위
   equipment: string;           // 필터: 장비
   level: "초급" | "중급" | "고급";
@@ -54,44 +56,44 @@ export interface ExploreRoutine {
 export const EXPLORE: ExploreRoutine[] = [
   { id: "legday", badge: "LD", title: "하체 집중 4주", desc: "스쿼트 중심 하체 볼륨 주간",
     overview: "하체가 부족하다고 느껴진다면 이 플랜. 스쿼트를 축으로 4주간 하체 볼륨을 끌어올려요. 상체는 유지 볼륨만 — 다리에 모든 에너지를 씁니다.",
-    target: "하체", equipment: "바벨", level: "중급", muscles: ["legs", "glutes"], exercises: ["back_squat", "leg_press", "rdl", "leg_ext", "leg_curl", "lunge", "calf_raise"], likes: 42, weeks: 4, daysPerWeek: 3, durationMin: 50, kcal: "300~420" },
+    target: "하체", equipment: "바벨", level: "중급", muscles: ["legs", "glutes"], exercises: ["back_squat", "leg_press", "rdl", "leg_ext", "leg_curl", "lunge", "calf_raise"], who: "스쿼트 후 머신으로 대퇴사두·햄스트링·둔근을 각각 조져주는 전형적인 하체 볼륨 데이. 상체는 유지만 하고 4주간 하체에 올인합니다.", schedule: "주 3회 모두 하체 — 스쿼트 중량일 / 머신 볼륨일 / 펌핑·보조일 순환", likes: 42, weeks: 4, daysPerWeek: 3, durationMin: 50, kcal: "300~420" },
   { id: "st55", badge: "ST", title: "스트롱리프트 5×5", desc: "초보 근력의 정석 A/B 루틴",
     overview: "헬스장이 처음이라 뭘 해야 할지 모르겠다면 여기서 시작하세요. 딱 5가지 운동을 5세트×5회 — 단순하지만 전 세계에서 가장 검증된 초보 근력 프로그램이에요.",
-    target: "전신", equipment: "바벨", level: "초급", muscles: ["legs", "chest", "back"], exercises: ["back_squat", "bench_press", "seated_row", "db_shoulder_press", "deadlift"], likes: 128, weeks: 12, daysPerWeek: 3, durationMin: 45, kcal: "250~380" },
+    target: "전신", equipment: "바벨", level: "초급", muscles: ["legs", "chest", "back"], exercises: ["back_squat", "bench_press", "seated_row", "db_shoulder_press", "deadlift"], who: "헬스 처음 3~6개월, 뭘 해야 할지 모르는 분. 5×5로 매번 2.5kg씩 늘리는 게 전부라 초보가 가장 빨리 강해집니다.", schedule: "A일(스쿼트·벤치·로우) / B일(스쿼트·프레스·데드) 번갈아 주 3회", likes: 128, weeks: 12, daysPerWeek: 3, durationMin: 45, kcal: "250~380" },
   { id: "ppl", badge: "PP", title: "PPL 6일 분할", desc: "밀·당·다리 주 2바퀴 고볼륨",
     overview: "미는 날·당기는 날·다리 날을 일주일에 두 바퀴 도는 고볼륨 분할. 부위당 주 2회 자극으로 성장 속도가 빠르지만, 주 6회 출석과 충분한 수면이 필요해요.",
-    target: "전신", equipment: "머신+바벨", level: "중급", muscles: ["chest", "back", "legs", "shoulders"], exercises: ["bench_press", "incline_press", "lateral_raise", "pushdown", "pullup", "seated_row", "back_squat", "rdl"], likes: 96, weeks: 12, daysPerWeek: 6, durationMin: 65, kcal: "400~550" },
+    target: "전신", equipment: "머신+바벨", level: "중급", muscles: ["chest", "back", "legs", "shoulders"], exercises: ["bench_press", "incline_press", "lateral_raise", "pushdown", "pullup", "seated_row", "back_squat", "rdl"], who: "볼륨을 늘리고 싶은 중급자. 미는 날·당기는 날·다리 날로 나눠 한 부위를 주 2번씩 치는 검증된 분할입니다.", schedule: "월 Push / 화 Pull / 수 Legs → 목금토 반복, 일 휴식", likes: 96, weeks: 12, daysPerWeek: 6, durationMin: 65, kcal: "400~550" },
   { id: "quickfit", badge: "QF", title: "30분 전신 서킷", desc: "바쁜 날을 위한 머신 서킷",
     overview: "점심시간에 후딱 치고 나오는 머신 위주 서킷. 세팅이 빠른 머신만 써서 옷 갈아입는 시간 포함 40분 안에 끝나요. 바쁜 주간의 비상용 플랜으로도 좋아요.",
-    target: "상체", equipment: "머신", level: "초급", muscles: ["chest", "back", "shoulders"], exercises: ["lat_pulldown", "leg_press", "db_bench", "seated_row", "plank"], likes: 61, weeks: 4, daysPerWeek: 5, durationMin: 30, kcal: "180~260" },
+    target: "상체", equipment: "머신", level: "초급", muscles: ["chest", "back", "shoulders"], exercises: ["lat_pulldown", "leg_press", "db_bench", "seated_row", "plank"], who: "점심시간·바쁜 날용. 머신 위주 서킷이라 세팅 시간이 없고 30분에 전신을 한 바퀴 돕니다.", schedule: "주 5회 가능 — 매회 같은 5종목을 쉬는 시간 짧게 서킷으로", likes: 61, weeks: 4, daysPerWeek: 5, durationMin: 30, kcal: "180~260" },
   { id: "arms", badge: "AR", title: "팔 집중 6주", desc: "이두·삼두 집중 펌핑",
     overview: "여름 대비 팔 특화 6주. 이두·삼두를 다양한 각도로 조지는 펌핑 위주 구성이라 초보도 부담 없어요. 기존 루틴에 주 2회 얹어서 쓰는 걸 추천!",
-    target: "팔", equipment: "덤벨", level: "중급", muscles: ["biceps", "triceps"], exercises: ["barbell_curl", "db_curl", "pushdown", "dips", "face_pull"], likes: 55, weeks: 6, daysPerWeek: 2, durationMin: 35, kcal: "200~280" },
+    target: "팔", equipment: "덤벨", level: "중급", muscles: ["biceps", "triceps"], exercises: ["barbell_curl", "db_curl", "pushdown", "dips", "face_pull"], who: "팔 크기가 고민인 분. 이두·삼두를 주 2회 집중적으로 — 나머지 요일은 평소 루틴을 유지하면서 얹는 프로그램입니다.", schedule: "주 2회(예: 화·금) 팔 전용일 — 이두 2종 + 삼두 2종 + 후면어깨", likes: 55, weeks: 6, daysPerWeek: 2, durationMin: 35, kcal: "200~280" },
   // ── 유명 프로그램 (구버전 10종 복원) ──
   { id: "ss", badge: "SS", title: "스타팅 스트렝스", desc: "마크 리피토의 교과서 3×5",
     overview: "미국 초보 근력의 바이블. 스쿼트를 매 세션 하며 3세트×5회로 기본기를 다져요. 5×5보다 세트가 적어 회복이 쉬워 진짜 처음이라면 여기부터.",
-    target: "전신", equipment: "바벨", level: "초급", muscles: ["legs", "chest", "back"], exercises: ["back_squat", "bench_press", "deadlift", "db_shoulder_press", "pullup"], likes: 87, weeks: 12, daysPerWeek: 3, durationMin: 40, kcal: "230~350" },
+    target: "전신", equipment: "바벨", level: "초급", muscles: ["legs", "chest", "back"], exercises: ["back_squat", "bench_press", "deadlift", "db_shoulder_press", "pullup"], who: "마크 리피토의 교과서. 스트롱리프트보다 세트가 적어(3×5) 회복이 쉽고, 초보 근력 기준으로 가장 검증된 프로그램.", schedule: "A일(스쿼트·프레스·데드) / B일(스쿼트·벤치·파워클린 대체) 주 3회", likes: 87, weeks: 12, daysPerWeek: 3, durationMin: 40, kcal: "230~350" },
   { id: "phul", badge: "PH", title: "PHUL 4일 분할", desc: "힘의 날 + 펌핑의 날 반반",
     overview: "상체 힘/하체 힘/상체 펌핑/하체 펌핑 — 주 4회. 앞의 이틀은 무겁게 적은 횟수, 뒤의 이틀은 가볍게 많은 횟수로 근력과 크기를 동시에 잡아요.",
-    target: "전신", equipment: "바벨+머신", level: "중급", muscles: ["chest", "back", "legs", "shoulders"], exercises: ["back_squat", "deadlift", "bench_press", "seated_row", "leg_press", "incline_press", "lat_pulldown", "db_curl"], likes: 74, weeks: 12, daysPerWeek: 4, durationMin: 60, kcal: "350~480" },
+    target: "전신", equipment: "바벨+머신", level: "중급", muscles: ["chest", "back", "legs", "shoulders"], exercises: ["back_squat", "deadlift", "bench_press", "seated_row", "leg_press", "incline_press", "lat_pulldown", "db_curl"], who: "근력과 근비대 둘 다 원하는 중급자. 앞 이틀은 무겁게(파워), 뒤 이틀은 가볍고 많이(펌핑) — 반반 설계입니다.", schedule: "월 상체파워 / 화 하체파워 / 목 상체펌핑 / 금 하체펌핑", likes: 74, weeks: 12, daysPerWeek: 4, durationMin: 60, kcal: "350~480" },
   { id: "gvt", badge: "GV", title: "GVT 10×10 (독일식 볼륨)", desc: "한 운동 10세트×10회, 벌크의 클래식",
     overview: "부위별 대표 운동 하나를 10세트×10회(휴식 60초). 무게는 10회 최대치의 60%로 가볍게 시작하는 게 포인트 — 6주만 해도 옷핏이 달라져요. 마지막 3세트는 지옥이 정상.",
-    target: "전신", equipment: "바벨", level: "고급", muscles: ["chest", "back", "legs"], exercises: ["back_squat", "bench_press", "seated_row", "db_shoulder_press", "leg_curl", "lateral_raise"], likes: 45, weeks: 6, daysPerWeek: 4, durationMin: 55, kcal: "400~520" },
+    target: "전신", equipment: "바벨", level: "고급", muscles: ["chest", "back", "legs"], exercises: ["back_squat", "bench_press", "seated_row", "db_shoulder_press", "leg_curl", "lateral_raise"], who: "정체기 온 중·상급자용 쇼크 요법. 한 종목을 10세트×10회 — 지루하지만 볼륨 증가엔 이만한 게 없습니다.", schedule: "주 4회, 하루 메인 1종목 10×10 + 보조 2종목", likes: 45, weeks: 6, daysPerWeek: 4, durationMin: 55, kcal: "400~520" },
   { id: "five31", badge: "53", title: "5/3/1 (짐 웬들러)", desc: "4주 파도로 끝없이 강해지기",
     overview: "매주 메인 리프트 강도가 파도처럼 바뀌어요: 5·5·5 → 3·3·3 → 5·3·1 → 디로드. 이 4주 사이클을 반복하며 매 사이클 기록을 갱신하는 장기 근력 프로그램. 마지막 세트는 한계까지(AMRAP)!",
-    target: "전신", equipment: "바벨", level: "중급", muscles: ["shoulders", "legs", "chest", "back"], exercises: ["back_squat", "bench_press", "deadlift", "db_shoulder_press", "pullup", "dips"], likes: 69, weeks: 16, daysPerWeek: 4, durationMin: 50, kcal: "300~430" },
+    target: "전신", equipment: "바벨", level: "중급", muscles: ["shoulders", "legs", "chest", "back"], exercises: ["back_squat", "bench_press", "deadlift", "db_shoulder_press", "pullup", "dips"], who: "짐 웬들러의 명작. 4주 파도(5회→3회→1회→디로드)로 천천히, 하지만 끝없이 강해지는 장기 프로그램.", schedule: "주 4회 — 스쿼트일/벤치일/데드일/프레스일 + 각날 보조운동", likes: 69, weeks: 16, daysPerWeek: 4, durationMin: 50, kcal: "300~430" },
   { id: "texas", badge: "TX", title: "텍사스 메소드", desc: "볼륨 → 회복 → 금요일 신기록",
     overview: "월요일은 많이(5×5 볼륨), 수요일은 가볍게(회복), 금요일은 무겁게 신기록 도전. 5×5로 정체가 왔을 때 다음 단계로 좋은 중급자 프로그램이에요.",
-    target: "전신", equipment: "바벨", level: "중급", muscles: ["legs", "chest", "shoulders"], exercises: ["back_squat", "bench_press", "deadlift", "db_shoulder_press", "seated_row"], likes: 38, weeks: 12, daysPerWeek: 3, durationMin: 55, kcal: "320~450" },
+    target: "전신", equipment: "바벨", level: "중급", muscles: ["legs", "chest", "shoulders"], exercises: ["back_squat", "bench_press", "deadlift", "db_shoulder_press", "seated_row"], who: "초보 프로그램 졸업자. 월요일 볼륨으로 자극 → 수요일 가볍게 회복 → 금요일 5회 신기록 도전 구조입니다.", schedule: "월 볼륨(5×5 90%) / 수 회복(80%) / 금 신기록(1×5)", likes: 38, weeks: 12, daysPerWeek: 3, durationMin: 55, kcal: "320~450" },
   { id: "bro", badge: "BR", title: "브로 스플릿 5분할", desc: "하루 한 부위, 헬스장의 클래식",
     overview: "가슴/등/어깨/하체/팔을 하루 하나씩 조지는 전통 보디빌딩 방식. 부위당 볼륨이 커서 펌핑 맛이 확실하고, 한 부위는 일주일을 쉬어 회복 걱정이 없어요.",
-    target: "전신", equipment: "바벨+머신", level: "중급", muscles: ["chest", "back", "shoulders", "legs", "biceps"], exercises: ["bench_press", "cable_fly", "lat_pulldown", "db_shoulder_press", "lateral_raise", "back_squat", "barbell_curl", "pushdown"], likes: 91, weeks: 8, daysPerWeek: 5, durationMin: 60, kcal: "380~500" },
+    target: "전신", equipment: "바벨+머신", level: "중급", muscles: ["chest", "back", "shoulders", "legs", "biceps"], exercises: ["bench_press", "cable_fly", "lat_pulldown", "db_shoulder_press", "lateral_raise", "back_squat", "barbell_curl", "pushdown"], who: "하루 한 부위만 조지는 클래식 보디빌딩 분할. 부위당 볼륨이 많아 펌핑감이 확실합니다.", schedule: "월 가슴 / 화 등 / 수 어깨 / 목 하체 / 금 팔", likes: 91, weeks: 8, daysPerWeek: 5, durationMin: 60, kcal: "380~500" },
   { id: "arnold", badge: "AN", title: "아놀드 스플릿", desc: "아놀드의 3분할 × 주 2바퀴",
     overview: "가슴·등 / 어깨·팔 / 하체를 일주일에 두 바퀴 도는 고볼륨 분할. 부위당 주 2회 자극 — 아놀드를 미스터 올림피아로 만든 방식. 주 6회 출석과 밥·잠이 절반입니다.",
-    target: "전신", equipment: "바벨+덤벨", level: "고급", muscles: ["chest", "back", "shoulders", "biceps", "legs"], exercises: ["bench_press", "incline_press", "pullup", "seated_row", "db_shoulder_press", "lateral_raise", "barbell_curl", "pushdown"], likes: 63, weeks: 8, daysPerWeek: 6, durationMin: 70, kcal: "450~600" },
+    target: "전신", equipment: "바벨+덤벨", level: "고급", muscles: ["chest", "back", "shoulders", "biceps", "legs"], exercises: ["bench_press", "incline_press", "pullup", "seated_row", "db_shoulder_press", "lateral_raise", "barbell_curl", "pushdown"], who: "아놀드가 실제로 쓰던 3분할×주2회. 볼륨이 상당해서 회복 관리가 되는 상급자에게 맞습니다.", schedule: "가슴·등 / 어깨·팔 / 하체 3분할을 월~토 두 바퀴", likes: 63, weeks: 8, daysPerWeek: 6, durationMin: 70, kcal: "450~600" },
   { id: "smolov", badge: "SM", title: "스모로프 Jr (벤치 특화)", desc: "3주 만에 벤치 +5~10kg",
     overview: "3주 동안 벤치프레스만 주 4회 — 6×6, 7×5, 8×4, 10×3으로 매일 다른 세트 구성. 짧고 혹독한 러시아식 단기 특화. 고급자용이며 어깨가 아프면 바로 중단, 끝나고 1주는 꼭 가볍게!",
-    target: "상체", equipment: "바벨", level: "고급", muscles: ["chest", "triceps"], exercises: ["bench_press", "incline_press", "dips", "pushdown", "face_pull"], likes: 29, weeks: 3, daysPerWeek: 4, durationMin: 45, kcal: "280~380" },
+    target: "상체", equipment: "바벨", level: "고급", muscles: ["chest", "triceps"], exercises: ["bench_press", "incline_press", "dips", "pushdown", "face_pull"], who: "벤치 정체 뚫기 특화. 3주간 벤치 빈도를 주 4회로 끌어올려 단기간에 5~10kg 증량을 노립니다.", schedule: "주 4회 벤치(6×6→10×3 등 파도) + 보조 삼두·어깨", likes: 29, weeks: 3, daysPerWeek: 4, durationMin: 45, kcal: "280~380" },
 ];
 
 export const FILTER = {

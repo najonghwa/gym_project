@@ -7,7 +7,6 @@ import { computeStats, useUser } from "@/lib/useUser";
 const TABS = [
   { href: "/today", em: "🏋️", t: "헬스" },
   { href: "/run", em: "🏃", t: "러닝" },
-  { href: "/calendar", em: "📅", t: "달력" },
   { href: "/analysis", em: "📊", t: "분석" },
   { href: "/routine", em: "📋", t: "루틴" },
   { href: "/ranking", em: "🏆", t: "랭킹" },

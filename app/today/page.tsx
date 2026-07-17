@@ -17,6 +17,7 @@ import { LoginCard } from "@/components/auth/LoginCard";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
+import { ExThumb } from "@/components/ui/ExThumb";
 import { EXERCISES, itemsFromExercises } from "@/lib/mock/exercises";
 import { EXPLORE } from "@/lib/mock/routines";
 import { MUSCLE_KR, type Muscle } from "@/lib/recovery";
@@ -694,12 +695,17 @@ export default function TodayPage() {
                 {expanded && (
                   <div className="border-t border-white/[0.07] px-3.5 pb-3.5 pt-3">
                     <p className="text-[12.5px] leading-relaxed text-white/70">{r.overview}</p>
-                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {r.who && <p className="mt-2 text-[12px] leading-relaxed text-white/50">👤 {r.who}</p>}
+                    {r.schedule && (
+                      <p className="mt-2 rounded-lg bg-white/[0.05] px-2.5 py-2 text-[12px] font-bold text-white/70">📆 {r.schedule}</p>
+                    )}
+                    <div className="mt-2.5 grid grid-cols-2 gap-1.5">
                       {r.exercises.map((exId) => {
                         const ex = byId(exId);
                         return ex ? (
-                          <span key={exId} className="rounded bg-white/[0.07] px-2 py-1 text-[11px] font-bold text-white/70">
-                            {ex.em} {ex.name}
+                          <span key={exId} className="flex items-center gap-1.5 rounded-lg bg-white/[0.05] p-1 pr-2 text-[11px] font-bold text-white/70">
+                            <ExThumb ex={ex} size={26} rounded="rounded-md" />
+                            <span className="min-w-0 truncate">{ex.name}</span>
                           </span>
                         ) : null;
                       })}
@@ -738,7 +744,7 @@ export default function TodayPage() {
               }}
               className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-left"
             >
-              <span className="text-[20px]">{ex.em}</span>
+              <ExThumb ex={ex} size={40} />
               <span className="min-w-0 flex-1">
                 <b className="block text-[14px]">{ex.name}</b>
                 <span className="text-[11px] text-white/45">{ex.zone}구역 · {ex.equipment}</span>

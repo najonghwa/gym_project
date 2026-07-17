@@ -7,8 +7,8 @@ import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { PillButton } from "@/components/ui/PillButton";
 import { byId } from "@/lib/mock/exercises";
+import { ExThumb } from "@/components/ui/ExThumb";
 import { EXPLORE, FILTER, type ExploreRoutine } from "@/lib/mock/routines";
-import { MUSCLE_KR } from "@/lib/recovery";
 
 function ChipRow({
   label, options, value, onChange,
@@ -41,22 +41,14 @@ export function ExploreSection({
   onApply?: (r: ExploreRoutine) => void;
 }) {
   const reduce = useReducedMotion();
-  const [target, setTarget] = useState("전체");
-  const [equipment, setEquipment] = useState("전체");
   const [level, setLevel] = useState("전체");
   const [likes, setLikes] = useState<Record<string, boolean>>({});
   const [detail, setDetail] = useState<ExploreRoutine | null>(null);
   const isSaved = (id: string) => savedIds.includes(id);
 
   const list = useMemo(
-    () =>
-      EXPLORE.filter(
-        (r) =>
-          (target === "전체" || r.target === target) &&
-          (equipment === "전체" || r.equipment.includes(equipment)) &&
-          (level === "전체" || r.level === level)
-      ),
-    [target, equipment, level]
+    () => EXPLORE.filter((r) => level === "전체" || r.level === level),
+    [level]
   );
 
   return (
@@ -65,14 +57,10 @@ export function ExploreSection({
         <h3 className="font-display text-[20px]">루틴 둘러보기 EXPLORE</h3>
         <span className="text-[11px] text-white/40">{list.length}개</span>
       </div>
-      <div className="space-y-1.5">
-        <ChipRow label="부위" options={FILTER.target} value={target} onChange={setTarget} />
-        <ChipRow label="장비" options={FILTER.equipment} value={equipment} onChange={setEquipment} />
-        <ChipRow label="난이도" options={FILTER.level} value={level} onChange={setLevel} />
-      </div>
+      <ChipRow label="난이도" options={FILTER.level} value={level} onChange={setLevel} />
 
       <motion.div
-        className="mt-3 space-y-3"
+        className="mt-3 grid gap-3 lg:grid-cols-2 lg:items-start"
         variants={reduce ? undefined : staggerContainer}
         initial={reduce ? false : "hidden"}
         animate="show"
@@ -89,7 +77,7 @@ export function ExploreSection({
                 <b className="block text-[15px]">{r.title} <span className="text-[10px] text-white/35">자세히 ›</span></b>
                 <span className="text-[12px] text-white/50">{r.desc}</span>
                 <div className="mt-1.5 flex flex-wrap gap-1">
-                  {[`${r.weeks}주`, `주 ${r.daysPerWeek}회`, r.level, r.equipment].map((c) => (
+                  {[`${r.weeks}주`, `주 ${r.daysPerWeek}회`, `회당 ~${r.durationMin}분`, r.level].map((c) => (
                     <span key={c} className="rounded-md border border-white/10 bg-white/[0.05] px-1.5 py-0.5 text-[10.5px] text-white/55">{c}</span>
                   ))}
                 </div>
@@ -103,15 +91,11 @@ export function ExploreSection({
                 {likes[r.id] ? "❤️" : "🤍"} {r.likes + (likes[r.id] ? 1 : 0)}
               </motion.button>
             </div>
-            {/* 부위 썸네일 + 운동 미리보기 */}
+            {/* 구성 운동 실사 미리보기 */}
             <div className="mt-3 flex items-center gap-1.5 overflow-x-auto">
-              {r.muscles.map((m) => (
-                <span key={m} className="shrink-0 rounded-full bg-volt/15 px-2.5 py-1 text-[10.5px] font-bold text-volt">{MUSCLE_KR[m]}</span>
-              ))}
-              <span className="text-white/20">|</span>
               {r.exercises.map((id) => {
                 const ex = byId(id);
-                return ex ? <span key={id} className="shrink-0 text-[15px]" title={ex.name}>{ex.em}</span> : null;
+                return ex ? <ExThumb key={id} ex={ex} size={34} /> : null;
               })}
             </div>
             <button
@@ -133,16 +117,26 @@ export function ExploreSection({
             <div className="flex items-center gap-3">
               <ColorInitialBadge text={detail.badge} seed={0} />
               <div>
-                <div className="flex gap-1.5">
-                  <span className="rounded-md bg-volt/15 px-1.5 py-0.5 text-[10px] font-bold text-volt">{detail.level}</span>
-                  <span className="rounded-md bg-white/[0.08] px-1.5 py-0.5 text-[10px] font-bold text-white/55">{detail.target}</span>
-                </div>
+                <span className="rounded-md bg-volt/15 px-1.5 py-0.5 text-[10px] font-bold text-volt">{detail.level}</span>
                 <h3 className="mt-1 font-display text-[22px] leading-tight">{detail.title}</h3>
               </div>
             </div>
 
-            <div className="lab mb-1.5 mt-5">OVERVIEW</div>
+            <div className="lab mb-1.5 mt-5">이 프로그램은</div>
             <p className="text-[13.5px] leading-relaxed text-white/75">{detail.overview}</p>
+
+            {detail.who && (
+              <>
+                <div className="lab mb-1.5 mt-4">이런 분께</div>
+                <p className="text-[13px] leading-relaxed text-white/65">{detail.who}</p>
+              </>
+            )}
+            {detail.schedule && (
+              <>
+                <div className="lab mb-1.5 mt-4">주간 구성</div>
+                <p className="rounded-lg bg-white/[0.05] px-3 py-2.5 text-[13px] font-bold leading-relaxed text-white/80">{detail.schedule}</p>
+              </>
+            )}
 
             <div className="lab mb-1.5 mt-5">ABOUT THIS PLAN</div>
             <div className="grid grid-cols-2 gap-2">
@@ -159,15 +153,16 @@ export function ExploreSection({
               ))}
             </div>
 
-            <div className="lab mb-1.5 mt-5">자극 부위 · 구성 운동</div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {detail.muscles.map((m) => (
-                <span key={m} className="rounded-full bg-volt/15 px-2.5 py-1 text-[11px] font-bold text-volt">{MUSCLE_KR[m]}</span>
-              ))}
-              <span className="text-white/20">|</span>
+            <div className="lab mb-1.5 mt-5">구성 운동 {detail.exercises.length}가지</div>
+            <div className="grid grid-cols-2 gap-1.5">
               {detail.exercises.map((id) => {
                 const ex = byId(id);
-                return ex ? <span key={id} className="text-[13px] text-white/70">{ex.em} {ex.name}</span> : null;
+                return ex ? (
+                  <div key={id} className="flex items-center gap-2 rounded-lg bg-white/[0.04] p-1.5">
+                    <ExThumb ex={ex} size={30} />
+                    <span className="min-w-0 truncate text-[12px] font-bold text-white/75">{ex.name}</span>
+                  </div>
+                ) : null;
               })}
             </div>
 

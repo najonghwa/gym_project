@@ -12,6 +12,7 @@ import { PRChart } from "@/components/charts/PRChart";
 import { VolumeGroupedBar } from "@/components/charts/VolumeGroupedBar";
 import { BalanceRadar, StandardRadar } from "@/components/charts/RadarCompare";
 import { StatChip } from "@/components/ui/StatChip";
+import { ExThumb } from "@/components/ui/ExThumb";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { byId, type TodayItem } from "@/lib/mock/exercises";
@@ -176,7 +177,8 @@ export default function AnalysisPage() {
                   return (
                     <div key={id} className="flex items-center gap-3 py-2.5">
                       <span className="w-6 text-center font-display text-[15px] text-white/40">{i + 1}</span>
-                      <span className="flex-1 text-[13.5px] font-bold">{ex ? `${ex.em} ${ex.name}` : id}</span>
+                      {ex && <ExThumb ex={ex} size={30} />}
+                      <span className="min-w-0 flex-1 truncate text-[13.5px] font-bold">{ex ? ex.name : id}</span>
                       <b className="text-[13px] text-volt">{n}세트</b>
                     </div>
                   );
