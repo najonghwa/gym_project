@@ -1,54 +1,27 @@
 "use client";
-// 동작 플레이어 — 2포즈 스틱피겨 + 재생/일시정지 + 속도 (스펙 P0-2)
-// Lottie/GIF 자산 확보 전 폴백: SVG 교차 애니메이션
+// 동작 플레이어 — 2포즈 픽토그램 교차 애니메이션 + 재생/일시정지 + 속도 (스펙 P0-2)
+// 실사 크로스페이드는 배경·모델이 제각각이라 폐기 → 통일된 픽토그램으로 일원화
 import { useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { LevelDots } from "@/components/ui/LevelDots";
 import type { MotionPattern } from "@/lib/mock/exercises";
-
-type Pose = { h: [number, number]; l: number[][]; bar?: number[]; bench?: number[] };
-const P: Record<MotionPattern, { a: Pose; b: Pose }> = {
-  squat: {
-    a: { h: [60, 18], l: [[60, 26, 60, 58], [60, 34, 40, 30], [60, 34, 80, 30], [60, 58, 50, 82], [50, 82, 50, 112], [60, 58, 70, 82], [70, 82, 70, 112]], bar: [26, 30, 94, 30] },
-    b: { h: [60, 40], l: [[60, 48, 60, 76], [60, 56, 40, 52], [60, 56, 80, 52], [60, 76, 42, 88], [42, 88, 46, 112], [60, 76, 78, 88], [78, 88, 74, 112]], bar: [26, 52, 94, 52] },
-  },
-  bench: {
-    a: { h: [34, 76], l: [[42, 78, 72, 78], [56, 78, 56, 52], [72, 78, 84, 96], [84, 96, 84, 112]], bar: [42, 52, 70, 52], bench: [28, 86, 78, 86] },
-    b: { h: [34, 76], l: [[42, 78, 72, 78], [56, 78, 54, 66], [72, 78, 84, 96], [84, 96, 84, 112]], bar: [40, 66, 68, 66], bench: [28, 86, 78, 86] },
-  },
-  pulldown: {
-    a: { h: [60, 24], l: [[60, 32, 60, 64], [60, 38, 46, 14], [60, 38, 74, 14], [60, 64, 78, 68], [78, 68, 78, 96], [60, 64, 44, 68], [44, 68, 44, 96]], bar: [34, 12, 86, 12] },
-    b: { h: [60, 26], l: [[60, 34, 60, 64], [60, 40, 46, 42], [60, 40, 74, 42], [60, 64, 78, 68], [78, 68, 78, 96], [60, 64, 44, 68], [44, 68, 44, 96]], bar: [34, 42, 86, 42] },
-  },
-  curl: {
-    a: { h: [56, 18], l: [[56, 26, 56, 62], [56, 34, 58, 54], [58, 54, 60, 76], [56, 62, 50, 112], [56, 62, 62, 112]], bar: [54, 78, 66, 78] },
-    b: { h: [56, 18], l: [[56, 26, 56, 62], [56, 34, 58, 54], [58, 54, 74, 42], [56, 62, 50, 112], [56, 62, 62, 112]], bar: [70, 42, 78, 44] },
-  },
-  ohp: {
-    a: { h: [60, 22], l: [[60, 30, 60, 62], [60, 38, 46, 32], [60, 38, 74, 32], [60, 62, 52, 112], [60, 62, 68, 112]], bar: [36, 30, 84, 30] },
-    b: { h: [60, 24], l: [[60, 32, 60, 62], [60, 38, 47, 12], [60, 38, 73, 12], [60, 62, 52, 112], [60, 62, 68, 112]], bar: [36, 10, 84, 10] },
-  },
-  row: {
-    a: { h: [48, 30], l: [[50, 38, 52, 70], [50, 46, 80, 52], [52, 70, 76, 74], [76, 74, 78, 100]] },
-    b: { h: [44, 28], l: [[46, 36, 52, 70], [46, 44, 60, 54], [52, 70, 76, 74], [76, 74, 78, 100]] },
-  },
-};
+import { POSES, type Pose } from "@/lib/poses";
 
 function PoseG({ p, cls, dur }: { p: Pose; cls: "poseA" | "poseB"; dur: number }) {
   return (
     <g
       stroke="#d4d4d8"
-      strokeWidth={3.2}
+      strokeWidth={4.5}
       strokeLinecap="round"
       fill="none"
       style={{ animation: `${cls} ${dur}s infinite` }}
     >
-      <circle cx={p.h[0]} cy={p.h[1]} r={7} fill="#d4d4d8" stroke="none" />
+      <circle cx={p.h[0]} cy={p.h[1]} r={8} fill="#d4d4d8" stroke="none" />
       {p.l.map((L, i) => (
         <line key={i} x1={L[0]} y1={L[1]} x2={L[2]} y2={L[3]} />
       ))}
-      {p.bar && <line x1={p.bar[0]} y1={p.bar[1]} x2={p.bar[2]} y2={p.bar[3]} stroke="#c8ff00" strokeWidth={4} />}
-      {p.bench && <line x1={p.bench[0]} y1={p.bench[1]} x2={p.bench[2]} y2={p.bench[3]} stroke="#52525b" strokeWidth={4} />}
+      {p.bench && <line x1={p.bench[0]} y1={p.bench[1]} x2={p.bench[2]} y2={p.bench[3]} stroke="#52525b" strokeWidth={5.5} />}
+      {p.bar && <line x1={p.bar[0]} y1={p.bar[1]} x2={p.bar[2]} y2={p.bar[3]} stroke="#c8ff00" strokeWidth={5.5} />}
     </g>
   );
 }
@@ -56,20 +29,16 @@ function PoseG({ p, cls, dur }: { p: Pose; cls: "poseA" | "poseB"; dur: number }
 export function AnimPlayer({
   pattern,
   level,
-  frames,
 }: {
   pattern: MotionPattern;
   level: 1 | 2 | 3 | 4 | 5;
-  frames?: [string, string]; // 실사 2프레임 (있으면 우선, 스틱피겨는 폴백)
+  frames?: [string, string]; // 하위 호환용 — 더 이상 사용하지 않음
 }) {
   const reduce = useReducedMotion();
   const [playing, setPlaying] = useState(!reduce);
-  const [imgFail, setImgFail] = useState(false);
   const [speed, setSpeed] = useState<1 | 0.5>(1);
-  const pt = P[pattern];
+  const pt = POSES[pattern];
   const dur = 1.6 / speed;
-  const useFrames = !!frames && !imgFail;
-  const playState = playing ? "running" : "paused";
 
   return (
     <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-2">
@@ -78,37 +47,18 @@ export function AnimPlayer({
         @keyframes poseB { 0%,42%{opacity:0} 50%,92%{opacity:1} 100%{opacity:0} }
       `}</style>
       <div className="relative h-40 overflow-hidden rounded-2xl">
-        {useFrames ? (
-          <>
-            {/* 실사 크로스페이드 — 흰 배경 사진이라 밝은 패널 위에 */}
-            <div className="absolute inset-0 rounded-2xl bg-white" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={frames![0]} alt="동작 프레임 1"
-              onError={() => setImgFail(true)}
-              className="absolute inset-0 h-full w-full object-contain"
-              style={{ animation: `poseA ${dur}s infinite`, animationPlayState: playState }}
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={frames![1]} alt="동작 프레임 2"
-              onError={() => setImgFail(true)}
-              className="absolute inset-0 h-full w-full object-contain"
-              style={{ animation: `poseB ${dur}s infinite`, animationPlayState: playState }}
-            />
-          </>
-        ) : (
-          <svg viewBox="0 0 120 120" className="h-full w-full">
-            {playing ? (
-              <>
-                <PoseG p={pt.a} cls="poseA" dur={dur} />
-                <PoseG p={pt.b} cls="poseB" dur={dur} />
-              </>
-            ) : (
-              <PoseG p={pt.a} cls="poseA" dur={9999} />
-            )}
-          </svg>
-        )}
+        {/* 은은한 바닥선 — 픽토그램 무대 */}
+        <svg viewBox="0 0 120 120" className="h-full w-full">
+          <line x1={14} y1={114} x2={106} y2={114} stroke="rgba(255,255,255,0.1)" strokeWidth={2} strokeLinecap="round" />
+          {playing ? (
+            <>
+              <PoseG p={pt.a} cls="poseA" dur={dur} />
+              <PoseG p={pt.b} cls="poseB" dur={dur} />
+            </>
+          ) : (
+            <PoseG p={pt.a} cls="poseA" dur={9999} />
+          )}
+        </svg>
       </div>
       <div className="flex items-center justify-between px-1 pb-1">
         <LevelDots level={level} />
