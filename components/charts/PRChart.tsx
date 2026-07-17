@@ -34,16 +34,16 @@ export function PRChart({
     <div>
       {/* 운동 선택 (벤치 고정 X — 6종 전환) */}
       {selectable && (
-        <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
+        <div className="mb-3 flex flex-wrap gap-1.5">
           {EXERCISES.map((ex) => (
             <button
               key={ex.id}
               onClick={() => setExId(ex.id)}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-[11.5px] font-bold ${
+              className={`rounded-full border px-3 py-1.5 text-[11.5px] font-bold ${
                 exId === ex.id ? "border-volt bg-volt text-black" : "border-white/15 bg-white/5 text-white/55"
               }`}
             >
-              {ex.em} {ex.name.replace("바벨 ", "").replace("덤벨 ", "")}
+              {ex.name.replace("바벨 ", "").replace("덤벨 ", "").replace("케이블 ", "")}
             </button>
           ))}
         </div>

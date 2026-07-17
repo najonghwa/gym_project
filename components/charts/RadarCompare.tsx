@@ -68,9 +68,13 @@ export function BalanceRadar({ data }: { data: { part: string; me: number }[] })
           </RadarChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-1"><PeriodPills value={period} onChange={setPeriod} /></div>
+      <div className="flex items-center justify-center gap-4 text-[11.5px] text-white/60">
+        <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-volt" />충분한 부위</span>
+        <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-gold" />제일 부족한 부위</span>
+      </div>
+      <div className="mt-2"><PeriodPills value={period} onChange={setPeriod} /></div>
       <p className="mt-2.5 text-center text-[12.5px] text-white/55">
-        <b className="text-gold">{weakest.part}</b>가 제일 부족해요 — 이번 주 공략 추천!
+        숫자는 부위별 운동 볼륨(%) — <b className="text-gold">{weakest.part}</b>가 제일 부족해요, 이번 주 공략 추천!
       </p>
     </div>
   );
@@ -104,10 +108,13 @@ export function StandardRadar({ data }: { data: { part: string; me: number; peer
           </RadarChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex items-center justify-center gap-4 text-[11.5px]">
+      <div className="flex items-center justify-center gap-4 text-[11.5px] text-white/60">
         <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-volt" />내 점수</span>
         <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm border border-gold bg-gold/20" />권장 기준</span>
       </div>
+      <p className="mt-1.5 text-center text-[11px] text-white/40">
+        부위 아래 숫자 = <b className="text-volt">내 점수</b>/<b className="text-gold">권장 점수</b> · 초록이면 기준 달성, 노랑이면 아직 부족
+      </p>
       <p className="mt-2 text-center text-[12px] text-white/50">
         {below.length === 0
           ? "전 항목 기준 이상 — 아주 잘하고 있어요! 🎉"
