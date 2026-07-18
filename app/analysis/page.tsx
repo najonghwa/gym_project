@@ -1,22 +1,63 @@
 "use client";
-// 분석 탭 — 헬스 전용 (러닝 분석은 러닝 탭으로 통합)
+// 분석 탭 — 프로 코치 리포트 (순응도 → 진행평가 → 볼륨진단 → 밸런스 → 근력추이 → 회복 → 코멘트)
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { AnalysisCard } from "@/components/analysis/AnalysisCard";
 import { Big3Card } from "@/components/analysis/Big3Card";
 import { RecoveryMap } from "@/components/recovery/RecoveryMap";
 import { PRChart } from "@/components/charts/PRChart";
-import { VolumeGroupedBar } from "@/components/charts/VolumeGroupedBar";
-import { BalanceRadar, StandardRadar } from "@/components/charts/RadarCompare";
-import { StatChip } from "@/components/ui/StatChip";
-import { ExThumb } from "@/components/ui/ExThumb";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { byId, type TodayItem } from "@/lib/mock/exercises";
-import { BALANCE_RADAR, PEER_RADAR } from "@/lib/mock/routines";
+import { EXPLORE } from "@/lib/mock/routines";
 import { computeStats, useUser } from "@/lib/useUser";
-import { MUSCLE_KR, type Muscle } from "@/lib/recovery";
+import { coachReport } from "@/lib/coach";
 
+const DOW = ["월", "화", "수", "목", "금", "토", "일"];
+
+// 섹션 헤더 — 볼트 틱 + 번호
+function Sec({ n, title, sub }: { n: string; title: string; sub?: string }) {
+  return (
+    <div className="mb-2.5 flex items-center gap-2.5">
+      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-volt/15 font-display text-[12px] text-volt">{n}</span>
+      <div>
+        <h2 className="font-display text-[16px] leading-none tracking-tight">{title}</h2>
+        {sub && <p className="mt-0.5 text-[11px] text-white/40">{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <div className={`rounded-2xl border border-white/[0.06] bg-card p-4 ${className}`}>{children}</div>
+);
+
+// 부위별 볼륨 바 — MEV/MRV 존 마커 + 상태 색 (코치 리포트 시그니처)
+function VolumeBar({ row }: { row: ReturnType<typeof coachReport>["muscleVol"][number] }) {
+  const scale = Math.max(row.mrv * 1.2, row.sets, 1);
+  const fillColor = row.status === "low" ? "#f59e0b" : row.status === "high" ? "#ef4444" : "#c8ff00";
+  const statusKr = row.status === "low" ? "부족" : row.status === "high" ? "과다" : "최적";
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="w-11 shrink-0 text-[12px] font-bold text-white/65">{row.kr}</span>
+      <div className="relative h-4 flex-1 overflow-hidden rounded-md bg-white/[0.05]">
+        {/* MEV~MRV 최적 존 */}
+        <div className="absolute inset-y-0 bg-white/[0.05]" style={{ left: `${(row.mev / scale) * 100}%`, width: `${((row.mrv - row.mev) / scale) * 100}%` }} />
+        {/* 채움 */}
+        <div className="absolute inset-y-0 left-0 rounded-r-sm" style={{ width: `${(row.sets / scale) * 100}%`, background: fillColor, opacity: 0.85 }} />
+        {/* MEV·MRV 눈금 */}
+        <span className="absolute inset-y-0 w-px bg-white/25" style={{ left: `${(row.mev / scale) * 100}%` }} />
+        <span className="absolute inset-y-0 w-px bg-white/25" style={{ left: `${(row.mrv / scale) * 100}%` }} />
+      </div>
+      <b className="w-10 shrink-0 text-right text-[12px] tabular-nums">{row.sets}</b>
+      <span
+        className="w-9 shrink-0 text-right text-[10.5px] font-bold"
+        style={{ color: fillColor }}
+      >
+        {statusKr}
+      </span>
+    </div>
+  );
+}
 
 export default function AnalysisPage() {
   const router = useRouter();
@@ -24,169 +65,272 @@ export default function AnalysisPage() {
   const recovery = useMemo(() => getMockRecovery(), []);
   const st = useMemo(() => (user ? computeStats(user) : null), [user]);
 
-  // ── 헬스 실데이터 분석 ──
-  const gymExtra = useMemo(() => {
-    const w = user?.v2?.workouts ?? {};
-    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 6); cutoff.setHours(0, 0, 0, 0);
-    const volByMuscle = new Map<Muscle, number>();
-    const freq = new Map<string, number>();
-    Object.entries(w).forEach(([date, day]) => {
-      (day.items as TodayItem[]).forEach((it) => {
-        const done = it.sets.filter((s) => s.done).length;
-        if (!done) return;
-        freq.set(it.exerciseId, (freq.get(it.exerciseId) ?? 0) + done);
-        if (new Date(date + "T00:00:00") >= cutoff) {
-          const ex = byId(it.exerciseId);
-          if (ex) {
-            const m = ex.contrib[0].muscle;
-            volByMuscle.set(m, (volByMuscle.get(m) ?? 0) + done);
-          }
-        }
-      });
-    });
-    const weekSets = [...volByMuscle.entries()].sort((a, b) => b[1] - a[1]);
-    const top5 = [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const weekTarget = useMemo(
+    () => EXPLORE.find((x) => x.id === user?.v2?.activeRoutineId)?.daysPerWeek ?? 4,
+    [user]
+  );
+  const rep = useMemo(() => (user ? coachReport(user, weekTarget) : null), [user, weekTarget]);
 
-    // 꾸준함 히트맵 (최근 12주 × 요일, 완료 세트 수) — 구버전 기록도 합산
-    const setsByDate = new Map<string, number>();
-    Object.entries(w).forEach(([date, day]) => {
-      const done = (day.items as TodayItem[]).reduce((s, it) => s + it.sets.filter((x) => x.done).length, 0);
-      if (done) setsByDate.set(date, (setsByDate.get(date) ?? 0) + done);
+  // 꾸준함 히트맵 (12주 × 요일)
+  const heat = useMemo(() => {
+    if (!user) return null;
+    const byDate = new Map<string, number>();
+    Object.entries(user.v2?.workouts ?? {}).forEach(([d, day]) => {
+      const n = (day.items as TodayItem[]).reduce((s, it) => s + it.sets.filter((x) => x.done).length, 0);
+      if (n) byDate.set(d, (byDate.get(d) ?? 0) + n);
     });
-    Object.entries(user?.workouts ?? {}).forEach(([date, day]) => {
-      const done = day.doneSets ?? 0;
-      if (done) setsByDate.set(date, (setsByDate.get(date) ?? 0) + done);
+    Object.entries(user.workouts ?? {}).forEach(([d, day]) => {
+      if ((day.doneSets ?? 0) > 0) byDate.set(d, (byDate.get(d) ?? 0) + (day.doneSets ?? 0));
     });
     const now = new Date();
     const mon0 = new Date(now); mon0.setDate(now.getDate() - ((now.getDay() + 6) % 7)); mon0.setHours(0, 0, 0, 0);
-    const heat: number[][] = Array.from({ length: 7 }, () => Array(12).fill(0));
-    setsByDate.forEach((n, date) => {
-      const d = new Date(date + "T00:00:00");
-      const dow = (d.getDay() + 6) % 7;
-      const wk = new Date(d); wk.setDate(d.getDate() - dow);
-      const diffW = Math.round((mon0.getTime() - wk.getTime()) / (7 * 864e5));
-      if (diffW >= 0 && diffW < 12) heat[dow][11 - diffW] += n;
+    const grid: number[][] = Array.from({ length: 7 }, () => Array(12).fill(0));
+    byDate.forEach((n, d) => {
+      const dt = new Date(d + "T00:00:00");
+      const dow = (dt.getDay() + 6) % 7;
+      const wk = new Date(dt); wk.setDate(dt.getDate() - dow);
+      const diff = Math.round((mon0.getTime() - wk.getTime()) / (7 * 864e5));
+      if (diff >= 0 && diff < 12) grid[dow][11 - diff] += n;
     });
-    const maxHeat = Math.max(1, ...heat.flat());
-    const activeDays12w = heat.flat().filter((n) => n > 0).length;
-
-    return { weekSets, top5, maxSet: Math.max(1, ...weekSets.map(([, n]) => n)), heat, maxHeat, activeDays12w };
+    const max = Math.max(1, ...grid.flat());
+    const active = grid.flat().filter((n) => n > 0).length;
+    return { grid, max, active };
   }, [user]);
 
   if (!ready) return null;
   if (!user) return <main className="lg:pt-10"><LoginCard onLogin={login} onSignup={signup} /></main>;
+  if (!rep) return null;
 
-  const b3last = user.big3?.logs?.at(-1);
-  const b3total = b3last ? Math.round((b3last.s + b3last.b + b3last.d) * 10) / 10 : 0;
+  const verdictMap = {
+    progress: { t: "잘 늘고 있어요", d: "중량·볼륨이 상승 중 — 진행성 과부하가 작동하고 있어요", c: "#c8ff00", em: "📈" },
+    hold: { t: "유지 구간이에요", d: "큰 변화 없이 볼륨을 지키는 중 — 다음 주 살짝 올려볼까요?", c: "#f59e0b", em: "➡️" },
+    decline: { t: "볼륨이 줄었어요", d: "지난주보다 훈련량이 감소 — 회복 주간이거나 점검이 필요해요", c: "#ef4444", em: "📉" },
+    nodata: { t: "데이터를 모으는 중", d: "이번 주 기록이 쌓이면 진행 상태를 평가해 드려요", c: "#a1a1aa", em: "⏳" },
+  }[rep.verdict];
+
+  const noteStyle = { good: "border-volt/30 bg-volt/[0.06]", warn: "border-danger/30 bg-danger/[0.06]", tip: "border-white/10 bg-white/[0.03]" };
+  const noteIcon = { good: "✅", warn: "⚠️", tip: "💡" };
+
+  const ratioBar = (a: number, b: number, la: string, lb: string) => {
+    const tot = a + b || 1;
+    return (
+      <div>
+        <div className="flex justify-between text-[11.5px] font-bold">
+          <span className="text-volt">{la} {a}</span>
+          <span className="text-white/50">{lb} {b}</span>
+        </div>
+        <div className="mt-1 flex h-3 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="bg-volt" style={{ width: `${(a / tot) * 100}%` }} />
+          <div className="bg-white/25" style={{ width: `${(b / tot) * 100}%` }} />
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <main className="space-y-4 lg:mx-auto lg:max-w-none lg:pt-10">
-      {(
-        <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
-          <div className="grid grid-cols-3 gap-2 lg:col-span-2 lg:grid-cols-6">
-            <StatChip label="총 운동" value={st?.sessions ?? 0} unit="회" tone="volt" />
-            <StatChip label="연속" value={st?.streak ?? 0} unit="일" tone={st && st.streak > 0 ? "volt" : "mute"} />
-            <StatChip label="4주 출석률" value={st?.att ?? 0} unit="%" tone={st && st.att >= 70 ? "volt" : "gold"} />
-            <StatChip label="총 XP" value={st?.xp ?? 0} tone="mute" />
-            <StatChip label="3대 합계" value={b3last ? b3total : "—"} unit={b3last ? "kg" : ""} tone="gold" />
-            <StatChip label="레벨" value={`Lv${st?.level ?? 1}`} tone="mute" />
-          </div>
+    <main className="mx-auto max-w-3xl space-y-6 lg:max-w-5xl lg:pt-10">
+      {/* 헤더 */}
+      <div>
+        <div className="lab">COACH REPORT · {new Date().getMonth() + 1}월 {Math.ceil(new Date().getDate() / 7)}주차</div>
+        <h1 className="mt-0.5 font-display text-[26px] leading-tight tracking-tight">{String(user.id)}님의 코치 리포트</h1>
+        <p className="mt-0.5 text-[12.5px] text-white/45">전문 코치가 회원을 보듯 — 순응도·볼륨·진행·밸런스를 한눈에</p>
+      </div>
 
-          <div className="rounded-2xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
-            <RecoveryMap data={recovery} />
-          </div>
+      {/* 1. 이번 주 요약 */}
+      <section>
+        <Sec n="1" title="이번 주 요약" sub="THIS WEEK" />
+        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+          <Card className="!p-3.5">
+            <div className="lab">세션</div>
+            <div className="mt-1 flex items-end gap-1">
+              <span className="font-display text-[30px] leading-none">{rep.weekSessions}</span>
+              <span className="pb-1 text-[12px] text-white/45">/ {rep.weekTarget}회</span>
+            </div>
+          </Card>
+          <Card className="!p-3.5">
+            <div className="lab">순응도</div>
+            <div className="mt-1 flex items-end gap-1">
+              <span className={`font-display text-[30px] leading-none ${rep.adherence >= 100 ? "text-volt" : rep.adherence >= 60 ? "" : "text-gold"}`}>{rep.adherence}</span>
+              <span className="pb-1 text-[12px] text-white/45">%</span>
+            </div>
+          </Card>
+          <Card className="!p-3.5">
+            <div className="lab">주간 볼륨</div>
+            <div className="mt-1 flex items-end gap-1">
+              <span className="font-display text-[26px] leading-none tabular-nums">{rep.weekTonnage.toLocaleString()}</span>
+              <span className="pb-1 text-[12px] text-white/45">kg</span>
+            </div>
+            {rep.tonnageDelta != null && (
+              <div className={`mt-0.5 text-[11px] font-bold ${rep.tonnageDelta >= 0 ? "text-volt" : "text-danger"}`}>
+                {rep.tonnageDelta >= 0 ? "▲" : "▼"} {Math.abs(rep.tonnageDelta)}% vs 지난주
+              </div>
+            )}
+          </Card>
+          <Card className="!p-3.5">
+            <div className="lab">연속</div>
+            <div className="mt-1 flex items-end gap-1">
+              <span className={`font-display text-[30px] leading-none ${(st?.streak ?? 0) > 0 ? "text-volt" : "text-white/30"}`}>{st?.streak ?? 0}</span>
+              <span className="pb-1 text-[12px] text-white/45">일 🔥</span>
+            </div>
+          </Card>
+        </div>
+      </section>
 
-          {/* 신규: 부위별 주간 세트 (실데이터) */}
-          <AnalysisCard question="이번 주, 어느 부위를 얼마나 쳤을까?" cta="오늘 세트 기록하러 가기" onCta={() => router.push("/today")}>
-            {gymExtra.weekSets.length ? (
+      {/* 2. 진행 평가 */}
+      <section>
+        <Sec n="2" title="진행 평가" sub="이번 주, 나아지고 있나요?" />
+        <Card>
+          <div className="flex items-start gap-3">
+            <span className="text-[30px] leading-none">{verdictMap.em}</span>
+            <div className="min-w-0">
+              <b className="text-[17px] font-extrabold" style={{ color: verdictMap.c }}>{verdictMap.t}</b>
+              <p className="mt-0.5 text-[12.5px] leading-relaxed text-white/60">{verdictMap.d}</p>
+            </div>
+          </div>
+          {rep.e1rmTop.length > 0 && (
+            <>
+              <div className="lab mb-2 mt-4">주요 종목 추정 1RM · 지난주 대비</div>
+              <div className="space-y-1.5">
+                {rep.e1rmTop.map((e) => (
+                  <div key={e.id} className="flex items-center gap-2.5">
+                    <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-white/80">{e.name}</span>
+                    <b className="text-[14px] tabular-nums">{e.cur}<span className="text-[10px] text-white/40">kg</span></b>
+                    <span className={`w-14 text-right text-[11.5px] font-bold ${e.deltaPct == null ? "text-white/30" : e.deltaPct > 0 ? "text-volt" : e.deltaPct < 0 ? "text-danger" : "text-white/40"}`}>
+                      {e.deltaPct == null ? "신규" : `${e.deltaPct > 0 ? "▲" : e.deltaPct < 0 ? "▼" : "―"} ${Math.abs(e.deltaPct)}%`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-[10.5px] text-white/35">추정 1RM = 중량 × (1 + 횟수/30) · 실제 1RM 테스트 없이 근력 추세를 봅니다</p>
+            </>
+          )}
+        </Card>
+      </section>
+
+      {/* 3. 부위별 볼륨 진단 — 시그니처 */}
+      <section>
+        <Sec n="3" title="부위별 볼륨 진단" sub="이번 주 세트 수를 근거 기반 권장 범위와 비교" />
+        <Card>
+          {rep.muscleVol.some((m) => m.sets > 0) ? (
+            <>
+              <div className="space-y-2.5">
+                {rep.muscleVol.map((m) => <VolumeBar key={m.muscle} row={m} />)}
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.06] pt-3 text-[10.5px] text-white/45">
+                <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-gold" />부족 (MEV 미만)</span>
+                <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-volt" />최적 (MEV~MRV)</span>
+                <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-danger" />과다 (MRV 초과)</span>
+                <span className="text-white/30">| 세로선 = 최소·최대 권장선</span>
+              </div>
+              {rep.weakest && (
+                <button
+                  onClick={() => router.push("/routine")}
+                  className="mt-3 flex w-full items-center justify-between rounded-lg border border-gold/30 bg-gold/[0.07] px-3.5 py-2.5 text-[12.5px] font-bold text-gold"
+                >
+                  <span>가장 부족한 부위: {rep.weakest.kr} — 보강 루틴 받기</span>
+                  <span>→</span>
+                </button>
+              )}
+            </>
+          ) : (
+            <p className="py-6 text-center text-[12.5px] text-white/40">이번 주 완료한 세트가 아직 없어요 — 오늘 운동을 기록하면 진단이 나와요</p>
+          )}
+        </Card>
+      </section>
+
+      {/* 4. 밸런스 */}
+      <section>
+        <Sec n="4" title="밸런스" sub="근육 균형 — 한쪽으로 치우치면 부상 위험" />
+        <div className="grid gap-2.5 lg:grid-cols-2">
+          <Card>
+            <div className="lab mb-2">밀기 vs 당기기</div>
+            {rep.pushSets + rep.pullSets > 0
+              ? ratioBar(rep.pushSets, rep.pullSets, "밀기", "당기기")
+              : <p className="py-2 text-center text-[12px] text-white/40">기록 없음</p>}
+            <p className="mt-2 text-[10.5px] text-white/40">이상적 비율 약 1:1 — 어깨 건강의 핵심</p>
+          </Card>
+          <Card>
+            <div className="lab mb-2">상체 vs 하체</div>
+            {rep.upperSets + rep.lowerSets > 0
+              ? ratioBar(rep.upperSets, rep.lowerSets, "상체", "하체")
+              : <p className="py-2 text-center text-[12px] text-white/40">기록 없음</p>}
+            <p className="mt-2 text-[10.5px] text-white/40">하체를 거르지 않는 게 장기 성장의 비결</p>
+          </Card>
+        </div>
+      </section>
+
+      {/* 5. 근력 추이 */}
+      <section>
+        <Sec n="5" title="근력 추이" sub="종목별 기록과 3대 목표" />
+        <div className="grid gap-2.5 lg:grid-cols-2 lg:items-start">
+          <Card><PRChart selectable /></Card>
+          <Card><Big3Card big3={user.big3} onSave={saveBig3} /></Card>
+        </div>
+      </section>
+
+      {/* 6. 회복 & 빈도 */}
+      <section>
+        <Sec n="6" title="회복 & 빈도" sub="부위별 회복 상태와 이번 주 자극 빈도" />
+        <div className="grid gap-2.5 lg:grid-cols-2 lg:items-start">
+          <Card><RecoveryMap data={recovery} /></Card>
+          <Card>
+            <div className="lab mb-2">이번 주 부위별 빈도 <span className="font-normal normal-case text-white/35">— 주 2회가 성장에 최적</span></div>
+            {rep.freq.length ? (
               <div className="space-y-2">
-                {gymExtra.weekSets.map(([m, n]) => (
-                  <div key={m} className="flex items-center gap-2.5">
-                    <span className="w-16 shrink-0 text-[12px] font-bold text-white/60">{MUSCLE_KR[m]}</span>
-                    <div className="h-3.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
-                      <div className="h-full rounded-full bg-volt" style={{ width: `${(n / gymExtra.maxSet) * 100}%` }} />
+                {rep.freq.map((f) => (
+                  <div key={f.muscle} className="flex items-center gap-2.5">
+                    <span className="w-11 shrink-0 text-[12px] font-bold text-white/65">{f.kr}</span>
+                    <div className="flex gap-1">
+                      {Array.from({ length: Math.max(3, f.timesPerWeek) }, (_, i) => (
+                        <span key={i} className={`h-2.5 w-6 rounded-sm ${i < f.timesPerWeek ? "bg-volt" : "bg-white/[0.08]"}`} />
+                      ))}
                     </div>
-                    <b className="w-12 shrink-0 text-right text-[12px] tabular-nums">{n}세트</b>
+                    <b className="ml-auto text-[12px] tabular-nums">주 {f.timesPerWeek}회</b>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="py-4 text-center text-[12.5px] text-white/40">이번 주 완료한 세트가 아직 없어요</p>
+              <p className="py-4 text-center text-[12px] text-white/40">이번 주 기록이 쌓이면 표시돼요</p>
             )}
-          </AnalysisCard>
-
-          {/* 신규: 최다 수행 운동 TOP5 (실데이터) */}
-          <AnalysisCard question="내가 제일 많이 한 운동은?">
-            {gymExtra.top5.length ? (
-              <div className="divide-y divide-white/[0.06]">
-                {gymExtra.top5.map(([id, n], i) => {
-                  const ex = byId(id);
-                  return (
-                    <div key={id} className="flex items-center gap-3 py-2.5">
-                      <span className="w-6 text-center font-display text-[15px] text-white/40">{i + 1}</span>
-                      {ex && <ExThumb ex={ex} size={30} />}
-                      <span className="min-w-0 flex-1 truncate text-[13.5px] font-bold">{ex ? ex.name : id}</span>
-                      <b className="text-[13px] text-volt">{n}세트</b>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="py-4 text-center text-[12.5px] text-white/40">아직 운동 기록이 없어요</p>
-            )}
-          </AnalysisCard>
-
-          {/* 신규: 꾸준함 히트맵 (실데이터, 러닝 탭과 동일 패턴) */}
-          <AnalysisCard question="빠짐없이 꾸준히 다니고 있을까?" cta="오늘 출석 도장 찍기" onCta={() => router.push("/today")}>
-            {gymExtra.activeDays12w > 0 ? (
-              <>
-                <div className="space-y-1">
-                  {gymExtra.heat.map((row, di) => (
-                    <div key={di} className="flex items-center gap-1">
-                      <span className="w-4 shrink-0 text-[9px] text-white/35">{["월", "화", "수", "목", "금", "토", "일"][di]}</span>
-                      <div className="grid flex-1 grid-cols-12 gap-1">
-                        {row.map((n, wi) => (
-                          <div
-                            key={wi}
-                            className="aspect-square rounded-[4px]"
-                            style={{ background: n > 0 ? `rgba(200,255,0,${0.25 + 0.75 * (n / gymExtra.maxHeat)})` : "rgba(255,255,255,0.05)" }}
-                            title={n > 0 ? `${n}세트` : ""}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-2.5 text-[11.5px] text-white/45">
-                  최근 12주 중 <b className="text-volt">{gymExtra.activeDays12w}일</b> 운동 · 진할수록 세트가 많은 날 · 오른쪽이 이번 주
-                </p>
-              </>
-            ) : (
-              <p className="py-4 text-center text-[12.5px] text-white/40">운동한 날이 색으로 표시돼요</p>
-            )}
-          </AnalysisCard>
-
-          <AnalysisCard question="이번 주 볼륨, 지난주보다 늘었을까?">
-            <VolumeGroupedBar />
-          </AnalysisCard>
-
-          <AnalysisCard question="내 몸, 골고루 크고 있을까?" cta="부족한 부위 루틴 받기" onCta={() => router.push("/routine")}>
-            <BalanceRadar data={BALANCE_RADAR} />
-          </AnalysisCard>
-
-          <AnalysisCard question="권장 기준 대비, 나는 잘하고 있을까?" cta="랭킹에서 순위 보기" onCta={() => router.push("/ranking")}>
-            <StandardRadar data={PEER_RADAR} />
-          </AnalysisCard>
-
-          <AnalysisCard question="내 기록, 자라고 있을까?">
-            <PRChart selectable />
-          </AnalysisCard>
-
-          <AnalysisCard question="3대 500, 어디까지 왔을까?">
-            <Big3Card big3={user.big3} onSave={saveBig3} />
-          </AnalysisCard>
+          </Card>
         </div>
+      </section>
+
+      {/* 7. 꾸준함 */}
+      {heat && heat.active > 0 && (
+        <section>
+          <Sec n="7" title="꾸준함" sub="최근 12주 출석 — 진할수록 세트가 많은 날" />
+          <Card>
+            <div className="space-y-1">
+              {heat.grid.map((row, di) => (
+                <div key={di} className="flex items-center gap-1">
+                  <span className="w-4 shrink-0 text-[9px] text-white/35">{DOW[di]}</span>
+                  <div className="grid flex-1 grid-cols-12 gap-1">
+                    {row.map((n, wi) => (
+                      <div key={wi} className="aspect-square rounded-[3px]" title={n > 0 ? `${n}세트` : ""}
+                        style={{ background: n > 0 ? `rgba(200,255,0,${0.22 + 0.78 * (n / heat.max)})` : "rgba(255,255,255,0.05)" }} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2.5 text-[11px] text-white/45">최근 12주 중 <b className="text-volt">{heat.active}일</b> 운동 · 오른쪽이 이번 주</p>
+          </Card>
+        </section>
       )}
+
+      {/* 8. 코치 코멘트 */}
+      <section>
+        <Sec n="8" title="코치 코멘트" sub="데이터 기반 이번 주 실행 제안" />
+        <div className="space-y-2">
+          {rep.notes.map((note, i) => (
+            <div key={i} className={`flex items-start gap-2.5 rounded-lg border p-3 ${noteStyle[note.tone]}`}>
+              <span className="text-[14px] leading-none">{noteIcon[note.tone]}</span>
+              <p className="text-[12.5px] leading-relaxed text-white/80">{note.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }
