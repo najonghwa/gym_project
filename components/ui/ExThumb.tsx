@@ -29,12 +29,13 @@ export function ExThumb({
       title={ex.name}
     >
       <svg viewBox="0 0 120 120" width={size * 0.82} height={size * 0.82} aria-hidden>
-        <g stroke="#d4d4d8" strokeWidth={9} strokeLinecap="round" fill="none">
-          <circle cx={pose.h[0]} cy={pose.h[1]} r={11} fill="#d4d4d8" stroke="none" />
+        {/* 올림픽 픽토그램 스타일 — 두꺼운 캡슐 팔다리 + 몸통(l[0]) 강조 */}
+        <g stroke="#fafafa" strokeWidth={13} strokeLinecap="round" fill="none">
+          <circle cx={pose.h[0]} cy={pose.h[1]} r={12.5} fill="#fafafa" stroke="none" />
           {pose.l.map((L, i) => (
-            <line key={i} x1={L[0]} y1={L[1]} x2={L[2]} y2={L[3]} />
+            <line key={i} x1={L[0]} y1={L[1]} x2={L[2]} y2={L[3]} strokeWidth={i === 0 ? 19 : 13} />
           ))}
-          {pose.bench && <line x1={pose.bench[0]} y1={pose.bench[1]} x2={pose.bench[2]} y2={pose.bench[3]} stroke="#52525b" strokeWidth={10} />}
+          {pose.bench && <line x1={pose.bench[0]} y1={pose.bench[1]} x2={pose.bench[2]} y2={pose.bench[3]} stroke="#3f3f46" strokeWidth={11} />}
           {pose.bar && <line x1={pose.bar[0]} y1={pose.bar[1]} x2={pose.bar[2]} y2={pose.bar[3]} stroke="#c8ff00" strokeWidth={11} />}
         </g>
       </svg>

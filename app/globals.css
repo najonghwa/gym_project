@@ -22,6 +22,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── 인터랙션 — 버튼/링크 호버 리프트 + 프레스 ── */
+button, a {
+  transition: transform .16s ease, filter .16s ease, background-color .16s ease,
+    border-color .16s ease, color .16s ease, box-shadow .16s ease;
+}
+@media (hover: hover) {
+  button:hover:not(:disabled) { transform: translateY(-1.5px); filter: brightness(1.13); }
+  a:hover { filter: brightness(1.1); }
+}
+button:active:not(:disabled) { transform: translateY(0) scale(0.97); filter: brightness(0.95); }
+
 ::-webkit-scrollbar { display: none }
 * { -webkit-tap-highlight-color: transparent; scrollbar-width: none }
 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none }

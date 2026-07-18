@@ -10,18 +10,19 @@ import { POSES, type Pose } from "@/lib/poses";
 function PoseG({ p, cls, dur }: { p: Pose; cls: "poseA" | "poseB"; dur: number }) {
   return (
     <g
-      stroke="#d4d4d8"
-      strokeWidth={4.5}
+      stroke="#fafafa"
+      strokeWidth={7.5}
       strokeLinecap="round"
       fill="none"
       style={{ animation: `${cls} ${dur}s infinite` }}
     >
-      <circle cx={p.h[0]} cy={p.h[1]} r={8} fill="#d4d4d8" stroke="none" />
+      {/* 올림픽 픽토그램 스타일 — 몸통(l[0])은 더 두껍게 */}
+      <circle cx={p.h[0]} cy={p.h[1]} r={9} fill="#fafafa" stroke="none" />
       {p.l.map((L, i) => (
-        <line key={i} x1={L[0]} y1={L[1]} x2={L[2]} y2={L[3]} />
+        <line key={i} x1={L[0]} y1={L[1]} x2={L[2]} y2={L[3]} strokeWidth={i === 0 ? 11 : 7.5} />
       ))}
-      {p.bench && <line x1={p.bench[0]} y1={p.bench[1]} x2={p.bench[2]} y2={p.bench[3]} stroke="#52525b" strokeWidth={5.5} />}
-      {p.bar && <line x1={p.bar[0]} y1={p.bar[1]} x2={p.bar[2]} y2={p.bar[3]} stroke="#c8ff00" strokeWidth={5.5} />}
+      {p.bench && <line x1={p.bench[0]} y1={p.bench[1]} x2={p.bench[2]} y2={p.bench[3]} stroke="#3f3f46" strokeWidth={7} />}
+      {p.bar && <line x1={p.bar[0]} y1={p.bar[1]} x2={p.bar[2]} y2={p.bar[3]} stroke="#c8ff00" strokeWidth={7} />}
     </g>
   );
 }
