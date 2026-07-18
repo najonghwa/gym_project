@@ -127,7 +127,7 @@ export function ExerciseSheet({
 
       {/* 플레이어 + 도넛 */}
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <AnimPlayer pattern={ex.pattern} level={ex.level} frames={ex.frames} />
+        <AnimPlayer pattern={ex.pattern} level={ex.level} exId={ex.id} />
         <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-3">
           <div className="lab mb-1">자극 기여</div>
           <MuscleDonut contrib={ex.contrib} />

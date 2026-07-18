@@ -1,16 +1,35 @@
 "use client";
-// 운동 썸네일 — 통일된 픽토그램(포즈 A 정지 컷, 굵은 라인 + 볼트 바)
-// 실사(free-exercise-db)는 배경·모델이 제각각이라 폐기, 패턴 없으면 이모지 폴백
+// 운동 썸네일 — ExerciseDB 통일 스타일 GIF(/public/exercises/<id>.gif) 우선, 없으면 픽토그램 폴백
+import { useState } from "react";
 import type { MotionPattern } from "@/lib/mock/exercises";
 import { POSES } from "@/lib/poses";
 
 export function ExThumb({
   ex, size = 34, rounded = "rounded-lg",
 }: {
-  ex: { name: string; em: string; pattern?: MotionPattern; frames?: [string, string] | string[] };
+  ex: { id?: string; name: string; em: string; pattern?: MotionPattern; frames?: [string, string] | string[] };
   size?: number;
   rounded?: string;
 }) {
+  const [fail, setFail] = useState(false);
+
+  if (ex.id && !fail) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={`/exercises/${ex.id}.gif`}
+        alt={ex.name}
+        title={ex.name}
+        width={size}
+        height={size}
+        loading="lazy"
+        onError={() => setFail(true)}
+        className={`shrink-0 bg-white object-cover ${rounded}`}
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+
   const pose = ex.pattern ? POSES[ex.pattern]?.a : null;
   if (!pose) {
     return (
@@ -29,7 +48,6 @@ export function ExThumb({
       title={ex.name}
     >
       <svg viewBox="0 0 120 120" width={size * 0.82} height={size * 0.82} aria-hidden>
-        {/* 올림픽 픽토그램 스타일 — 두꺼운 캡슐 팔다리 + 몸통(l[0]) 강조 */}
         <g stroke="#fafafa" strokeWidth={13} strokeLinecap="round" fill="none">
           <circle cx={pose.h[0]} cy={pose.h[1]} r={12.5} fill="#fafafa" stroke="none" />
           {pose.l.map((L, i) => (

@@ -20,7 +20,7 @@ export function ExerciseInfoSheet({
           </p>
 
           <div className="mt-3">
-            <AnimPlayer pattern={exercise.pattern} level={exercise.level} />
+            <AnimPlayer pattern={exercise.pattern} level={exercise.level} exId={exercise.id} />
           </div>
 
           <div className="lab mb-2 mt-4">하는 방법</div>
