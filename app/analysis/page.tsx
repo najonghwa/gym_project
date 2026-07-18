@@ -1,16 +1,19 @@
 "use client";
-// 분석 탭 — 프로 코치 리포트 (순응도 → 진행평가 → 볼륨진단 → 밸런스 → 근력추이 → 회복 → 코멘트)
-import { useMemo } from "react";
+// 분석 탭 — 헬스 코치 리포트 + 러닝 상세 분석 (세그먼트)
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Big3Card } from "@/components/analysis/Big3Card";
 import { RecoveryMap } from "@/components/recovery/RecoveryMap";
 import { PRChart } from "@/components/charts/PRChart";
+import { RunAnalysis } from "@/components/run/RunAnalysis";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { byId, type TodayItem } from "@/lib/mock/exercises";
 import { EXPLORE } from "@/lib/mock/routines";
 import { computeStats, useUser } from "@/lib/useUser";
 import { coachReport } from "@/lib/coach";
+
+type Run = { date: string; km: number; paceSec?: number | null };
 
 const DOW = ["월", "화", "수", "목", "금", "토", "일"];
 
@@ -62,6 +65,7 @@ function VolumeBar({ row }: { row: ReturnType<typeof coachReport>["muscleVol"][n
 export default function AnalysisPage() {
   const router = useRouter();
   const { user, ready, login, signup, saveBig3 } = useUser();
+  const [mode, setMode] = useState<"gym" | "run">("gym");
   const recovery = useMemo(() => getMockRecovery(), []);
   const st = useMemo(() => (user ? computeStats(user) : null), [user]);
 
@@ -127,15 +131,36 @@ export default function AnalysisPage() {
     );
   };
 
+  const runs = (user.runs ?? []) as Run[];
+
   return (
-    <main className="mx-auto max-w-3xl space-y-6 lg:max-w-5xl lg:pt-10">
+    <main className="mx-auto max-w-3xl space-y-5 lg:max-w-5xl lg:pt-10">
       {/* 헤더 */}
       <div>
         <div className="lab">COACH REPORT · {new Date().getMonth() + 1}월 {Math.ceil(new Date().getDate() / 7)}주차</div>
         <h1 className="mt-0.5 font-display text-[26px] leading-tight tracking-tight">{String(user.id)}님의 코치 리포트</h1>
-        <p className="mt-0.5 text-[12.5px] text-white/45">전문 코치가 회원을 보듯 — 순응도·볼륨·진행·밸런스를 한눈에</p>
+        <p className="mt-0.5 text-[12.5px] text-white/45">전문 코치가 회원을 보듯 — 기록을 깊게 분석해요</p>
       </div>
 
+      {/* 헬스 / 러닝 세그먼트 */}
+      <div className="grid grid-cols-2 gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
+        {(["gym", "run"] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className={`rounded-md py-2.5 text-[14px] font-bold ${mode === m ? "bg-volt text-black" : "text-white/50"}`}
+          >
+            {m === "gym" ? "헬스 리포트" : "러닝 분석"}
+          </button>
+        ))}
+      </div>
+
+      {mode === "run" ? (
+        <section className="space-y-5">
+          <RunAnalysis runs={runs} />
+        </section>
+      ) : (
+      <>
       {/* 1. 이번 주 요약 */}
       <section>
         <Sec n="1" title="이번 주 요약" sub="THIS WEEK" />
@@ -331,6 +356,8 @@ export default function AnalysisPage() {
           ))}
         </div>
       </section>
+      </>
+      )}
     </main>
   );
 }

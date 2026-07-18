@@ -225,17 +225,16 @@ export default function TodayPage() {
 
   return (
     <main className="mx-auto max-w-2xl lg:max-w-none lg:pt-10">
-      {/* 페이지 헤더 */}
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="font-display text-[26px] leading-tight tracking-tight">Workout</h1>
-          <p className="mt-0.5 text-[12.5px] text-white/45">
-            {new Date().getMonth() + 1}월 {new Date().getDate()}일 {S_DAYS[new Date().getDay()]}요일 · {String(user.id)}
-          </p>
+      {/* 페이지 헤더 — 부제목 = 오늘의 한마디 */}
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="lab">{new Date().getMonth() + 1}월 {new Date().getDate()}일 {S_DAYS[new Date().getDay()]}요일 · {String(user.id)}</div>
+          <h1 className="mt-0.5 font-display text-[26px] leading-tight tracking-tight">Workout</h1>
+          <p className="mt-1 text-[13px] leading-relaxed text-white/55">💬 {quote}</p>
         </div>
         <button
           onClick={() => setShowSettings(true)}
-          className="mt-1 grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-card text-[16px]"
+          className="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-card text-[16px]"
           aria-label="설정"
         >
           ⚙️
@@ -358,14 +357,24 @@ export default function TodayPage() {
               })()}
             </div>
 
-            {/* 오늘의 한마디 */}
+            {/* 오늘 준비 — 모니터링 */}
             <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card p-4">
-              <div className="lab">오늘의 한마디</div>
-              <p className="mt-2 text-[13.5px] font-medium leading-relaxed">💬 {quote}</p>
-              <div className="mt-auto flex items-center justify-between pt-3 text-[11px] text-white/45">
-                <span>🏋️ {items.length}종목 · {totalSets}세트 예정</span>
-                <b className="text-white/70">XP {stats?.xp ?? 0}</b>
+              <div className="lab">오늘 준비</div>
+              <div className="mt-1 flex items-end gap-1.5">
+                <span className="font-display text-[38px] leading-none">{items.length}</span>
+                <span className="pb-1 text-[12.5px] text-white/45">종목 · {totalSets}세트</span>
               </div>
+              <div className="mt-3 grid grid-cols-2 gap-1.5">
+                <div className="rounded-2xl bg-white/[0.05] py-2 text-center">
+                  <div className="font-display text-[15px] leading-none text-volt">{estMin}<span className="text-[10px] text-white/45">분</span></div>
+                  <div className="mt-1 text-[9.5px] text-white/45">예상 시간</div>
+                </div>
+                <div className="rounded-2xl bg-white/[0.05] py-2 text-center">
+                  <div className={`font-display text-[15px] leading-none ${condition >= 80 ? "text-volt" : condition >= 50 ? "text-gold" : "text-danger"}`}>{condition}<span className="text-[10px] text-white/45">%</span></div>
+                  <div className="mt-1 text-[9.5px] text-white/45">컨디션</div>
+                </div>
+              </div>
+              <div className="mt-auto pt-3 text-right text-[11px] text-white/45">누적 <b className="text-white/70">XP {stats?.xp ?? 0}</b></div>
             </div>
           </div>
 
@@ -457,23 +466,13 @@ export default function TodayPage() {
       <div className="lg:grid lg:grid-cols-3 lg:gap-6">
       <div className="lg:col-span-2">
       <Node label="오늘의 운동 WORKOUT">
-        {/* 오늘 브리핑 칩 */}
-        <div className="mb-3 flex flex-wrap gap-1.5">
-          {bonusSession && (
+        {bonusSession && (
+          <div className="mb-3">
             <span className="rounded-full bg-volt/15 px-2.5 py-1 text-[11.5px] font-bold text-volt">
               🔥 이번 주 목표 달성 — 오늘은 보너스 세션
             </span>
-          )}
-          <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
-            ⏱️ 예상 <b className="text-volt">{estMin}분</b>
-          </span>
-          <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
-            ⚡ 컨디션 <b className={condition >= 80 ? "text-volt" : condition >= 50 ? "text-gold" : "text-danger"}>{condition}%</b>
-          </span>
-          <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
-            🏋️ {items.length}종목 · {totalSets}세트
-          </span>
-        </div>
+          </div>
+        )}
         <div className="mb-2 flex flex-wrap gap-1.5">
           <button
             onClick={() => setShowRoutinePick(true)}
