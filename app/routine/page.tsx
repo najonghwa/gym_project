@@ -7,8 +7,9 @@ import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
 import { RoutineGenerating } from "@/components/routine/RoutineGenerating";
 import { ExploreSection } from "@/components/routine/ExploreSection";
 import { ExThumb } from "@/components/ui/ExThumb";
+import { ExerciseInfoSheet } from "@/components/workout/ExerciseInfoSheet";
 import { EXPLORE, type ExploreRoutine } from "@/lib/mock/routines";
-import { byId, itemsFromExercises } from "@/lib/mock/exercises";
+import { byId, itemsFromExercises, type Exercise } from "@/lib/mock/exercises";
 import { useUser } from "@/lib/useUser";
 
 type Phase = "idle" | "ask" | "generating" | "result";
@@ -63,6 +64,7 @@ export default function RoutinePage() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [exp, setExp] = useState<(typeof EXPS)[number] | null>(null);
   const [days, setDays] = useState<number | null>(null);
+  const [exInfo, setExInfo] = useState<Exercise | null>(null);
   const recs = goal && exp && days ? recommend(goal, exp, days) : [];
 
   const savedIds = user?.v2?.savedRoutines ?? [];
@@ -221,7 +223,11 @@ export default function RoutinePage() {
             <div className="mt-2.5 flex items-center gap-1.5 overflow-x-auto">
               {recs[0].r.exercises.map((id) => {
                 const ex = byId(id);
-                return ex ? <ExThumb key={id} ex={ex} size={32} /> : null;
+                return ex ? (
+                  <button key={id} onClick={() => setExInfo(ex)} aria-label={`${ex.name} 정보`}>
+                    <ExThumb ex={ex} size={32} />
+                  </button>
+                ) : null;
               })}
             </div>
             <PillButton className="mt-3 w-full" onClick={() => apply(recs[0].r)}>이 루틴으로 시작 ✅</PillButton>
@@ -256,6 +262,8 @@ export default function RoutinePage() {
       )}
 
       <ExploreSection savedIds={savedIds} onToggleSave={toggleSaveRoutine} onApply={apply} />
+
+      <ExerciseInfoSheet exercise={exInfo} onClose={() => setExInfo(null)} />
     </main>
   );
 }

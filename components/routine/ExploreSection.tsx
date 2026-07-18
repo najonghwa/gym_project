@@ -6,8 +6,9 @@ import { fadeUp, staggerContainer } from "@/lib/motion";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { PillButton } from "@/components/ui/PillButton";
-import { byId } from "@/lib/mock/exercises";
+import { byId, type Exercise } from "@/lib/mock/exercises";
 import { ExThumb } from "@/components/ui/ExThumb";
+import { ExerciseInfoSheet } from "@/components/workout/ExerciseInfoSheet";
 import { EXPLORE, FILTER, type ExploreRoutine } from "@/lib/mock/routines";
 
 function ChipRow({
@@ -44,6 +45,7 @@ export function ExploreSection({
   const [level, setLevel] = useState("전체");
   const [likes, setLikes] = useState<Record<string, boolean>>({});
   const [detail, setDetail] = useState<ExploreRoutine | null>(null);
+  const [exInfo, setExInfo] = useState<Exercise | null>(null); // 운동 그림 클릭 → 정보+애니메이션
   const isSaved = (id: string) => savedIds.includes(id);
 
   const list = useMemo(
@@ -91,11 +93,15 @@ export function ExploreSection({
                 {likes[r.id] ? "❤️" : "🤍"} {r.likes + (likes[r.id] ? 1 : 0)}
               </motion.button>
             </div>
-            {/* 구성 운동 실사 미리보기 */}
+            {/* 구성 운동 픽토그램 — 클릭하면 정보+애니메이션 */}
             <div className="mt-3 flex items-center gap-1.5 overflow-x-auto">
               {r.exercises.map((id) => {
                 const ex = byId(id);
-                return ex ? <ExThumb key={id} ex={ex} size={34} /> : null;
+                return ex ? (
+                  <button key={id} onClick={() => setExInfo(ex)} aria-label={`${ex.name} 정보`}>
+                    <ExThumb ex={ex} size={34} />
+                  </button>
+                ) : null;
               })}
             </div>
             <button
@@ -153,15 +159,16 @@ export function ExploreSection({
               ))}
             </div>
 
-            <div className="lab mb-1.5 mt-5">구성 운동 {detail.exercises.length}가지</div>
+            <div className="lab mb-1.5 mt-5">구성 운동 {detail.exercises.length}가지 <span className="font-normal normal-case text-white/35">— 누르면 하는 방법</span></div>
             <div className="grid grid-cols-2 gap-1.5">
               {detail.exercises.map((id) => {
                 const ex = byId(id);
                 return ex ? (
-                  <div key={id} className="flex items-center gap-2 rounded-lg bg-white/[0.04] p-1.5">
+                  <button key={id} onClick={() => setExInfo(ex)} className="flex items-center gap-2 rounded-lg bg-white/[0.04] p-1.5 text-left">
                     <ExThumb ex={ex} size={30} />
-                    <span className="min-w-0 truncate text-[12px] font-bold text-white/75">{ex.name}</span>
-                  </div>
+                    <span className="min-w-0 flex-1 truncate text-[12px] font-bold text-white/75">{ex.name}</span>
+                    <span className="shrink-0 pr-1 text-[11px] text-white/30">›</span>
+                  </button>
                 ) : null;
               })}
             </div>
@@ -179,6 +186,8 @@ export function ExploreSection({
           </>
         )}
       </BottomSheet>
+
+      <ExerciseInfoSheet exercise={exInfo} onClose={() => setExInfo(null)} />
     </section>
   );
 }

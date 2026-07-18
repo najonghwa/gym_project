@@ -3,12 +3,16 @@
 import { useMemo, useState } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { EQUIP_INFO, FLOOR, FLOOR_ZONES, ZONES } from "@/lib/data/gym";
-import { byId, EXERCISES, type TodayItem } from "@/lib/mock/exercises";
+import { byId, EXERCISES, type Exercise, type TodayItem } from "@/lib/mock/exercises";
+import { ExThumb } from "@/components/ui/ExThumb";
+import { ExerciseInfoSheet } from "@/components/workout/ExerciseInfoSheet";
 import { useUser } from "@/lib/useUser";
 
 export default function GymPage() {
   const { user } = useUser();
   const [sel, setSel] = useState<string | null>(null);
+  const [exInfo, setExInfo] = useState<Exercise | null>(null);
+  const relatedExs = useMemo(() => (sel ? EXERCISES.filter((e) => e.equipment === sel) : []), [sel]);
   const info = sel ? EQUIP_INFO[sel] : null;
   const item = sel ? FLOOR.find((f) => f.eq === sel) : null;
   const zone = item ? ZONES.find((z) => z.id === item.zone) : null;
@@ -120,6 +124,22 @@ export default function GymPage() {
               💡 <b>팁</b> — {info.tip}
             </div>
 
+            {/* 이 장비로 하는 운동 — 클릭하면 애니메이션+하는 방법 */}
+            {relatedExs.length > 0 && (
+              <>
+                <div className="lab mb-2 mt-5">이 장비로 하는 운동 <span className="font-normal normal-case text-white/35">— 누르면 하는 방법</span></div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {relatedExs.map((ex) => (
+                    <button key={ex.id} onClick={() => setExInfo(ex)} className="flex items-center gap-2 rounded-lg bg-white/[0.04] p-1.5 text-left">
+                      <ExThumb ex={ex} size={34} />
+                      <span className="min-w-0 flex-1 truncate text-[12px] font-bold text-white/75">{ex.name}</span>
+                      <span className="shrink-0 pr-1 text-[11px] text-white/30">›</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
             {/* 이 장비로 한 내 기록 */}
             {history && (
               <>
@@ -174,6 +194,8 @@ export default function GymPage() {
           </>
         )}
       </BottomSheet>
+
+      <ExerciseInfoSheet exercise={exInfo} onClose={() => setExInfo(null)} />
     </main>
   );
 }
