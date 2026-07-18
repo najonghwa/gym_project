@@ -97,6 +97,26 @@ export default function TodayPage() {
     return { title: r.title, week, weeks: r.weeks, done: Math.min(done, total), total, pct: Math.min(100, Math.round((done / total) * 100)) };
   }, [user]);
 
+  // 보너스 세션 — 이번 주(월~일) 운동한 날이 루틴 주당 목표를 이미 채웠는데 오늘 또 온 경우
+  const bonusSession = useMemo(() => {
+    const r = EXPLORE.find((x) => x.id === user?.v2?.activeRoutineId);
+    if (!r || !user) return false;
+    const now = new Date();
+    const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7)); mon.setHours(0, 0, 0, 0);
+    const todayS = today();
+    // 이번 주 운동한 '오늘 이전' 날 수 (오늘은 제외 — 오늘이 초과분인지 판단)
+    const daysBeforeToday = new Set<string>();
+    const collect = (obj: Record<string, unknown> | undefined, hasDone: (w: unknown) => boolean) => {
+      Object.entries(obj ?? {}).forEach(([d, w]) => {
+        if (d >= todayS) return;
+        if (new Date(d + "T00:00:00") >= mon && hasDone(w)) daysBeforeToday.add(d);
+      });
+    };
+    collect(user.v2?.workouts, (w) => (w as { items: TodayItem[] }).items.some((it) => it.sets.some((s) => s.done)));
+    collect(user.workouts, (w) => ((w as { doneSets?: number }).doneSets ?? 0) > 0);
+    return daysBeforeToday.size >= r.daysPerWeek;
+  }, [user, today]);
+
   // 기록 대시보드 — 날짜별 완료 세트(구버전+v2 합산) → 월별 횟수·주간 볼륨
   const gymDash = useMemo(() => {
     if (!user) return null;
@@ -439,6 +459,11 @@ export default function TodayPage() {
       <Node label="오늘의 운동 WORKOUT">
         {/* 오늘 브리핑 칩 */}
         <div className="mb-3 flex flex-wrap gap-1.5">
+          {bonusSession && (
+            <span className="rounded-full bg-volt/15 px-2.5 py-1 text-[11.5px] font-bold text-volt">
+              🔥 이번 주 목표 달성 — 오늘은 보너스 세션
+            </span>
+          )}
           <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] font-bold">
             ⏱️ 예상 <b className="text-volt">{estMin}분</b>
           </span>
@@ -449,7 +474,7 @@ export default function TodayPage() {
             🏋️ {items.length}종목 · {totalSets}세트
           </span>
         </div>
-        <div className="mb-2 flex gap-1.5">
+        <div className="mb-2 flex flex-wrap gap-1.5">
           <button
             onClick={() => setShowRoutinePick(true)}
             className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
@@ -462,8 +487,33 @@ export default function TodayPage() {
           >
             ➕ 운동 추가
           </button>
+          <button
+            onClick={() => {
+              if (items.length === 0 || window.confirm("오늘 목록을 비우고 직접 구성할까요? 체크한 세트는 초기화돼요.")) {
+                updateItems([]);
+                setShowAddEx(true);
+              }
+            }}
+            className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
+          >
+            🧹 자유 운동
+          </button>
         </div>
-        <TodayWorkoutCard embedded items={items} onToggleSet={toggleSet} onOpenExercise={setOpenId} />
+        {items.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-white/15 bg-white/[0.02] px-5 py-7 text-center">
+            <p className="text-[13px] text-white/55">
+              오늘은 자유 운동 — 목록이 비어 있어요.<br />한 운동이라도 기록하면 출석·통계에 똑같이 반영됩니다.
+            </p>
+            <button
+              onClick={() => setShowAddEx(true)}
+              className="mt-3 rounded-full bg-volt px-5 py-2.5 text-[13px] font-extrabold text-black"
+            >
+              ➕ 운동 추가하기
+            </button>
+          </div>
+        ) : (
+          <TodayWorkoutCard embedded items={items} onToggleSet={toggleSet} onOpenExercise={setOpenId} />
+        )}
       </Node>
 
       <Node label={doneSets >= totalSets && totalSets > 0 ? "결과 RESULT" : "리워드 REWARD"} last>
