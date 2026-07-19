@@ -2,6 +2,7 @@
 // id + PIN 로그인/가입 (구 gym_web 계정 그대로 사용 가능)
 import { useState } from "react";
 import { PillButton } from "@/components/ui/PillButton";
+import { PandaLifter } from "@/components/mascot/PandaLifter";
 import { GrowthCompare } from "@/components/charts/GrowthCompare";
 import { signInWithGoogle } from "@/lib/supa";
 
@@ -30,7 +31,8 @@ export function LoginCard({
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center">
-      <h1 className="text-center font-display text-[34px] tracking-tight">
+      <div className="flex justify-center"><PandaLifter size={132} /></div>
+      <h1 className="mt-1 text-center font-display text-[34px] tracking-tight">
         FitPlan<span className="text-volt">.</span>
       </h1>
       <p className="mt-1.5 text-center text-[12.5px] text-white/45">
