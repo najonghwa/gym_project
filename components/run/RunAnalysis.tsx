@@ -5,6 +5,7 @@ import {
   Bar, BarChart, Cell, Line, LineChart, Scatter, ScatterChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ZAxis,
 } from "recharts";
 import { StatChip } from "@/components/ui/StatChip";
+import { ActivityCalendar } from "@/components/ui/ActivityCalendar";
 import { allBests } from "@/lib/runmath";
 
 type Run = { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: number[][] };
@@ -78,16 +79,13 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
       const st = new Date(mon0); st.setDate(mon0.getDate() - (11 - i) * 7);
       return { w: `${st.getMonth() + 1}/${st.getDate()}`, km: 0, isNow: i === 11 };
     });
-    const heat: number[][] = Array.from({ length: 7 }, () => Array(12).fill(0));
+    const kmByDate = new Map<string, number>();
     runs.forEach((r) => {
-      const d = new Date(r.date + "T00:00:00");
       const diff = Math.round((mon0.getTime() - wkStart(r.date)) / (7 * 864e5));
-      if (diff >= 0 && diff < 12) {
-        weekly[11 - diff].km = r1(weekly[11 - diff].km + r.km);
-        heat[(d.getDay() + 6) % 7][11 - diff] += r.km;
-      }
+      if (diff >= 0 && diff < 12) weekly[11 - diff].km = r1(weekly[11 - diff].km + r.km);
+      kmByDate.set(r.date, r1((kmByDate.get(r.date) ?? 0) + r.km));
     });
-    const maxHeat = Math.max(1, ...heat.flat());
+    const activeDays = kmByDate.size;
 
     // 페이스 발전 흐름 (최근 20회)
     const paceSeries = paced.slice(-20).map((r) => ({ d: r.date.slice(5), sec: r.paceSec! }));
@@ -107,7 +105,7 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
     return {
       count: runs.length, total, yearKm, avgPace, bestPace, longest,
       buckets, maxBucket, dow, bestDow, zones, maxZone, monthlyPace,
-      scatter, monthly, cum, weekly, heat, maxHeat, paceSeries,
+      scatter, monthly, cum, weekly, kmByDate, activeDays, paceSeries,
       last4, mileageDelta, paceTrend, nextTarget,
     };
   }, [runs]);
@@ -288,22 +286,10 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
           ) : <p className="py-4 text-center text-[12.5px] text-white/40">두 달 이상 기록이 쌓이면 추이가 나와요</p>}
         </Card>
 
-        {/* 러닝 빈도 히트맵 */}
-        <Card title="러닝 빈도 히트맵" sub="최근 12주 · 진할수록 많이 달린 날" className="lg:col-span-2">
-          <div className="space-y-1">
-            {a.heat.map((row, di) => (
-              <div key={di} className="flex items-center gap-1">
-                <span className="w-4 shrink-0 text-[9px] text-white/35">{["월", "화", "수", "목", "금", "토", "일"][di]}</span>
-                <div className="grid flex-1 grid-cols-12 gap-1">
-                  {row.map((km, wi) => (
-                    <div key={wi} className="aspect-square rounded-[3px]" title={km > 0 ? `${r1(km)}km` : ""}
-                      style={{ background: km > 0 ? `rgba(200,255,0,${0.22 + 0.78 * (km / a.maxHeat)})` : "rgba(255,255,255,0.05)" }} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-2 text-[11px] text-white/45">오른쪽이 이번 주 · 칸을 올리면 그날 거리</p>
+        {/* 러닝 달력 */}
+        <Card title="러닝 달력" sub="최근 3개월 · 진할수록 많이 달린 날" className="lg:col-span-2">
+          <ActivityCalendar data={a.kmByDate} months={3} suffix="km" />
+          <p className="mt-3 text-[11px] text-white/45">최근 3개월 중 <b className="text-volt">{a.activeDays}일</b> 러닝</p>
         </Card>
 
         {/* AI 코치 어드바이스 */}

@@ -6,6 +6,7 @@ import { Big3Card } from "@/components/analysis/Big3Card";
 import { RecoveryMap } from "@/components/recovery/RecoveryMap";
 import { PRChart } from "@/components/charts/PRChart";
 import { RunAnalysis } from "@/components/run/RunAnalysis";
+import { ActivityCalendar } from "@/components/ui/ActivityCalendar";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { byId, type TodayItem } from "@/lib/mock/exercises";
@@ -15,7 +16,6 @@ import { coachReport } from "@/lib/coach";
 
 type Run = { date: string; km: number; paceSec?: number | null };
 
-const DOW = ["월", "화", "수", "목", "금", "토", "일"];
 
 // 섹션 헤더 — 볼트 틱 + 번호
 function Sec({ n, title, sub }: { n: string; title: string; sub?: string }) {
@@ -75,7 +75,7 @@ export default function AnalysisPage() {
   );
   const rep = useMemo(() => (user ? coachReport(user, weekTarget) : null), [user, weekTarget]);
 
-  // 꾸준함 히트맵 (12주 × 요일)
+  // 꾸준함 — 날짜별 완료 세트 (달력용)
   const heat = useMemo(() => {
     if (!user) return null;
     const byDate = new Map<string, number>();
@@ -86,19 +86,8 @@ export default function AnalysisPage() {
     Object.entries(user.workouts ?? {}).forEach(([d, day]) => {
       if ((day.doneSets ?? 0) > 0) byDate.set(d, (byDate.get(d) ?? 0) + (day.doneSets ?? 0));
     });
-    const now = new Date();
-    const mon0 = new Date(now); mon0.setDate(now.getDate() - ((now.getDay() + 6) % 7)); mon0.setHours(0, 0, 0, 0);
-    const grid: number[][] = Array.from({ length: 7 }, () => Array(12).fill(0));
-    byDate.forEach((n, d) => {
-      const dt = new Date(d + "T00:00:00");
-      const dow = (dt.getDay() + 6) % 7;
-      const wk = new Date(dt); wk.setDate(dt.getDate() - dow);
-      const diff = Math.round((mon0.getTime() - wk.getTime()) / (7 * 864e5));
-      if (diff >= 0 && diff < 12) grid[dow][11 - diff] += n;
-    });
-    const max = Math.max(1, ...grid.flat());
-    const active = grid.flat().filter((n) => n > 0).length;
-    return { grid, max, active };
+    const active = byDate.size;
+    return { byDate, active };
   }, [user]);
 
   if (!ready) return null;
@@ -321,25 +310,13 @@ export default function AnalysisPage() {
         </div>
       </section>
 
-      {/* 7. 꾸준함 */}
+      {/* 7. 꾸준함 — 달력 */}
       {heat && heat.active > 0 && (
         <section>
-          <Sec n="7" title="꾸준함" sub="최근 12주 출석 — 진할수록 세트가 많은 날" />
+          <Sec n="7" title="꾸준함" sub="최근 3개월 출석 달력 — 진할수록 세트가 많은 날" />
           <Card>
-            <div className="space-y-1">
-              {heat.grid.map((row, di) => (
-                <div key={di} className="flex items-center gap-1">
-                  <span className="w-4 shrink-0 text-[9px] text-white/35">{DOW[di]}</span>
-                  <div className="grid flex-1 grid-cols-12 gap-1">
-                    {row.map((n, wi) => (
-                      <div key={wi} className="aspect-square rounded-[3px]" title={n > 0 ? `${n}세트` : ""}
-                        style={{ background: n > 0 ? `rgba(200,255,0,${0.22 + 0.78 * (n / heat.max)})` : "rgba(255,255,255,0.05)" }} />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2.5 text-[11px] text-white/45">최근 12주 중 <b className="text-volt">{heat.active}일</b> 운동 · 오른쪽이 이번 주</p>
+            <ActivityCalendar data={heat.byDate} months={3} suffix="세트" />
+            <p className="mt-3 text-[11px] text-white/45">최근 3개월 중 <b className="text-volt">{heat.active}일</b> 운동</p>
           </Card>
         </section>
       )}
