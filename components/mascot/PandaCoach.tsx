@@ -51,18 +51,19 @@ export function PandaCoach({ size = 72, animate = true }: { size?: number; anima
   );
 }
 
-// 코치 말풍선 — 판다 + 대사 (앱 전반 재사용)
+// 코치 말풍선 — 판다 + 대사 (avatar로 다른 포즈 지정 가능)
 export function CoachBubble({
-  children, size = 64, tone = "default", className = "",
+  children, size = 64, tone = "default", className = "", avatar,
 }: {
   children: React.ReactNode;
   size?: number;
   tone?: "default" | "volt";
   className?: string;
+  avatar?: React.ReactNode; // 지정 안 하면 코치 판다
 }) {
   return (
     <div className={`flex items-start gap-3 ${className}`}>
-      <div className="shrink-0"><PandaCoach size={size} /></div>
+      <div className="shrink-0">{avatar ?? <PandaCoach size={size} />}</div>
       <div className={`relative mt-1.5 flex-1 rounded-2xl rounded-tl-sm border p-3 text-[13px] leading-relaxed ${
         tone === "volt" ? "border-volt/30 bg-volt/[0.07] text-white/85" : "border-white/10 bg-white/[0.04] text-white/75"
       }`}>

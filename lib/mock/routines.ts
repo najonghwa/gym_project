@@ -113,6 +113,16 @@ export const EXPLORE: ExploreRoutine[] = [
   { id: "icf", badge: "IC", title: "ICF 5×5", desc: "아이스크림 피트니스 · 초보 보디빌딩",
     overview: "스트롱리프트에 팔·보조 운동을 더한 초보 보디빌딩 5×5. 근력과 함께 팔·등 디테일까지 챙겨서, 근력만이 아니라 보기 좋은 몸을 원하는 초보에게 딱이에요.",
     target: "전신", equipment: "바벨+덤벨", level: "초급", muscles: ["chest", "back", "legs", "biceps"], exercises: ["back_squat", "bench_press", "seated_row", "barbell_curl", "pushdown", "lat_pulldown", "db_shoulder_press", "calf_raise"], who: "근력만이 아니라 팔·등 디테일도 원하는 초보. SL보다 종목이 많아 지루하지 않아요.", schedule: "A일/B일 번갈아 주 3회 — 5×5 메인 + 컬·푸시다운 3×8 보조", likes: 89, weeks: 12, daysPerWeek: 3, durationMin: 50, kcal: "300~430" },
+  // ── 무난한 부위 분할 (3·4·5분할) ──
+  { id: "split3", badge: "3분", title: "3분할 루틴", desc: "가슴·등 / 어깨·팔 / 하체 — 부담 없는 부위 분할",
+    overview: "몸을 세 그룹으로 나눠 주 3회. 부위별로 충분히 집중하면서도 주 3회라 부담이 적어, 전신 루틴을 졸업한 초·중급이 처음 분할을 시작하기 가장 무난한 구성이에요.",
+    target: "전신", equipment: "바벨+머신", level: "중급", muscles: ["chest", "back", "legs", "shoulders"], exercises: ["bench_press", "seated_row", "db_shoulder_press", "barbell_curl", "back_squat", "rdl"], who: "전신 루틴을 졸업하고 부위 분할을 처음 시작하는 분. 주 3회로 회복 부담 없이 부위 집중을 맛봅니다.", schedule: "월 가슴·등 / 수 어깨·팔 / 금 하체", likes: 118, weeks: 12, daysPerWeek: 3, durationMin: 55, kcal: "320~450" },
+  { id: "split4", badge: "4분", title: "4분할 루틴", desc: "가슴 / 등 / 어깨·팔 / 하체 — 부위별 집중",
+    overview: "가슴·등·어깨팔·하체를 각각 하루씩 담당해요. 부위당 볼륨을 넉넉히 실어 근비대에 유리한, 헬스장에서 가장 흔하고 검증된 4분할입니다.",
+    target: "전신", equipment: "바벨+머신", level: "중급", muscles: ["chest", "back", "shoulders", "legs"], exercises: ["bench_press", "incline_press", "lat_pulldown", "seated_row", "db_shoulder_press", "lateral_raise", "back_squat", "leg_press"], who: "부위별로 파고들고 싶은 중급자. 주 4회 규칙적으로 올 수 있으면 성장 자극이 확실해요.", schedule: "월 가슴 / 화 등 / 목 어깨·팔 / 금 하체", likes: 126, weeks: 12, daysPerWeek: 4, durationMin: 60, kcal: "360~500" },
+  { id: "split5", badge: "5분", title: "5분할 루틴", desc: "가슴 / 등 / 어깨 / 팔 / 하체 — 부위당 최대 볼륨",
+    overview: "하루 한 부위만 집중하는 클래식 5분할. 부위당 볼륨이 가장 많아 펌핑감이 확실하고, 주 5회 규칙적으로 나오는 사람에게 최고의 근비대 구성이에요.",
+    target: "전신", equipment: "바벨+머신", level: "중급", muscles: ["chest", "back", "shoulders", "biceps", "legs"], exercises: ["bench_press", "cable_fly", "lat_pulldown", "seated_row", "db_shoulder_press", "lateral_raise", "barbell_curl", "pushdown", "back_squat", "leg_curl"], who: "부위 하나에 몰아서 조지고 싶은 중급 이상. 주 5회 소화 가능하고 각 부위를 주 1회로 충분히 회복하는 분.", schedule: "월 가슴 / 화 등 / 수 어깨 / 목 팔 / 금 하체", likes: 103, weeks: 8, daysPerWeek: 5, durationMin: 60, kcal: "380~520" },
 ];
 
 export const FILTER = {

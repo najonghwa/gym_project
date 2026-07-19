@@ -6,7 +6,9 @@ import { Big3Card } from "@/components/analysis/Big3Card";
 import { RecoveryMap } from "@/components/recovery/RecoveryMap";
 import { PRChart } from "@/components/charts/PRChart";
 import { RunAnalysis } from "@/components/run/RunAnalysis";
-import { CoachBubble, PandaCoach } from "@/components/mascot/PandaCoach";
+import { CoachBubble } from "@/components/mascot/PandaCoach";
+import { PandaLifter } from "@/components/mascot/PandaLifter";
+import { PandaRunner, PandaFlex } from "@/components/mascot/PandaPoses";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { EXPLORE } from "@/lib/mock/routines";
@@ -111,7 +113,7 @@ export default function AnalysisPage() {
       {/* 헤더 — 코치 판다 소개 */}
       <div>
         <div className="lab mb-2">COACH REPORT · {new Date().getMonth() + 1}월 {Math.ceil(new Date().getDate() / 7)}주차</div>
-        <CoachBubble tone="volt" size={72}>
+        <CoachBubble tone="volt" avatar={mode === "run" ? <PandaRunner size={68} /> : <PandaLifter size={92} />}>
           <b className="text-white">{String(user.id)}님, 코치예요.</b> {mode === "run"
             ? "이번 달 러닝을 뜯어봤어요 — 거리·페이스·꾸준함까지 아래에 정리했어요."
             : "이번 주 훈련을 코치 눈으로 봤어요. 볼륨·진행·밸런스를 아래에서 짚어줄게요."}
@@ -301,7 +303,7 @@ export default function AnalysisPage() {
       <section>
         <Sec n="7" title="코치 코멘트" sub="데이터 기반 이번 주 실행 제안" />
         <div className="flex items-start gap-3">
-          <div className="hidden shrink-0 sm:block"><PandaCoach size={64} /></div>
+          <div className="hidden shrink-0 sm:block"><PandaFlex size={72} /></div>
           <div className="flex-1 space-y-2">
             {rep.notes.map((note, i) => (
               <div key={i} className={`flex items-start gap-2.5 rounded-lg border p-3 ${noteStyle[note.tone]}`}>

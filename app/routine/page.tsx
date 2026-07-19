@@ -29,8 +29,8 @@ const DAYS = [2, 3, 4, 6];
 // 프로그램 점수화 — 목표/경력/주당 횟수 매칭
 const GOAL_FIT: Record<Goal, string[]> = {
   strength: ["st55", "ss", "madcow", "five31", "texas", "smolov"],
-  size: ["phat", "ppl", "gvt", "bro", "arnold", "phul", "icf"],
-  fit: ["fullbody3", "upperlower", "quickfit", "ppl"],
+  size: ["split4", "split5", "phat", "ppl", "gvt", "bro", "arnold", "phul", "icf"],
+  fit: ["split3", "fullbody3", "upperlower", "quickfit", "ppl"],
   lower: ["legday", "supersquat"],
   arms: ["arms"],
 };
