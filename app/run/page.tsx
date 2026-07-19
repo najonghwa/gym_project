@@ -2,17 +2,12 @@
 // 러닝 탭 — Strava식 풀 대시보드 (KPI·월별·목표 도넛·PB·페이스·히트맵·AI 코치) + 기록 입력
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Bar, BarChart, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
-} from "recharts";
-import { useReducedMotion } from "framer-motion";
 import { StatChip } from "@/components/ui/StatChip";
 import { PillButton } from "@/components/ui/PillButton";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { RunDetailSheet, RouteMap } from "@/components/run/RunDetailSheet";
-import { allBests } from "@/lib/runmath";
 import { useUser } from "@/lib/useUser";
 
 type Run = { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: [number, number][] };
@@ -119,7 +114,6 @@ const GOALS = [100, 200, 300, 500, 1000];
 
 export default function RunPage() {
   const router = useRouter();
-  const reduce = useReducedMotion();
   const { user, ready, login, signup, logout, saveRun, deleteRun, setRunGoal, setPrimaryMode, today } = useUser();
   const [showLog, setShowLog] = useState(false);
   const [showGoal, setShowGoal] = useState(false);
@@ -131,7 +125,6 @@ export default function RunPage() {
 
   const runs = useMemo(() => (user?.runs ?? []) as Run[], [user]);
   const s = useMemo(() => calc(runs), [runs]);
-  const bests = useMemo(() => allBests(runs), [runs]);
   const [detail, setDetail] = useState<Run | null>(null);
 
   // 최근 기록 지도 패널 — 선택 기록 (기본: 경로 있는 최신 기록)
@@ -212,30 +205,8 @@ export default function RunPage() {
         <StatChip label="최장 거리" value={s.longest} unit="km" tone="mute" />
       </div>
 
+      {/* 모니터링 — 목표 도넛 + 개인 최고 기록 */}
       <div className="grid gap-4 lg:grid-cols-5">
-        {/* 월별 러닝 거리 */}
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
-          <b className="text-[15px] font-extrabold">월별 러닝 거리</b>
-          <p className="text-[11.5px] text-white/45">{new Date().getFullYear()}년 · 이번 달 강조</p>
-          <div className="mt-2 h-44">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={s.monthly} margin={{ top: 14 }}>
-                <XAxis dataKey="m" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 8.5 }} axisLine={false} tickLine={false} interval={0} />
-                <Tooltip
-                  cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                  contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}
-                  formatter={(v) => [`${v}km`, ""]}
-                />
-                <Bar dataKey="km" radius={[4, 4, 0, 0]} animationDuration={reduce ? 0 : 600}>
-                  {s.monthly.map((m, i) => (
-                    <Cell key={i} fill={m.isNow ? "#c8ff00" : "rgba(200,255,0,0.45)"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
         {/* 올해 목표 도넛 */}
         <section className="rounded-2xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
           <div className="flex items-center justify-between">
@@ -269,66 +240,20 @@ export default function RunPage() {
             </div>
           </div>
         </section>
-      </div>
 
-      {/* 주간 거리 + 올해 누적 (스트라바식) */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-4">
-          <b className="text-[15px] font-extrabold">주간 거리</b>
-          <p className="text-[11.5px] text-white/45">최근 12주 · 주별 합계 (km)</p>
-          <div className="mt-2 h-36">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={s.weekly12} margin={{ top: 6, right: 0, left: -26 }}>
-                <XAxis dataKey="w" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 8.5 }} axisLine={false} tickLine={false} interval={0} />
-                <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                  contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
-                  formatter={(v) => [`${Number(v ?? 0)}km`, "거리"]}
-                />
-                <Bar dataKey="km" radius={[3, 3, 0, 0]} isAnimationActive={false}>
-                  {s.weekly12.map((x, i) => (
-                    <Cell key={i} fill={x.isNow ? "#c8ff00" : "rgba(255,255,255,0.18)"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-4">
-          <b className="text-[15px] font-extrabold">올해 누적 거리</b>
-          <p className="text-[11.5px] text-white/45">{new Date().getFullYear()}년 · 목표 {goal}km</p>
-          <div className="mt-2 h-36">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={s.cum} margin={{ top: 8, right: 8, left: -22 }}>
-                <XAxis dataKey="m" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 8.5 }} axisLine={false} tickLine={false} interval={1} />
-                <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
-                  formatter={(v) => [`${Number(v ?? 0)}km`, "누적"]}
-                />
-                <Line type="monotone" dataKey="km" stroke="#c8ff00" strokeWidth={2.5} dot={false} connectNulls={false} isAnimationActive={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-5">
         {/* 개인 최고 기록 */}
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
+        <section className="rounded-2xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
           <b className="text-[15px] font-extrabold">
             개인 최고 기록 <span className="text-[10px] font-normal text-white/40">Personal Best</span>
           </b>
-          <div className="mt-2.5 divide-y divide-white/[0.06]">
+          <div className="mt-2.5 grid gap-x-6 sm:grid-cols-2">
             {[
               ["🏁 최장 거리", s.longestRun ? `${s.longest}km` : "—", s.longestRun?.date ?? ""],
               ["⚡ 최고 페이스", paceStr(s.bestPace), s.bestPaceRun?.date ?? ""],
               ["📅 월 최다", s.bestMonth ? `${r1(s.bestMonth[1])}km` : "—", s.bestMonth?.[0] ?? ""],
               ["🔁 주 최다", s.bestWeek ? `${s.bestWeek[1]}회` : "—", s.bestWeek ? s.bestWeek[0] + " 주" : ""],
             ].map(([l, v, d]) => (
-              <div key={l as string} className="flex items-center justify-between py-2.5">
+              <div key={l as string} className="flex items-center justify-between border-b border-white/[0.06] py-2.5">
                 <span className="text-[13px] text-white/70">{l}</span>
                 <span className="text-right">
                   <b className="font-display text-[15px] text-gold">{v}</b>
@@ -337,130 +262,12 @@ export default function RunPage() {
               </div>
             ))}
           </div>
-
-          {/* 거리별 최고 페이스 — 전체 기록에서 자동 계산 (GPS=구간, 수동=평균 기준) */}
-          <div className="lab mt-4 mb-1.5">거리별 최고 페이스</div>
-          <div className="grid grid-cols-2 gap-2">
-            {bests.map((b) => (
-              <div key={b.m} className="rounded-lg bg-white/[0.05] px-3.5 py-2.5">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-[12px] font-bold text-white/55">{b.m / 1000}km</span>
-                  <b className={`font-display text-[15px] tabular-nums ${b.paceSec ? "text-gold" : "text-white/25"}`}>
-                    {b.paceSec ? paceStr(b.paceSec) : "도전!"}
-                  </b>
-                </div>
-                <div className="mt-0.5 text-right text-[9px] text-white/35">
-                  {b.date ? `${b.gps ? "📡" : "✍️"} ${b.date}` : `${b.m / 1000}km 이상 뛰면 기록돼요`}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 페이스 발전 흐름 */}
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
-          <b className="text-[15px] font-extrabold">페이스 발전 흐름</b>
-          <p className="text-[11.5px] text-white/45">최근 {s.paceSeries.length}회 · 위로 갈수록 빠름</p>
-          <div className="mt-2 h-40">
-            {s.paceSeries.length >= 2 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={s.paceSeries} margin={{ top: 8, right: 8, left: -8 }}>
-                  <XAxis dataKey="d" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} />
-                  <YAxis
-                    reversed domain={["dataMin - 15", "dataMax + 15"]}
-                    tickFormatter={(v) => paceStr(Number(v))}
-                    tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} width={44}
-                  />
-                  <Tooltip
-                    contentStyle={{ background: "#121212", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}
-                    formatter={(v) => [paceStr(Number(v)) + "/km", ""]}
-                  />
-                  <Line
-                    type="monotone" dataKey="sec" stroke="#c8ff00" strokeWidth={2.5}
-                    dot={{ r: 3, fill: "#c8ff00" }} animationDuration={reduce ? 0 : 700}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="grid h-full place-items-center text-[12.5px] text-white/35">
-                페이스 기록이 2개 이상 쌓이면 그래프가 나와요
-              </p>
-            )}
-          </div>
-        </section>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-5">
-        {/* 요일 히트맵 (최근 12주) */}
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
-          <b className="text-[15px] font-extrabold">러닝 빈도 히트맵</b>
-          <p className="text-[11.5px] text-white/45">최근 12주 · 요일별 달린 거리</p>
-          <div className="mt-3 flex gap-1.5">
-            <div className="flex flex-col justify-between py-0.5 text-[9px] text-white/35">
-              {["월", "수", "금", "일"].map((d) => <span key={d}>{d}</span>)}
-            </div>
-            <div className="grid flex-1 grid-cols-12 gap-1">
-              {Array.from({ length: 12 }, (_, w) => (
-                <div key={w} className="flex flex-col gap-1">
-                  {Array.from({ length: 7 }, (_, d) => {
-                    const km = s.heat[d][w];
-                    return (
-                      <div
-                        key={d}
-                        title={km ? `${r1(km)}km` : ""}
-                        className="aspect-square rounded-[3px]"
-                        style={{
-                          background: km > 0
-                            ? `rgba(200,255,0,${Math.min(1, 0.3 + km / 8)})`
-                            : "rgba(255,255,255,0.05)",
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="mt-2 flex items-center justify-end gap-1.5 text-[9.5px] text-white/35">
-            적음 <i className="h-2 w-2 rounded-[2px]" style={{ background: "rgba(200,255,0,0.35)" }} />
-            <i className="h-2 w-2 rounded-[2px]" style={{ background: "rgba(200,255,0,0.65)" }} />
-            <i className="h-2 w-2 rounded-[2px]" style={{ background: "rgba(200,255,0,1)" }} /> 많음
-          </div>
-        </section>
-
-        {/* AI 코치 어드바이스 */}
-        <section className="rounded-2xl border border-indigo-400/25 bg-indigo-950/25 p-4 lg:col-span-2">
-          <b className="text-[15px] font-extrabold">🤖 러닝 AI 코치 어드바이스</b>
-          <p className="text-[11px] text-white/45">최근 기록 기반 맞춤 피드백</p>
-          <div className="mt-3 space-y-2.5">
-            <div className="rounded-lg bg-white/[0.05] p-3">
-              <div className="text-[11px] font-bold text-indigo-300">최근 4주 마일리지</div>
-              <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
-                4주간 <b className="text-volt">{s.last4}km</b>
-                {s.mileageDelta !== null
-                  ? <> — 이전 4주 대비 <b className={s.mileageDelta >= 0 ? "text-volt" : "text-danger"}>{s.mileageDelta >= 0 ? "+" : ""}{s.mileageDelta}%</b></>
-                  : " — 비교할 이전 기록이 아직 없어요"}
-              </p>
-            </div>
-            <div className="rounded-lg bg-white/[0.05] p-3">
-              <div className="text-[11px] font-bold text-indigo-300">페이스 진단</div>
-              <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
-                {s.paceTrend === null
-                  ? "페이스 기록이 더 쌓이면 추세를 알려드릴게요."
-                  : s.paceTrend > 3
-                  ? <>최근 5회 평균이 <b className="text-volt">{s.paceTrend}초/km 빨라졌어요</b> — 좋은 흐름!</>
-                  : s.paceTrend < -3
-                  ? <>페이스가 {Math.abs(s.paceTrend)}초/km 느려졌어요 — 회복 주간일 수 있어요, 무리 금지.</>
-                  : "페이스를 안정적으로 유지 중이에요."}
-              </p>
-            </div>
-            <div className="rounded-lg bg-white/[0.05] p-3">
-              <div className="text-[11px] font-bold text-indigo-300">🎯 향후 4주 추천</div>
-              <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
-                주당 <b className="text-gold">{s.nextTarget}km</b> 수준으로 10% 이내에서 서서히 올려보세요.
-              </p>
-            </div>
-          </div>
+          <button
+            onClick={() => router.push("/analysis")}
+            className="mt-3 w-full rounded-full border border-white/15 bg-white/[0.05] py-2.5 text-[12.5px] font-bold text-white/80"
+          >
+            📊 거리별 PB·추세 등 상세 분석 → 분석 탭
+          </button>
         </section>
       </div>
 
@@ -536,15 +343,6 @@ export default function RunPage() {
           </div>
         )}
       </section>
-
-      {/* 상세 분석은 분석 탭 → 러닝으로 이동 */}
-      <button
-        onClick={() => router.push("/analysis")}
-        className="flex w-full items-center justify-between rounded-2xl border border-white/[0.06] bg-card px-4 py-3.5 text-left"
-      >
-        <span className="text-[13.5px] font-bold text-white/80">📊 페이스·거리·요일 상세 분석 보기</span>
-        <span className="text-[13px] text-volt">분석 탭 →</span>
-      </button>
 
       {/* 기록 입력 시트 */}
       <BottomSheet open={showLog} onClose={() => setShowLog(false)}>
