@@ -94,6 +94,25 @@ export const EXPLORE: ExploreRoutine[] = [
   { id: "smolov", badge: "SM", title: "스모로프 Jr (벤치 특화)", desc: "3주 만에 벤치 +5~10kg",
     overview: "3주 동안 벤치프레스만 주 4회 — 6×6, 7×5, 8×4, 10×3으로 매일 다른 세트 구성. 짧고 혹독한 러시아식 단기 특화. 고급자용이며 어깨가 아프면 바로 중단, 끝나고 1주는 꼭 가볍게!",
     target: "상체", equipment: "바벨", level: "고급", muscles: ["chest", "triceps"], exercises: ["bench_press", "incline_press", "dips", "pushdown", "face_pull"], who: "벤치 정체 뚫기 특화. 3주간 벤치 빈도를 주 4회로 끌어올려 단기간에 5~10kg 증량을 노립니다.", schedule: "주 4회 벤치(6×6→10×3 등 파도) + 보조 삼두·어깨", likes: 29, weeks: 3, daysPerWeek: 4, durationMin: 45, kcal: "280~380" },
+  // ── 추가 유명 프로그램 (웹 리서치) ──
+  { id: "upperlower", badge: "UL", title: "상·하체 4분할", desc: "부위당 주 2회, 가장 무난한 분할",
+    overview: "한 주를 상체·하체로 나눠 각 부위를 주 2번씩 자극해요. 볼륨과 회복의 균형이 가장 좋아서 오래 지속하기 좋은, 실패 없는 중급 4분할입니다.",
+    target: "전신", equipment: "바벨+머신", level: "중급", muscles: ["chest", "back", "legs", "shoulders"], exercises: ["back_squat", "rdl", "leg_press", "bench_press", "seated_row", "db_shoulder_press", "lat_pulldown", "calf_raise"], who: "초보 프로그램을 졸업한 중급자. 부위당 주 2회로 성장 자극은 충분하면서 회복도 되는 가장 무난한 선택.", schedule: "월 상체 / 화 하체 / 목 상체 / 금 하체", likes: 112, weeks: 12, daysPerWeek: 4, durationMin: 55, kcal: "350~480" },
+  { id: "fullbody3", badge: "FB", title: "전신 3분할", desc: "주 3회, 매번 전신 — 초보·바쁜 사람",
+    overview: "한 세션에 전신을 다 치는 방식. 큰 운동을 자주 반복해 폼과 근력이 가장 빨리 늘어요. 주 2~3회밖에 못 오는 분에게 최고의 가성비 루틴.",
+    target: "전신", equipment: "바벨+머신", level: "초급", muscles: ["legs", "chest", "back"], exercises: ["back_squat", "bench_press", "seated_row", "db_shoulder_press", "rdl", "plank"], who: "헬스 입문자, 주 2~3회만 가능한 분. 매 세션 전신을 돌려 부족한 빈도를 채웁니다.", schedule: "주 3회(월·수·금) 매번 전신 — 하체·밀기·당기기·코어", likes: 134, weeks: 8, daysPerWeek: 3, durationMin: 50, kcal: "280~400" },
+  { id: "phat", badge: "PT", title: "PHAT 파워빌딩", desc: "레인 노튼 — 파워 2일 + 펌핑 3일",
+    overview: "레인 노튼 박사의 파워빌딩. 앞 2일은 무겁게(파워 3~5회), 뒤 3일은 부위별 고볼륨(펌핑 8~20회). 근력과 크기를 동시에 잡는 상급자용 5일 프로그램.",
+    target: "전신", equipment: "바벨+머신", level: "고급", muscles: ["chest", "back", "legs", "shoulders"], exercises: ["back_squat", "deadlift", "bench_press", "seated_row", "leg_press", "incline_press", "lat_pulldown", "lateral_raise", "db_curl", "pushdown"], who: "힘도 크기도 놓치기 싫은 상급자. 주 5회를 소화하고 회복 관리가 되는 분에게 맞아요.", schedule: "월 상체파워 / 화 하체파워 / 목 등·어깨 / 금 하체 / 토 가슴·팔", likes: 98, weeks: 12, daysPerWeek: 5, durationMin: 65, kcal: "420~560" },
+  { id: "madcow", badge: "MC", title: "매드카우 5×5", desc: "스트롱리프트 다음 단계 · 주간 파동",
+    overview: "5×5가 정체됐을 때 넘어가는 중급 근력 프로그램. 무겁게→가볍게→중간(HLM) 주 3회로 돌리고, 금요일에 세트마다 무게를 올려 신기록에 도전해요.",
+    target: "전신", equipment: "바벨", level: "중급", muscles: ["legs", "chest", "back"], exercises: ["back_squat", "bench_press", "seated_row", "incline_press", "deadlift"], who: "스트롱리프트 선형진행이 막힌 중급자. 주간 파동으로 회복을 주며 계속 강해집니다.", schedule: "월 헤비 / 수 라이트 / 금 미디엄(신기록) — 램핑 5×5", likes: 76, weeks: 12, daysPerWeek: 3, durationMin: 55, kcal: "320~450" },
+  { id: "supersquat", badge: "SQ", title: "슈퍼 스쿼트 20렙", desc: "한 세트 20회 스쿼트 · 전설의 벌크",
+    overview: "한 세트 20회 스쿼트로 몸 전체를 뒤흔드는 전설의 벌크 프로그램. 6주만 버티면 체중과 근육이 확 늘어요. 숨쉬기 스쿼트는 정신력 싸움 — 각오가 필요합니다.",
+    target: "하체", equipment: "바벨", level: "고급", muscles: ["legs", "glutes", "chest"], exercises: ["back_squat", "leg_press", "rdl", "bench_press", "pullup", "calf_raise"], who: "마르고 체중이 안 느는 하드게이너, 정체기 돌파용. 20렙 스쿼트를 버틸 각오가 있다면.", schedule: "주 3회 — 20렙 스쿼트 1세트 + 상체 보조, 매 세션 2.5kg 증량", likes: 54, weeks: 6, daysPerWeek: 3, durationMin: 45, kcal: "400~550" },
+  { id: "icf", badge: "IC", title: "ICF 5×5", desc: "아이스크림 피트니스 · 초보 보디빌딩",
+    overview: "스트롱리프트에 팔·보조 운동을 더한 초보 보디빌딩 5×5. 근력과 함께 팔·등 디테일까지 챙겨서, 근력만이 아니라 보기 좋은 몸을 원하는 초보에게 딱이에요.",
+    target: "전신", equipment: "바벨+덤벨", level: "초급", muscles: ["chest", "back", "legs", "biceps"], exercises: ["back_squat", "bench_press", "seated_row", "barbell_curl", "pushdown", "lat_pulldown", "db_shoulder_press", "calf_raise"], who: "근력만이 아니라 팔·등 디테일도 원하는 초보. SL보다 종목이 많아 지루하지 않아요.", schedule: "A일/B일 번갈아 주 3회 — 5×5 메인 + 컬·푸시다운 3×8 보조", likes: 89, weeks: 12, daysPerWeek: 3, durationMin: 50, kcal: "300~430" },
 ];
 
 export const FILTER = {

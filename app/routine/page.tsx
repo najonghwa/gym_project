@@ -26,12 +26,12 @@ const GOALS: { v: Goal; t: string; d: string }[] = [
 const EXPS = ["초급", "중급", "고급"] as const;
 const DAYS = [2, 3, 4, 6];
 
-// 13종 점수화 — 목표/경력/주당 횟수 매칭
+// 프로그램 점수화 — 목표/경력/주당 횟수 매칭
 const GOAL_FIT: Record<Goal, string[]> = {
-  strength: ["st55", "ss", "five31", "texas", "smolov"],
-  size: ["ppl", "gvt", "bro", "arnold", "phul"],
-  fit: ["quickfit", "ppl", "bro"],
-  lower: ["legday"],
+  strength: ["st55", "ss", "madcow", "five31", "texas", "smolov"],
+  size: ["phat", "ppl", "gvt", "bro", "arnold", "phul", "icf"],
+  fit: ["fullbody3", "upperlower", "quickfit", "ppl"],
+  lower: ["legday", "supersquat"],
   arms: ["arms"],
 };
 const LV = { 초급: 0, 중급: 1, 고급: 2 } as const;
