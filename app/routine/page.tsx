@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PillButton } from "@/components/ui/PillButton";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
+import { CoachBubble } from "@/components/mascot/PandaCoach";
 import { RoutineGenerating } from "@/components/routine/RoutineGenerating";
 import { ExploreSection } from "@/components/routine/ExploreSection";
 import { ExThumb } from "@/components/ui/ExThumb";
@@ -100,7 +101,7 @@ export default function RoutinePage() {
                     active ? "border-volt/50 bg-volt/[0.06]" : "border-white/[0.06] bg-card"
                   }`}
                 >
-                  <ColorInitialBadge text={r.badge} seed={i} />
+                  {(() => { const fe = byId(r.exercises[0]); return fe ? <ExThumb ex={fe} size={48} rounded="rounded-xl" /> : <ColorInitialBadge text={r.badge} seed={i} />; })()}
                   <div className="min-w-0 flex-1">
                     <b className="block truncate text-[14.5px]">
                       {r.title}
@@ -128,14 +129,13 @@ export default function RoutinePage() {
         )}
       </section>
 
-      {/* 맞춤 추천 — 13종 프로그램에서 골라줌 */}
+      {/* 맞춤 추천 — 판다 코치가 골라줌 */}
       {phase === "idle" && (
-        <section className="flex flex-col items-center gap-3 rounded-2xl border border-white/[0.06] bg-card px-6 py-8 text-center">
-          <h2 className="font-display text-[24px] leading-snug">
-            어떤 루틴을 할지<br /><span className="text-volt">모르겠다면?</span>
-          </h2>
-          <p className="text-[12.5px] text-white/55">세 가지만 답하면 {EXPLORE.length}개 프로그램 중에서 골라드려요.</p>
-          <PillButton className="mt-2 w-full" onClick={() => setPhase("ask")}>✨ 루틴 추천받기</PillButton>
+        <section className="rounded-2xl border border-white/[0.06] bg-card p-5">
+          <CoachBubble tone="volt" size={72}>
+            어떤 루틴을 할지 모르겠어요? <b className="text-white">세 가지만 답하면</b> {EXPLORE.length}개 프로그램 중에서 딱 맞는 걸 골라줄게요.
+          </CoachBubble>
+          <PillButton className="mt-3 w-full" onClick={() => setPhase("ask")}>✨ 코치에게 루틴 추천받기</PillButton>
         </section>
       )}
 
@@ -202,7 +202,7 @@ export default function RoutinePage() {
           {/* 1순위 */}
           <div className="rounded-2xl border border-volt/40 bg-volt/[0.05] p-4">
             <div className="flex items-start gap-3">
-              <ColorInitialBadge text={recs[0].r.badge} seed={0} />
+              {(() => { const fe = byId(recs[0].r.exercises[0]); return fe ? <ExThumb ex={fe} size={52} rounded="rounded-xl" /> : <ColorInitialBadge text={recs[0].r.badge} seed={0} />; })()}
               <div className="min-w-0 flex-1">
                 <span className="rounded bg-volt px-1.5 py-0.5 text-[9.5px] font-extrabold text-black">BEST</span>
                 <b className="mt-1 block text-[16px]">{recs[0].r.title}</b>
@@ -236,7 +236,7 @@ export default function RoutinePage() {
           {/* 2·3순위 */}
           {recs.slice(1).map(({ r, reasons }, i) => (
             <div key={r.id} className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-card p-3.5">
-              <ColorInitialBadge text={r.badge} seed={i + 1} />
+              {(() => { const fe = byId(r.exercises[0]); return fe ? <ExThumb ex={fe} size={44} rounded="rounded-xl" /> : <ColorInitialBadge text={r.badge} seed={i + 1} />; })()}
               <div className="min-w-0 flex-1">
                 <b className="block truncate text-[14px]">{r.title}</b>
                 <span className="text-[11px] text-white/45">

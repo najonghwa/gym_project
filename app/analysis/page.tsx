@@ -7,6 +7,7 @@ import { RecoveryMap } from "@/components/recovery/RecoveryMap";
 import { PRChart } from "@/components/charts/PRChart";
 import { RunAnalysis } from "@/components/run/RunAnalysis";
 import { ActivityCalendar } from "@/components/ui/ActivityCalendar";
+import { CoachBubble, PandaCoach } from "@/components/mascot/PandaCoach";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { byId, type TodayItem } from "@/lib/mock/exercises";
@@ -124,11 +125,14 @@ export default function AnalysisPage() {
 
   return (
     <main className="mx-auto max-w-3xl space-y-5 lg:max-w-5xl lg:pt-10">
-      {/* 헤더 */}
+      {/* 헤더 — 코치 판다 소개 */}
       <div>
-        <div className="lab">COACH REPORT · {new Date().getMonth() + 1}월 {Math.ceil(new Date().getDate() / 7)}주차</div>
-        <h1 className="mt-0.5 font-display text-[26px] leading-tight tracking-tight">{String(user.id)}님의 코치 리포트</h1>
-        <p className="mt-0.5 text-[12.5px] text-white/45">전문 코치가 회원을 보듯 — 기록을 깊게 분석해요</p>
+        <div className="lab mb-2">COACH REPORT · {new Date().getMonth() + 1}월 {Math.ceil(new Date().getDate() / 7)}주차</div>
+        <CoachBubble tone="volt" size={72}>
+          <b className="text-white">{String(user.id)}님, 코치예요.</b> {mode === "run"
+            ? "이번 달 러닝을 뜯어봤어요 — 거리·페이스·꾸준함까지 아래에 정리했어요."
+            : "이번 주 훈련을 코치 눈으로 봤어요. 볼륨·진행·밸런스를 아래에서 짚어줄게요."}
+        </CoachBubble>
       </div>
 
       {/* 헬스 / 러닝 세그먼트 */}
@@ -321,16 +325,19 @@ export default function AnalysisPage() {
         </section>
       )}
 
-      {/* 8. 코치 코멘트 */}
+      {/* 8. 코치 코멘트 — 판다 코치가 정리 */}
       <section>
         <Sec n="8" title="코치 코멘트" sub="데이터 기반 이번 주 실행 제안" />
-        <div className="space-y-2">
-          {rep.notes.map((note, i) => (
-            <div key={i} className={`flex items-start gap-2.5 rounded-lg border p-3 ${noteStyle[note.tone]}`}>
-              <span className="text-[14px] leading-none">{noteIcon[note.tone]}</span>
-              <p className="text-[12.5px] leading-relaxed text-white/80">{note.text}</p>
-            </div>
-          ))}
+        <div className="flex items-start gap-3">
+          <div className="hidden shrink-0 sm:block"><PandaCoach size={64} /></div>
+          <div className="flex-1 space-y-2">
+            {rep.notes.map((note, i) => (
+              <div key={i} className={`flex items-start gap-2.5 rounded-lg border p-3 ${noteStyle[note.tone]}`}>
+                <span className="text-[14px] leading-none">{noteIcon[note.tone]}</span>
+                <p className="text-[12.5px] leading-relaxed text-white/80">{note.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
       </>
