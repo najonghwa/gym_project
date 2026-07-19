@@ -5,7 +5,7 @@ import {
   Bar, BarChart, Cell, Line, LineChart, Scatter, ScatterChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ZAxis,
 } from "recharts";
 import { StatChip } from "@/components/ui/StatChip";
-import { ActivityCalendar } from "@/components/ui/ActivityCalendar";
+import { PandaRest } from "@/components/mascot/PandaPoses";
 import { allBests } from "@/lib/runmath";
 
 type Run = { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: number[][] };
@@ -79,13 +79,10 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
       const st = new Date(mon0); st.setDate(mon0.getDate() - (11 - i) * 7);
       return { w: `${st.getMonth() + 1}/${st.getDate()}`, km: 0, isNow: i === 11 };
     });
-    const kmByDate = new Map<string, number>();
     runs.forEach((r) => {
       const diff = Math.round((mon0.getTime() - wkStart(r.date)) / (7 * 864e5));
       if (diff >= 0 && diff < 12) weekly[11 - diff].km = r1(weekly[11 - diff].km + r.km);
-      kmByDate.set(r.date, r1((kmByDate.get(r.date) ?? 0) + r.km));
     });
-    const activeDays = kmByDate.size;
 
     // 페이스 발전 흐름 (최근 20회)
     const paceSeries = paced.slice(-20).map((r) => ({ d: r.date.slice(5), sec: r.paceSec! }));
@@ -105,14 +102,15 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
     return {
       count: runs.length, total, yearKm, avgPace, bestPace, longest,
       buckets, maxBucket, dow, bestDow, zones, maxZone, monthlyPace,
-      scatter, monthly, cum, weekly, kmByDate, activeDays, paceSeries,
+      scatter, monthly, cum, weekly, paceSeries,
       last4, mileageDelta, paceTrend, nextTarget,
     };
   }, [runs]);
 
   if (a.count === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center">
+      <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-8 text-center">
+        <PandaRest size={92} />
         <p className="text-[13px] text-white/50">아직 러닝 기록이 없어요.<br />러닝 탭에서 첫 기록을 남기면 상세 분석이 채워집니다.</p>
       </div>
     );
@@ -286,11 +284,6 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
           ) : <p className="py-4 text-center text-[12.5px] text-white/40">두 달 이상 기록이 쌓이면 추이가 나와요</p>}
         </Card>
 
-        {/* 러닝 달력 */}
-        <Card title="러닝 달력" sub="최근 3개월 · 진할수록 많이 달린 날" className="lg:col-span-2">
-          <ActivityCalendar data={a.kmByDate} months={3} suffix="km" />
-          <p className="mt-3 text-[11px] text-white/45">최근 3개월 중 <b className="text-volt">{a.activeDays}일</b> 러닝</p>
-        </Card>
 
         {/* AI 코치 어드바이스 */}
         <div className="rounded-2xl border border-indigo-400/25 bg-indigo-950/25 p-4 lg:col-span-2">

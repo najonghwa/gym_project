@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
-import { PandaLifter } from "@/components/mascot/PandaLifter";
+import { PandaFlex } from "@/components/mascot/PandaPoses";
 import { PillButton } from "@/components/ui/PillButton";
 
 export function AchievementModal({
@@ -43,7 +43,7 @@ export function AchievementModal({
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
             className="w-full max-w-xs rounded-2xl border border-gold/40 bg-card p-6 text-center"
           >
-            <div className="flex justify-center"><PandaLifter size={104} /></div>
+            <div className="flex justify-center"><PandaFlex size={110} /></div>
             {/* 금속 뱃지 */}
             <motion.div
               initial={reduce ? false : { rotateY: 90 }}

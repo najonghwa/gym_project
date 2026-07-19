@@ -6,11 +6,9 @@ import { Big3Card } from "@/components/analysis/Big3Card";
 import { RecoveryMap } from "@/components/recovery/RecoveryMap";
 import { PRChart } from "@/components/charts/PRChart";
 import { RunAnalysis } from "@/components/run/RunAnalysis";
-import { ActivityCalendar } from "@/components/ui/ActivityCalendar";
 import { CoachBubble, PandaCoach } from "@/components/mascot/PandaCoach";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { getMockRecovery } from "@/lib/mock/recovery";
-import { byId, type TodayItem } from "@/lib/mock/exercises";
 import { EXPLORE } from "@/lib/mock/routines";
 import { computeStats, useUser } from "@/lib/useUser";
 import { coachReport } from "@/lib/coach";
@@ -75,21 +73,6 @@ export default function AnalysisPage() {
     [user]
   );
   const rep = useMemo(() => (user ? coachReport(user, weekTarget) : null), [user, weekTarget]);
-
-  // 꾸준함 — 날짜별 완료 세트 (달력용)
-  const heat = useMemo(() => {
-    if (!user) return null;
-    const byDate = new Map<string, number>();
-    Object.entries(user.v2?.workouts ?? {}).forEach(([d, day]) => {
-      const n = (day.items as TodayItem[]).reduce((s, it) => s + it.sets.filter((x) => x.done).length, 0);
-      if (n) byDate.set(d, (byDate.get(d) ?? 0) + n);
-    });
-    Object.entries(user.workouts ?? {}).forEach(([d, day]) => {
-      if ((day.doneSets ?? 0) > 0) byDate.set(d, (byDate.get(d) ?? 0) + (day.doneSets ?? 0));
-    });
-    const active = byDate.size;
-    return { byDate, active };
-  }, [user]);
 
   if (!ready) return null;
   if (!user) return <main className="lg:pt-10"><LoginCard onLogin={login} onSignup={signup} /></main>;
@@ -314,20 +297,9 @@ export default function AnalysisPage() {
         </div>
       </section>
 
-      {/* 7. 꾸준함 — 달력 */}
-      {heat && heat.active > 0 && (
-        <section>
-          <Sec n="7" title="꾸준함" sub="최근 3개월 출석 달력 — 진할수록 세트가 많은 날" />
-          <Card>
-            <ActivityCalendar data={heat.byDate} months={3} suffix="세트" />
-            <p className="mt-3 text-[11px] text-white/45">최근 3개월 중 <b className="text-volt">{heat.active}일</b> 운동</p>
-          </Card>
-        </section>
-      )}
-
-      {/* 8. 코치 코멘트 — 판다 코치가 정리 */}
+      {/* 7. 코치 코멘트 — 판다 코치가 정리 (출석 달력은 헬스 홈으로) */}
       <section>
-        <Sec n="8" title="코치 코멘트" sub="데이터 기반 이번 주 실행 제안" />
+        <Sec n="7" title="코치 코멘트" sub="데이터 기반 이번 주 실행 제안" />
         <div className="flex items-start gap-3">
           <div className="hidden shrink-0 sm:block"><PandaCoach size={64} /></div>
           <div className="flex-1 space-y-2">

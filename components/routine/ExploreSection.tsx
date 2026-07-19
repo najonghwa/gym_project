@@ -74,7 +74,7 @@ export function ExploreSection({
             className="rounded-2xl border border-white/[0.06] bg-card p-4"
           >
             <div className="flex items-start gap-3">
-              {(() => { const fe = byId(r.exercises[0]); return fe ? <ExThumb ex={fe} size={52} rounded="rounded-xl" /> : <ColorInitialBadge text={r.badge} seed={i} />; })()}
+              <ColorInitialBadge text={r.badge} seed={i} />
               <button className="min-w-0 flex-1 text-left" onClick={() => setDetail(r)}>
                 <b className="block text-[15px]">{r.title} <span className="text-[10px] text-white/35">자세히 ›</span></b>
                 <span className="text-[12px] text-white/50">{r.desc}</span>
@@ -121,7 +121,7 @@ export function ExploreSection({
         {detail && (
           <>
             <div className="flex items-center gap-3">
-              {(() => { const fe = byId(detail.exercises[0]); return fe ? <ExThumb ex={fe} size={52} rounded="rounded-xl" /> : <ColorInitialBadge text={detail.badge} seed={0} />; })()}
+              <ColorInitialBadge text={detail.badge} seed={0} />
               <div>
                 <span className="rounded-md bg-volt/15 px-1.5 py-0.5 text-[10px] font-bold text-volt">{detail.level}</span>
                 <h3 className="mt-1 font-display text-[22px] leading-tight">{detail.title}</h3>

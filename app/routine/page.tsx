@@ -101,7 +101,7 @@ export default function RoutinePage() {
                     active ? "border-volt/50 bg-volt/[0.06]" : "border-white/[0.06] bg-card"
                   }`}
                 >
-                  {(() => { const fe = byId(r.exercises[0]); return fe ? <ExThumb ex={fe} size={48} rounded="rounded-xl" /> : <ColorInitialBadge text={r.badge} seed={i} />; })()}
+                  <ColorInitialBadge text={r.badge} seed={i} />
                   <div className="min-w-0 flex-1">
                     <b className="block truncate text-[14.5px]">
                       {r.title}
@@ -202,7 +202,7 @@ export default function RoutinePage() {
           {/* 1순위 */}
           <div className="rounded-2xl border border-volt/40 bg-volt/[0.05] p-4">
             <div className="flex items-start gap-3">
-              {(() => { const fe = byId(recs[0].r.exercises[0]); return fe ? <ExThumb ex={fe} size={52} rounded="rounded-xl" /> : <ColorInitialBadge text={recs[0].r.badge} seed={0} />; })()}
+              <ColorInitialBadge text={recs[0].r.badge} seed={0} />
               <div className="min-w-0 flex-1">
                 <span className="rounded bg-volt px-1.5 py-0.5 text-[9.5px] font-extrabold text-black">BEST</span>
                 <b className="mt-1 block text-[16px]">{recs[0].r.title}</b>
@@ -236,7 +236,7 @@ export default function RoutinePage() {
           {/* 2·3순위 */}
           {recs.slice(1).map(({ r, reasons }, i) => (
             <div key={r.id} className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-card p-3.5">
-              {(() => { const fe = byId(r.exercises[0]); return fe ? <ExThumb ex={fe} size={44} rounded="rounded-xl" /> : <ColorInitialBadge text={r.badge} seed={i + 1} />; })()}
+              <ColorInitialBadge text={r.badge} seed={i + 1} />
               <div className="min-w-0 flex-1">
                 <b className="block truncate text-[14px]">{r.title}</b>
                 <span className="text-[11px] text-white/45">

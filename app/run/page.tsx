@@ -8,6 +8,8 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { RunDetailSheet, RouteMap } from "@/components/run/RunDetailSheet";
+import { ActivityCalendar } from "@/components/ui/ActivityCalendar";
+import { PandaRunner } from "@/components/mascot/PandaPoses";
 import { useUser } from "@/lib/useUser";
 
 type Run = { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: [number, number][] };
@@ -124,6 +126,11 @@ export default function RunPage() {
   const [fSec, setFSec] = useState("");
 
   const runs = useMemo(() => (user?.runs ?? []) as Run[], [user]);
+  const kmByDate = useMemo(() => {
+    const m = new Map<string, number>();
+    runs.forEach((r) => m.set(r.date, Math.round(((m.get(r.date) ?? 0) + r.km) * 10) / 10));
+    return m;
+  }, [runs]);
   const s = useMemo(() => calc(runs), [runs]);
   const [detail, setDetail] = useState<Run | null>(null);
 
@@ -161,9 +168,12 @@ export default function RunPage() {
     <main className="mx-auto max-w-2xl space-y-4 lg:max-w-none lg:pt-10">
       {/* 헤더 */}
       <div className="flex items-end justify-between">
-        <div>
-          <h1 className="font-display text-[26px] leading-tight tracking-tight">Running</h1>
-          <p className="mt-0.5 text-[12.5px] text-white/45">GPS · 기록 · 목표</p>
+        <div className="flex items-center gap-2">
+          <PandaRunner size={52} />
+          <div>
+            <h1 className="font-display text-[26px] leading-tight tracking-tight">Running</h1>
+            <p className="mt-0.5 text-[12.5px] text-white/45">GPS · 기록 · 목표</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -270,6 +280,15 @@ export default function RunPage() {
           </button>
         </section>
       </div>
+
+      {/* 러닝 달력 (모니터링) */}
+      {kmByDate.size > 0 && (
+        <section className="rounded-2xl border border-white/[0.06] bg-card p-4">
+          <b className="text-[15px] font-extrabold">러닝 달력</b>
+          <p className="text-[11.5px] text-white/45">최근 3개월 · 진할수록 많이 달린 날</p>
+          <div className="mt-3"><ActivityCalendar data={kmByDate} months={3} suffix="km" /></div>
+        </section>
+      )}
 
       {/* 최근 기록 — 좌: 선택 러닝 지도 / 우: 목록 */}
       <section className="rounded-2xl border border-white/[0.06] bg-card p-4">

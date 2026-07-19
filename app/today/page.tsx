@@ -730,7 +730,7 @@ export default function TodayPage() {
                   onClick={() => setPickDetail(expanded ? null : r.id)}
                   className="flex w-full items-center gap-3 p-3 text-left"
                 >
-                  {(() => { const fe = byId(r.exercises[0]); return fe ? <ExThumb ex={fe} size={44} rounded="rounded-xl" /> : <ColorInitialBadge text={r.badge} seed={i} />; })()}
+                  <ColorInitialBadge text={r.badge} seed={i} />
                   <span className="min-w-0 flex-1">
                     <b className="block truncate text-[14px]">
                       {r.title}
