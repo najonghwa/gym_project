@@ -8,6 +8,7 @@ import { PRChart } from "@/components/charts/PRChart";
 import { RunAnalysis } from "@/components/run/RunAnalysis";
 import { CoachBubble } from "@/components/mascot/PandaCoach";
 import { PandaRunner, PandaFlex } from "@/components/mascot/PandaPoses";
+import { LottieMascot } from "@/components/mascot/LottieMascot";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { EXPLORE } from "@/lib/mock/routines";
@@ -112,7 +113,7 @@ export default function AnalysisPage() {
       {/* 헤더 — 코치 판다 소개 */}
       <div>
         <div className="lab mb-2">COACH REPORT · {new Date().getMonth() + 1}월 {Math.ceil(new Date().getDate() / 7)}주차</div>
-        <CoachBubble tone="volt" avatar={mode === "run" ? <PandaRunner size={70} /> : <PandaFlex size={78} />}>
+        <CoachBubble tone="volt" avatar={<LottieMascot name={mode === "run" ? "run" : "analysis"} size={78} fallback={mode === "run" ? <PandaRunner size={70} /> : <PandaFlex size={78} />} />}>
           <b className="text-white">{String(user.id)}님, 코치예요.</b> {mode === "run"
             ? "이번 달 러닝을 뜯어봤어요 — 거리·페이스·꾸준함까지 아래에 정리했어요."
             : "이번 주 훈련을 코치 눈으로 봤어요. 볼륨·진행·밸런스를 아래에서 짚어줄게요."}
