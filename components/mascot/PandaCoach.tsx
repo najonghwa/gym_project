@@ -12,17 +12,24 @@ export function PandaCoach({ size = 72, animate = true }: { size?: number; anima
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" fill="none" role="img" aria-label="코치 판다">
       <style>{`
-        @keyframes ${bob}{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-3px) rotate(1deg)}}
-        @media (prefers-reduced-motion:reduce){.${bob}{animation:none!important}}
+        @keyframes ${bob}{0%{transform:translateY(0) rotate(-5deg)}25%{transform:translateY(-4px) rotate(5deg)}50%{transform:translateY(0) rotate(-5deg)}62%{transform:translateY(-2px) rotate(3deg)}75%{transform:translateY(0) rotate(-5deg)}100%{transform:translateY(0) rotate(-5deg)}}
+        @keyframes toot-${uid}{0%,60%,100%{transform:scale(1)}72%{transform:scale(1.5)}84%{transform:scale(1)}}
+        @keyframes point-${uid}{0%,100%{transform:rotate(0)}50%{transform:rotate(-24deg)}}
+        @media (prefers-reduced-motion:reduce){.${bob},[class*="toot-"],[class*="point-"]{animation:none!important}}
       `}</style>
       <ellipse cx="60" cy="112" rx="30" ry="5" fill="#000" opacity="0.16" />
-      <g className={animate ? bob : undefined} style={{ transformOrigin: "60px 70px", animation: animate ? `${bob} 2.6s ease-in-out infinite` : undefined }}>
+      {/* 가리키는 앞발 (흔들흔들) */}
+      <g style={{ transformOrigin: "42px 96px", animation: animate ? `point-${uid} 1.1s ease-in-out infinite` : undefined }}>
+        <path d="M42 96 Q26 88 22 74" stroke={BLACK} strokeWidth="9" strokeLinecap="round" fill="none" />
+        <circle cx="21" cy="72" r="6" fill={BLACK} />
+      </g>
+      <g className={animate ? bob : undefined} style={{ transformOrigin: "60px 96px", animation: animate ? `${bob} 2.2s ease-in-out infinite` : undefined }}>
         {/* 어깨/몸 */}
         <ellipse cx="60" cy="102" rx="30" ry="22" fill={BLACK} />
         <ellipse cx="60" cy="106" rx="19" ry="16" fill={WHITE} />
-        {/* 호루라기 줄 + 호루라기 */}
+        {/* 호루라기 줄 + 호루라기 (삑 펄스) */}
         <path d="M44 92 Q60 104 76 92" stroke={VOLT} strokeWidth="3" fill="none" />
-        <g transform="rotate(12 60 102)">
+        <g style={{ transformOrigin: "60px 102px", animation: animate ? `toot-${uid} 2.2s ease-in-out infinite` : undefined }}>
           <rect x="54" y="98" width="12" height="8" rx="3" fill={VOLT} stroke={BLACK} strokeWidth="1.6" />
           <circle cx="66" cy="102" r="2.4" fill={BLACK} />
         </g>

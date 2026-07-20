@@ -16,7 +16,14 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
   return (
     <svg width={size} height={size} viewBox="0 0 200 190" fill="none" aria-label="운동하는 판다 마스코트" role="img">
       <style>{`
-        @keyframes ${sq} { 0%,100%{transform:translateY(0)} 45%{transform:translateY(11px) scaleY(0.97)} }
+        @keyframes ${sq} {
+          0%{transform:translateY(-6px) scaleY(1.03)}
+          30%{transform:translateY(24px) scaleY(0.9)}
+          50%{transform:translateY(24px) scaleY(0.9)}
+          72%{transform:translateY(-6px) scaleY(1.05)}
+          82%{transform:translateY(-11px) scaleY(1.06)}
+          100%{transform:translateY(-6px) scaleY(1.03)}
+        }
         @keyframes ${pl} { from{transform:rotate(0)} to{transform:rotate(360deg)} }
         @media (prefers-reduced-motion: reduce){ .${sq},.${pl}{animation:none!important} }
       `}</style>
@@ -42,7 +49,7 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
 
       {/* ── 스쿼트 바운스 그룹 (몸통·머리·팔) ── */}
       <g className={animate ? sq : undefined}
-        style={{ transformOrigin: "100px 130px", animation: animate ? `${sq} 1.7s ease-in-out infinite` : undefined }}>
+        style={{ transformOrigin: "100px 160px", animation: animate ? `${sq} 2s ease-in-out infinite` : undefined }}>
 
         {/* 다리 */}
         <ellipse cx="80" cy="158" rx="15" ry="20" fill={BLACK} />
