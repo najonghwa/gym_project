@@ -17,7 +17,10 @@ export function PandaCoach({ size = 72, animate = true }: { size?: number; anima
         @keyframes point-${uid}{0%,100%{transform:rotate(0)}50%{transform:rotate(-24deg)}}
         @media (prefers-reduced-motion:reduce){.${bob},[class*="toot-"],[class*="point-"]{animation:none!important}}
       `}</style>
-      <ellipse cx="60" cy="112" rx="30" ry="5" fill="#000" opacity="0.16" />
+      {/* 밝은 원형 배경 */}
+      <circle cx="60" cy="60" r="58" fill="#26262e" />
+      <circle cx="60" cy="60" r="58" fill="none" stroke={VOLT} strokeWidth="1.8" opacity="0.35" />
+      <ellipse cx="60" cy="112" rx="30" ry="5" fill="#000" opacity="0.2" />
       {/* 가리키는 앞발 (흔들흔들) */}
       <g style={{ transformOrigin: "42px 96px", animation: animate ? `point-${uid} 1.1s ease-in-out infinite` : undefined }}>
         <path d="M42 96 Q26 88 22 74" stroke={BLACK} strokeWidth="9" strokeLinecap="round" fill="none" />
@@ -25,7 +28,7 @@ export function PandaCoach({ size = 72, animate = true }: { size?: number; anima
       </g>
       <g className={animate ? bob : undefined} style={{ transformOrigin: "60px 96px", animation: animate ? `${bob} 2.2s ease-in-out infinite` : undefined }}>
         {/* 어깨/몸 */}
-        <ellipse cx="60" cy="102" rx="30" ry="22" fill={BLACK} />
+        <ellipse cx="60" cy="102" rx="30" ry="22" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" />
         <ellipse cx="60" cy="106" rx="19" ry="16" fill={WHITE} />
         {/* 호루라기 줄 + 호루라기 (삑 펄스) */}
         <path d="M44 92 Q60 104 76 92" stroke={VOLT} strokeWidth="3" fill="none" />

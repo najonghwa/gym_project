@@ -37,7 +37,9 @@ export function PandaRunner({ size = 96, animate = true }: { size?: number; anim
         @keyframes spd-${u}{0%{opacity:.2;transform:translateX(4px)}50%{opacity:.9;transform:translateX(-4px)}100%{opacity:.2;transform:translateX(4px)}}
         @media(prefers-reduced-motion:reduce){.${bob},.${la},.${lb},[class*="spd-"]{animation:none!important}}
       `}</style>
-      <ellipse cx="60" cy="112" rx="26" ry="5" fill="#000" opacity="0.16" />
+      <circle cx="60" cy="60" r="58" fill="#26262e" />
+      <circle cx="60" cy="60" r="58" fill="none" stroke={VOLT} strokeWidth="1.8" opacity="0.35" />
+      <ellipse cx="60" cy="112" rx="26" ry="5" fill="#000" opacity="0.2" />
       {/* 스피드 라인 (깜빡·흐름) */}
       <g stroke={VOLT} strokeWidth="3" strokeLinecap="round" style={{ animation: animate ? `spd-${u} .5s linear infinite` : undefined }}>
         <line x1="6" y1="52" x2="24" y2="52" /><line x1="2" y1="66" x2="18" y2="66" /><line x1="10" y1="80" x2="26" y2="80" />
@@ -54,7 +56,7 @@ export function PandaRunner({ size = 96, animate = true }: { size?: number; anim
           <path d="M66 84 L54 98" stroke={BLACK} strokeWidth="11" strokeLinecap="round" />
         </g>
         {/* 몸통 (기울임) */}
-        <ellipse cx="60" cy="74" rx="24" ry="20" fill={BLACK} transform="rotate(-10 60 74)" />
+        <ellipse cx="60" cy="74" rx="24" ry="20" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" transform="rotate(-10 60 74)" />
         <ellipse cx="60" cy="76" rx="15" ry="13" fill={WHITE} transform="rotate(-10 60 74)" />
         {/* 팔 (펌핑) */}
         <path d="M44 66 L30 58" stroke={BLACK} strokeWidth="10" strokeLinecap="round" />
@@ -79,7 +81,9 @@ export function PandaFlex({ size = 104, animate = true }: { size?: number; anima
         @keyframes spk-${u}{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1.1)}}
         @media(prefers-reduced-motion:reduce){.${fx},[class*="fl-"],[class*="fr-"],[class*="spk-"]{animation:none!important}}
       `}</style>
-      <ellipse cx="60" cy="114" rx="30" ry="5" fill="#000" opacity="0.16" />
+      <circle cx="60" cy="60" r="58" fill="#26262e" />
+      <circle cx="60" cy="60" r="58" fill="none" stroke={VOLT} strokeWidth="1.8" opacity="0.35" />
+      <ellipse cx="60" cy="114" rx="30" ry="5" fill="#000" opacity="0.2" />
       {/* 반짝임 별 */}
       <g fill={VOLT}>
         <path d="M18 40 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2Z" style={{ transformOrigin: "20px 47px", animation: animate ? `spk-${u} 1.6s ease-in-out infinite` : undefined }} />
@@ -90,7 +94,7 @@ export function PandaFlex({ size = 104, animate = true }: { size?: number; anima
         <ellipse cx="48" cy="100" rx="12" ry="15" fill={BLACK} />
         <ellipse cx="72" cy="100" rx="12" ry="15" fill={BLACK} />
         {/* 몸통 */}
-        <ellipse cx="60" cy="82" rx="28" ry="24" fill={BLACK} />
+        <ellipse cx="60" cy="82" rx="28" ry="24" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" />
         <ellipse cx="60" cy="85" rx="18" ry="18" fill={WHITE} />
         {/* 이두 자랑 팔 (좌우 번갈아 펌프) */}
         <g style={{ transformOrigin: "40px 68px", animation: animate ? `fl-${u} .9s ease-in-out infinite` : undefined }}>
@@ -123,13 +127,15 @@ export function PandaRest({ size = 88, animate = true }: { size?: number; animat
         @keyframes ${dr}{0%{transform:translateY(-4px) scale(.6);opacity:0}20%{opacity:1}85%{opacity:1}100%{transform:translateY(20px) scale(1);opacity:0}}
         @media(prefers-reduced-motion:reduce){.${br},.${dr},[class*="head-"]{animation:none!important}}
       `}</style>
-      <ellipse cx="60" cy="112" rx="34" ry="6" fill="#000" opacity="0.16" />
+      <circle cx="60" cy="60" r="58" fill="#26262e" />
+      <circle cx="60" cy="60" r="58" fill="none" stroke={VOLT} strokeWidth="1.8" opacity="0.35" />
+      <ellipse cx="60" cy="112" rx="34" ry="6" fill="#000" opacity="0.2" />
       <g className={animate ? br : undefined} style={{ transformOrigin: "60px 108px", animation: animate ? `${br} 1.8s ease-in-out infinite` : undefined }}>
         {/* 앉은 다리 */}
         <ellipse cx="40" cy="102" rx="18" ry="10" fill={BLACK} />
         <ellipse cx="80" cy="102" rx="18" ry="10" fill={BLACK} />
         {/* 몸통 */}
-        <ellipse cx="60" cy="84" rx="30" ry="24" fill={BLACK} />
+        <ellipse cx="60" cy="84" rx="30" ry="24" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" />
         <ellipse cx="60" cy="88" rx="19" ry="17" fill={WHITE} />
         {/* 늘어진 팔 */}
         <path d="M34 80 Q26 92 32 100" stroke={BLACK} strokeWidth="11" strokeLinecap="round" fill="none" />

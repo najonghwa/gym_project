@@ -28,37 +28,39 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
         @media (prefers-reduced-motion: reduce){ .${sq},.${pl}{animation:none!important} }
       `}</style>
 
+      {/* 밝은 원형 배경 — 검은 화면에서 판다 실루엣 살리기 */}
+      <circle cx="100" cy="96" r="90" fill="#26262e" />
+      <circle cx="100" cy="96" r="90" fill="none" stroke={VOLT} strokeWidth="2.5" opacity="0.35" />
+
       {/* 그림자 */}
-      <ellipse cx="100" cy="180" rx="52" ry="9" fill="#000" opacity="0.18" />
+      <ellipse cx="100" cy="180" rx="52" ry="9" fill="#000" opacity="0.22" />
 
-      {/* 바벨 바 (몸 뒤) */}
-      <rect x="18" y="70" width="164" height="7" rx="3.5" fill={BAR} stroke={BLACK} strokeWidth="2" />
-
-      {/* 좌우 원판 (회전) */}
-      {[36, 164].map((cx) => (
-        <g key={cx} className={animate ? pl : undefined}
-          style={{ transformOrigin: `${cx}px 73px`, animation: animate ? `${pl} 3.2s linear infinite` : undefined }}>
-          <circle cx={cx} cy="73" r="26" fill={VOLT} stroke={BLACK} strokeWidth="3" />
-          <circle cx={cx} cy="73" r="9" fill="#e6ffa1" stroke={BLACK} strokeWidth="2" />
-          {[0, 60, 120].map((a) => (
-            <line key={a} x1={cx} y1="73" x2={cx + 26 * Math.cos((a * Math.PI) / 180)} y2={73 + 26 * Math.sin((a * Math.PI) / 180)}
-              stroke={BLACK} strokeWidth="2" opacity="0.35" />
-          ))}
-        </g>
-      ))}
-
-      {/* ── 스쿼트 바운스 그룹 (몸통·머리·팔) ── */}
+      {/* ── 스쿼트 바운스 그룹 (바벨까지 함께 움직임) ── */}
       <g className={animate ? sq : undefined}
         style={{ transformOrigin: "100px 160px", animation: animate ? `${sq} 2s ease-in-out infinite` : undefined }}>
 
+        {/* 바벨 바 (몸 뒤) */}
+        <rect x="18" y="70" width="164" height="7" rx="3.5" fill={BAR} stroke={BLACK} strokeWidth="2" />
+        {/* 좌우 원판 (회전) */}
+        {[36, 164].map((cx) => (
+          <g key={cx} style={{ transformOrigin: `${cx}px 73px`, animation: animate ? `${pl} 3.2s linear infinite` : undefined }}>
+            <circle cx={cx} cy="73" r="26" fill={VOLT} stroke={BLACK} strokeWidth="3" />
+            <circle cx={cx} cy="73" r="9" fill="#e6ffa1" stroke={BLACK} strokeWidth="2" />
+            {[0, 60, 120].map((a) => (
+              <line key={a} x1={cx} y1="73" x2={cx + 26 * Math.cos((a * Math.PI) / 180)} y2={73 + 26 * Math.sin((a * Math.PI) / 180)}
+                stroke={BLACK} strokeWidth="2" opacity="0.35" />
+            ))}
+          </g>
+        ))}
+
         {/* 다리 */}
-        <ellipse cx="80" cy="158" rx="15" ry="20" fill={BLACK} />
-        <ellipse cx="120" cy="158" rx="15" ry="20" fill={BLACK} />
-        <ellipse cx="78" cy="172" rx="13" ry="8" fill={BLACK} stroke="#000" strokeWidth="1.5" />
-        <ellipse cx="122" cy="172" rx="13" ry="8" fill={BLACK} stroke="#000" strokeWidth="1.5" />
+        <ellipse cx="80" cy="158" rx="15" ry="20" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" />
+        <ellipse cx="120" cy="158" rx="15" ry="20" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" />
+        <ellipse cx="78" cy="172" rx="13" ry="8" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" />
+        <ellipse cx="122" cy="172" rx="13" ry="8" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" />
 
         {/* 몸통 (흰 배 + 검은 윤곽) */}
-        <ellipse cx="100" cy="128" rx="40" ry="36" fill={BLACK} />
+        <ellipse cx="100" cy="128" rx="40" ry="36" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" />
         <ellipse cx="100" cy="132" rx="27" ry="27" fill={WHITE} />
 
         {/* 팔 — 바를 잡음 */}
