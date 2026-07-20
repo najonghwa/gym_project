@@ -81,18 +81,16 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
         {/* 눈 패치 */}
         <ellipse cx="85" cy="72" rx="11" ry="14" fill={BLACK} transform="rotate(-18 85 72)" />
         <ellipse cx="115" cy="72" rx="11" ry="14" fill={BLACK} transform="rotate(18 115 72)" />
-        {/* 눈 */}
-        <circle cx="86" cy="70" r="4.5" fill={WHITE} />
-        <circle cx="114" cy="70" r="4.5" fill={WHITE} />
-        <circle cx="87" cy="71" r="2.2" fill="#000" />
-        <circle cx="113" cy="71" r="2.2" fill="#000" />
-        {/* 코·입 (결연한 표정) */}
-        <ellipse cx="100" cy="84" rx="4" ry="3" fill="#000" />
-        <path d="M100 87 Q100 92 95 93" stroke="#000" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-        <path d="M100 87 Q100 92 105 93" stroke="#000" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-        {/* 눈썹 (집중) */}
-        <path d="M78 58 L92 62" stroke="#000" strokeWidth="2.2" strokeLinecap="round" />
-        <path d="M122 58 L108 62" stroke="#000" strokeWidth="2.2" strokeLinecap="round" />
+        {/* 눈 (크고 동그란 귀여운 눈 + 하이라이트) */}
+        <circle cx="86" cy="71" r="6.5" fill={WHITE} />
+        <circle cx="114" cy="71" r="6.5" fill={WHITE} />
+        <circle cx="87" cy="72" r="3.6" fill="#1c1c1e" />
+        <circle cx="113" cy="72" r="3.6" fill="#1c1c1e" />
+        <circle cx="85" cy="69" r="1.7" fill={WHITE} />
+        <circle cx="111" cy="69" r="1.7" fill={WHITE} />
+        {/* 코·입 (방긋) */}
+        <ellipse cx="100" cy="85" rx="4" ry="3" fill="#1c1c1e" />
+        <path d="M100 88 Q94 93 89 89 M100 88 Q106 93 111 89" stroke="#1c1c1e" strokeWidth="1.8" fill="none" strokeLinecap="round" />
 
         {/* 헤드밴드 (볼트) */}
         <path d="M66 55 Q100 44 134 55 L134 49 Q100 37 66 49 Z" fill={VOLT} stroke={BLACK} strokeWidth="2" />

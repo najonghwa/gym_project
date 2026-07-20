@@ -7,18 +7,38 @@ const WHITE = "#fafafa";
 const VOLT = "#c8ff00";
 
 // 공통 판다 얼굴 (cx,cy 중심, r 반지름)
-function Face({ cx, cy, r, band = true }: { cx: number; cy: number; r: number; band?: boolean }) {
-  const ex = r * 0.42;
+function Face({ cx, cy, r, band = true, sleepy = false }: { cx: number; cy: number; r: number; band?: boolean; sleepy?: boolean }) {
+  const ex = r * 0.42;              // 눈 좌우 간격
+  const ey = cy + r * 0.04;         // 눈 세로 위치
+  const eye = (dir: 1 | -1) => {
+    const x = cx + dir * ex;
+    return (
+      <g key={dir}>
+        {/* 검은 눈 패치 */}
+        <ellipse cx={x} cy={ey} rx={r * 0.3} ry={r * 0.38} fill={BLACK} transform={`rotate(${dir * 18} ${x} ${ey})`} />
+        {sleepy ? (
+          <path d={`M${x - r * 0.14} ${ey} q${r * 0.14} ${r * 0.16} ${r * 0.28} 0`} stroke={WHITE} strokeWidth={r * 0.07} fill="none" strokeLinecap="round" />
+        ) : (
+          <>
+            {/* 흰 눈알 + 검은 동공 + 하이라이트 */}
+            <circle cx={x} cy={ey} r={r * 0.2} fill={WHITE} />
+            <circle cx={x} cy={ey + r * 0.02} r={r * 0.11} fill="#1c1c1e" />
+            <circle cx={x - r * 0.05} cy={ey - r * 0.06} r={r * 0.05} fill={WHITE} />
+          </>
+        )}
+      </g>
+    );
+  };
   return (
     <>
       <circle cx={cx - r * 0.72} cy={cy - r * 0.78} r={r * 0.44} fill={BLACK} />
       <circle cx={cx + r * 0.72} cy={cy - r * 0.78} r={r * 0.44} fill={BLACK} />
       <circle cx={cx} cy={cy} r={r} fill={WHITE} stroke={BLACK} strokeWidth={r * 0.08} />
-      <ellipse cx={cx - ex} cy={cy + r * 0.05} rx={r * 0.3} ry={r * 0.38} fill={BLACK} transform={`rotate(-18 ${cx - ex} ${cy})`} />
-      <ellipse cx={cx + ex} cy={cy + r * 0.05} rx={r * 0.3} ry={r * 0.38} fill={BLACK} transform={`rotate(18 ${cx + ex} ${cy})`} />
-      <circle cx={cx - ex} cy={cy} r={r * 0.11} fill="#000" />
-      <circle cx={cx + ex} cy={cy} r={r * 0.11} fill="#000" />
-      <ellipse cx={cx} cy={cy + r * 0.4} rx={r * 0.12} ry={r * 0.09} fill="#000" />
+      {eye(-1)}{eye(1)}
+      {/* 코 */}
+      <ellipse cx={cx} cy={cy + r * 0.42} rx={r * 0.11} ry={r * 0.08} fill="#1c1c1e" />
+      {/* 입 (방긋) */}
+      <path d={`M${cx} ${cy + r * 0.5} q${-r * 0.12} ${r * 0.14} ${-r * 0.24} ${r * 0.04} M${cx} ${cy + r * 0.5} q${r * 0.12} ${r * 0.14} ${r * 0.24} ${r * 0.04}`} stroke="#1c1c1e" strokeWidth={r * 0.05} fill="none" strokeLinecap="round" />
       {band && <path d={`M${cx - r * 0.95} ${cy - r * 0.45} Q${cx} ${cy - r * 0.85} ${cx + r * 0.95} ${cy - r * 0.45} L${cx + r * 0.95} ${cy - r * 0.7} Q${cx} ${cy - r * 1.05} ${cx - r * 0.95} ${cy - r * 0.7} Z`} fill={VOLT} stroke={BLACK} strokeWidth={r * 0.06} />}
     </>
   );
@@ -109,7 +129,6 @@ export function PandaFlex({ size = 104, animate = true }: { size?: number; anima
         </g>
         {/* 머리 (활짝 웃음) */}
         <Face cx={60} cy={44} r={24} />
-        <path d="M52 56 Q60 64 68 56" stroke="#000" strokeWidth="2" fill="none" strokeLinecap="round" />
       </g>
     </svg>
   );
@@ -140,10 +159,9 @@ export function PandaRest({ size = 88, animate = true }: { size?: number; animat
         {/* 늘어진 팔 */}
         <path d="M34 80 Q26 92 32 100" stroke={BLACK} strokeWidth="11" strokeLinecap="round" fill="none" />
         <path d="M86 80 Q94 92 88 100" stroke={BLACK} strokeWidth="11" strokeLinecap="round" fill="none" />
-        {/* 머리 (지쳐서 까딱) */}
+        {/* 머리 (지쳐서 까딱 · 감은 눈) */}
         <g style={{ transformOrigin: "60px 68px", animation: animate ? `head-${u} 1.8s ease-in-out infinite` : undefined }}>
-          <Face cx={60} cy={46} r={24} />
-          <path d="M48 44 h6 M66 44 h6" stroke="#000" strokeWidth="2" strokeLinecap="round" />
+          <Face cx={60} cy={46} r={24} sleepy />
         </g>
       </g>
       {/* 땀방울 2개 (교대로 떨어짐) */}
