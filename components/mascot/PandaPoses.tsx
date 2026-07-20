@@ -37,6 +37,10 @@ export function PandaRunner({ size = 96, animate = true }: { size?: number; anim
         @media(prefers-reduced-motion:reduce){.${bob},.${la},.${lb}{animation:none!important}}
       `}</style>
       <ellipse cx="60" cy="112" rx="26" ry="5" fill="#000" opacity="0.16" />
+      {/* 스피드 라인 */}
+      <g stroke={VOLT} strokeWidth="3" strokeLinecap="round" opacity="0.7">
+        <line x1="6" y1="52" x2="24" y2="52" /><line x1="2" y1="66" x2="18" y2="66" /><line x1="10" y1="80" x2="26" y2="80" />
+      </g>
       <g className={animate ? bob : undefined} style={{ transformOrigin: "60px 60px", animation: animate ? `${bob} .5s ease-in-out infinite` : undefined }}>
         {/* 다리 A */}
         <g className={animate ? la : undefined} style={{ animation: animate ? `${la} .5s steps(1) infinite` : undefined }}>
@@ -78,16 +82,18 @@ export function PandaFlex({ size = 104, animate = true }: { size?: number; anima
       {/* 몸통 */}
       <ellipse cx="60" cy="82" rx="28" ry="24" fill={BLACK} />
       <ellipse cx="60" cy="85" rx="18" ry="18" fill={WHITE} />
-      {/* 이두 자랑 팔 (pulse) */}
-      <g className={animate ? fx : undefined} style={{ transformOrigin: "34px 66px", animation: animate ? `${fx} 1.4s ease-in-out infinite` : undefined }}>
-        <path d="M40 74 Q26 72 28 58" stroke={BLACK} strokeWidth="12" strokeLinecap="round" fill="none" />
-        <circle cx="30" cy="60" r="9" fill={BLACK} />
-        <circle cx="28" cy="58" r="3.5" fill={VOLT} opacity="0.5" />
+      {/* 이두 자랑 팔 (V자로 위로 + pulse) */}
+      <g className={animate ? fx : undefined} style={{ transformOrigin: "36px 60px", animation: animate ? `${fx} 1.3s ease-in-out infinite` : undefined }}>
+        <path d="M42 70 Q28 62 34 46" stroke={BLACK} strokeWidth="13" strokeLinecap="round" fill="none" />
+        <circle cx="35" cy="44" r="9.5" fill={BLACK} />
+        <path d="M28 58 q-3 -5 2 -8" stroke={BLACK} strokeWidth="6" strokeLinecap="round" fill="none" />
+        <circle cx="35" cy="42" r="3" fill={VOLT} opacity="0.6" />
       </g>
-      <g className={animate ? fx : undefined} style={{ transformOrigin: "86px 66px", animation: animate ? `${fx} 1.4s ease-in-out infinite` : undefined }}>
-        <path d="M80 74 Q94 72 92 58" stroke={BLACK} strokeWidth="12" strokeLinecap="round" fill="none" />
-        <circle cx="90" cy="60" r="9" fill={BLACK} />
-        <circle cx="92" cy="58" r="3.5" fill={VOLT} opacity="0.5" />
+      <g className={animate ? fx : undefined} style={{ transformOrigin: "84px 60px", animation: animate ? `${fx} 1.3s ease-in-out infinite` : undefined }}>
+        <path d="M78 70 Q92 62 86 46" stroke={BLACK} strokeWidth="13" strokeLinecap="round" fill="none" />
+        <circle cx="85" cy="44" r="9.5" fill={BLACK} />
+        <path d="M92 58 q3 -5 -2 -8" stroke={BLACK} strokeWidth="6" strokeLinecap="round" fill="none" />
+        <circle cx="85" cy="42" r="3" fill={VOLT} opacity="0.6" />
       </g>
       {/* 머리 (활짝 웃음) */}
       <Face cx={60} cy={44} r={24} />
