@@ -17,13 +17,12 @@ function Face({ cx, cy, r, band = true, sleepy = false }: { cx: number; cy: numb
         {/* 검은 눈 패치 */}
         <ellipse cx={x} cy={ey} rx={r * 0.3} ry={r * 0.38} fill={BLACK} transform={`rotate(${dir * 18} ${x} ${ey})`} />
         {sleepy ? (
-          <path d={`M${x - r * 0.14} ${ey} q${r * 0.14} ${r * 0.16} ${r * 0.28} 0`} stroke={WHITE} strokeWidth={r * 0.07} fill="none" strokeLinecap="round" />
+          <path d={`M${x - r * 0.13} ${ey} q${r * 0.13} ${r * 0.14} ${r * 0.26} 0`} stroke={WHITE} strokeWidth={r * 0.06} fill="none" strokeLinecap="round" />
         ) : (
           <>
-            {/* 흰 눈알 + 검은 동공 + 하이라이트 */}
-            <circle cx={x} cy={ey} r={r * 0.2} fill={WHITE} />
-            <circle cx={x} cy={ey + r * 0.02} r={r * 0.11} fill="#1c1c1e" />
-            <circle cx={x - r * 0.05} cy={ey - r * 0.06} r={r * 0.05} fill={WHITE} />
+            {/* 작고 심플한 점 눈 + 미세 하이라이트 */}
+            <circle cx={x} cy={ey} r={r * 0.1} fill={WHITE} />
+            <circle cx={x - r * 0.03} cy={ey - r * 0.03} r={r * 0.03} fill={WHITE} opacity="0.7" />
           </>
         )}
       </g>

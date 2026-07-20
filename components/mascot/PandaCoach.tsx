@@ -46,9 +46,7 @@ export function PandaCoach({ size = 72, animate = true }: { size?: number; anima
         {/* 눈 패치 */}
         <ellipse cx="47" cy="60" rx="9.5" ry="12" fill={BLACK} transform="rotate(-18 47 60)" />
         <ellipse cx="73" cy="60" rx="9.5" ry="12" fill={BLACK} transform="rotate(18 73 60)" />
-        <circle cx="48" cy="58" r="5.2" fill={WHITE} /><circle cx="72" cy="58" r="5.2" fill={WHITE} />
-        <circle cx="48.5" cy="59" r="2.8" fill="#1c1c1e" /><circle cx="71.5" cy="59" r="2.8" fill="#1c1c1e" />
-        <circle cx="47" cy="57" r="1.3" fill={WHITE} /><circle cx="70" cy="57" r="1.3" fill={WHITE} />
+        <circle cx="47" cy="59" r="2.2" fill={WHITE} /><circle cx="73" cy="59" r="2.2" fill={WHITE} />
         {/* 코·미소(친근한 코치) */}
         <ellipse cx="60" cy="70" rx="3.6" ry="2.8" fill="#000" />
         <path d="M60 73 Q60 78 54 78 M60 73 Q60 78 66 78" stroke="#000" strokeWidth="1.7" fill="none" strokeLinecap="round" />
