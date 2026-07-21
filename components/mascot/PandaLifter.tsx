@@ -81,9 +81,11 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
         {/* 눈 패치 */}
         <ellipse cx="85" cy="72" rx="11" ry="14" fill={BLACK} transform="rotate(-18 85 72)" />
         <ellipse cx="115" cy="72" rx="11" ry="14" fill={BLACK} transform="rotate(18 115 72)" />
-        {/* 눈 (작고 심플한 점 눈) */}
-        <circle cx="86" cy="72" r="2.8" fill={WHITE} />
-        <circle cx="114" cy="72" r="2.8" fill={WHITE} />
+        {/* 눈 — 세로로 살짝 긴 흰 눈 + 작은 동공 */}
+        <ellipse cx="86" cy="72" rx="4.2" ry="5" fill={WHITE} />
+        <ellipse cx="114" cy="72" rx="4.2" ry="5" fill={WHITE} />
+        <circle cx="86" cy="72.8" r="2.5" fill="#1c1c1e" />
+        <circle cx="114" cy="72.8" r="2.5" fill="#1c1c1e" />
         {/* 코·입 (방긋) */}
         <ellipse cx="100" cy="85" rx="4" ry="3" fill="#1c1c1e" />
         <path d="M100 88 Q94 93 89 89 M100 88 Q106 93 111 89" stroke="#1c1c1e" strokeWidth="1.8" fill="none" strokeLinecap="round" />

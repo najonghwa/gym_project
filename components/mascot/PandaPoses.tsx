@@ -20,9 +20,9 @@ function Face({ cx, cy, r, band = true, sleepy = false }: { cx: number; cy: numb
           <path d={`M${x - r * 0.13} ${ey} q${r * 0.13} ${r * 0.14} ${r * 0.26} 0`} stroke={WHITE} strokeWidth={r * 0.06} fill="none" strokeLinecap="round" />
         ) : (
           <>
-            {/* 작고 심플한 점 눈 + 미세 하이라이트 */}
-            <circle cx={x} cy={ey} r={r * 0.1} fill={WHITE} />
-            <circle cx={x - r * 0.03} cy={ey - r * 0.03} r={r * 0.03} fill={WHITE} opacity="0.7" />
+            {/* 자연스러운 눈 — 세로로 살짝 긴 흰 눈 + 작은 동공 */}
+            <ellipse cx={x} cy={ey} rx={r * 0.13} ry={r * 0.155} fill={WHITE} />
+            <circle cx={x} cy={ey + r * 0.025} r={r * 0.078} fill="#1c1c1e" />
           </>
         )}
       </g>
