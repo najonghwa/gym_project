@@ -50,7 +50,7 @@ export function PandaRunner({ size = 96, animate = true }: { size?: number; anim
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" fill="none" role="img" aria-label="달리는 판다">
       <style>{`
-        @keyframes ${bob}{0%{transform:translateY(2px) rotate(-3deg)}25%{transform:translateY(-10px) rotate(2deg)}50%{transform:translateY(2px) rotate(-3deg)}75%{transform:translateY(-10px) rotate(2deg)}100%{transform:translateY(2px) rotate(-3deg)}}
+        @keyframes ${bob}{0%{transform:translate(-2px,1px) rotate(-2deg)}25%{transform:translate(2px,-5px) rotate(1deg)}50%{transform:translate(-2px,1px) rotate(-2deg)}75%{transform:translate(2px,-5px) rotate(1deg)}100%{transform:translate(-2px,1px) rotate(-2deg)}}
         @keyframes ${la}{0%,49%{opacity:1}50%,100%{opacity:0}}
         @keyframes ${lb}{0%,49%{opacity:0}50%,100%{opacity:1}}
         @keyframes spd-${u}{0%{opacity:.2;transform:translateX(4px)}50%{opacity:.9;transform:translateX(-4px)}100%{opacity:.2;transform:translateX(4px)}}
@@ -94,9 +94,9 @@ export function PandaFlex({ size = 104, animate = true }: { size?: number; anima
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" fill="none" role="img" aria-label="자랑하는 판다">
       <style>{`
-        @keyframes ${fx}{0%,100%{transform:translateY(0)}30%{transform:translateY(-9px)}45%{transform:translateY(-9px)}60%{transform:translateY(2px)}}
-        @keyframes fl-${u}{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(6deg)}}
-        @keyframes fr-${u}{0%,100%{transform:rotate(6deg)}50%{transform:rotate(-8deg)}}
+        @keyframes ${fx}{0%,100%{transform:rotate(-7deg) scaleX(1)}50%{transform:rotate(7deg) scaleX(1.02)}}
+        @keyframes fl-${u}{0%,100%{transform:rotate(-14deg) scale(1)}50%{transform:rotate(4deg) scale(1.12)}}
+        @keyframes fr-${u}{0%,100%{transform:rotate(4deg) scale(1.12)}50%{transform:rotate(-14deg) scale(1)}}
         @keyframes spk-${u}{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1.1)}}
         @media(prefers-reduced-motion:reduce){.${fx},[class*="fl-"],[class*="fr-"],[class*="spk-"]{animation:none!important}}
       `}</style>
@@ -108,7 +108,7 @@ export function PandaFlex({ size = 104, animate = true }: { size?: number; anima
         <path d="M18 40 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2Z" style={{ transformOrigin: "20px 47px", animation: animate ? `spk-${u} 1.6s ease-in-out infinite` : undefined }} />
         <path d="M100 34 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6Z" style={{ transformOrigin: "101px 40px", animation: animate ? `spk-${u} 1.6s ease-in-out .8s infinite` : undefined }} />
       </g>
-      <g className={animate ? fx : undefined} style={{ transformOrigin: "60px 100px", animation: animate ? `${fx} 1.1s ease-in-out infinite` : undefined }}>
+      <g className={animate ? fx : undefined} style={{ transformOrigin: "60px 106px", animation: animate ? `${fx} 1.8s ease-in-out infinite` : undefined }}>
         {/* 다리 */}
         <ellipse cx="48" cy="100" rx="12" ry="15" fill={BLACK} />
         <ellipse cx="72" cy="100" rx="12" ry="15" fill={BLACK} />
@@ -140,8 +140,8 @@ export function PandaRest({ size = 88, animate = true }: { size?: number; animat
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" fill="none" role="img" aria-label="쉬는 판다">
       <style>{`
-        @keyframes ${br}{0%,100%{transform:translateY(0) scaleY(1)}45%{transform:translateY(3px) scaleY(1.08)}}
-        @keyframes head-${u}{0%,100%{transform:rotate(0)}45%{transform:rotate(4deg)}}
+        @keyframes ${br}{0%,100%{transform:scale(1,1)}45%{transform:scale(1.05,0.96)}}
+        @keyframes head-${u}{0%,100%{transform:rotate(-2deg) translateY(0)}45%{transform:rotate(6deg) translateY(3px)}}
         @keyframes ${dr}{0%{transform:translateY(-4px) scale(.6);opacity:0}20%{opacity:1}85%{opacity:1}100%{transform:translateY(20px) scale(1);opacity:0}}
         @media(prefers-reduced-motion:reduce){.${br},.${dr},[class*="head-"]{animation:none!important}}
       `}</style>

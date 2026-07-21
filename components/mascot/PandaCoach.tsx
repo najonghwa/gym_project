@@ -12,20 +12,27 @@ export function PandaCoach({ size = 72, animate = true }: { size?: number; anima
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" fill="none" role="img" aria-label="코치 판다">
       <style>{`
-        @keyframes ${bob}{0%{transform:translateY(0) rotate(-5deg)}25%{transform:translateY(-4px) rotate(5deg)}50%{transform:translateY(0) rotate(-5deg)}62%{transform:translateY(-2px) rotate(3deg)}75%{transform:translateY(0) rotate(-5deg)}100%{transform:translateY(0) rotate(-5deg)}}
-        @keyframes point-${uid}{0%,100%{transform:rotate(0)}50%{transform:rotate(-24deg)}}
-        @media (prefers-reduced-motion:reduce){.${bob},[class*="point-"]{animation:none!important}}
+        @keyframes ${bob}{0%,100%{transform:translateX(-5px) rotate(-4deg)}50%{transform:translateX(5px) rotate(4deg)}}
+        @keyframes point-${uid}{0%,100%{transform:rotate(6deg)}30%{transform:rotate(-30deg)}60%{transform:rotate(-18deg)}}
+        @keyframes ring-${uid}{0%{r:6;opacity:.9}70%,100%{r:17;opacity:0}}
+        @media (prefers-reduced-motion:reduce){.${bob},[class*="point-"],[class*="ring-"]{animation:none!important}}
       `}</style>
       {/* 밝은 원형 배경 */}
       <circle cx="60" cy="60" r="58" fill="#26262e" />
       <circle cx="60" cy="60" r="58" fill="none" stroke={VOLT} strokeWidth="1.8" opacity="0.35" />
       <ellipse cx="60" cy="112" rx="30" ry="5" fill="#000" opacity="0.2" />
-      {/* 가리키는 앞발 (흔들흔들) */}
+      {/* 가리키는 앞발 + 손에 든 호루라기 (삑! 소리 링) */}
       <g style={{ transformOrigin: "42px 96px", animation: animate ? `point-${uid} 1.1s ease-in-out infinite` : undefined }}>
         <path d="M42 96 Q26 88 22 74" stroke={BLACK} strokeWidth="9" strokeLinecap="round" fill="none" />
         <circle cx="21" cy="72" r="6" fill={BLACK} />
+        {/* 호루라기 (손에 쥔) */}
+        <rect x="14" y="64" width="11" height="7" rx="3" fill={VOLT} stroke={BLACK} strokeWidth="1.4" />
+        <circle cx="16" cy="67.5" r="1.6" fill={BLACK} />
+        {/* 삑 소리 퍼짐 */}
+        <circle cx="20" cy="67" r="6" fill="none" stroke={VOLT} strokeWidth="1.6"
+          style={{ animation: animate ? `ring-${uid} 1.1s ease-out infinite` : undefined }} />
       </g>
-      <g className={animate ? bob : undefined} style={{ transformOrigin: "60px 96px", animation: animate ? `${bob} 2.2s ease-in-out infinite` : undefined }}>
+      <g className={animate ? bob : undefined} style={{ transformOrigin: "60px 104px", animation: animate ? `${bob} 2.4s ease-in-out infinite` : undefined }}>
         {/* 어깨/몸 */}
         <ellipse cx="60" cy="102" rx="30" ry="22" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" />
         <ellipse cx="60" cy="106" rx="19" ry="16" fill={WHITE} />
