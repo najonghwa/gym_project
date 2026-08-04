@@ -17,8 +17,26 @@ export function PandaCoach({ size = 72, animate = true }: { size?: number; anima
         @keyframes ring-${uid}{0%{r:6;opacity:.9}70%,100%{r:17;opacity:0}}
         @media (prefers-reduced-motion:reduce){.${bob},[class*="point-"],[class*="ring-"]{animation:none!important}}
       `}</style>
+      {/* 3D 렌더 느낌 셰이딩 — 좌상단 광원 기준 그라데이션 */}
+      <defs>
+        <radialGradient id={`hg-${uid}`} cx="35%" cy="28%" r="80%">
+          <stop offset="0%" stopColor="#ffffff" /><stop offset="55%" stopColor="#f1f1f5" /><stop offset="100%" stopColor="#c4c4cf" />
+        </radialGradient>
+        <radialGradient id={`bk-${uid}`} cx="35%" cy="25%" r="85%">
+          <stop offset="0%" stopColor="#46464f" /><stop offset="50%" stopColor="#26262c" /><stop offset="100%" stopColor="#0d0d11" />
+        </radialGradient>
+        <radialGradient id={`vg-${uid}`} cx="35%" cy="25%" r="85%">
+          <stop offset="0%" stopColor="#efff9e" /><stop offset="55%" stopColor="#c8ff00" /><stop offset="100%" stopColor="#8db500" />
+        </radialGradient>
+        <radialGradient id={`bgg-${uid}`} cx="50%" cy="38%" r="75%">
+          <stop offset="0%" stopColor="#353541" /><stop offset="100%" stopColor="#1c1c23" />
+        </radialGradient>
+        <radialGradient id={`sh-${uid}`}>
+          <stop offset="0%" stopColor="#fff" stopOpacity="0.55" /><stop offset="100%" stopColor="#fff" stopOpacity="0" />
+        </radialGradient>
+      </defs>
       {/* 밝은 원형 배경 */}
-      <circle cx="60" cy="60" r="58" fill="#26262e" />
+      <circle cx="60" cy="60" r="58" fill={`url(#bgg-${uid})`} />
       <circle cx="60" cy="60" r="58" fill="none" stroke={VOLT} strokeWidth="1.8" opacity="0.35" />
       <ellipse cx="60" cy="112" rx="30" ry="5" fill="#000" opacity="0.2" />
       {/* 가리키는 앞발 + 손에 든 호루라기 (삑! 소리 링) */}
@@ -26,7 +44,7 @@ export function PandaCoach({ size = 72, animate = true }: { size?: number; anima
         <path d="M42 96 Q26 88 22 74" stroke={BLACK} strokeWidth="9" strokeLinecap="round" fill="none" />
         <circle cx="21" cy="72" r="6" fill={BLACK} />
         {/* 호루라기 (손에 쥔) */}
-        <rect x="14" y="64" width="11" height="7" rx="3" fill={VOLT} stroke={BLACK} strokeWidth="1.4" />
+        <rect x="14" y="64" width="11" height="7" rx="3" fill={`url(#vg-${uid})`} stroke={BLACK} strokeWidth="1.4" />
         <circle cx="16" cy="67.5" r="1.6" fill={BLACK} />
         {/* 삑 소리 퍼짐 */}
         <circle cx="20" cy="67" r="6" fill="none" stroke={VOLT} strokeWidth="1.6"
@@ -34,28 +52,31 @@ export function PandaCoach({ size = 72, animate = true }: { size?: number; anima
       </g>
       <g className={animate ? bob : undefined} style={{ transformOrigin: "60px 104px", animation: animate ? `${bob} 2.4s ease-in-out infinite` : undefined }}>
         {/* 어깨/몸 */}
-        <ellipse cx="60" cy="102" rx="30" ry="22" fill={BLACK} stroke="#3a3a42" strokeWidth="1.5" />
-        <ellipse cx="60" cy="106" rx="19" ry="16" fill={WHITE} />
+        <ellipse cx="60" cy="102" rx="30" ry="22" fill={`url(#bk-${uid})`} stroke="#3a3a42" strokeWidth="1.5" />
+        <ellipse cx="60" cy="106" rx="19" ry="16" fill={`url(#hg-${uid})`} />
         {/* 귀 */}
-        <circle cx="38" cy="40" r="14" fill={BLACK} />
-        <circle cx="82" cy="40" r="14" fill={BLACK} />
+        <circle cx="38" cy="40" r="14" fill={`url(#bk-${uid})`} />
+        <circle cx="82" cy="40" r="14" fill={`url(#bk-${uid})`} />
         <circle cx="38" cy="38" r="5" fill="#000" opacity="0.5" />
         <circle cx="82" cy="38" r="5" fill="#000" opacity="0.5" />
-        {/* 머리 */}
-        <circle cx="60" cy="58" r="31" fill={WHITE} stroke={BLACK} strokeWidth="2.5" />
+        {/* 머리 + 광택 */}
+        <circle cx="60" cy="58" r="31" fill={`url(#hg-${uid})`} stroke={BLACK} strokeWidth="2.5" />
+        <ellipse cx="49" cy="42" rx="15" ry="9" fill={`url(#sh-${uid})`} />
         {/* 눈 패치 */}
         <ellipse cx="47" cy="60" rx="9.5" ry="12" fill={BLACK} transform="rotate(-18 47 60)" />
         <ellipse cx="73" cy="60" rx="9.5" ry="12" fill={BLACK} transform="rotate(18 73 60)" />
         <ellipse cx="47" cy="59" rx="3.2" ry="3.8" fill={WHITE} /><ellipse cx="73" cy="59" rx="3.2" ry="3.8" fill={WHITE} />
         <circle cx="47" cy="59.6" r="1.9" fill="#1c1c1e" /><circle cx="73" cy="59.6" r="1.9" fill="#1c1c1e" />
+        {/* 눈 하이라이트(반짝) */}
+        <circle cx="46.4" cy="58.9" r="0.7" fill="#fff" /><circle cx="72.4" cy="58.9" r="0.7" fill="#fff" />
         {/* 코·미소(친근한 코치) */}
         <ellipse cx="60" cy="70" rx="3.6" ry="2.8" fill="#000" />
         <path d="M60 73 Q60 78 54 78 M60 73 Q60 78 66 78" stroke="#000" strokeWidth="1.7" fill="none" strokeLinecap="round" />
         {/* 눈썹(코치다운 자신감) */}
         <path d="M40 47 L52 50 M80 47 L68 50" stroke="#000" strokeWidth="2" strokeLinecap="round" />
         {/* 헤드밴드 */}
-        <path d="M30 44 Q60 33 90 44 L90 38 Q60 26 30 38 Z" fill={VOLT} stroke={BLACK} strokeWidth="2" />
-        <rect x="27" y="37" width="6" height="8" rx="2" fill={VOLT} stroke={BLACK} strokeWidth="1.4" />
+        <path d="M30 44 Q60 33 90 44 L90 38 Q60 26 30 38 Z" fill={`url(#vg-${uid})`} stroke={BLACK} strokeWidth="2" />
+        <rect x="27" y="37" width="6" height="8" rx="2" fill={`url(#vg-${uid})`} stroke={BLACK} strokeWidth="1.4" />
       </g>
     </svg>
   );
