@@ -24,7 +24,7 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
           82%{transform:translateY(-11px) scaleY(1.06)}
           100%{transform:translateY(-6px) scaleY(1.03)}
         }
-        @keyframes ${pl} { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+        @keyframes ${pl} { 0%,100%{transform:translateY(-1.5px)} 45%{transform:translateY(2px)} }
         @media (prefers-reduced-motion: reduce){ .${sq},.${pl}{animation:none!important} }
       `}</style>
 
@@ -61,16 +61,25 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
         style={{ transformOrigin: "100px 160px", animation: animate ? `${sq} 2s ease-in-out infinite` : undefined }}>
 
         {/* 바벨 바 (몸 뒤) */}
-        <rect x="18" y="70" width="164" height="7" rx="3.5" fill={`url(#mt-${uid})`} stroke={BLACK} strokeWidth="2" />
-        {/* 좌우 원판 (회전) */}
-        {[36, 164].map((cx) => (
-          <g key={cx} style={{ transformOrigin: `${cx}px 73px`, animation: animate ? `${pl} 3.2s linear infinite` : undefined }}>
-            <circle cx={cx} cy="73" r="26" fill={`url(#vg-${uid})`} stroke={BLACK} strokeWidth="3" />
-            <circle cx={cx} cy="73" r="9" fill="#e6ffa1" stroke={BLACK} strokeWidth="2" />
-            {[0, 60, 120].map((a) => (
-              <line key={a} x1={cx} y1="73" x2={cx + 26 * Math.cos((a * Math.PI) / 180)} y2={73 + 26 * Math.sin((a * Math.PI) / 180)}
-                stroke={BLACK} strokeWidth="2" opacity="0.35" />
+        <rect x="8" y="70" width="184" height="7" rx="3.5" fill={`url(#mt-${uid})`} stroke={BLACK} strokeWidth="2" />
+        {/* 조임쇠(칼라) — 원판과 손 사이 */}
+        {[39, 155.5].map((x) => (
+          <rect key={x} x={x} y="66" width="5.5" height="14" rx="2" fill={`url(#mt-${uid})`} stroke={BLACK} strokeWidth="1.6" />
+        ))}
+        {/* 좌우 원판 — 실제 역기 원판(림+홈+허브+볼트), 바 휨(whip)으로 미세 상하 */}
+        {[22, 178].map((cx) => (
+          <g key={cx} style={{ transformOrigin: `${cx}px 73px`, animation: animate ? `${pl} 2s ease-in-out infinite` : undefined }}>
+            <circle cx={cx} cy="73" r="15" fill={`url(#vg-${uid})`} stroke={BLACK} strokeWidth="2.5" />
+            <circle cx={cx} cy="73" r="10.5" fill="none" stroke="#000" strokeWidth="1.3" opacity="0.22" />
+            {[30, 90, 150, 210, 270, 330].map((a) => (
+              <circle key={a} cx={cx + 8 * Math.cos((a * Math.PI) / 180)} cy={73 + 8 * Math.sin((a * Math.PI) / 180)}
+                r="1.2" fill="#000" opacity="0.3" />
             ))}
+            <circle cx={cx} cy="73" r="5.4" fill={`url(#mt-${uid})`} stroke={BLACK} strokeWidth="1.8" />
+            <circle cx={cx} cy="73" r="2.2" fill="#1c1c1e" />
+            {/* 좌상단 광원 반사 */}
+            <path d={`M${cx - 10.5} ${73 - 7} A 12.7 12.7 0 0 1 ${cx + 1} ${73 - 12.7}`}
+              stroke="#fff" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity="0.4" />
           </g>
         ))}
 
@@ -84,11 +93,11 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
         <ellipse cx="100" cy="128" rx="40" ry="36" fill={`url(#bk-${uid})`} stroke="#3a3a42" strokeWidth="1.5" />
         <ellipse cx="100" cy="132" rx="27" ry="27" fill={`url(#hg-${uid})`} />
 
-        {/* 팔 — 바를 잡음 */}
-        <path d="M64 108 Q46 92 40 76" stroke={BLACK} strokeWidth="15" strokeLinecap="round" />
-        <path d="M136 108 Q154 92 160 76" stroke={BLACK} strokeWidth="15" strokeLinecap="round" />
-        <circle cx="40" cy="74" r="9" fill={BLACK} />
-        <circle cx="160" cy="74" r="9" fill={BLACK} />
+        {/* 팔 — 바를 잡음 (팔꿈치 벌리고 어깨 바깥을 그립) */}
+        <path d="M70 112 Q52 100 52 76" stroke={BLACK} strokeWidth="15" strokeLinecap="round" fill="none" />
+        <path d="M130 112 Q148 100 148 76" stroke={BLACK} strokeWidth="15" strokeLinecap="round" fill="none" />
+        <circle cx="52" cy="74" r="9.5" fill={`url(#bk-${uid})`} stroke={BLACK} strokeWidth="1.2" />
+        <circle cx="148" cy="74" r="9.5" fill={`url(#bk-${uid})`} stroke={BLACK} strokeWidth="1.2" />
 
         {/* 귀 */}
         <circle cx="74" cy="52" r="16" fill={`url(#bk-${uid})`} />
