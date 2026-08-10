@@ -48,10 +48,11 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
         <linearGradient id={`mt-${uid}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#e4e4ec" /><stop offset="50%" stopColor="#a1a1aa" /><stop offset="100%" stopColor="#6b6b74" />
         </linearGradient>
-        {/* 원판 — 주철 재질(브랜드색 대신 금속) */}
-        <radialGradient id={`ir-${uid}`} cx="33%" cy="26%" r="88%">
-          <stop offset="0%" stopColor="#7c7c88" /><stop offset="45%" stopColor="#3d3d46" /><stop offset="100%" stopColor="#191920" />
-        </radialGradient>
+        {/* 원판 옆면 — 원기둥처럼 왼쪽에 하이라이트가 지나가는 금속 셰이딩 */}
+        <linearGradient id={`ir-${uid}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#6d6d79" /><stop offset="28%" stopColor="#9a9aa8" />
+          <stop offset="58%" stopColor="#45454f" /><stop offset="100%" stopColor="#1b1b21" />
+        </linearGradient>
       </defs>
       {/* 밝은 원형 배경 — 검은 화면에서 판다 실루엣 살리기 */}
       <circle cx="100" cy="96" r="90" fill={`url(#bgg-${uid})`} />
@@ -67,24 +68,18 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
         {/* 바벨 바 (몸 뒤) */}
         <rect x="8" y="70" width="184" height="7" rx="3.5" fill={`url(#mt-${uid})`} stroke={BLACK} strokeWidth="2" />
         {/* 조임쇠(칼라) — 원판과 손 사이 */}
-        {[39, 155.5].map((x) => (
-          <rect key={x} x={x} y="66" width="5.5" height="14" rx="2" fill={`url(#mt-${uid})`} stroke={BLACK} strokeWidth="1.6" />
+        {[35.5, 159].map((x) => (
+          <rect key={x} x={x} y="66.5" width="5.5" height="14" rx="2" fill={`url(#mt-${uid})`} stroke={BLACK} strokeWidth="1.6" />
         ))}
-        {/* 좌우 원판 — 실제 역기 원판(림+홈+허브+볼트), 바 휨(whip)으로 미세 상하 */}
-        {[22, 178].map((cx) => (
-          <g key={cx} style={{ transformOrigin: `${cx}px 73px`, animation: animate ? `${pl} 2s ease-in-out infinite` : undefined }}>
-            <circle cx={cx} cy="73" r="15" fill={`url(#ir-${uid})`} stroke={BLACK} strokeWidth="2.5" />
-            <circle cx={cx} cy="73" r="12.6" fill="none" stroke="#8f8f9c" strokeWidth="1" opacity="0.35" />
-            <circle cx={cx} cy="73" r="10.5" fill="none" stroke="#000" strokeWidth="1.3" opacity="0.35" />
-            {[30, 90, 150, 210, 270, 330].map((a) => (
-              <circle key={a} cx={cx + 8 * Math.cos((a * Math.PI) / 180)} cy={73 + 8 * Math.sin((a * Math.PI) / 180)}
-                r="1.2" fill="#fff" opacity="0.14" />
-            ))}
-            <circle cx={cx} cy="73" r="5.4" fill={`url(#mt-${uid})`} stroke={BLACK} strokeWidth="1.8" />
-            <circle cx={cx} cy="73" r="2.2" fill="#1c1c1e" />
-            {/* 좌상단 광원 반사 */}
-            <path d={`M${cx - 10.5} ${73 - 7} A 12.7 12.7 0 0 1 ${cx + 1} ${73 - 12.7}`}
-              stroke="#fff" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity="0.4" />
+        {/* 좌우 원판 — 정면에서 보면 원판은 옆면(두꺼운 판)으로 보인다.
+            무거운 판이 안쪽, 가벼운 판이 바깥쪽(실제 끼우는 순서) */}
+        {[
+          { x: 26, w: 9, h: 38 }, { x: 15, w: 8.5, h: 29 },       // 왼쪽 안/바깥
+          { x: 165, w: 9, h: 38 }, { x: 176.5, w: 8.5, h: 29 },   // 오른쪽 안/바깥
+        ].map((p) => (
+          <g key={p.x} style={{ transformOrigin: `${p.x + p.w / 2}px 73.5px`, animation: animate ? `${pl} 2s ease-in-out infinite` : undefined }}>
+            <rect x={p.x} y={73.5 - p.h / 2} width={p.w} height={p.h} rx="3.2"
+              fill={`url(#ir-${uid})`} stroke={BLACK} strokeWidth="2" />
           </g>
         ))}
 
