@@ -48,6 +48,10 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
         <linearGradient id={`mt-${uid}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#e4e4ec" /><stop offset="50%" stopColor="#a1a1aa" /><stop offset="100%" stopColor="#6b6b74" />
         </linearGradient>
+        {/* 원판 — 주철 재질(브랜드색 대신 금속) */}
+        <radialGradient id={`ir-${uid}`} cx="33%" cy="26%" r="88%">
+          <stop offset="0%" stopColor="#7c7c88" /><stop offset="45%" stopColor="#3d3d46" /><stop offset="100%" stopColor="#191920" />
+        </radialGradient>
       </defs>
       {/* 밝은 원형 배경 — 검은 화면에서 판다 실루엣 살리기 */}
       <circle cx="100" cy="96" r="90" fill={`url(#bgg-${uid})`} />
@@ -69,11 +73,12 @@ export function PandaLifter({ size = 120, animate = true }: { size?: number; ani
         {/* 좌우 원판 — 실제 역기 원판(림+홈+허브+볼트), 바 휨(whip)으로 미세 상하 */}
         {[22, 178].map((cx) => (
           <g key={cx} style={{ transformOrigin: `${cx}px 73px`, animation: animate ? `${pl} 2s ease-in-out infinite` : undefined }}>
-            <circle cx={cx} cy="73" r="15" fill={`url(#vg-${uid})`} stroke={BLACK} strokeWidth="2.5" />
-            <circle cx={cx} cy="73" r="10.5" fill="none" stroke="#000" strokeWidth="1.3" opacity="0.22" />
+            <circle cx={cx} cy="73" r="15" fill={`url(#ir-${uid})`} stroke={BLACK} strokeWidth="2.5" />
+            <circle cx={cx} cy="73" r="12.6" fill="none" stroke="#8f8f9c" strokeWidth="1" opacity="0.35" />
+            <circle cx={cx} cy="73" r="10.5" fill="none" stroke="#000" strokeWidth="1.3" opacity="0.35" />
             {[30, 90, 150, 210, 270, 330].map((a) => (
               <circle key={a} cx={cx + 8 * Math.cos((a * Math.PI) / 180)} cy={73 + 8 * Math.sin((a * Math.PI) / 180)}
-                r="1.2" fill="#000" opacity="0.3" />
+                r="1.2" fill="#fff" opacity="0.14" />
             ))}
             <circle cx={cx} cy="73" r="5.4" fill={`url(#mt-${uid})`} stroke={BLACK} strokeWidth="1.8" />
             <circle cx={cx} cy="73" r="2.2" fill="#1c1c1e" />
