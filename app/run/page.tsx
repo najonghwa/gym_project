@@ -9,7 +9,7 @@ import { LoginCard } from "@/components/auth/LoginCard";
 import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { RunDetailSheet, RouteMap } from "@/components/run/RunDetailSheet";
 import { ActivityCalendar } from "@/components/ui/ActivityCalendar";
-import { PandaRunner } from "@/components/mascot/PandaPoses";
+import { ShibaRunner } from "@/components/mascot/ShibaPoses";
 import { LottieMascot } from "@/components/mascot/LottieMascot";
 import { useUser } from "@/lib/useUser";
 
@@ -170,7 +170,7 @@ export default function RunPage() {
       {/* 헤더 */}
       <div className="flex items-end justify-between">
         <div className="flex items-center gap-2">
-          <LottieMascot name="run" size={52} fallback={<PandaRunner size={52} />} />
+          <LottieMascot name="run" size={52} fallback={<ShibaRunner size={52} />} />
           <div>
             <h1 className="font-display text-[26px] leading-tight tracking-tight">Running</h1>
             <p className="mt-0.5 text-[12.5px] text-white/45">GPS · 기록 · 목표</p>

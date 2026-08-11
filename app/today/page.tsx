@@ -18,7 +18,7 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
 import { ExThumb } from "@/components/ui/ExThumb";
-import { PandaLifter } from "@/components/mascot/PandaLifter";
+import { ShibaLifter } from "@/components/mascot/ShibaLifter";
 import { LottieMascot } from "@/components/mascot/LottieMascot";
 import { EXERCISES, itemsFromExercises } from "@/lib/mock/exercises";
 import { EXPLORE } from "@/lib/mock/routines";
@@ -230,7 +230,7 @@ export default function TodayPage() {
       {/* 페이지 헤더 — 부제목 = 오늘의 한마디 */}
       <div className="mb-5 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2">
-          <LottieMascot name="gym" size={54} fallback={<PandaLifter size={54} />} />
+          <LottieMascot name="gym" size={54} fallback={<ShibaLifter size={54} />} />
           <div className="min-w-0">
             <div className="lab">{new Date().getMonth() + 1}월 {new Date().getDate()}일 {S_DAYS[new Date().getDay()]}요일 · {String(user.id)}</div>
             <h1 className="mt-0.5 font-display text-[26px] leading-tight tracking-tight">Workout</h1>

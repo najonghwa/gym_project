@@ -5,7 +5,7 @@ import {
   Bar, BarChart, Cell, Line, LineChart, Scatter, ScatterChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ZAxis,
 } from "recharts";
 import { StatChip } from "@/components/ui/StatChip";
-import { PandaRest } from "@/components/mascot/PandaPoses";
+import { ShibaRest } from "@/components/mascot/ShibaPoses";
 import { allBests } from "@/lib/runmath";
 
 type Run = { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: number[][] };
@@ -110,7 +110,7 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
   if (a.count === 0) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-8 text-center">
-        <PandaRest size={92} />
+        <ShibaRest size={92} />
         <p className="text-[13px] text-white/50">아직 러닝 기록이 없어요.<br />러닝 탭에서 첫 기록을 남기면 상세 분석이 채워집니다.</p>
       </div>
     );

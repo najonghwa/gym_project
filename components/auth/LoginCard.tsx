@@ -2,7 +2,7 @@
 // id + PIN 로그인/가입 (구 gym_web 계정 그대로 사용 가능)
 import { useState } from "react";
 import { PillButton } from "@/components/ui/PillButton";
-import { PandaLifter } from "@/components/mascot/PandaLifter";
+import { ShibaLifter } from "@/components/mascot/ShibaLifter";
 import { LottieMascot } from "@/components/mascot/LottieMascot";
 import { GrowthCompare } from "@/components/charts/GrowthCompare";
 import { signInWithGoogle } from "@/lib/supa";
@@ -32,7 +32,7 @@ export function LoginCard({
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center">
-      <div className="flex justify-center"><LottieMascot name="hero" size={140} fallback={<PandaLifter size={132} />} /></div>
+      <div className="flex justify-center"><LottieMascot name="hero" size={140} fallback={<ShibaLifter size={132} />} /></div>
       <h1 className="mt-1 text-center font-display text-[34px] tracking-tight">
         FitPlan<span className="text-volt">.</span>
       </h1>

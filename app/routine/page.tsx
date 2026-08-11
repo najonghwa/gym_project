@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PillButton } from "@/components/ui/PillButton";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
-import { CoachBubble, PandaCoach } from "@/components/mascot/PandaCoach";
+import { CoachBubble, ShibaCoach } from "@/components/mascot/ShibaCoach";
 import { LottieMascot } from "@/components/mascot/LottieMascot";
 import { RoutineGenerating } from "@/components/routine/RoutineGenerating";
 import { ExploreSection } from "@/components/routine/ExploreSection";
@@ -133,7 +133,7 @@ export default function RoutinePage() {
       {/* 맞춤 추천 — 판다 코치가 골라줌 */}
       {phase === "idle" && (
         <section className="rounded-2xl border border-white/[0.06] bg-card p-5">
-          <CoachBubble tone="volt" avatar={<LottieMascot name="coach" size={72} fallback={<PandaCoach size={72} />} />}>
+          <CoachBubble tone="volt" avatar={<LottieMascot name="coach" size={72} fallback={<ShibaCoach size={72} />} />}>
             어떤 루틴을 할지 모르겠어요? <b className="text-white">세 가지만 답하면</b> {EXPLORE.length}개 프로그램 중에서 딱 맞는 걸 골라줄게요.
           </CoachBubble>
           <PillButton className="mt-3 w-full" onClick={() => setPhase("ask")}>✨ 코치에게 루틴 추천받기</PillButton>
