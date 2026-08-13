@@ -37,6 +37,15 @@ button:active:not(:disabled) { transform: translateY(0) scale(0.97); filter: bri
 * { -webkit-tap-highlight-color: transparent; scrollbar-width: none }
 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none }
 
+/* 숫자 폭 고정 — 대시보드 수치가 바뀌어도 흔들리지 않게 */
+body { font-variant-numeric: tabular-nums; }
+
+/* 키보드 포커스 링 (볼트) */
+:focus-visible { outline: 2px solid rgba(200, 255, 0, 0.6); outline-offset: 2px; border-radius: 6px; }
+
+/* 텍스트 선택 색 */
+::selection { background: #c8ff00; color: #000; }
+
 /* 마이크로 라벨 (10px uppercase, 넓은 자간) */
 .lab {
   font-size: 10px;

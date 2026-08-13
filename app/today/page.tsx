@@ -747,7 +747,7 @@ export default function TodayPage() {
 
                 {/* 상세: 설명 + 구성 종목 + 시작 버튼 */}
                 {expanded && (
-                  <div className="border-t border-white/[0.07] px-3.5 pb-3.5 pt-3">
+                  <div className="border-t border-white/[0.06] px-3.5 pb-3.5 pt-3">
                     <p className="text-[12.5px] leading-relaxed text-white/70">{r.overview}</p>
                     {r.who && <p className="mt-2 text-[12px] leading-relaxed text-white/50">👤 {r.who}</p>}
                     {r.schedule && (

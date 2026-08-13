@@ -43,7 +43,7 @@ export function ExThumb({
   }
   return (
     <span
-      className={`grid shrink-0 place-items-center border border-white/[0.07] bg-white/[0.05] ${rounded}`}
+      className={`grid shrink-0 place-items-center border border-white/[0.06] bg-white/[0.05] ${rounded}`}
       style={{ width: size, height: size }}
       title={ex.name}
     >

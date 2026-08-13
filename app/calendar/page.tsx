@@ -79,7 +79,7 @@ export default function CalendarPage() {
                   c.pct != null && c.pct >= 100 ? "border-volt/50 bg-volt/10"
                   : c.pct != null ? "border-gold/40 bg-gold/10"
                   : c.km ? "border-sky-500/40 bg-sky-500/10"
-                  : "border-white/[0.05] bg-white/[0.02]"
+                  : "border-white/[0.06] bg-white/[0.02]"
                 } ${c.isToday ? "ring-2 ring-gold" : ""}`}
               >
                 <span className={`text-[10px] leading-none ${c.pct != null || c.km ? "font-extrabold" : "text-white/30"}`}>{c.day}</span>
