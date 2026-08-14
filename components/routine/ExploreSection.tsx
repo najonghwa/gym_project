@@ -107,7 +107,7 @@ export function ExploreSection({
             <button
               onClick={() => onToggleSave?.(r.id)}
               className={`mt-3 w-full rounded-full py-2.5 text-[13px] font-extrabold transition ${
-                isSaved(r.id) ? "bg-volt text-black" : "border border-white/15 bg-white/5 text-zinc-100"
+                isSaved(r.id) ? "bg-volt text-black" : "border border-white/15 bg-white/5 text-stone-100"
               }`}
             >
               {isSaved(r.id) ? "✓ 저장됨 — 위 '내 루틴'에서 확인" : "💾 저장하기"}

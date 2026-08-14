@@ -532,7 +532,7 @@ export default function TodayPage() {
             </div>
           </div>
           <div className="ml-auto text-right text-[11.5px] text-white/45">
-            4주 출석률 <b className="text-zinc-100">{stats?.att ?? 0}%</b>
+            4주 출석률 <b className="text-stone-100">{stats?.att ?? 0}%</b>
           </div>
         </div>
         <div className="mt-4">

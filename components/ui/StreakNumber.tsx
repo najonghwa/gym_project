@@ -9,7 +9,7 @@ export function StreakNumber({ value }: { value: number }) {
     <div className="flex items-end gap-2">
       <span
         className={`font-display text-[64px] leading-[0.85] ${
-          value > 0 ? "text-volt" : "text-zinc-700"
+          value > 0 ? "text-volt" : "text-stone-700"
         }`}
       >
         {reduce ? value : <CountUp end={value} duration={1.1} />}

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050505",
+  themeColor: "#0b0908",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -27,7 +27,7 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
       </head>
-      <body className="min-h-full bg-bg text-zinc-50 antialiased">
+      <body className="min-h-full bg-bg text-stone-50 antialiased">
         <div className="pt-12 lg:pl-56">
           {/* 모바일=폰 폭, 태블릿=넓게, 데스크탑=풀와이드 */}
           <div className="mx-auto min-h-screen max-w-md px-4 pb-28 pt-4 sm:max-w-2xl lg:max-w-none lg:px-10 lg:pb-10 xl:px-14">

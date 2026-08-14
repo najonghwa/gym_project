@@ -35,7 +35,7 @@ export function RecoveryMap({ data }: { data: MuscleRecovery[] }) {
         <div>
           <div className="lab">RECOVERY 근육 회복도</div>
           <div className="mt-1 text-[12.5px] text-white/55">
-            평균 <b className="text-zinc-100">{Math.round(avg * 100)}%</b>
+            평균 <b className="text-stone-100">{Math.round(avg * 100)}%</b>
             {freshOnes.length > 0 && (
               <span className="ml-1.5 text-volt">
                 · {freshOnes.map((f) => MUSCLE_KR[f.muscle]).join("·")} 싱싱! 💪

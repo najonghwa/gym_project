@@ -53,7 +53,7 @@ export function MascotImg({
       <div data-m={u} className="absolute inset-0">
         {/* 원형 배경 + 볼트 링 */}
         <div className="absolute inset-0 rounded-full"
-          style={{ background: "radial-gradient(circle at 50% 38%, #353541 0%, #1c1c23 100%)", boxShadow: `inset 0 0 0 1.5px ${VOLT}59` }} />
+          style={{ background: "radial-gradient(circle at 50% 38%, #3a3128 0%, #1f1913 100%)", boxShadow: `inset 0 0 0 1.5px ${VOLT}59` }} />
         {/* 3D 렌더 본체 */}
         <img src={`/mascots/${kind}.png`} alt="" draggable={false} className="absolute"
           style={{ inset: "4%", width: "92%", height: "92%", transformOrigin: "50% 88%", animation: animate ? anim : undefined }} />

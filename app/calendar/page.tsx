@@ -94,7 +94,7 @@ export default function CalendarPage() {
           )}
         </div>
         <div className="mt-3 flex justify-between text-[12px] text-white/50">
-          <span>헬스 <b className="text-zinc-100">{gymDays}일</b> · 러닝 <b className="text-zinc-100">{Math.round(runKm * 10) / 10}km</b></span>
+          <span>헬스 <b className="text-stone-100">{gymDays}일</b> · 러닝 <b className="text-stone-100">{Math.round(runKm * 10) / 10}km</b></span>
           <span className="flex items-center gap-3 text-[10.5px]">
             <span className="flex items-center gap-1"><i className="h-2 w-2 rounded-sm bg-volt/60" />100%</span>
             <span className="flex items-center gap-1"><i className="h-2 w-2 rounded-sm bg-gold/60" />부분</span>

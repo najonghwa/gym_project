@@ -22,7 +22,7 @@ export function PillButton({
   const look =
     variant === "volt"
       ? "bg-volt text-black"
-      : "border border-white/15 bg-white/5 text-zinc-100";
+      : "border border-white/15 bg-white/5 text-stone-100";
   return (
     <motion.button
       whileTap={reduce ? undefined : { scale: 0.96 }}

@@ -2,10 +2,12 @@
 
 /* ── GYM&RUN 디자인 토큰 (스펙 §1) ── */
 @theme {
-  --color-bg: #050505;
-  --color-card: #121212;
+  /* 웜 다크 — 순수 검정 대신 갈색기 있는 다크로, 시바(웜 톤) 캐릭터와 온도를 맞춤 */
+  --color-bg: #0b0908;
+  --color-card: #171310;
   --color-volt: #c8ff00;
   --color-gold: #f59e0b;
+  --color-shiba: #e0954e;   /* 시바 털색 — 보조 포인트 */
   --color-danger: #ef4444;
   --font-sans: "Pretendard Variable", Pretendard, system-ui, sans-serif;
   --font-display: "Pretendard Variable", Pretendard, system-ui, sans-serif;
@@ -14,10 +16,10 @@
 /* 디스플레이 숫자/타이틀 — 깔끔한 세미볼드+타이트 자간 (구 Black Han Sans 대체) */
 .font-display { font-weight: 800; letter-spacing: -0.02em; }
 
-html { background: #050505; }
+html { background: #0b0908; }
 body {
-  background: #050505;
-  color: #fafafa;
+  background: #0b0908;
+  color: #f8f4ee;   /* 순백 대신 크림기 있는 화이트 */
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
