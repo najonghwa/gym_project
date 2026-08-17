@@ -1,5 +1,6 @@
 "use client";
 // 헬스장 — SVG 평면도 + 장비 클릭 → 정보 + 내 사용 기록 시트
+import { Icon } from "@/components/ui/Icon";
 import { useMemo, useState } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { EQUIP_INFO, FLOOR, FLOOR_ZONES, ZONES } from "@/lib/data/gym";
@@ -47,7 +48,7 @@ export default function GymPage() {
 
   return (
     <main className="lg:max-w-none lg:pt-10">
-      <div className="lab mb-1">FLOOR MAP 헬스장 평면도</div>
+      <div className="lab mb-1">헬스장 평면도</div>
       <h2 className="font-display text-[26px]">장비를 눌러보세요</h2>
       <p className="mt-0.5 text-[12px] text-white/45">설명과 사용 팁이 나와요 · 현재는 예시 배치</p>
 
@@ -69,15 +70,19 @@ export default function GymPage() {
             const z = ZONES.find((x) => x.id === f.zone)!;
             return (
               <g key={f.eq} className="cursor-pointer" onClick={() => setSel(f.eq)}>
-                <rect x={f.x - 19} y={f.y - 15} width={38} height={30} rx={7}
-                  fill="#1a1a1a" stroke={`${z.color}88`} strokeWidth={1} />
-                <text x={f.x} y={f.y + 1} fontSize={12} textAnchor="middle">{f.icon}</text>
-                <text x={f.x} y={f.y + 11} fontSize={5.2} textAnchor="middle" fill="#9ca3af">{f.eq}</text>
+                <rect x={f.x - 19} y={f.y - 15} width={38} height={30} rx={5}
+                  fill="#1c1714" stroke={`${z.color}88`} strokeWidth={1} />
+                {/* 장비 실루엣 — 이모지 대신 실제 풋프린트를 단순화한 도형 */}
+                <rect x={f.x - 11} y={f.y - 9} width={22} height={11} rx={2}
+                  fill="none" stroke={`${z.color}aa`} strokeWidth={1.1} />
+                <line x1={f.x - 6} y1={f.y - 9} x2={f.x - 6} y2={f.y + 2} stroke={`${z.color}66`} strokeWidth={0.9} />
+                <line x1={f.x + 6} y1={f.y - 9} x2={f.x + 6} y2={f.y + 2} stroke={`${z.color}66`} strokeWidth={0.9} />
+                <text x={f.x} y={f.y + 11} fontSize={5.2} textAnchor="middle" fill="#a8a29e">{f.eq}</text>
               </g>
             );
           })}
           <rect x={178} y={300} width={44} height={8} rx={3} fill="#3f3f46" />
-          <text x={200} y={297} fontSize={7} textAnchor="middle" fill="#9ca3af">🚪 입구</text>
+          <text x={200} y={297} fontSize={7} textAnchor="middle" fill="#9ca3af">입구</text>
         </svg>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
           {ZONES.map((z) => (
@@ -101,7 +106,7 @@ export default function GymPage() {
                   onClick={() => setSel(f.eq)}
                   className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[12px] font-bold text-white/70 active:scale-95"
                 >
-                  {f.icon} {f.eq}
+                  {f.eq}
                 </button>
               ))}
             </div>
@@ -113,7 +118,7 @@ export default function GymPage() {
         {item && info && zone && (
           <>
             <div className="flex items-center gap-3.5">
-              <div className="grid h-14 w-14 place-items-center rounded-lg border border-white/10 bg-white/[0.05] text-3xl">{item.icon}</div>
+              <div className="grid h-14 w-14 place-items-center rounded-lg border border-white/10 bg-white/[0.05] text-white/50"><Icon name="dumbbell" size={26} /></div>
               <div>
                 <h3 className="text-lg font-extrabold">{item.eq}</h3>
                 <span className="text-[12px] font-bold" style={{ color: zone.color }}>{zone.id}구역 · {zone.name}</span>
@@ -121,7 +126,7 @@ export default function GymPage() {
             </div>
             <p className="mt-3 text-[14px] leading-relaxed">{info.desc}</p>
             <div className="mt-3 rounded-lg border border-gold/40 bg-gold/10 p-3 text-[13px] leading-relaxed">
-              💡 <b>팁</b> — {info.tip}
+              <b>팁</b> — {info.tip}
             </div>
 
             {/* 이 장비로 하는 운동 — 클릭하면 애니메이션+하는 방법 */}

@@ -84,9 +84,9 @@ export default function CalendarPage() {
               >
                 <span className={`text-[10px] leading-none ${c.pct != null || c.km ? "font-extrabold" : "text-white/30"}`}>{c.day}</span>
                 {c.pct != null && (
-                  <span className={`text-[8.5px] font-bold leading-none ${c.pct >= 100 ? "text-volt" : "text-gold"}`}>🏋️{c.pct}%</span>
+                  <span className={`text-[8.5px] font-bold leading-none ${c.pct >= 100 ? "text-volt" : "text-gold"}`}>{c.pct}%</span>
                 )}
-                {c.km && <span className="text-[8.5px] font-bold leading-none text-sky-400">🏃{c.km}k</span>}
+                {c.km && <span className="text-[8.5px] font-bold leading-none text-sky-400">{c.km}k</span>}
               </div>
             ) : (
               <div key={i} />

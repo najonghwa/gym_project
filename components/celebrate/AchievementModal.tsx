@@ -1,5 +1,6 @@
 "use client";
 // 뱃지/PR 축하 모달 — confetti + 마스코트 cheer + 금속 뱃지 (스펙 P2-11)
+import { Icon, IconName } from "@/components/ui/Icon";
 import { useEffect } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -11,13 +12,13 @@ export function AchievementModal({
   open,
   title,
   desc,
-  emoji = "🏅",
+  icon = "medal",
   onClose,
 }: {
   open: boolean;
   title: string;
   desc: string;
-  emoji?: string;
+  icon?: IconName;
   onClose: () => void;
 }) {
   const reduce = useReducedMotion();
@@ -50,14 +51,14 @@ export function AchievementModal({
               initial={reduce ? false : { rotateY: 90 }}
               animate={{ rotateY: 0 }}
               transition={{ delay: 0.25, duration: 0.5 }}
-              className="mx-auto mt-2 grid h-20 w-20 place-items-center rounded-full border-4 border-gold bg-gradient-to-br from-amber-300 via-gold to-amber-700 text-[34px] shadow-lg shadow-gold/30"
+              className="mx-auto mt-2 grid h-20 w-20 place-items-center rounded-full border-[3px] border-gold bg-gold/15 text-gold"
             >
-              {emoji}
+              <Icon name={icon} size={36} strokeWidth={1.9} />
             </motion.div>
-            <div className="lab mt-4">ACHIEVEMENT</div>
+            <div className="lab mt-4">달성</div>
             <h3 className="mt-1 font-display text-[24px]">{title}</h3>
             <p className="mt-1 text-[13px] text-white/55">{desc}</p>
-            <PillButton className="mt-5 w-full" onClick={onClose}>계속 💪</PillButton>
+            <PillButton className="mt-5 w-full" onClick={onClose}>계속</PillButton>
           </motion.div>
         </motion.div>
       )}

@@ -203,7 +203,7 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
                   <span className="text-[12px] font-bold text-white/55">{b.m / 1000}km</span>
                   <b className={`font-display text-[15px] tabular-nums ${b.paceSec ? "text-gold" : "text-white/25"}`}>{b.paceSec ? paceStr(b.paceSec) : "도전!"}</b>
                 </div>
-                <div className="mt-0.5 text-right text-[9px] text-white/35">{b.date ? `${b.gps ? "📡" : "✍️"} ${b.date}` : `${b.m / 1000}km 이상 뛰면 기록`}</div>
+                <div className="mt-0.5 text-right text-[9px] text-white/35">{b.date ? `${b.date}` : `${b.m / 1000}km 이상 뛰면 기록`}</div>
               </div>
             ))}
           </div>
@@ -287,11 +287,11 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
 
         {/* AI 코치 어드바이스 */}
         <div className="rounded-2xl border border-indigo-400/25 bg-indigo-950/25 p-4 lg:col-span-2">
-          <b className="text-[14.5px] font-extrabold">🤖 러닝 AI 코치 어드바이스</b>
+          <b className="text-[14.5px] font-extrabold">주간 마일리지 진단</b>
           <p className="mt-0.5 text-[11.5px] text-white/45">최근 기록 기반 맞춤 피드백</p>
           <div className="mt-3 grid gap-2 lg:grid-cols-3">
             <div className="rounded-lg bg-white/[0.05] p-3">
-              <div className="text-[11px] font-bold text-indigo-300">📊 4주 마일리지</div>
+              <div className="text-[11px] font-bold text-indigo-300">최근 4주</div>
               <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
                 최근 4주 <b className="text-gold">{a.last4}km</b>{" "}
                 {a.mileageDelta == null ? "— 비교할 이전 기록이 더 필요해요."
@@ -310,7 +310,7 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
               </p>
             </div>
             <div className="rounded-lg bg-white/[0.05] p-3">
-              <div className="text-[11px] font-bold text-indigo-300">🎯 향후 4주 추천</div>
+              <div className="text-[11px] font-bold text-indigo-300">다음 4주 권장</div>
               <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
                 주당 <b className="text-gold">{a.nextTarget}km</b> 수준으로 10% 이내에서 서서히 올려보세요.
               </p>

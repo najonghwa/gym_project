@@ -9,8 +9,7 @@ import { LoginCard } from "@/components/auth/LoginCard";
 import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { RunDetailSheet, RouteMap } from "@/components/run/RunDetailSheet";
 import { ActivityCalendar } from "@/components/ui/ActivityCalendar";
-import { ShibaRunner } from "@/components/mascot/ShibaPoses";
-import { LottieMascot } from "@/components/mascot/LottieMascot";
+import { Icon } from "@/components/ui/Icon";
 import { useUser } from "@/lib/useUser";
 
 type Run = { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: [number, number][] };
@@ -169,12 +168,9 @@ export default function RunPage() {
     <main className="mx-auto max-w-2xl space-y-4 lg:max-w-none lg:pt-10">
       {/* 헤더 */}
       <div className="flex items-end justify-between">
-        <div className="flex items-center gap-2">
-          <LottieMascot name="run" size={52} fallback={<ShibaRunner size={52} />} />
-          <div>
-            <h1 className="font-display text-[26px] leading-tight tracking-tight">Running</h1>
-            <p className="mt-0.5 text-[12.5px] text-white/45">GPS · 기록 · 목표</p>
-          </div>
+        <div>
+          <h1 className="font-display text-[24px] leading-tight tracking-tight">러닝</h1>
+          <p className="mt-0.5 text-[12.5px] text-white/45">이번 달 기록과 목표</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -198,12 +194,12 @@ export default function RunPage() {
         onClick={() => router.push("/run/live")}
         className="flex w-full items-center gap-3 rounded-2xl border border-volt/30 bg-gradient-to-r from-volt/15 to-transparent p-4 text-left active:scale-[0.99]"
       >
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-volt text-[19px]">📡</span>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-volt text-black"><Icon name="signal" size={22} strokeWidth={2} /></span>
         <span className="min-w-0 flex-1">
           <b className="block text-[15.5px]">GPS 러닝 시작</b>
           <span className="text-[11.5px] text-white/50">위치 기반으로 거리와 페이스를 자동 기록합니다</span>
         </span>
-        <span className="font-display text-[20px] text-volt">▶</span>
+        <Icon name="chevronRight" size={20} className="shrink-0 text-volt" strokeWidth={2.2} />
       </button>
 
       {/* KPI 스트립 */}
@@ -259,10 +255,10 @@ export default function RunPage() {
           </b>
           <div className="mt-2.5 grid gap-x-6 sm:grid-cols-2">
             {[
-              ["🏁 최장 거리", s.longestRun ? `${s.longest}km` : "—", s.longestRun?.date ?? ""],
+              ["최장 거리", s.longestRun ? `${s.longest}km` : "—", s.longestRun?.date ?? ""],
               ["⚡ 최고 페이스", paceStr(s.bestPace), s.bestPaceRun?.date ?? ""],
-              ["📅 월 최다", s.bestMonth ? `${r1(s.bestMonth[1])}km` : "—", s.bestMonth?.[0] ?? ""],
-              ["🔁 주 최다", s.bestWeek ? `${s.bestWeek[1]}회` : "—", s.bestWeek ? s.bestWeek[0] + " 주" : ""],
+              ["월 최다", s.bestMonth ? `${r1(s.bestMonth[1])}km` : "—", s.bestMonth?.[0] ?? ""],
+              ["주 최다", s.bestWeek ? `${s.bestWeek[1]}회` : "—", s.bestWeek ? s.bestWeek[0] + " 주" : ""],
             ].map(([l, v, d]) => (
               <div key={l as string} className="flex items-center justify-between border-b border-white/[0.06] py-2.5">
                 <span className="text-[13px] text-white/70">{l}</span>
@@ -277,7 +273,7 @@ export default function RunPage() {
             onClick={() => router.push("/analysis")}
             className="mt-3 w-full rounded-full border border-white/15 bg-white/[0.05] py-2.5 text-[12.5px] font-bold text-white/80"
           >
-            📊 거리별 PB·추세 등 상세 분석 → 분석 탭
+            거리별 PB와 추세는 분석 탭에서
           </button>
         </section>
       </div>
@@ -335,7 +331,7 @@ export default function RunPage() {
                 return (
                   <div key={r.rid ?? `${r.date}-${r.km}-${i}`} className={`flex items-center gap-3 px-2 py-2.5 ${on ? "rounded-lg bg-volt/[0.07]" : ""}`}>
                     <button onClick={() => setSelRun(r)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                      <span title={r.route ? "GPS 기록" : "수동 기록"} className="shrink-0 text-[12px]">{r.route ? "📡" : "✍️"}</span>
+                      <Icon name={r.route ? "signal" : "pen"} size={14} className="shrink-0 text-white/40" title={r.route ? "GPS 기록" : "수동 기록"} />
                       <span className="w-[76px] shrink-0 text-[12.5px] text-white/55">{r.date}</span>
                       <b className={`text-[14px] ${on ? "text-volt" : ""}`}>{r.km}km</b>
                       <span className="text-[12px] text-white/45">{paceStr(r.paceSec)}/km</span>

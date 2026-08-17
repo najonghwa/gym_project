@@ -1,7 +1,7 @@
 // 헬스장 구역/평면도/장비 정보 — gym_web/js/data.js 포팅 (임시 배치, 실측 시 교체)
 export interface Zone { id: string; name: string; desc: string; color: string }
 export interface FloorZone { id: string; x: number; y: number; w: number; h: number }
-export interface FloorItem { eq: string; zone: string; x: number; y: number; icon: string }
+export interface FloorItem { eq: string; zone: string; x: number; y: number }
 export interface EquipInfo { desc: string; tip: string }
 
 export const ZONES: Zone[] = [
@@ -21,30 +21,30 @@ export const FLOOR_ZONES: FloorZone[] = [
 ];
 
 export const FLOOR: FloorItem[] = [
-  { eq: "파워랙", zone: "A", x: 45, y: 46, icon: "🏗️" },
-  { eq: "벤치프레스대", zone: "A", x: 100, y: 46, icon: "🛏️" },
-  { eq: "풀업바", zone: "A", x: 155, y: 46, icon: "🙌" },
-  { eq: "덤벨세트", zone: "A", x: 45, y: 105, icon: "🏋️" },
-  { eq: "바벨/벤치", zone: "A", x: 100, y: 105, icon: "➖" },
-  { eq: "EZ바", zone: "A", x: 155, y: 105, icon: "〰️" },
-  { eq: "딥스대", zone: "A", x: 100, y: 145, icon: "🇭" },
-  { eq: "레그프레스 머신", zone: "B", x: 228, y: 44, icon: "🦵" },
-  { eq: "랫풀다운 머신", zone: "B", x: 272, y: 44, icon: "⬇️" },
-  { eq: "체스트프레스 머신", zone: "B", x: 316, y: 44, icon: "🫸" },
-  { eq: "시티드로우 머신", zone: "B", x: 360, y: 44, icon: "🚣" },
-  { eq: "레그익스텐션 머신", zone: "B", x: 228, y: 96, icon: "🦿" },
-  { eq: "레그컬 머신", zone: "B", x: 272, y: 96, icon: "🪝" },
-  { eq: "숄더프레스 머신", zone: "B", x: 316, y: 96, icon: "🙆" },
-  { eq: "카프레이즈 머신", zone: "B", x: 360, y: 96, icon: "🦶" },
-  { eq: "케이블 머신", zone: "C", x: 252, y: 172, icon: "🔗" },
-  { eq: "케이블 크로스오버", zone: "C", x: 336, y: 172, icon: "✖️" },
-  { eq: "트레드밀", zone: "D", x: 228, y: 258, icon: "🏃" },
-  { eq: "사이클", zone: "D", x: 272, y: 258, icon: "🚴" },
-  { eq: "로잉머신", zone: "D", x: 316, y: 258, icon: "🛶" },
-  { eq: "일립티컬", zone: "D", x: 360, y: 258, icon: "⛷️" },
-  { eq: "매트", zone: "E", x: 50, y: 235, icon: "🧘" },
-  { eq: "캡틴체어", zone: "E", x: 105, y: 235, icon: "🪑" },
-  { eq: "앱롤러", zone: "E", x: 158, y: 235, icon: "🛞" },
+  { eq: "파워랙", zone: "A", x: 45, y: 46 },
+  { eq: "벤치프레스대", zone: "A", x: 100, y: 46 },
+  { eq: "풀업바", zone: "A", x: 155, y: 46 },
+  { eq: "덤벨세트", zone: "A", x: 45, y: 105 },
+  { eq: "바벨/벤치", zone: "A", x: 100, y: 105 },
+  { eq: "EZ바", zone: "A", x: 155, y: 105 },
+  { eq: "딥스대", zone: "A", x: 100, y: 145 },
+  { eq: "레그프레스 머신", zone: "B", x: 228, y: 44 },
+  { eq: "랫풀다운 머신", zone: "B", x: 272, y: 44 },
+  { eq: "체스트프레스 머신", zone: "B", x: 316, y: 44 },
+  { eq: "시티드로우 머신", zone: "B", x: 360, y: 44 },
+  { eq: "레그익스텐션 머신", zone: "B", x: 228, y: 96 },
+  { eq: "레그컬 머신", zone: "B", x: 272, y: 96 },
+  { eq: "숄더프레스 머신", zone: "B", x: 316, y: 96 },
+  { eq: "카프레이즈 머신", zone: "B", x: 360, y: 96 },
+  { eq: "케이블 머신", zone: "C", x: 252, y: 172 },
+  { eq: "케이블 크로스오버", zone: "C", x: 336, y: 172 },
+  { eq: "트레드밀", zone: "D", x: 228, y: 258 },
+  { eq: "사이클", zone: "D", x: 272, y: 258 },
+  { eq: "로잉머신", zone: "D", x: 316, y: 258 },
+  { eq: "일립티컬", zone: "D", x: 360, y: 258 },
+  { eq: "매트", zone: "E", x: 50, y: 235 },
+  { eq: "캡틴체어", zone: "E", x: 105, y: 235 },
+  { eq: "앱롤러", zone: "E", x: 158, y: 235 },
 ];
 
 export const EQUIP_INFO: Record<string, EquipInfo> = {

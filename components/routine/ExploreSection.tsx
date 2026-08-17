@@ -90,7 +90,7 @@ export function ExploreSection({
                 onClick={() => setLikes((p) => ({ ...p, [r.id]: !p[r.id] }))}
                 className={`text-[13px] font-bold ${likes[r.id] ? "text-danger" : "text-white/40"}`}
               >
-                {likes[r.id] ? "❤️" : "🤍"} {r.likes + (likes[r.id] ? 1 : 0)}
+                {r.likes + (likes[r.id] ? 1 : 0)}
               </motion.button>
             </div>
             {/* 구성 운동 픽토그램 — 클릭하면 정보+애니메이션 */}
@@ -110,7 +110,7 @@ export function ExploreSection({
                 isSaved(r.id) ? "bg-volt text-black" : "border border-white/15 bg-white/5 text-stone-100"
               }`}
             >
-              {isSaved(r.id) ? "✓ 저장됨 — 위 '내 루틴'에서 확인" : "💾 저장하기"}
+              {isSaved(r.id) ? "저장됨" : "저장하기"}
             </button>
           </motion.div>
         ))}
@@ -144,13 +144,13 @@ export function ExploreSection({
               </>
             )}
 
-            <div className="lab mb-1.5 mt-5">ABOUT THIS PLAN</div>
+            <div className="lab mb-1.5 mt-5">루틴 소개</div>
             <div className="grid grid-cols-2 gap-2">
               {[
-                ["📆 빈도", `주 ${detail.daysPerWeek}회`],
-                ["🏋️ 운동", `${Math.max(detail.exercises.length, 4)}~${Math.max(detail.exercises.length, 4) + 2}개`],
+                ["빈도", `주 ${detail.daysPerWeek}회`],
+                ["운동", `${Math.max(detail.exercises.length, 4)}~${Math.max(detail.exercises.length, 4) + 2}개`],
                 ["⏱️ 소요", `${detail.durationMin}분`],
-                ["🔥 칼로리", `${detail.kcal} kcal`],
+                ["칼로리", `${detail.kcal} kcal`],
               ].map(([l, v]) => (
                 <div key={l} className="rounded-lg bg-white/[0.05] px-3 py-3 text-center">
                   <div className="text-[10.5px] text-white/45">{l}</div>

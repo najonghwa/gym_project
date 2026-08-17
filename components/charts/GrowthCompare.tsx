@@ -19,7 +19,7 @@ export function GrowthCompare({ compact = false }: { compact?: boolean }) {
     <div>
       <div className="flex items-end justify-between">
         <div>
-          <div className="lab">GYM&RUN 플랜 유저 성장</div>
+          <div className="lab">플랜 이용자 성장 비교</div>
           <div className="text-[11px] text-white/40">12주 근성장 시뮬레이션 (데모)</div>
         </div>
         <span className="font-display text-[34px] leading-none text-volt">2.1x</span>

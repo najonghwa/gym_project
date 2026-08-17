@@ -1,5 +1,5 @@
 "use client";
-// PR 막대 차트 — 기본 volt, PR 막대만 gold + 🏅 (스펙 P0-3)
+// PR 막대 차트 — 기본 volt, PR 막대만 gold로 강조
 import { useMemo, useState } from "react";
 import {
   Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis,
@@ -79,7 +79,7 @@ export function PRChart({
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
               contentStyle={{ background: "#101010", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}
               formatter={(v, _n, item) => [
-                `${Number(v ?? 0).toLocaleString()}${unit}${(item?.payload as PRRow | undefined)?.isPR ? " 🏅 PR!" : ""}`,
+                `${Number(v ?? 0).toLocaleString()}${unit}${(item?.payload as PRRow | undefined)?.isPR ? " PR" : ""}`,
                 "",
               ]}
               labelStyle={{ color: "rgba(255,255,255,0.5)" }}
@@ -99,7 +99,7 @@ export function PRChart({
                   const { x, y, width, index } = p as { x: number; y: number; width: number; index: number };
                   if (!data[index]?.isPR) return null;
                   return (
-                    <text x={x + width / 2} y={y - 6} textAnchor="middle" fontSize={11}>🏅</text>
+                    <circle cx={x + width / 2} cy={y - 6} r={2.6} fill="#f59e0b" />
                   );
                 }}
               />
@@ -107,7 +107,7 @@ export function PRChart({
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <p className="mt-1 text-right text-[10.5px] text-white/40">🟡 골드 = PR 갱신 세션</p>
+      <p className="mt-1 text-right text-[10.5px] text-white/40">골드 = PR 갱신 세션</p>
     </div>
   );
 }

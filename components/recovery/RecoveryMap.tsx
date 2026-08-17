@@ -33,12 +33,12 @@ export function RecoveryMap({ data }: { data: MuscleRecovery[] }) {
     <div>
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <div className="lab">RECOVERY 근육 회복도</div>
+          <div className="lab">근육 회복도</div>
           <div className="mt-1 text-[12.5px] text-white/55">
             평균 <b className="text-stone-100">{Math.round(avg * 100)}%</b>
             {freshOnes.length > 0 && (
               <span className="ml-1.5 text-volt">
-                · {freshOnes.map((f) => MUSCLE_KR[f.muscle]).join("·")} 싱싱! 💪
+                · {freshOnes.map((f) => MUSCLE_KR[f.muscle]).join("·")} 회복 완료
               </span>
             )}
           </div>
@@ -102,10 +102,10 @@ export function RecoveryMap({ data }: { data: MuscleRecovery[] }) {
 
       {/* 마스코트 코멘트 */}
       <div className="mt-3 flex items-center gap-2.5 rounded-lg bg-white/[0.04] px-3.5 py-2.5">
-        <span className="text-[15px]">{mascotState === "cheer" ? "✅" : mascotState === "tired" ? "⚠️" : "💡"}</span>
+        
         <p className="text-[12.5px] leading-relaxed text-white/70">
           {mascotState === "cheer"
-            ? "전부 쌩쌩해요! 오늘은 뭘 치든 최고 컨디션 🎉"
+            ? "전부 회복됐어요. 오늘은 어느 부위든 괜찮습니다"
             : mascotState === "tired"
             ? "빨간 부위가 많아요 — 오늘은 가볍게 or 회복된 부위만!"
             : freshOnes.length

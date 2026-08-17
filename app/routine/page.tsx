@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PillButton } from "@/components/ui/PillButton";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
-import { CoachBubble, ShibaCoach } from "@/components/mascot/ShibaCoach";
-import { LottieMascot } from "@/components/mascot/LottieMascot";
 import { RoutineGenerating } from "@/components/routine/RoutineGenerating";
 import { ExploreSection } from "@/components/routine/ExploreSection";
 import { ExThumb } from "@/components/ui/ExThumb";
@@ -18,11 +16,11 @@ type Phase = "idle" | "ask" | "generating" | "result";
 type Goal = "strength" | "size" | "fit" | "lower" | "arms";
 
 const GOALS: { v: Goal; t: string; d: string }[] = [
-  { v: "strength", t: "💪 힘 키우기", d: "3대 중량 늘리기" },
-  { v: "size", t: "🫄 몸 키우기", d: "근육 크기·벌크업" },
-  { v: "fit", t: "🔥 다이어트·체력", d: "짧고 자주, 전신" },
-  { v: "lower", t: "🦵 하체 보강", d: "하체 위주로" },
-  { v: "arms", t: "🦾 팔 보강", d: "이두·삼두 위주로" },
+  { v: "strength", t: "힘 키우기", d: "3대 중량 늘리기" },
+  { v: "size", t: "몸 키우기", d: "근육 크기·벌크업" },
+  { v: "fit", t: "다이어트·체력", d: "짧고 자주, 전신" },
+  { v: "lower", t: "하체 보강", d: "하체 위주로" },
+  { v: "arms", t: "팔 보강", d: "이두·삼두 위주로" },
 ];
 const EXPS = ["초급", "중급", "고급"] as const;
 const DAYS = [2, 3, 4, 6];
@@ -43,7 +41,7 @@ function recommend(goal: Goal, exp: (typeof EXPS)[number], days: number) {
     const reasons: string[] = [];
     if (GOAL_FIT[goal].includes(r.id)) {
       score += GOAL_FIT[goal].indexOf(r.id) === 0 ? 5 : 4;
-      reasons.push(GOALS.find((g) => g.v === goal)!.t.slice(2).trim() + "에 잘 맞는 프로그램");
+      reasons.push(GOALS.find((g) => g.v === goal)!.t + "에 잘 맞는 프로그램");
     }
     const lvGap = Math.abs(LV[r.level] - LV[exp]);
     if (lvGap === 0) { score += 3; reasons.push(`${exp}자에게 딱 맞는 난이도`); }
@@ -84,11 +82,11 @@ export default function RoutinePage() {
     <main className="space-y-6 lg:max-w-none lg:pt-10">
       {/* 내 루틴 (저장한 것들) */}
       <section>
-        <div className="lab mb-2">MY ROUTINES 내 루틴</div>
+        <div className="lab mb-2">내 루틴</div>
         {savedRoutines.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-6 text-center">
             <p className="text-[13px] text-white/50">
-              아직 저장한 루틴이 없어요.<br />아래에서 💾 저장하면 여기 모여요.
+              아직 저장한 루틴이 없어요.<br />아래에서 저장하면 여기 모여요.
             </p>
           </div>
         ) : (
@@ -133,10 +131,11 @@ export default function RoutinePage() {
       {/* 맞춤 추천 — 판다 코치가 골라줌 */}
       {phase === "idle" && (
         <section className="rounded-2xl border border-white/[0.06] bg-card p-5">
-          <CoachBubble tone="volt" avatar={<LottieMascot name="coach" size={72} fallback={<ShibaCoach size={72} />} />}>
-            어떤 루틴을 할지 모르겠어요? <b className="text-white">세 가지만 답하면</b> {EXPLORE.length}개 프로그램 중에서 딱 맞는 걸 골라줄게요.
-          </CoachBubble>
-          <PillButton className="mt-3 w-full" onClick={() => setPhase("ask")}>✨ 코치에게 루틴 추천받기</PillButton>
+          <h2 className="text-[16px] font-extrabold">어떤 루틴을 할지 모르겠다면</h2>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-white/55">
+            목표와 운동 경력, 주당 가능 횟수 <b className="text-white/85">세 가지만 답하면</b> {EXPLORE.length}개 프로그램 중에서 맞는 걸 골라줍니다.
+          </p>
+          <PillButton className="mt-4 w-full" onClick={() => setPhase("ask")}>루틴 추천받기</PillButton>
         </section>
       )}
 
@@ -219,7 +218,7 @@ export default function RoutinePage() {
             </div>
             {recs[0].r.who && <p className="mt-2.5 text-[12.5px] leading-relaxed text-white/65">{recs[0].r.who}</p>}
             {recs[0].r.schedule && (
-              <p className="mt-2 rounded-lg bg-white/[0.06] px-2.5 py-2 text-[12px] font-bold text-white/75">📆 {recs[0].r.schedule}</p>
+              <p className="mt-2 rounded-lg bg-white/[0.06] px-2.5 py-2 text-[12px] font-bold text-white/75">{recs[0].r.schedule}</p>
             )}
             <div className="mt-2.5 flex items-center gap-1.5 overflow-x-auto">
               {recs[0].r.exercises.map((id) => {

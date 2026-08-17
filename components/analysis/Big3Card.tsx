@@ -45,7 +45,7 @@ export function Big3Card({
             스쿼트+벤치+데드 합계로 도전!<br />
             <span className="text-[11.5px] text-white/40">3대 300 = 헬린이 졸업 · 400 = 중수 · 500 = 헬창 인증</span>
           </p>
-          <PillButton className="mt-4 w-full !py-3" onClick={() => setOpen(true)}>🏆 도전 시작</PillButton>
+          <PillButton className="mt-4 w-full !py-3" onClick={() => setOpen(true)}>도전 시작</PillButton>
         </div>
       ) : (
         <div>
@@ -55,7 +55,7 @@ export function Big3Card({
               / {big3!.goal}kg {grow > 0 && <span className="text-volt">(+{grow} 성장)</span>}
             </span>
             <button className="ml-auto pb-1 text-[12px] font-bold text-white/45" onClick={() => setOpen(true)}>
-              📏 측정 기록
+              측정 기록
             </button>
           </div>
           <div className="relative mt-3 h-4 overflow-hidden rounded-full bg-white/10">
@@ -71,7 +71,7 @@ export function Big3Card({
             </span>
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2">
-            {([["스쿼트 SQ", last.s], ["벤치 BP", last.b], ["데드 DL", last.d]] as const).map(([l, v]) => (
+            {([["스쿼트", last.s], ["벤치", last.b], ["데드", last.d]] as const).map(([l, v]) => (
               <div key={l} className="rounded-lg bg-white/[0.05] py-2.5 text-center">
                 <div className="font-display text-[18px] leading-none">{v}<span className="text-[10px] text-white/40">kg</span></div>
                 <div className="mt-1 text-[9.5px] text-white/45">{l}</div>
@@ -84,7 +84,7 @@ export function Big3Card({
 
       {/* 측정/목표 시트 */}
       <BottomSheet open={open} onClose={() => setOpen(false)}>
-        <h3 className="text-lg font-extrabold">🏆 3대 측정 기록</h3>
+        <h3 className="text-lg font-extrabold">3대 측정 기록</h3>
         <p className="mt-0.5 text-[12.5px] text-white/50">오늘 잰 최고 무게(1RM)를 적어주세요.</p>
         <div className="lab mb-1.5 mt-4">목표 합계</div>
         <div className="grid grid-cols-3 gap-2">
@@ -101,7 +101,7 @@ export function Big3Card({
           ))}
         </div>
         <div className="mt-4 space-y-2.5">
-          {([["🏋️ 스쿼트", s, setS], ["🛏️ 벤치프레스", b, setB], ["⬆️ 데드리프트", d, setD]] as const).map(([l, v, set]) => (
+          {([["스쿼트", s, setS], ["벤치프레스", b, setB], ["데드리프트", d, setD]] as const).map(([l, v, set]) => (
             <div key={l} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
               <span className="flex-1 text-[14px] font-bold">{l}</span>
               <input

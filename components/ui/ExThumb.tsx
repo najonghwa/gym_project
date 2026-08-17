@@ -34,10 +34,11 @@ export function ExThumb({
   if (!pose) {
     return (
       <span
-        className={`grid shrink-0 place-items-center bg-white/[0.07] ${rounded}`}
-        style={{ width: size, height: size, fontSize: size * 0.5 }}
+        className={`grid shrink-0 place-items-center bg-white/[0.07] font-extrabold text-white/45 ${rounded}`}
+        style={{ width: size, height: size, fontSize: size * 0.42 }}
+        title={ex.name}
       >
-        {ex.em}
+        {ex.name.slice(0, 1)}
       </span>
     );
   }

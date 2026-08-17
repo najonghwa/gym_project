@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { computeStats, useUser } from "@/lib/useUser";
+import { Icon, IconName } from "@/components/ui/Icon";
 
-const TABS = [
-  { href: "/today", em: "🏋️", t: "헬스" },
-  { href: "/run", em: "🏃", t: "러닝" },
-  { href: "/analysis", em: "📊", t: "분석" },
-  { href: "/routine", em: "📋", t: "루틴" },
-  { href: "/ranking", em: "🏆", t: "랭킹" },
-  { href: "/gym", em: "🗺️", t: "헬스장" },
+const TABS: { href: string; ic: IconName; t: string }[] = [
+  { href: "/today", ic: "dumbbell", t: "헬스" },
+  { href: "/run", ic: "run", t: "러닝" },
+  { href: "/analysis", ic: "chart", t: "분석" },
+  { href: "/routine", ic: "clipboard", t: "루틴" },
+  { href: "/ranking", ic: "trophy", t: "랭킹" },
+  { href: "/gym", ic: "map", t: "헬스장" },
 ];
 
 export function TabBar() {
@@ -46,12 +47,12 @@ export function TabBar() {
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl py-2 ${
+                className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl py-2 ${
                   on ? "bg-volt/10 text-volt" : "text-stone-500"
                 }`}
               >
-                <span className={`text-[18px] leading-none ${on ? "" : "opacity-70 grayscale"}`}>{tab.em}</span>
-                <span className="text-[10px] font-bold">{tab.t}</span>
+                <Icon name={tab.ic} size={21} strokeWidth={on ? 2 : 1.7} />
+                <span className={`text-[10px] ${on ? "font-bold" : "font-semibold"}`}>{tab.t}</span>
               </Link>
             );
           })}
@@ -67,11 +68,13 @@ export function TabBar() {
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-[14.5px] font-extrabold transition ${
-                  on ? "bg-volt text-black" : "text-stone-500 hover:bg-white/[0.05] hover:text-stone-200"
+                className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[14px] transition ${
+                  on
+                    ? "bg-volt font-extrabold text-black"
+                    : "font-semibold text-stone-400 hover:bg-white/[0.04] hover:text-stone-100"
                 }`}
               >
-                <span className={`text-[17px] leading-none ${on ? "" : "opacity-70 grayscale"}`}>{tab.em}</span>
+                <Icon name={tab.ic} size={19} strokeWidth={on ? 2 : 1.7} />
                 {tab.t}
               </Link>
             );

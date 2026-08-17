@@ -14,8 +14,8 @@ export function WeekStrip({ days, target }: { days: DayCell[]; target: string })
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="lab">이번 주 WEEK</span>
-        <span className="text-[11px] font-bold text-white/55">🎯 {target}</span>
+        <span className="lab">이번 주</span>
+        <span className="text-[11px] font-bold text-white/55">목표 {target}</span>
       </div>
       <motion.div
         className="grid grid-cols-7 gap-1.5"

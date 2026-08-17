@@ -42,7 +42,7 @@ export function RoutineGenerating({ onDone }: { onDone: () => void }) {
         <div className="font-display text-[30px] leading-none">
           {pct}<span className="text-[16px] text-white/55">%</span>
         </div>
-        <div className="lab mt-1">AI 루틴 생성 중</div>
+        <div className="lab mt-1">루틴 고르는 중</div>
       </div>
       <AnimatePresence mode="wait">
         <motion.p

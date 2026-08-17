@@ -1,5 +1,6 @@
 "use client";
 // P0-2 운동 상세 시트 — AnimPlayer + 도넛 + 세트 편집 + 휴식타이머 + Replace + 추이
+import { ExThumb } from "@/components/ui/ExThumb";
 import { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { useReducedMotion } from "framer-motion";
@@ -111,7 +112,7 @@ export function ExerciseSheet({
     <BottomSheet open={!!exercise} onClose={onClose} tall>
       {/* 헤더 */}
       <div className="flex items-center gap-3">
-        <div className="grid h-12 w-12 place-items-center rounded-lg border border-white/[0.06] bg-white/[0.04] text-2xl">{ex.em}</div>
+        <ExThumb ex={ex} size={48} />
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-lg font-extrabold">{ex.name}</h3>
           <div className="text-[12px] text-white/55">{ex.zone}구역 · {ex.equipment} · 휴식 {ex.restSec}초</div>
@@ -121,7 +122,7 @@ export function ExerciseSheet({
       {celebrate && (
         <div className="mt-3 flex items-center gap-3 rounded-lg border border-volt/40 bg-volt/10 px-4 py-2.5">
           <Mascot state="cheer" size={52} />
-          <b className="text-[14px]">전 세트 완료! 오늘도 해냈다 🎉</b>
+          <b className="text-[14px]">전 세트 완료</b>
         </div>
       )}
 
@@ -176,7 +177,7 @@ export function ExerciseSheet({
         className="mt-4 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-[13px] outline-none placeholder:text-white/30 focus:border-volt"
       />
       <div className="mt-2 rounded-lg border border-gold/40 bg-gold/10 px-3.5 py-2.5 text-[12.5px] leading-relaxed">
-        💡 <b>전문가 팁</b> — {ex.tip}
+        <b>팁</b> — {ex.tip}
       </div>
       <ol className="mt-3 space-y-1.5">
         {ex.howto.map((h, i) => (
@@ -194,10 +195,10 @@ export function ExerciseSheet({
       {/* Replace / 삭제 */}
       <div className="mt-4 flex gap-2">
         <PillButton variant="ghost" className="flex-1 !py-2.5 !text-[13px]" onClick={() => setShowAlt(!showAlt)}>
-          🔄 다른 운동으로
+          다른 운동으로
         </PillButton>
         <PillButton variant="ghost" className="flex-1 !py-2.5 !text-[13px] !text-danger" onClick={() => { onDelete(); onClose(); }}>
-          🗑 오늘 목록에서 삭제
+          오늘 목록에서 삭제
         </PillButton>
       </div>
       {showAlt && (
@@ -208,7 +209,7 @@ export function ExerciseSheet({
               onClick={() => { onReplace(alt.id); setShowAlt(false); }}
               className="flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-left"
             >
-              <span>{alt.em}</span>
+              <ExThumb ex={alt} size={26} />
               <b className="text-[13.5px]">{alt.name}</b>
               <span className="ml-auto text-[11px] text-white/40">{alt.equipment}</span>
             </button>

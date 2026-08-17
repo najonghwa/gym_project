@@ -55,7 +55,7 @@ export function RunDetailSheet({
       {run && (
         <>
           <div className="flex items-baseline justify-between">
-            <h3 className="text-lg font-extrabold">{run.route ? "📡" : "✍️"} {run.date}</h3>
+            <h3 className="text-lg font-extrabold">{run.date}</h3>
             <span className="text-[12px] text-white/45">{run.route ? "GPS 기록" : "수동 기록"}</span>
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2">
@@ -118,7 +118,7 @@ export function RunDetailSheet({
             onClick={() => { if (window.confirm(`${run.date} · ${run.km}km 기록을 삭제할까요?`)) { onDelete(run); onClose(); } }}
             className="mt-5 w-full rounded-lg border border-danger/30 py-3 text-[13px] font-bold text-danger/80"
           >
-            🗑 이 기록 삭제
+            이 기록 삭제
           </button>
         </>
       )}

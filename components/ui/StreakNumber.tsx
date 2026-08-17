@@ -14,7 +14,7 @@ export function StreakNumber({ value }: { value: number }) {
       >
         {reduce ? value : <CountUp end={value} duration={1.1} />}
       </span>
-      <span className="pb-1 text-[14px] font-bold text-white/55">일 연속 🔥</span>
+      <span className="pb-1 text-[14px] font-bold text-white/55">일 연속</span>
     </div>
   );
 }

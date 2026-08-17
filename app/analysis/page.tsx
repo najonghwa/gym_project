@@ -6,14 +6,13 @@ import { Big3Card } from "@/components/analysis/Big3Card";
 import { RecoveryMap } from "@/components/recovery/RecoveryMap";
 import { PRChart } from "@/components/charts/PRChart";
 import { RunAnalysis } from "@/components/run/RunAnalysis";
-import { CoachBubble } from "@/components/mascot/ShibaCoach";
-import { ShibaRunner, ShibaFlex } from "@/components/mascot/ShibaPoses";
-import { LottieMascot } from "@/components/mascot/LottieMascot";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { getMockRecovery } from "@/lib/mock/recovery";
 import { EXPLORE } from "@/lib/mock/routines";
 import { computeStats, useUser } from "@/lib/useUser";
 import { coachReport } from "@/lib/coach";
+import { ShibaFlex } from "@/components/mascot/ShibaPoses";
+import { Icon } from "@/components/ui/Icon";
 
 type Run = { date: string; km: number; paceSec?: number | null };
 
@@ -81,14 +80,14 @@ export default function AnalysisPage() {
   if (!rep) return null;
 
   const verdictMap = {
-    progress: { t: "잘 늘고 있어요", d: "중량·볼륨이 상승 중 — 진행성 과부하가 작동하고 있어요", c: "#c8ff00", em: "📈" },
-    hold: { t: "유지 구간이에요", d: "큰 변화 없이 볼륨을 지키는 중 — 다음 주 살짝 올려볼까요?", c: "#f59e0b", em: "➡️" },
-    decline: { t: "볼륨이 줄었어요", d: "지난주보다 훈련량이 감소 — 회복 주간이거나 점검이 필요해요", c: "#ef4444", em: "📉" },
-    nodata: { t: "데이터를 모으는 중", d: "이번 주 기록이 쌓이면 진행 상태를 평가해 드려요", c: "#a1a1aa", em: "⏳" },
+    progress: { t: "잘 늘고 있어요", d: "중량·볼륨이 상승 중 — 진행성 과부하가 작동하고 있어요", c: "#c8ff00" },
+    hold: { t: "유지 구간이에요", d: "큰 변화 없이 볼륨을 지키는 중 — 다음 주 살짝 올려볼까요?", c: "#f59e0b" },
+    decline: { t: "볼륨이 줄었어요", d: "지난주보다 훈련량이 감소 — 회복 주간이거나 점검이 필요해요", c: "#ef4444" },
+    nodata: { t: "데이터를 모으는 중", d: "이번 주 기록이 쌓이면 진행 상태를 평가해 드려요", c: "#a1a1aa" },
   }[rep.verdict];
 
   const noteStyle = { good: "border-volt/30 bg-volt/[0.06]", warn: "border-danger/30 bg-danger/[0.06]", tip: "border-white/10 bg-white/[0.03]" };
-  const noteIcon = { good: "✅", warn: "⚠️", tip: "💡" };
+  
 
   const ratioBar = (a: number, b: number, la: string, lb: string) => {
     const tot = a + b || 1;
@@ -112,12 +111,15 @@ export default function AnalysisPage() {
     <main className="mx-auto max-w-3xl space-y-5 lg:max-w-5xl lg:pt-10">
       {/* 헤더 — 코치 판다 소개 */}
       <div>
-        <div className="lab mb-2">COACH REPORT · {new Date().getMonth() + 1}월 {Math.ceil(new Date().getDate() / 7)}주차</div>
-        <CoachBubble tone="volt" avatar={<LottieMascot name={mode === "run" ? "run" : "analysis"} size={78} fallback={mode === "run" ? <ShibaRunner size={70} /> : <ShibaFlex size={78} />} />}>
-          <b className="text-white">{String(user.id)}님, 코치예요.</b> {mode === "run"
-            ? "이번 달 러닝을 뜯어봤어요 — 거리·페이스·꾸준함까지 아래에 정리했어요."
-            : "이번 주 훈련을 코치 눈으로 봤어요. 볼륨·진행·밸런스를 아래에서 짚어줄게요."}
-        </CoachBubble>
+        <div className="lab mb-2">코치 리포트 · {new Date().getMonth() + 1}월 {Math.ceil(new Date().getDate() / 7)}주차</div>
+        <h1 className="font-display text-[24px] leading-tight tracking-tight">
+          {mode === "run" ? "러닝 분석" : "훈련 분석"}
+        </h1>
+        <p className="mt-1 text-[13px] leading-relaxed text-white/50">
+          {mode === "run"
+            ? "이번 달 거리와 페이스, 꾸준함을 정리했습니다."
+            : "이번 주 볼륨과 진행, 좌우·상하 균형을 짚어봤습니다."}
+        </p>
       </div>
 
       {/* 헬스 / 러닝 세그먼트 */}
@@ -141,7 +143,7 @@ export default function AnalysisPage() {
       <>
       {/* 1. 이번 주 요약 */}
       <section>
-        <Sec n="1" title="이번 주 요약" sub="THIS WEEK" />
+        <Sec n="1" title="이번 주 요약" sub="세션·순응도·볼륨" />
         <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
           <Card className="!p-3.5">
             <div className="lab">세션</div>
@@ -173,7 +175,7 @@ export default function AnalysisPage() {
             <div className="lab">연속</div>
             <div className="mt-1 flex items-end gap-1">
               <span className={`font-display text-[30px] leading-none ${(st?.streak ?? 0) > 0 ? "text-volt" : "text-white/30"}`}>{st?.streak ?? 0}</span>
-              <span className="pb-1 text-[12px] text-white/45">일 🔥</span>
+              <span className="pb-1 text-[12px] text-white/45">일</span>
             </div>
           </Card>
         </div>
@@ -184,7 +186,7 @@ export default function AnalysisPage() {
         <Sec n="2" title="진행 평가" sub="이번 주, 나아지고 있나요?" />
         <Card>
           <div className="flex items-start gap-3">
-            <span className="text-[30px] leading-none">{verdictMap.em}</span>
+            <span className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full" style={{ background: verdictMap.c }} />
             <div className="min-w-0">
               <b className="text-[17px] font-extrabold" style={{ color: verdictMap.c }}>{verdictMap.t}</b>
               <p className="mt-0.5 text-[12.5px] leading-relaxed text-white/60">{verdictMap.d}</p>
@@ -307,7 +309,8 @@ export default function AnalysisPage() {
           <div className="flex-1 space-y-2">
             {rep.notes.map((note, i) => (
               <div key={i} className={`flex items-start gap-2.5 rounded-lg border p-3 ${noteStyle[note.tone]}`}>
-                <span className="text-[14px] leading-none">{noteIcon[note.tone]}</span>
+                <Icon name={note.tone === "good" ? "check" : note.tone === "warn" ? "target" : "bulb"} size={15}
+                  className={`mt-px shrink-0 ${note.tone === "good" ? "text-volt" : note.tone === "warn" ? "text-danger" : "text-white/45"}`} />
                 <p className="text-[12.5px] leading-relaxed text-white/80">{note.text}</p>
               </div>
             ))}

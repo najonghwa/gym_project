@@ -1,5 +1,6 @@
 "use client";
 // id + PIN 로그인/가입 (구 gym_web 계정 그대로 사용 가능)
+import { Icon } from "@/components/ui/Icon";
 import { useState } from "react";
 import { PillButton } from "@/components/ui/PillButton";
 import { ShibaLifter } from "@/components/mascot/ShibaLifter";
@@ -67,7 +68,7 @@ export function LoginCard({
         <div className="mt-4">
           <div className="lab mb-1.5">주로 하는 운동 <span className="font-normal text-white/35">— 첫 화면으로 설정돼요</span></div>
           <div className="grid grid-cols-2 gap-2">
-            {([["gym", "🏋️", "헬스 위주", "웨이트 · 루틴 · 3대"], ["run", "🏃", "러닝 위주", "거리 · 페이스 · 목표"]] as const).map(([v, em, t, d]) => (
+            {([["gym", "dumbbell", "헬스 위주", "웨이트와 루틴 중심"], ["run", "run", "러닝 위주", "거리와 페이스 중심"]] as const).map(([v, ic, t, d]) => (
               <button
                 key={v}
                 onClick={() => setPrimary(v)}
@@ -75,7 +76,7 @@ export function LoginCard({
                   primary === v ? "border-volt bg-volt/10" : "border-white/10 bg-card"
                 }`}
               >
-                <div className="text-[20px]">{em}</div>
+                <Icon name={ic} size={20} className={primary === v ? "text-volt" : "text-white/50"} />
                 <div className={`mt-1 text-[14px] font-extrabold ${primary === v ? "text-volt" : ""}`}>{t}</div>
                 <div className="mt-0.5 text-[10.5px] text-white/40">{d}</div>
               </button>

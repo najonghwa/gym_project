@@ -183,7 +183,7 @@ export default function LiveRunPage() {
         </div>
         {(phase === "live" || phase === "paused") && (
           <p className="mt-4 text-[11.5px] text-white/40">
-            {gpsOk ? (phase === "paused" ? "⏸ 일시정지 중" : "📡 GPS 기록 중 — 화면을 켠 상태로 유지해 주세요") : "📡 GPS 신호 잡는 중…"}
+            {gpsOk ? (phase === "paused" ? "일시정지 중" : "GPS 기록 중 — 화면을 켠 상태로 유지해 주세요") : "GPS 신호를 잡고 있어요"}
           </p>
         )}
       </div>
@@ -218,7 +218,7 @@ export default function LiveRunPage() {
         {phase === "done" && (
           <>
             <div className="rounded-2xl border border-volt/30 bg-volt/[0.07] p-4 text-center">
-              <b className="text-[15px]">🏁 수고했어요!</b>
+              <b className="text-[15px]">수고했어요</b>
               <p className="mt-1 text-[13px] text-white/60">
                 {km.toFixed(2)}km · {fmtT(elapsed)} · 평균 {paceStr(avgPace)}/km
               </p>

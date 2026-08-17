@@ -44,7 +44,7 @@ export default function RankingPage() {
 
   return (
     <main className="lg:max-w-none lg:pt-10">
-      <div className="lab mb-1">RANKING 사내 랭킹 {demo && "· 예시"}</div>
+      <div className="lab mb-1">사내 랭킹 {demo && "· 예시"}</div>
       <h2 className="font-display text-[26px]">누가 제일 꾸준할까?</h2>
 
       <div className="mt-4 grid grid-cols-4 gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
@@ -81,7 +81,7 @@ export default function RankingPage() {
                 }`}
               >
                 <span className="w-8 text-center font-display text-[17px]">
-                  {["🥇", "🥈", "🥉"][i] ?? i + 1}
+                  <span className={`tabular-nums ${i === 0 ? "text-volt" : ""}`}>{i + 1}</span>
                 </span>
                 <span className="min-w-0 flex-1 truncate text-[14px] font-bold">
                   {r.id}

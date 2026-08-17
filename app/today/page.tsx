@@ -18,8 +18,7 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SettingsSheet } from "@/components/settings/SettingsSheet";
 import { ColorInitialBadge } from "@/components/ui/ColorInitialBadge";
 import { ExThumb } from "@/components/ui/ExThumb";
-import { ShibaLifter } from "@/components/mascot/ShibaLifter";
-import { LottieMascot } from "@/components/mascot/LottieMascot";
+import { Icon } from "@/components/ui/Icon";
 import { EXERCISES, itemsFromExercises } from "@/lib/mock/exercises";
 import { EXPLORE } from "@/lib/mock/routines";
 import { MUSCLE_KR, type Muscle } from "@/lib/recovery";
@@ -229,20 +228,18 @@ export default function TodayPage() {
     <main className="mx-auto max-w-2xl lg:max-w-none lg:pt-10">
       {/* 페이지 헤더 — 부제목 = 오늘의 한마디 */}
       <div className="mb-5 flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-2">
-          <LottieMascot name="gym" size={54} fallback={<ShibaLifter size={54} />} />
-          <div className="min-w-0">
-            <div className="lab">{new Date().getMonth() + 1}월 {new Date().getDate()}일 {S_DAYS[new Date().getDay()]}요일 · {String(user.id)}</div>
-            <h1 className="mt-0.5 font-display text-[26px] leading-tight tracking-tight">Workout</h1>
-            <p className="mt-1 text-[13px] leading-relaxed text-white/55">💬 {quote}</p>
-          </div>
+        <div className="min-w-0">
+          <h1 className="font-display text-[24px] leading-tight tracking-tight">
+            {new Date().getMonth() + 1}월 {new Date().getDate()}일 <span className="text-white/45">{S_DAYS[new Date().getDay()]}요일</span>
+          </h1>
+          <p className="mt-1 text-[13px] leading-relaxed text-white/50">{quote}</p>
         </div>
         <button
           onClick={() => setShowSettings(true)}
           className="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-card text-[16px]"
           aria-label="설정"
         >
-          ⚙️
+          <Icon name="gear" size={18} />
         </button>
       </div>
 
@@ -260,14 +257,14 @@ export default function TodayPage() {
 
           {/* 피처 카드 4종 — 구 GYM&RUN 대시보드 배치 */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {/* 연속 STREAK */}
+            {/* 연속 */}
             <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
-              <div className="lab">연속 STREAK</div>
+              <div className="lab">연속</div>
               <div className="mt-1 flex items-end gap-1">
                 <span className={`font-display text-[44px] leading-none ${stats && stats.streak > 0 ? "text-volt" : "text-white/30"}`}>
                   {stats?.streak ?? 0}
                 </span>
-                <span className="pb-1 text-[14px] font-bold text-white/55">일 🔥</span>
+                <span className="pb-1 text-[14px] font-bold text-white/55">일</span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-1.5">
                 {([[stats?.sessions ?? 0, "총 운동"], [gymDash.totalSets, "총 세트"], [`${stats?.att ?? 0}%`, "4주 출석"], [`Lv${stats?.level ?? 1}`, "레벨"]] as const).map(([v, l]) => (
@@ -284,7 +281,7 @@ export default function TodayPage() {
               <div className="lab">루틴 진행</div>
               {routineProg ? (
                 <>
-                  <b className="mt-1.5 truncate text-[13.5px]">📋 {routineProg.title}</b>
+                  <b className="mt-1.5 truncate text-[13.5px]">{routineProg.title}</b>
                   <div className="mt-1 flex items-end gap-1.5">
                     <span className="font-display text-[38px] leading-none text-volt">{routineProg.week}</span>
                     <span className="pb-1 text-[12.5px] text-white/45">/ {routineProg.weeks}주차</span>
@@ -311,7 +308,7 @@ export default function TodayPage() {
                     onClick={() => setShowRoutinePick(true)}
                     className="mt-auto w-full rounded-full bg-volt py-3 text-[13.5px] font-extrabold text-black"
                   >
-                    루틴 고르기 📋
+                    루틴 고르기
                   </button>
                 </>
               )}
@@ -355,7 +352,7 @@ export default function TodayPage() {
                       onClick={() => router.push("/analysis")}
                       className="mt-auto w-full rounded-full bg-volt py-3 text-[13.5px] font-extrabold text-black"
                     >
-                      도전 시작 🏆
+                      도전 시작
                     </button>
                   </>
                 );
@@ -470,11 +467,11 @@ export default function TodayPage() {
 
       <div className="lg:grid lg:grid-cols-3 lg:gap-6">
       <div className="lg:col-span-2">
-      <Node label="오늘의 운동 WORKOUT">
+      <Node label="오늘의 운동">
         {bonusSession && (
           <div className="mb-3">
             <span className="rounded-full bg-volt/15 px-2.5 py-1 text-[11.5px] font-bold text-volt">
-              🔥 이번 주 목표 달성 — 오늘은 보너스 세션
+              이번 주 목표를 채웠어요. 오늘은 보너스 세션
             </span>
           </div>
         )}
@@ -483,7 +480,7 @@ export default function TodayPage() {
             onClick={() => setShowRoutinePick(true)}
             className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
           >
-            📋 루틴 변경
+            루틴 변경
           </button>
           <button
             onClick={() => setShowAddEx(true)}
@@ -500,7 +497,7 @@ export default function TodayPage() {
             }}
             className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-bold text-white/70"
           >
-            🧹 자유 운동
+            자유 운동
           </button>
         </div>
         {items.length === 0 ? (
@@ -520,7 +517,7 @@ export default function TodayPage() {
         )}
       </Node>
 
-      <Node label={doneSets >= totalSets && totalSets > 0 ? "결과 RESULT" : "리워드 REWARD"} last>
+      <Node label={doneSets >= totalSets && totalSets > 0 ? "기록" : "기록"} last>
         <div className="flex items-end gap-3">
           <div>
             <div className="text-[11px] text-white/45">연속 운동</div>
@@ -528,7 +525,7 @@ export default function TodayPage() {
               <span className="font-display text-[38px] leading-none text-white/35">{stats?.streak ?? 0}</span>
               <span className="pb-1 font-display text-[20px] text-white/35">→</span>
               <span className="font-display text-[38px] leading-none text-volt">{(stats?.streak ?? 0) + (doneSets >= totalSets && totalSets > 0 ? 0 : 1)}</span>
-              <span className="pb-1 text-[13px] font-bold text-white/55">일 🔥</span>
+              <span className="pb-1 text-[13px] font-bold text-white/55">일</span>
             </div>
           </div>
           <div className="ml-auto text-right text-[11.5px] text-white/45">
@@ -540,7 +537,7 @@ export default function TodayPage() {
         </div>
         {doneSets >= totalSets && totalSets > 0 && (
           <p className="mt-3 rounded-lg bg-volt/10 px-3.5 py-2.5 text-center text-[13px] font-bold text-volt">
-            오늘 운동 완료! 연속 기록이 이어집니다 🎉
+            오늘 운동 완료. 연속 기록이 이어집니다
           </p>
         )}
       </Node>
@@ -596,7 +593,7 @@ export default function TodayPage() {
                 const me = String(user.id).toLowerCase() === r.id.toLowerCase();
                 return (
                   <div key={r.id} className="flex items-center gap-2.5 py-2">
-                    <span className="w-6 text-center text-[13px]">{["🥇", "🥈", "🥉"][i] ?? <b className="text-[12px] text-white/40">{i + 1}</b>}</span>
+                    <span className="w-6 text-center text-[13px]"><b className={`text-[12px] ${i === 0 ? "text-volt" : "text-white/40"}`}>{i + 1}</b></span>
                     <span className={`min-w-0 flex-1 truncate text-[13px] font-bold ${me ? "text-volt" : "text-white/80"}`}>
                       {r.id}{me ? " (나)" : ""}
                     </span>
@@ -704,8 +701,8 @@ export default function TodayPage() {
       <AchievementModal
         open={showBadge}
         title="오늘 운동 완료!"
-        desc={`${totalSets}세트 모두 완료 — 연속 기록 +1 🔥`}
-        emoji="🏋️"
+        desc={`${totalSets}세트 모두 완료 — 연속 기록 +1`}
+        icon="dumbbell"
         onClose={() => setShowBadge(false)}
       />
 
@@ -736,7 +733,7 @@ export default function TodayPage() {
                     <b className="block truncate text-[14px]">
                       {r.title}
                       {active && <span className="ml-1.5 rounded bg-volt px-1.5 py-0.5 text-[9px] font-extrabold text-black">사용 중</span>}
-                      {saved && !active && <span className="ml-1.5 text-[10px] text-volt">💾 저장됨</span>}
+                      {saved && !active && <span className="ml-1.5 text-[10px] text-volt">저장됨</span>}
                     </b>
                     <span className="text-[11px] text-white/45">
                       {r.weeks}주 · 주 {r.daysPerWeek}회 · 회당 ~{r.durationMin}분 · {r.level}
@@ -749,9 +746,9 @@ export default function TodayPage() {
                 {expanded && (
                   <div className="border-t border-white/[0.06] px-3.5 pb-3.5 pt-3">
                     <p className="text-[12.5px] leading-relaxed text-white/70">{r.overview}</p>
-                    {r.who && <p className="mt-2 text-[12px] leading-relaxed text-white/50">👤 {r.who}</p>}
+                    {r.who && <p className="mt-2 text-[12px] leading-relaxed text-white/50">{r.who}</p>}
                     {r.schedule && (
-                      <p className="mt-2 rounded-lg bg-white/[0.05] px-2.5 py-2 text-[12px] font-bold text-white/70">📆 {r.schedule}</p>
+                      <p className="mt-2 rounded-lg bg-white/[0.05] px-2.5 py-2 text-[12px] font-bold text-white/70">{r.schedule}</p>
                     )}
                     <div className="mt-2.5 grid grid-cols-2 gap-1.5">
                       {r.exercises.map((exId) => {
@@ -807,7 +804,7 @@ export default function TodayPage() {
             </button>
           ))}
           {EXERCISES.every((ex) => items.some((it) => it.exerciseId === ex.id)) && (
-            <p className="py-4 text-center text-[13px] text-white/40">모든 운동이 이미 오늘 목록에 있어요 💪</p>
+            <p className="py-4 text-center text-[13px] text-white/40">모든 운동이 이미 오늘 목록에 있어요</p>
           )}
         </div>
       </BottomSheet>

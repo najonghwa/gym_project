@@ -1,5 +1,6 @@
 "use client";
 // 설정 시트 — 첫 화면(주 종목) 변경 + 로그아웃 (헬스/러닝 탭 공용)
+import { Icon } from "@/components/ui/Icon";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 
 export function SettingsSheet({
@@ -13,10 +14,10 @@ export function SettingsSheet({
 }) {
   return (
     <BottomSheet open={open} onClose={onClose}>
-      <h3 className="text-lg font-extrabold">⚙️ 설정</h3>
+      <h3 className="text-lg font-extrabold">설정</h3>
       <div className="lab mb-1.5 mt-4">앱 켜면 처음 보이는 화면</div>
       <div className="grid grid-cols-2 gap-2">
-        {([["gym", "🏋️", "헬스"], ["run", "🏃", "러닝"]] as const).map(([v, em, t]) => (
+        {([["gym", "dumbbell", "헬스"], ["run", "run", "러닝"]] as const).map(([v, ic, t]) => (
           <button
             key={v}
             onClick={() => onChangeMode(v)}
@@ -24,8 +25,10 @@ export function SettingsSheet({
               primaryMode === v ? "border-volt bg-volt/10 text-volt" : "border-white/10 bg-white/[0.03]"
             }`}
           >
-            <span className="text-[18px]">{em}</span>
-            <b className="ml-1.5 text-[14px]">{t}</b>
+            <span className="flex items-center justify-center gap-2">
+              <Icon name={ic} size={18} />
+              <b className="text-[14px]">{t}</b>
+            </span>
           </button>
         ))}
       </div>

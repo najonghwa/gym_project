@@ -59,7 +59,7 @@ export function FrequencySlider({
         ))}
       </div>
       <p className="mt-1 text-center text-[13px] font-bold text-volt">
-        주 {value}회{value === recommend ? " — 딱 좋아요! 👍" : value > recommend ? " — 의욕 넘치는데요?!" : " — 가볍게 시작!"}
+        주 {value}회{value === recommend ? " — 딱 좋아요" : value > recommend ? " — 의욕 넘치는데요?!" : " — 가볍게 시작!"}
       </p>
       {preview && <p className="mt-0.5 text-center text-[11.5px] text-white/50">{preview(value)}</p>}
     </div>

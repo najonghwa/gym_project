@@ -36,7 +36,7 @@ export function ExerciseInfoSheet({
           </ol>
 
           <div className="mt-4 rounded-lg border border-gold/40 bg-gold/10 p-3 text-[13px] leading-relaxed">
-            💡 <b>팁</b> — {exercise.tip}
+            <b>팁</b> — {exercise.tip}
           </div>
         </>
       )}
