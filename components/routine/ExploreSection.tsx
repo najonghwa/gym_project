@@ -56,7 +56,7 @@ export function ExploreSection({
   return (
     <section>
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="font-display text-[20px]">루틴 둘러보기 EXPLORE</h3>
+        <h3 className="font-display text-[20px]">루틴 둘러보기</h3>
         <span className="text-[11px] text-white/40">{list.length}개</span>
       </div>
       <ChipRow label="난이도" options={FILTER.level} value={level} onChange={setLevel} />

@@ -246,7 +246,7 @@ export default function TodayPage() {
       {/* ── 기록 대시보드 (러닝 탭과 같은 카드 패턴) — 상단 배치 ── */}
       {gymDash && (
         <section className="mb-6 space-y-3">
-          {/* 피처 카드 4종 — 구 GYM&RUN 대시보드 배치 */}
+          {/* 지표 카드 — 연속·루틴 진행·3대·오늘 준비 */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {/* 연속 */}
             <div className="rounded-xl border border-white/[0.07] bg-card p-4">
@@ -543,7 +543,7 @@ export default function TodayPage() {
           })()}
         </div>
 
-        {/* 출석률 랭킹 TOP5 */}
+        {/* 출석률 랭킹 상위 5명 */}
         <div className="rounded-xl border border-white/[0.07] bg-card p-4">
           <div className="flex items-baseline justify-between">
             <b className="text-[15px] font-extrabold">출석률 랭킹</b>

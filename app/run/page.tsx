@@ -280,7 +280,7 @@ export default function RunPage() {
 
       {/* 러닝 달력 (모니터링) */}
       {kmByDate.size > 0 && (
-        <section className="rounded-xl border border-white/[0.07] bg-card p-4">
+        <section className="border-t border-white/[0.07] pt-4">
           <b className="text-[15px] font-extrabold">러닝 달력</b>
           <p className="text-[11.5px] text-white/45">최근 3개월 · 진할수록 많이 달린 날</p>
           <div className="mt-3"><ActivityCalendar data={kmByDate} months={3} suffix="km" /></div>
@@ -288,7 +288,7 @@ export default function RunPage() {
       )}
 
       {/* 최근 기록 — 좌: 선택 러닝 지도 / 우: 목록 */}
-      <section className="rounded-xl border border-white/[0.07] bg-card p-4">
+      <section className="border-t border-white/[0.07] pt-4">
         <b className="text-[15px] font-extrabold">최근 기록</b>
         <p className="text-[11.5px] text-white/45">목록에서 기록을 고르면 왼쪽에 경로가 나와요</p>
         {runs.length === 0 ? (

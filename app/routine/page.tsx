@@ -200,25 +200,26 @@ export default function RoutinePage() {
           <div className="lab">추천 결과 — {EXPLORE.length}개 중 이 3개가 잘 맞아요</div>
 
           {/* 1순위 */}
-          <div className="rounded-xl border border-volt/40 bg-volt/[0.05] p-4">
-            <div className="flex items-start gap-3">
+          {/* 강조는 좌측 볼트 바 + "가장 잘 맞음" 한 줄, 두 가지만.
+              예전엔 볼트 테두리·볼트 배경·BEST 배지·체크 칩·필 배경까지 6겹이라
+              무엇이 중요한지가 오히려 안 보였다. */}
+          <div className="rounded-xl border border-white/[0.07] bg-card p-4 border-l-[3px] border-l-volt">
+            <span className="text-[11.5px] font-bold text-volt">가장 잘 맞음</span>
+            <div className="mt-2 flex items-start gap-3">
               <ColorInitialBadge text={recs[0].r.badge} seed={0} />
               <div className="min-w-0 flex-1">
-                <span className="rounded bg-volt px-1.5 py-0.5 text-[9.5px] font-extrabold text-black">BEST</span>
-                <b className="mt-1 block text-[16px]">{recs[0].r.title}</b>
+                <b className="block text-[16px]">{recs[0].r.title}</b>
                 <span className="text-[11.5px] text-white/50">
                   {recs[0].r.weeks}주 · 주 {recs[0].r.daysPerWeek}회 · 회당 ~{recs[0].r.durationMin}분 · {recs[0].r.level}
                 </span>
               </div>
             </div>
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
-              {recs[0].reasons.map((why) => (
-                <span key={why} className="rounded-full bg-volt/15 px-2.5 py-1 text-[11px] font-bold text-volt">✓ {why}</span>
-              ))}
-            </div>
-            {recs[0].r.who && <p className="mt-2.5 text-[12.5px] leading-relaxed text-white/65">{recs[0].r.who}</p>}
+            <p className="mt-2.5 text-[12.5px] text-white/60">
+              고른 이유 · {recs[0].reasons.join(" · ")}
+            </p>
+            {recs[0].r.who && <p className="mt-2 text-[12.5px] leading-relaxed text-white/65">{recs[0].r.who}</p>}
             {recs[0].r.schedule && (
-              <p className="mt-2 rounded-lg bg-white/[0.06] px-2.5 py-2 text-[12px] font-bold text-white/75">{recs[0].r.schedule}</p>
+              <p className="mt-2 text-[12px] text-white/50">{recs[0].r.schedule}</p>
             )}
             <div className="mt-2.5 flex items-center gap-1.5 overflow-x-auto">
               {recs[0].r.exercises.map((id) => {
@@ -230,7 +231,7 @@ export default function RoutinePage() {
                 ) : null;
               })}
             </div>
-            <PillButton className="mt-3 w-full" onClick={() => apply(recs[0].r)}>이 루틴으로 시작 ✅</PillButton>
+            <PillButton className="mt-3 w-full" onClick={() => apply(recs[0].r)}>이 루틴으로 시작</PillButton>
           </div>
 
           {/* 2·3순위 */}
