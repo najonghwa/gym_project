@@ -78,7 +78,7 @@ export function ExerciseSheet({
     sets.map((s, i) => ({ s, i })).filter(({ s }) => s.kind === kind);
 
   const SetLine = ({ s, i, no }: { s: SetRow; i: number; no: number }) => (
-    <div className={`flex items-center gap-2 rounded-2xl px-2.5 py-2 ${s.done ? "bg-volt/10" : "bg-white/[0.04]"}`}>
+    <div className={`flex items-center gap-2 rounded-xl px-2.5 py-2 ${s.done ? "bg-volt/10" : "bg-white/[0.04]"}`}>
       <button
         onClick={() => update(i, { done: !s.done })}
         className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg border-2 text-[13px] font-extrabold ${
@@ -207,7 +207,7 @@ export function ExerciseSheet({
             <button
               key={alt.id}
               onClick={() => { onReplace(alt.id); setShowAlt(false); }}
-              className="flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-left"
+              className="flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-left"
             >
               <ExThumb ex={alt} size={26} />
               <b className="text-[13.5px]">{alt.name}</b>

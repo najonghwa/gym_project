@@ -19,7 +19,7 @@ export function CoachBubble({
   return (
     <div className={`flex items-start gap-3 ${className}`}>
       <div className="shrink-0">{avatar ?? <ShibaCoach size={size} />}</div>
-      <div className={`relative mt-1.5 flex-1 rounded-2xl rounded-tl-sm border p-3 text-[13px] leading-relaxed ${
+      <div className={`relative mt-1.5 flex-1 rounded-xl rounded-tl-sm border p-3 text-[13px] leading-relaxed ${
         tone === "volt" ? "border-volt/30 bg-volt/[0.07] text-white/85" : "border-white/10 bg-white/[0.04] text-white/75"
       }`}>
         {/* 말풍선 꼬리 */}

@@ -15,7 +15,7 @@ const r1 = (x: number) => Math.round(x * 10) / 10;
 
 function Card({ title, sub, children, className = "" }: { title: string; sub?: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-white/[0.06] bg-card p-4 ${className}`}>
+    <div className={`rounded-xl border border-white/[0.07] bg-card p-4 ${className}`}>
       <b className="text-[14.5px] font-extrabold">{title}</b>
       {sub && <p className="mt-0.5 text-[11.5px] text-white/45">{sub}</p>}
       <div className="mt-3">{children}</div>
@@ -109,7 +109,7 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
 
   if (a.count === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-8 text-center">
+      <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-8 text-center">
         <ShibaRest size={92} />
         <p className="text-[13px] text-white/50">아직 러닝 기록이 없어요.<br />러닝 탭에서 첫 기록을 남기면 상세 분석이 채워집니다.</p>
       </div>
@@ -286,7 +286,7 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
 
 
         {/* AI 코치 어드바이스 */}
-        <div className="rounded-2xl border border-indigo-400/25 bg-indigo-950/25 p-4 lg:col-span-2">
+        <div className="rounded-xl border border-indigo-400/25 bg-indigo-950/25 p-4 lg:col-span-2">
           <b className="text-[14.5px] font-extrabold">주간 마일리지 진단</b>
           <p className="mt-0.5 text-[11.5px] text-white/45">최근 기록 기반 맞춤 피드백</p>
           <div className="mt-3 grid gap-2 lg:grid-cols-3">

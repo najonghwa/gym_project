@@ -15,10 +15,12 @@ const METRICS = [
 
 // 서버 미응답 시 데모
 const DEMO: StatRow[] = [
-  { id: "민준(개발팀)", stats: { att: 93, streak: 12, xp: 3120, weekKm: 24.5 } },
-  { id: "서연(인사팀)", stats: { att: 88, streak: 9, xp: 2660, weekKm: 18.2 } },
-  { id: "지훈(영업팀)", stats: { att: 81, streak: 5, xp: 2410, weekKm: 15 } },
-  { id: "하은(재무팀)", stats: { att: 75, streak: 7, xp: 2050, weekKm: 9.6 } },
+  { id: "김○○ · 개발", stats: { att: 94, streak: 12, xp: 3120, weekKm: 24.5 } },
+  { id: "이○○ · 인사", stats: { att: 91, streak: 4, xp: 2410, weekKm: 8.1 } },
+  { id: "박○○ · 영업", stats: { att: 83, streak: 9, xp: 2660, weekKm: 18.2 } },
+  { id: "최○○ · 재무", stats: { att: 76, streak: 2, xp: 1180, weekKm: 31.4 } },
+  { id: "정○○ · 개발", stats: { att: 74, streak: 7, xp: 2050, weekKm: 9.6 } },
+  { id: "윤○○ · 물류", stats: { att: 61, streak: 1, xp: 940, weekKm: 4.2 } },
 ];
 
 export default function RankingPage() {
@@ -77,7 +79,7 @@ export default function RankingPage() {
                 key={r.id}
                 variants={reduce ? undefined : fadeUp}
                 className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
-                  isMe ? "border-volt bg-volt/10" : "border-white/[0.06] bg-card"
+                  isMe ? "border-volt bg-volt/10" : "border-white/[0.07] bg-card"
                 }`}
               >
                 <span className="w-8 text-center font-display text-[17px]">

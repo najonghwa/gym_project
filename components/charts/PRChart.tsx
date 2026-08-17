@@ -50,7 +50,7 @@ export function PRChart({
       )}
       {/* 요약 칩 + metric 전환 */}
       <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="rounded-2xl border border-gold/40 bg-gold/10 px-3 py-1.5">
+        <div className="rounded-xl border border-gold/40 bg-gold/10 px-3 py-1.5">
           <div className="lab !text-gold">{METRICS.find((m) => m.id === metric)!.chip}</div>
           <div className="font-display text-[20px] leading-none text-gold">
             {best.toLocaleString()}<span className="ml-0.5 text-[11px]">{unit}</span>

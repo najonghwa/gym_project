@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { fetchStats } from "@/lib/supa";
-import { StatChip } from "@/components/ui/StatChip";
 import { WeekStrip, type DayCell } from "@/components/today/WeekStrip";
+import { DataList } from "@/components/ui/Panel";
 import { TodayWorkoutCard } from "@/components/today/TodayWorkoutCard";
 import { ExerciseSheet } from "@/components/workout/ExerciseSheet";
 import { AchievementModal } from "@/components/celebrate/AchievementModal";
@@ -25,17 +25,17 @@ import { MUSCLE_KR, type Muscle } from "@/lib/recovery";
 
 const S_DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-// 섹션 카드 — 볼트 틱 + 라벨 헤더 (구 번호칩 타임라인 대체)
-function Node({
-  label, children,
-}: { icon?: string; label: string; last?: boolean; children: ReactNode }) {
+// 섹션 — hero면 카드 껍데기 없이 배경에 직접 놓아 주요 액션을 띄운다.
+// (볼트 세로 틱은 화면에 여러 번 반복되면 강조가 아니라 배경 소음이 되어 뺐다)
+function Section({
+  label, hero = false, children,
+}: { label: string; hero?: boolean; children: ReactNode }) {
   return (
-    <div className="pb-4">
-      <div className="mb-2 flex items-center gap-2">
-        <span className="h-3.5 w-[3px] rounded-full bg-volt" />
-        <span className="lab">{label}</span>
-      </div>
-      <div className="rounded-2xl border border-white/[0.06] bg-card p-4">{children}</div>
+    <div className="pb-5">
+      <h2 className={`mb-2.5 font-extrabold tracking-tight ${hero ? "text-[17px] text-white/95" : "text-[13.5px] text-white/85"}`}>
+        {label}
+      </h2>
+      {hero ? children : <div className="rounded-xl border border-white/[0.07] bg-card p-4">{children}</div>}
     </div>
   );
 }
@@ -246,19 +246,10 @@ export default function TodayPage() {
       {/* ── 기록 대시보드 (러닝 탭과 같은 카드 패턴) — 상단 배치 ── */}
       {gymDash && (
         <section className="mb-6 space-y-3">
-          <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
-            <StatChip label="총 운동" value={stats?.sessions ?? 0} unit="회" tone="volt" />
-            <StatChip label="이번 달" value={gymDash.thisMonth} unit="회" tone="mute" />
-            <StatChip label="연속" value={stats?.streak ?? 0} unit="일" tone={stats && stats.streak > 0 ? "volt" : "mute"} />
-            <StatChip label="4주 출석률" value={stats?.att ?? 0} unit="%" tone={stats && stats.att >= 70 ? "volt" : "gold"} />
-            <StatChip label="총 세트" value={gymDash.totalSets} unit="세트" tone="mute" />
-            <StatChip label="레벨" value={`Lv${stats?.level ?? 1}`} tone="gold" />
-          </div>
-
           {/* 피처 카드 4종 — 구 GYM&RUN 대시보드 배치 */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {/* 연속 */}
-            <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
+            <div className="rounded-xl border border-white/[0.07] bg-card p-4">
               <div className="lab">연속</div>
               <div className="mt-1 flex items-end gap-1">
                 <span className={`font-display text-[44px] leading-none ${stats && stats.streak > 0 ? "text-volt" : "text-white/30"}`}>
@@ -266,18 +257,13 @@ export default function TodayPage() {
                 </span>
                 <span className="pb-1 text-[14px] font-bold text-white/55">일</span>
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-1.5">
-                {([[stats?.sessions ?? 0, "총 운동"], [gymDash.totalSets, "총 세트"], [`${stats?.att ?? 0}%`, "4주 출석"], [`Lv${stats?.level ?? 1}`, "레벨"]] as const).map(([v, l]) => (
-                  <div key={l} className="rounded-2xl bg-white/[0.05] py-2 text-center">
-                    <div className="font-display text-[15px] leading-none tabular-nums">{v}</div>
-                    <div className="mt-1 text-[9.5px] text-white/45">{l}</div>
-                  </div>
-                ))}
-              </div>
+              <p className="mt-2 text-[12px] text-white/45">
+                {stats && stats.streak > 0 ? "오늘도 이어가면 기록이 늘어납니다" : "오늘 운동하면 다시 시작됩니다"}
+              </p>
             </div>
 
             {/* 루틴 진행 */}
-            <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card p-4">
+            <div className="flex flex-col rounded-xl border border-white/[0.07] bg-card p-4">
               <div className="lab">루틴 진행</div>
               {routineProg ? (
                 <>
@@ -315,7 +301,7 @@ export default function TodayPage() {
             </div>
 
             {/* 3대 챌린지 */}
-            <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card p-4">
+            <div className="flex flex-col rounded-xl border border-white/[0.07] bg-card p-4">
               <div className="lab">3대 챌린지</div>
               {(() => {
                 const logs = (user.big3 as { goal?: number; logs?: { s: number; b: number; d: number }[] } | undefined)?.logs;
@@ -360,18 +346,18 @@ export default function TodayPage() {
             </div>
 
             {/* 오늘 준비 — 모니터링 */}
-            <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card p-4">
+            <div className="flex flex-col rounded-xl border border-white/[0.07] bg-card p-4">
               <div className="lab">오늘 준비</div>
               <div className="mt-1 flex items-end gap-1.5">
                 <span className="font-display text-[38px] leading-none">{items.length}</span>
                 <span className="pb-1 text-[12.5px] text-white/45">종목 · {totalSets}세트</span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-1.5">
-                <div className="rounded-2xl bg-white/[0.05] py-2 text-center">
+                <div className="rounded-xl bg-white/[0.05] py-2 text-center">
                   <div className="font-display text-[15px] leading-none text-volt">{estMin}<span className="text-[10px] text-white/45">분</span></div>
                   <div className="mt-1 text-[9.5px] text-white/45">예상 시간</div>
                 </div>
-                <div className="rounded-2xl bg-white/[0.05] py-2 text-center">
+                <div className="rounded-xl bg-white/[0.05] py-2 text-center">
                   <div className={`font-display text-[15px] leading-none ${condition >= 80 ? "text-volt" : condition >= 50 ? "text-gold" : "text-danger"}`}>{condition}<span className="text-[10px] text-white/45">%</span></div>
                   <div className="mt-1 text-[9.5px] text-white/45">컨디션</div>
                 </div>
@@ -382,7 +368,7 @@ export default function TodayPage() {
 
           <div className="grid gap-3 lg:grid-cols-3">
             {/* 이번 달 목표 달성 도넛 */}
-            <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
+            <div className="rounded-xl border border-white/[0.07] bg-card p-4">
               <b className="text-[15px] font-extrabold">이번 달 목표</b>
               <p className="text-[11.5px] text-white/45">
                 {routineProg ? `주 ${EXPLORE.find((x) => x.id === user.v2?.activeRoutineId)?.daysPerWeek ?? 3}회 페이스 기준` : "주 3회 페이스 기준"}
@@ -415,7 +401,7 @@ export default function TodayPage() {
             </div>
 
             {/* 월별 운동 횟수 */}
-            <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
+            <div className="rounded-xl border border-white/[0.07] bg-card p-4">
               <b className="text-[15px] font-extrabold">월별 운동 횟수</b>
               <p className="text-[11.5px] text-white/45">{new Date().getFullYear()}년 · 운동한 날 기준</p>
               <div className="mt-2 h-36">
@@ -439,7 +425,7 @@ export default function TodayPage() {
             </div>
 
             {/* 주간 세트 볼륨 */}
-            <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
+            <div className="rounded-xl border border-white/[0.07] bg-card p-4">
               <b className="text-[15px] font-extrabold">주간 세트 볼륨</b>
               <p className="text-[11.5px] text-white/45">최근 8주 · 완료한 세트 합계</p>
               <div className="mt-2 h-36">
@@ -467,7 +453,7 @@ export default function TodayPage() {
 
       <div className="lg:grid lg:grid-cols-3 lg:gap-6">
       <div className="lg:col-span-2">
-      <Node label="오늘의 운동">
+      <Section label="오늘의 운동" hero>
         {bonusSession && (
           <div className="mb-3">
             <span className="rounded-full bg-volt/15 px-2.5 py-1 text-[11.5px] font-bold text-volt">
@@ -515,38 +501,14 @@ export default function TodayPage() {
         ) : (
           <TodayWorkoutCard embedded items={items} onToggleSet={toggleSet} onOpenExercise={setOpenId} />
         )}
-      </Node>
+      </Section>
 
-      <Node label={doneSets >= totalSets && totalSets > 0 ? "기록" : "기록"} last>
-        <div className="flex items-end gap-3">
-          <div>
-            <div className="text-[11px] text-white/45">연속 운동</div>
-            <div className="flex items-end gap-1.5">
-              <span className="font-display text-[38px] leading-none text-white/35">{stats?.streak ?? 0}</span>
-              <span className="pb-1 font-display text-[20px] text-white/35">→</span>
-              <span className="font-display text-[38px] leading-none text-volt">{(stats?.streak ?? 0) + (doneSets >= totalSets && totalSets > 0 ? 0 : 1)}</span>
-              <span className="pb-1 text-[13px] font-bold text-white/55">일</span>
-            </div>
-          </div>
-          <div className="ml-auto text-right text-[11.5px] text-white/45">
-            4주 출석률 <b className="text-stone-100">{stats?.att ?? 0}%</b>
-          </div>
-        </div>
-        <div className="mt-4">
-          <WeekStrip days={week} target={`총 ${stats?.sessions ?? 0}회 · Lv${stats?.level ?? 1}`} />
-        </div>
-        {doneSets >= totalSets && totalSets > 0 && (
-          <p className="mt-3 rounded-lg bg-volt/10 px-3.5 py-2.5 text-center text-[13px] font-bold text-volt">
-            오늘 운동 완료. 연속 기록이 이어집니다
-          </p>
-        )}
-      </Node>
       </div>
 
       {/* ── 우측 요약 컬럼 ── */}
       <aside className="space-y-3 lg:pt-7">
         {/* 이번 달 미니 달력 */}
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
+        <div className="rounded-xl border border-white/[0.07] bg-card p-4">
           <div className="flex items-baseline justify-between">
             <b className="text-[15px] font-extrabold">{new Date().getFullYear()}년 {new Date().getMonth() + 1}월</b>
             <button onClick={() => router.push("/calendar")} className="text-[11.5px] font-bold text-white/45">달력 →</button>
@@ -582,7 +544,7 @@ export default function TodayPage() {
         </div>
 
         {/* 출석률 랭킹 TOP5 */}
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
+        <div className="rounded-xl border border-white/[0.07] bg-card p-4">
           <div className="flex items-baseline justify-between">
             <b className="text-[15px] font-extrabold">출석률 랭킹</b>
             <button onClick={() => router.push("/ranking")} className="text-[11.5px] font-bold text-white/45">전체 →</button>
@@ -607,8 +569,10 @@ export default function TodayPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
-          <b className="text-[15px] font-extrabold">최근 운동</b>
+        {/* 보조 정보 — 카드 6장으로 흩어놓지 않고 한 장 안에서 구분선으로 나눔 */}
+        <div className="rounded-xl border border-white/[0.07] bg-card p-4">
+        <section className="pt-4 first:pt-0">
+          <b className="text-[13.5px] font-extrabold">최근 운동</b>
           {gymDash?.recent.length ? (
             <div className="mt-1.5 divide-y divide-white/[0.06]">
               {gymDash.recent.map((r) => (
@@ -624,10 +588,10 @@ export default function TodayPage() {
           ) : (
             <p className="py-5 text-center text-[12.5px] text-white/40">아직 운동 기록이 없어요</p>
           )}
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
-          <b className="text-[15px] font-extrabold">이번 주 부위별 세트</b>
+        <section className="border-t border-white/[0.06] pt-4">
+          <b className="text-[13.5px] font-extrabold">이번 주 부위별 세트</b>
           {gymDash?.weekMuscles.length ? (
             <div className="mt-2.5 space-y-2">
               {gymDash.weekMuscles.map(([m, n]) => (
@@ -643,20 +607,20 @@ export default function TodayPage() {
           ) : (
             <p className="py-5 text-center text-[12.5px] text-white/40">이번 주 완료한 세트가 없어요</p>
           )}
-        </div>
+        </section>
 
         {/* 이번 주 요일 스트립 — 리워드 카드와 별개로 사이드에서 상시 확인 */}
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
-          <b className="text-[15px] font-extrabold">이번 주</b>
+        <section className="border-t border-white/[0.06] pt-4">
+          <b className="text-[13.5px] font-extrabold">이번 주</b>
           <div className="mt-3">
-            <WeekStrip days={week} target={`총 ${stats?.sessions ?? 0}회 · Lv${stats?.level ?? 1}`} />
+            <WeekStrip days={week} target={`${week.filter((d) => (d.pct ?? 0) >= 100).length}/7일 완료`} />
           </div>
-        </div>
+        </section>
 
         {/* 부위별 회복 상태 */}
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-4">
+        <section className="border-t border-white/[0.06] pt-4">
           <div className="flex items-baseline justify-between">
-            <b className="text-[15px] font-extrabold">부위별 회복</b>
+            <b className="text-[13.5px] font-extrabold">부위별 회복</b>
             <span className="text-[11px] text-white/45">컨디션 {condition}%</span>
           </div>
           <div className="mt-2.5 space-y-2">
@@ -680,6 +644,23 @@ export default function TodayPage() {
             })}
           </div>
           <p className="mt-2 text-[10.5px] text-white/35">회복이 덜 된 부위 순 · 100%면 오늘 운동하기 좋아요</p>
+        </section>
+
+        {/* 누적 기록 — 예전엔 큰 숫자 타일로 화면 곳곳에 흩어져 같은 값이 네 번씩
+            나왔다. 라벨-값 목록으로 여기서 한 번만 보여준다. */}
+        <section className="border-t border-white/[0.06] pt-4">
+          <b className="text-[13.5px] font-extrabold">누적 기록</b>
+          <div className="mt-1.5">
+            <DataList
+              items={[
+                { label: "총 운동", value: `${stats?.sessions ?? 0}회` },
+                { label: "총 세트", value: `${gymDash?.totalSets ?? 0}세트` },
+                { label: "4주 출석률", value: `${stats?.att ?? 0}%` },
+                { label: "레벨", value: `Lv${stats?.level ?? 1}` },
+              ]}
+            />
+          </div>
+        </section>
         </div>
       </aside>
       </div>

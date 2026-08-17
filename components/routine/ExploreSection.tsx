@@ -71,7 +71,7 @@ export function ExploreSection({
           <motion.div
             key={r.id}
             variants={reduce ? undefined : fadeUp}
-            className="rounded-2xl border border-white/[0.06] bg-card p-4"
+            className="rounded-xl border border-white/[0.07] bg-card p-4"
           >
             <div className="flex items-start gap-3">
               <ColorInitialBadge text={r.badge} seed={i} />
@@ -148,7 +148,7 @@ export function ExploreSection({
             <div className="grid grid-cols-2 gap-2">
               {[
                 ["빈도", `주 ${detail.daysPerWeek}회`],
-                ["운동", `${Math.max(detail.exercises.length, 4)}~${Math.max(detail.exercises.length, 4) + 2}개`],
+                ["운동", `${detail.exercises.length}개`],
                 ["⏱️ 소요", `${detail.durationMin}분`],
                 ["칼로리", `${detail.kcal} kcal`],
               ].map(([l, v]) => (

@@ -31,7 +31,7 @@ function Sec({ n, title, sub }: { n: string; title: string; sub?: string }) {
 }
 
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-2xl border border-white/[0.06] bg-card p-4 ${className}`}>{children}</div>
+  <div className={`rounded-xl border border-white/[0.07] bg-card p-4 ${className}`}>{children}</div>
 );
 
 // 부위별 볼륨 바 — MEV/MRV 존 마커 + 상태 색 (코치 리포트 시그니처)

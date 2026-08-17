@@ -27,7 +27,7 @@ export function WeekStrip({ days, target }: { days: DayCell[]; target: string })
           <motion.div
             key={i}
             variants={reduce ? undefined : fadeUp}
-            className={`flex h-14 flex-col items-center justify-center gap-0.5 rounded-2xl border ${
+            className={`flex h-14 flex-col items-center justify-center gap-0.5 rounded-xl border ${
               d.isToday
                 ? "border-volt/60 bg-volt/10"
                 : d.pct === null

@@ -51,10 +51,10 @@ export function AnimPlayer({
         @keyframes poseA { 0%,42%{opacity:1} 50%,92%{opacity:0} 100%{opacity:1} }
         @keyframes poseB { 0%,42%{opacity:0} 50%,92%{opacity:1} 100%{opacity:0} }
       `}</style>
-      <div className="relative h-44 overflow-hidden rounded-2xl">
+      <div className="relative h-44 overflow-hidden rounded-xl">
         {useGif ? (
           <>
-            <div className="absolute inset-0 rounded-2xl bg-white" />
+            <div className="absolute inset-0 rounded-xl bg-white" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/exercises/${exId}.gif`}

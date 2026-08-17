@@ -192,7 +192,7 @@ export default function RunPage() {
       {/* GPS 라이브 러닝 시작 */}
       <button
         onClick={() => router.push("/run/live")}
-        className="flex w-full items-center gap-3 rounded-2xl border border-volt/30 bg-gradient-to-r from-volt/15 to-transparent p-4 text-left active:scale-[0.99]"
+        className="flex w-full items-center gap-3 rounded-xl border border-volt/30 bg-gradient-to-r from-volt/15 to-transparent p-4 text-left active:scale-[0.99]"
       >
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-volt text-black"><Icon name="signal" size={22} strokeWidth={2} /></span>
         <span className="min-w-0 flex-1">
@@ -215,7 +215,7 @@ export default function RunPage() {
       {/* 모니터링 — 목표 도넛 + 개인 최고 기록 */}
       <div className="grid gap-4 lg:grid-cols-5">
         {/* 올해 목표 도넛 */}
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-4 lg:col-span-2">
+        <section className="rounded-xl border border-white/[0.07] bg-card p-4 lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
               <b className="text-[15px] font-extrabold">올해 누적 목표</b>
@@ -249,7 +249,7 @@ export default function RunPage() {
         </section>
 
         {/* 개인 최고 기록 */}
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-4 lg:col-span-3">
+        <section className="rounded-xl border border-white/[0.07] bg-card p-4 lg:col-span-3">
           <b className="text-[15px] font-extrabold">
             개인 최고 기록 <span className="text-[10px] font-normal text-white/40">Personal Best</span>
           </b>
@@ -280,7 +280,7 @@ export default function RunPage() {
 
       {/* 러닝 달력 (모니터링) */}
       {kmByDate.size > 0 && (
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-4">
+        <section className="rounded-xl border border-white/[0.07] bg-card p-4">
           <b className="text-[15px] font-extrabold">러닝 달력</b>
           <p className="text-[11.5px] text-white/45">최근 3개월 · 진할수록 많이 달린 날</p>
           <div className="mt-3"><ActivityCalendar data={kmByDate} months={3} suffix="km" /></div>
@@ -288,7 +288,7 @@ export default function RunPage() {
       )}
 
       {/* 최근 기록 — 좌: 선택 러닝 지도 / 우: 목록 */}
-      <section className="rounded-2xl border border-white/[0.06] bg-card p-4">
+      <section className="rounded-xl border border-white/[0.07] bg-card p-4">
         <b className="text-[15px] font-extrabold">최근 기록</b>
         <p className="text-[11.5px] text-white/45">목록에서 기록을 고르면 왼쪽에 경로가 나와요</p>
         {runs.length === 0 ? (
@@ -409,7 +409,7 @@ export default function RunPage() {
             <button
               key={g}
               onClick={() => { setRunGoal(g); setShowGoal(false); }}
-              className={`rounded-2xl border py-3 font-display text-[15px] ${
+              className={`rounded-xl border py-3 font-display text-[15px] ${
                 goal === g ? "border-volt bg-volt/15 text-volt" : "border-white/10 bg-white/[0.04]"
               }`}
             >

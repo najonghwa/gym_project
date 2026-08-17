@@ -168,7 +168,7 @@ export default function LiveRunPage() {
       <p className="mt-0.5 text-[12.5px] text-white/45">GPS로 거리·페이스 자동 기록</p>
 
       {/* 대시보드 숫자 */}
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-card p-6 text-center">
+      <div className="mt-6 rounded-xl border border-white/[0.07] bg-card p-6 text-center">
         <div className="lab">거리</div>
         <div className="font-display text-[64px] leading-none text-volt tabular-nums">
           {km.toFixed(2)}<span className="text-[20px] text-white/40"> km</span>
@@ -217,7 +217,7 @@ export default function LiveRunPage() {
         )}
         {phase === "done" && (
           <>
-            <div className="rounded-2xl border border-volt/30 bg-volt/[0.07] p-4 text-center">
+            <div className="rounded-xl border border-volt/30 bg-volt/[0.07] p-4 text-center">
               <b className="text-[15px]">수고했어요</b>
               <p className="mt-1 text-[13px] text-white/60">
                 {km.toFixed(2)}km · {fmtT(elapsed)} · 평균 {paceStr(avgPace)}/km

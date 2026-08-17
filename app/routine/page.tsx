@@ -84,7 +84,7 @@ export default function RoutinePage() {
       <section>
         <div className="lab mb-2">내 루틴</div>
         {savedRoutines.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-6 text-center">
+          <div className="rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-6 text-center">
             <p className="text-[13px] text-white/50">
               아직 저장한 루틴이 없어요.<br />아래에서 저장하면 여기 모여요.
             </p>
@@ -96,8 +96,8 @@ export default function RoutinePage() {
               return (
                 <div
                   key={r.id}
-                  className={`flex items-center gap-3 rounded-2xl border p-3.5 ${
-                    active ? "border-volt/50 bg-volt/[0.06]" : "border-white/[0.06] bg-card"
+                  className={`flex items-center gap-3 rounded-xl border p-3.5 ${
+                    active ? "border-volt/50 bg-volt/[0.06]" : "border-white/[0.07] bg-card"
                   }`}
                 >
                   <ColorInitialBadge text={r.badge} seed={i} />
@@ -130,7 +130,7 @@ export default function RoutinePage() {
 
       {/* 맞춤 추천 — 판다 코치가 골라줌 */}
       {phase === "idle" && (
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-5">
+        <section className="rounded-xl border border-white/[0.07] bg-card p-5">
           <h2 className="text-[16px] font-extrabold">어떤 루틴을 할지 모르겠다면</h2>
           <p className="mt-1.5 text-[13px] leading-relaxed text-white/55">
             목표와 운동 경력, 주당 가능 횟수 <b className="text-white/85">세 가지만 답하면</b> {EXPLORE.length}개 프로그램 중에서 맞는 걸 골라줍니다.
@@ -140,7 +140,7 @@ export default function RoutinePage() {
       )}
 
       {phase === "ask" && (
-        <section className="rounded-2xl border border-white/[0.06] bg-card p-5">
+        <section className="rounded-xl border border-white/[0.07] bg-card p-5">
           <b className="text-[16px] font-extrabold">세 가지만 알려주세요</b>
 
           <div className="lab mb-1.5 mt-4">1. 목표가 뭐예요?</div>
@@ -200,7 +200,7 @@ export default function RoutinePage() {
           <div className="lab">추천 결과 — {EXPLORE.length}개 중 이 3개가 잘 맞아요</div>
 
           {/* 1순위 */}
-          <div className="rounded-2xl border border-volt/40 bg-volt/[0.05] p-4">
+          <div className="rounded-xl border border-volt/40 bg-volt/[0.05] p-4">
             <div className="flex items-start gap-3">
               <ColorInitialBadge text={recs[0].r.badge} seed={0} />
               <div className="min-w-0 flex-1">
@@ -235,7 +235,7 @@ export default function RoutinePage() {
 
           {/* 2·3순위 */}
           {recs.slice(1).map(({ r, reasons }, i) => (
-            <div key={r.id} className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-card p-3.5">
+            <div key={r.id} className="flex items-center gap-3 rounded-xl border border-white/[0.07] bg-card p-3.5">
               <ColorInitialBadge text={r.badge} seed={i + 1} />
               <div className="min-w-0 flex-1">
                 <b className="block truncate text-[14px]">{r.title}</b>

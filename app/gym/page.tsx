@@ -52,7 +52,7 @@ export default function GymPage() {
       <h2 className="font-display text-[26px]">장비를 눌러보세요</h2>
       <p className="mt-0.5 text-[12px] text-white/45">설명과 사용 팁이 나와요 · 현재는 예시 배치</p>
 
-      <div className="mt-4 rounded-2xl border border-white/[0.06] bg-card p-3">
+      <div className="mt-4 rounded-xl border border-white/[0.07] bg-card p-3">
         <svg viewBox="0 0 400 310" className="w-full rounded-lg bg-black/40">
           {FLOOR_ZONES.map((fz) => {
             const z = ZONES.find((x) => x.id === fz.id)!;

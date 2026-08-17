@@ -92,7 +92,7 @@ export function Big3Card({
             <button
               key={g}
               onClick={() => setGoal(g)}
-              className={`rounded-2xl border py-2.5 font-display text-[16px] ${
+              className={`rounded-xl border py-2.5 font-display text-[16px] ${
                 goal === g ? "border-gold bg-gold/15 text-gold" : "border-white/10 bg-white/[0.04]"
               }`}
             >
@@ -102,7 +102,7 @@ export function Big3Card({
         </div>
         <div className="mt-4 space-y-2.5">
           {([["스쿼트", s, setS], ["벤치프레스", b, setB], ["데드리프트", d, setD]] as const).map(([l, v, set]) => (
-            <div key={l} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+            <div key={l} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3">
               <span className="flex-1 text-[14px] font-bold">{l}</span>
               <input
                 type="number" step={2.5} inputMode="decimal" value={v || ""}
