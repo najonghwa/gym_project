@@ -1,12 +1,13 @@
 "use client";
 // 러닝 상세 분석 — 분석 탭 러닝 세그먼트 (러닝 탭=모니터링, 여기=디테일 분석 전부)
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
-  Bar, BarChart, Cell, Line, LineChart, Scatter, ScatterChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ZAxis,
+  Bar, BarChart, Cell, ComposedChart, Line, LineChart, Scatter, ScatterChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ZAxis,
 } from "recharts";
 import { StatChip } from "@/components/ui/StatChip";
 import { ShibaRest } from "@/components/mascot/ShibaPoses";
 import { allBests } from "@/lib/runmath";
+import { Icon } from "@/components/ui/Icon";
 
 type Run = { rid?: string; date: string; km: number; paceSec?: number | null; durSec?: number; route?: number[][] };
 const paceStr = (sec?: number | null) =>
@@ -24,6 +25,7 @@ function Card({ title, sub, children, className = "" }: { title: string; sub?: s
 }
 
 export function RunAnalysis({ runs }: { runs: Run[] }) {
+  const [distTab, setDistTab] = useState<"dist" | "zone">("dist");
   const bests = useMemo(() => allBests(runs), [runs]);
   const a = useMemo(() => {
     const now = new Date();
@@ -99,8 +101,13 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
     const paceTrend = pN && pP ? Math.round(pP - pN) : null;
     const nextTarget = r1(Math.max(last4 / 4, 3) * 1.1);
 
+    // 월별 막대 + 누적 선을 한 차트에 넣기 위한 합침 (값 자체는 monthly·cum 그대로)
+    const monthlyCombo = monthly.map((m, i) => ({ m: m.m, km: m.km, isNow: m.isNow, cum: cum[i].km }));
+    const thisMonthKm = monthly[now.getMonth()].km;
+
     return {
       count: runs.length, total, yearKm, avgPace, bestPace, longest,
+      monthlyCombo, thisMonthKm,
       buckets, maxBucket, dow, bestDow, zones, maxZone, monthlyPace,
       scatter, monthly, cum, weekly, paceSeries,
       last4, mileageDelta, paceTrend, nextTarget,
@@ -121,45 +128,36 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
 
   return (
     <div className="space-y-4">
-      {/* 요약 스트립 */}
-      <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
-        <StatChip label="총 러닝" value={a.count} unit="회" tone="volt" />
-        <StatChip label="총 거리" value={a.total} unit="km" tone="mute" />
-        <StatChip label="올해" value={a.yearKm} unit="km" tone="mute" />
+      {/* 요약 — 러닝 탭에 이미 있는 총 거리·최장 거리는 빼고, 분석에서만 의미 있는 값만 */}
+      <div className="grid grid-cols-3 gap-2">
         <StatChip label="평균 페이스" value={paceStr(a.avgPace)} tone="mute" />
         <StatChip label="최고 페이스" value={paceStr(a.bestPace)} tone="gold" />
-        <StatChip label="최장 거리" value={a.longest} unit="km" tone="gold" />
+        <StatChip label="최근 4주" value={a.last4} unit="km" tone="volt" />
       </div>
 
       <div className="grid gap-3 lg:grid-cols-2">
-        {/* 월별 러닝 거리 */}
-        <Card title="월별 러닝 거리" sub={`${new Date().getFullYear()}년 · 월 합계 (km)`}>
-          <div className="h-40">
+        {/* 월별 거리 + 올해 누적 — 같은 축의 이야기라 한 장에 합침 (막대=월별, 선=누적) */}
+        <Card title="월별 거리와 누적" sub={`${new Date().getFullYear()}년 · 막대 월 합계 / 선 누적 (km)`} className="lg:col-span-2">
+          <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={a.monthly} margin={{ top: 6, right: 0, left: -26 }}>
+              <ComposedChart data={a.monthlyCombo} margin={{ top: 6, right: 4, left: -24 }}>
                 <XAxis dataKey="m" tick={{ ...axis, fontSize: 8.5 }} axisLine={false} tickLine={false} interval={0} />
-                <YAxis tick={axis} axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={tip} formatter={(v) => [`${Number(v ?? 0)}km`, "거리"]} />
-                <Bar dataKey="km" radius={[3, 3, 0, 0]} isAnimationActive={false}>
-                  {a.monthly.map((x, i) => <Cell key={i} fill={x.isNow ? "#c8ff00" : "rgba(255,255,255,0.18)"} />)}
+                <YAxis yAxisId="l" tick={axis} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="r" orientation="right" tick={axis} axisLine={false} tickLine={false} width={34} />
+                <Tooltip
+                  cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={tip}
+                  formatter={(v, n) => [`${Number(v ?? 0)}km`, n === "cum" ? "누적" : "월 거리"]}
+                />
+                <Bar yAxisId="l" dataKey="km" radius={[3, 3, 0, 0]} isAnimationActive={false}>
+                  {a.monthlyCombo.map((x, i) => <Cell key={i} fill={x.isNow ? "#c8ff00" : "rgba(255,255,255,0.18)"} />)}
                 </Bar>
-              </BarChart>
+                <Line yAxisId="r" type="monotone" dataKey="cum" stroke="#f59e0b" strokeWidth={2.2} dot={false} connectNulls={false} isAnimationActive={false} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
-        </Card>
-
-        {/* 올해 누적 거리 */}
-        <Card title="올해 누적 거리" sub="1월부터 지금까지 쌓인 거리">
-          <div className="h-40">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={a.cum} margin={{ top: 8, right: 8, left: -22 }}>
-                <XAxis dataKey="m" tick={{ ...axis, fontSize: 8.5 }} axisLine={false} tickLine={false} interval={1} />
-                <YAxis tick={axis} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tip} formatter={(v) => [`${Number(v ?? 0)}km`, "누적"]} />
-                <Line type="monotone" dataKey="km" stroke="#c8ff00" strokeWidth={2.5} dot={false} connectNulls={false} isAnimationActive={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <p className="mt-2 text-[11px] text-white/40">
+            올해 누적 <b className="text-gold tabular-nums">{a.yearKm}km</b> · 이번 달 <b className="text-volt tabular-nums">{a.thisMonthKm}km</b>
+          </p>
         </Card>
 
         {/* 주간 러닝 거리 */}
@@ -209,22 +207,30 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
           </div>
         </Card>
 
-        {/* 거리 분포 */}
-        <Card title="거리 분포" sub={`총 ${a.count}회 · 주로 달리는 거리대`}>
-          <div className="space-y-2">
-            {a.buckets.map((b) => (
-              <div key={b.l} className="flex items-center gap-2.5">
-                <span className="w-14 shrink-0 text-[11.5px] font-bold text-white/60">{b.l}</span>
-                <div className="h-3.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full bg-volt" style={{ width: `${(b.n / a.maxBucket) * 100}%` }} /></div>
-                <b className="w-9 shrink-0 text-right text-[12px] tabular-nums">{b.n}회</b>
-              </div>
+        {/* 거리 분포 + 페이스 존 — 둘 다 "주로 어디에 몰려 있나"라 한 장에서 전환 */}
+        <Card title="주로 달리는 구간" sub={`총 ${a.count}회`}>
+          <div className="mb-3 grid grid-cols-2 gap-1 rounded-lg border border-white/10 bg-white/[0.04] p-1">
+            {([["dist", "거리대"], ["zone", "페이스대"]] as const).map(([v, l]) => (
+              <button
+                key={v}
+                onClick={() => setDistTab(v)}
+                className={`rounded-md py-1.5 text-[12.5px] font-bold ${distTab === v ? "bg-volt text-black" : "text-white/50"}`}
+              >
+                {l}
+              </button>
             ))}
           </div>
-        </Card>
-
-        {/* 페이스 존 분포 */}
-        <Card title="페이스 존 분포" sub="어느 속도대에서 주로 달리는지">
-          {a.zones.some((z) => z.n > 0) ? (
+          {distTab === "dist" ? (
+            <div className="space-y-2">
+              {a.buckets.map((b) => (
+                <div key={b.l} className="flex items-center gap-2.5">
+                  <span className="w-14 shrink-0 text-[11.5px] font-bold text-white/60">{b.l}</span>
+                  <div className="h-3.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full bg-volt" style={{ width: `${(b.n / a.maxBucket) * 100}%` }} /></div>
+                  <b className="w-9 shrink-0 text-right text-[12px] tabular-nums">{b.n}회</b>
+                </div>
+              ))}
+            </div>
+          ) : a.zones.some((z) => z.n > 0) ? (
             <div className="space-y-2">
               {a.zones.map((z) => (
                 <div key={z.l} className="flex items-center gap-2.5">
@@ -237,6 +243,16 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
           ) : <p className="py-4 text-center text-[12.5px] text-white/40">페이스가 있는 기록이 아직 없어요</p>}
         </Card>
 
+        {/* 세부 차트 — 매번 볼 필요는 없어 접어둔다 (펼치면 그대로) */}
+        <details className="group rounded-xl border border-white/[0.07] bg-card lg:col-span-2">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4">
+            <span className="text-[13.5px] font-extrabold">세부 차트</span>
+            <span className="flex min-w-0 items-center gap-2 text-[11.5px] text-white/40">
+              <span className="truncate">요일별 · 거리별 페이스 · 월별 추이</span>
+              <Icon name="chevronRight" size={15} className="shrink-0 transition-transform group-open:rotate-90" />
+            </span>
+          </summary>
+          <div className="grid gap-3 border-t border-white/[0.07] p-4 lg:grid-cols-2">
         {/* 요일별 평균 페이스 */}
         <Card title="요일별 평균 페이스" sub="가장 잘 달리는 요일 찾기">
           <div className="grid grid-cols-7 gap-1.5">
@@ -283,15 +299,16 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
             </div>
           ) : <p className="py-4 text-center text-[12.5px] text-white/40">두 달 이상 기록이 쌓이면 추이가 나와요</p>}
         </Card>
+          </div>
+        </details>
 
-
-        {/* AI 코치 어드바이스 */}
-        <div className="rounded-xl border border-indigo-400/25 bg-indigo-950/25 p-4 lg:col-span-2">
+        {/* 주간 마일리지 진단 — 앱 팔레트 유지(별도 색으로 격리하지 않음) */}
+        <div className="rounded-xl border border-white/[0.07] bg-card p-4 lg:col-span-2">
           <b className="text-[14.5px] font-extrabold">주간 마일리지 진단</b>
           <p className="mt-0.5 text-[11.5px] text-white/45">최근 기록 기반 맞춤 피드백</p>
           <div className="mt-3 grid gap-2 lg:grid-cols-3">
             <div className="rounded-lg bg-white/[0.05] p-3">
-              <div className="text-[11px] font-bold text-indigo-300">최근 4주</div>
+              <div className="lab">최근 4주</div>
               <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
                 최근 4주 <b className="text-gold">{a.last4}km</b>{" "}
                 {a.mileageDelta == null ? "— 비교할 이전 기록이 더 필요해요."
@@ -301,7 +318,7 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
               </p>
             </div>
             <div className="rounded-lg bg-white/[0.05] p-3">
-              <div className="text-[11px] font-bold text-indigo-300">⏱️ 페이스 추세</div>
+              <div className="lab">페이스 추세</div>
               <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
                 {a.paceTrend == null ? "기록이 더 쌓이면 추세를 알려드릴게요."
                   : a.paceTrend > 3 ? <>최근 <b className="text-volt">{a.paceTrend}초/km</b> 빨라졌어요 — 좋아요!</>
@@ -310,7 +327,7 @@ export function RunAnalysis({ runs }: { runs: Run[] }) {
               </p>
             </div>
             <div className="rounded-lg bg-white/[0.05] p-3">
-              <div className="text-[11px] font-bold text-indigo-300">다음 4주 권장</div>
+              <div className="lab">다음 4주 권장</div>
               <p className="mt-1 text-[12.5px] leading-relaxed text-white/75">
                 주당 <b className="text-gold">{a.nextTarget}km</b> 수준으로 10% 이내에서 서서히 올려보세요.
               </p>
