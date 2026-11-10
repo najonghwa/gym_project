@@ -721,13 +721,22 @@ table.scn .x:hover{color:var(--bad)}
 .cl-tip span{display:block;font-variant-numeric:tabular-nums}
 .cl-tip small{display:block;opacity:.7;font-size:10.5px}
 
+/* v89: 속도 단추 */
+.valvedock .tl .spd{display:inline-flex;align-items:center;gap:2px;flex:none}
+.valvedock .tl .spd button{padding:2px 6px;min-width:30px;font-variant-numeric:tabular-nums}
+.valvedock .tl #spdCur{min-width:74px;font-weight:700;white-space:nowrap}
+.valvedock .tl .spd button:disabled{opacity:.35;cursor:default}
+.valvedock .tl .spd .op{font-family:Arial,sans-serif;font-size:1.3em;line-height:1;margin-right:1px}
+.valvedock .tl .spdwarn{font-size:10.5px;color:var(--bad);white-space:nowrap}
+@media (max-width:760px){.valvedock .tl .spd button{padding:2px 4px;min-width:24px}.valvedock .tl #spdCur{min-width:60px}.valvedock .tl .spdwarn{display:none}}
+
 </style>
 
 <div class="app" id="app">
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v88 · 11-10 15:18</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v90 · 11-10 16:43</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -804,9 +813,7 @@ table.scn .x:hover{color:var(--bad)}
       <div class="row"><label for="rcpTi">스팀 PI 적분 Ti <small>s (공정 시간)</small></label><input id="rcpTi" type="number" min="1" max="36000" step="30" value="900"></div>
       <div class="row"><label for="rcpMVlo">스팀 MV 하한 <small>%</small></label><input id="rcpMVlo" type="number" min="0" max="100" step="0.1" value="0.2"></div>
       <div class="row"><label for="rcpMVhi">스팀 MV 상한 <small>%</small></label><input id="rcpMVhi" type="number" min="0" max="100" step="1" value="100"></div>
-      <h3>시간</h3>
-      <div class="row"><label for="accel">시간 배속 <small>가열·증발만 가속</small></label>
-        <select id="accel"><option value="1">1배 (실시간 열 흐름 · 매우 느림)</option><option value="3">3배</option><option value="10">10배</option><option value="30" selected>30배 (기본)</option><option value="100">100배</option><option value="300">300배</option><option value="1000">1000배 (빠른 훑어보기 · 열수지 오차 약 10 %)</option></select></div>
+      <input type="hidden" id="accel" value="30">
     </div>
 
     <div class="panel" data-tab="mat">
@@ -945,7 +952,7 @@ table.scn .x:hover{color:var(--bad)}
       <div class="row"><label for="grid">계산 정밀도 (탱크 내 유동 격자) <small>탱크 액을 나누는 격자 수 · 격자 볼츠만 유동 계산(CFD)은 탱크 안에만 적용 · 많을수록 정확하지만 느림</small></label>
         <select id="grid"><option value="32">격자 32 (빠름)</option><option value="40">격자 40</option><option value="48">격자 48 (느림)</option></select></div>
       <div class="row"><label for="perfMode">성능 모드 <small>자동 = 처음 몇 초 이 PC의 계산 속도를 재서 GPU 격자로 충분하면 격자, 아니면 가벼운 계산 · 고사양 = 탱크 안 흐름을 CFD 격자로 · 가벼운 계산 = CFD를 끄고 탱크 완전 혼합(결과는 격자와 ±1 % 안, 공학식 계산은 그대로), 화면은 고사양과 같다 · 화면 fps가 계속 20 아래면 렌더 배율만 1.5 → 1.25로 낮춘다</small></label><select id="perfMode"><option value="auto">자동</option><option value="high">고사양 (CFD 격자)</option><option value="light">가벼운 계산 (CFD 끔 · 화면 고화질)</option><option value="lowest" hidden>가벼운 계산</option><option value="low" hidden>화면 가볍게 (자동 마지막 단계)</option></select></div>
-      <div class="row"><label for="fastJump">빠른 점프 <small>미래로 가기가 15초 넘게 걸릴 것 같으면 그동안만 탱크를 완전 혼합으로 계산하고, 도착하면 그 순간 평균 온도로 격자를 채워 원래 계산으로 돌아간다(본류·끝 시각 오차 0.5 % 이내)</small></label><input type="checkbox" id="fastJump" checked></div>
+      <input type="checkbox" id="fastJump" checked hidden>
       <p class="note">탱크 안의 점은 액을 따라 흐르는 <b>추적 입자</b>다. 실제 입자가 아니라 "액이 어떻게 순환하는지"를 보여 주는 표식이고, 색은 그 자리의 온도(또는 속도)다. 액면 위의 점은 증기다.</p>
     </div>
 
@@ -1144,11 +1151,11 @@ table.scn .x:hover{color:var(--bad)}
         <div class="ends" id="legendEnds"><span>25℃</span><span></span><span>110℃</span></div>
         <div id="sliceLegend" hidden><div id="sliceTitle"></div><div class="bar" id="sliceBar"></div><div class="ends" id="sliceEnds"><span></span><span></span><span></span></div></div>
       </div>
-      <div class="viewhint" id="viewhint">끌어서 화면 이동 · 휠로 확대 · 오른쪽 버튼(또는 Shift)으로 끌면 회전 · 밸브 핸들을 누르면 개폐 (초록 열림 · 빨강 닫힘)</div>
+      <div class="viewhint" id="viewhint">끌어서 화면 이동 · 휠로 확대 · 오른쪽 버튼(또는 Shift)으로 끌면 회전 · 밸브를 누르면 개폐 (밸브 위 작은 점: 초록 열림 · 빨강 닫힘)</div>
     </div>
     <div class="valvedock">
       <div class="tl" title="공정 시간 막대. 끌면 그 시점 화면을 다시 보여 준다(계산 일시 정지). ▶는 처음부터 재생, '지금'은 현재 시점으로">
-        <span class="vt">시간</span><button type="button" id="tlPlay" hidden>▶</button><input id="tlRange" type="range" min="0" max="0" value="0" disabled><span id="tlT">기록 없음</span><button type="button" id="tlLive" hidden>● 지금</button><select id="pbRate" aria-label="재생 속도" title="재생 속도: 화면에서 공정 시간이 흐르는 빠르기. 기본은 선택한 시간 배속(계산이 따라가는 한도까지). 더 빨리 보려면 배속을 올리거나 미래로"><option value="0" selected>배속만큼 (최대)</option><option value="600">1초에 10분</option><option value="60">1초에 1분</option><option value="10">×10</option><option value="1">실시간 ×1</option><option value="0.5">느리게 ×0.5</option><option value="0.25">느리게 ×0.25</option></select><span id="pbReal" title="현재 공정 시간 진행 속도 (공정 초 ÷ 실제 초)"></span><span class="perfinfo" id="perfInfo"></span><button type="button" id="tlJump" title="미래로 가기: 초류 종료·배치 종료 시점까지 빠르게 계산해 건너뛴다">⏩ 미래로</button>
+        <span class="vt">시간</span><button type="button" id="tlPlay" hidden>▶</button><input id="tlRange" type="range" min="0" max="0" value="0" disabled><span id="tlT">기록 없음</span><button type="button" id="tlLive" hidden>● 지금</button><span class="spd" role="group" aria-label="속도"><button type="button" id="spdD2" title="지금 속도의 절반"><span class="op">÷</span>2</button><button type="button" id="spdD15" title="지금 속도 ÷ 1.5"><span class="op">÷</span>1.5</button><button type="button" id="spdCur" title="공정 시간이 흐르는 빠르기(공정 초 ÷ 실제 초). 누르면 ×30으로">현재 ×30</button><button type="button" id="spdU15" title="지금 속도 × 1.5"><span class="op">×</span>1.5</button><button type="button" id="spdU2" title="지금 속도의 두 배"><span class="op">×</span>2</button></span><span class="spdwarn" id="spdWarn" hidden title="흐름 계산(격자)은 ×300을 넘기면 한 걸음이 길어 벽 칸이 자켓 온도에 붙는다 — 열수지가 어긋난다(×1000에서 약 10 %). 가벼운 계산은 걸음을 쪼개 이 오차가 없다">⚠ 열수지 오차↑</span><span class="perfinfo" id="perfInfo"></span>
       </div>
       <div class="vt">밸브 <button type="button" id="valveMin">접기</button></div>
       <div class="valves" id="valves">
@@ -2290,10 +2297,10 @@ function buildModel(p, Smeasured) {
   // v49: 회수 탱크 = 2:1 타원 경판 + 몸통(H/D 1.2). 지름은 용량(L, 0이면 본류 = 처음 액 부피, 초류 = 40 %)에서: V = π·D³·(1.2/4 + 1/12)
   const rcv = (capL, Vdef) => { const Vc = Math.max(1e-3, capL > 0 ? capL / 1000 : Vdef), D = Math.max(0.25 * t, Math.min(1.4 * t, Math.cbrt(Vc / (Math.PI * (1.2 / 4 + 1 / 12))))); return { r: D / 2, hd: D / 4, Hb: 1.2 * D }; };
   const V0d = liquidVolume(p, p.H0), RCM = rcv(p.capM, V0d), RCF = rcv(p.capF, 0.4 * V0d);
-  const gapV = 0.38 * Math.max(t, 2 * RCM.r, 2 * RCF.r), xMn0 = Rj + gapV + RCM.r, stepG = 0, rC = 0.11 * t, xC = Math.max(xMn0, xCol + rCol + 0.9 * t),   /* v81: 세 용기 틈 = 0.38 × 큰 지름, 1차 응축기·분배기는 본류 위 */ sSpl = 0.12 * t, ySpl = yDish + 0.07 * t, yC1 = ySpl + sSpl / 2 + 0.36 * t, yC0 = yC1 + 0.34 * Hs, colTop = yC0, yPipe = colTop + 0.2 * t;   // v68: 응축기·분배기는 컬럼 오른쪽 옆(분배기는 분배 팔 바로 위라 환류는 내려가기만), 응축기 꼭대기 = 컬럼 꼭대기   // 분배기가 컬럼 꼭대기보다 위: 환류는 내려가기만 한다
+  const gapV = 0.38 * Math.max(t, 2 * RCM.r, 2 * RCF.r), xMn0 = Rj + gapV + RCM.r, stepG = 0, rC = 0.11 * t, xC = Math.max(xMn0, xCol + rCol + 0.9 * t),   /* v81: 세 용기 틈 = 0.38 × 큰 지름, 1차 응축기·분배기는 본류 위 */ sSpl = 0.12 * t, ySpl = yDish,   /* v90: 분배기 = 환류 노즐 높이(환류 관이 꺾이지 않게) */ yC1 = yDish + 0.07 * t + sSpl / 2 + 0.36 * t, yC0 = yC1 + 0.34 * Hs, colTop = yC0, yPipe = colTop + 0.2 * t;   // v68: 응축기·분배기는 컬럼 오른쪽 옆(분배기는 분배 팔 바로 위라 환류는 내려가기만), 응축기 꼭대기 = 컬럼 꼭대기   // 분배기가 컬럼 꼭대기보다 위: 환류는 내려가기만 한다
   const xSpl = xC, xRf = xCol + rCol + 0.2 * t, yRf = yDish;   // v61: 환류 노즐은 분배 팔 높이로 옆에서 들어온다
   // 받는 탱크: 분배기 아래 티에서 조금 내려온 높이(탱크 꼭대기 근처)에 떠 있다. 본류(왼쪽) 크고 낮게, 초류(오른쪽) 작게
-  const yValve = ySpl - 0.95 * t, rRM = RCM.r, hdM = RCM.hd, rRF = RCF.r, hdF = RCF.hd, xMn = xMn0, xF = xMn0 + RCM.r + gapV + RCF.r;   // v81: 같은 틈
+  const yValve = yDish + 0.07 * t - 0.95 * t,   /* v90: 유출 티·회수 탱크는 제자리 */ rRM = RCM.r, hdM = RCM.hd, rRF = RCF.r, hdF = RCF.hd, xMn = xMn0, xF = xMn0 + RCM.r + gapV + RCF.r;   // v81: 같은 틈
   const yRvM = 0.1 * t + hdM, yRvF = 0.1 * t + hdF + 0.5 * (RCF.Hb + 2 * hdF), HrM = Math.max(0.6 * rRM, Math.min(RCM.Hb, yValve - 0.3 * t - yRvM - hdM)), HrF = Math.max(0.6 * rRF, Math.min(RCF.Hb, yValve - 0.3 * t - yRvF - hdF)), yTopM = yRvM + HrM, yTopF = yRvF + HrF;   // v49: 둘 다 바닥에 다리로 선다(yRv·yTop = 몸통 아래·위 끝)   // 본류 탱크는 정제기와 같은 바닥선, 초류 탱크는 띄운다
   // 2차 응축기(가로): 분배기 오른쪽, 같은 높이. 오른쪽 끝 바닥에서 응축액이 초류 탱크로, 오른쪽 끝 위에서 진공펌프로
   const r2 = 0.065 * t, x20 = Math.max(xSpl + 0.55 * t, xF + 0.5 * RCF.r + 0.08 * t - 0.72 * t), x21 = x20 + 0.72 * t, y2c = ySpl, x2o = x21 - 0.08 * t, yL2 = yTopF + 0.866 * hdF, yJ = yValve - 0.15 * t;   /* v82: L2가 F 가지관에 붙는 높이 */   // v60: 2차 응축기 출구가 초류 탱크 오른쪽 노즐 바로 위
@@ -2445,7 +2452,7 @@ function specHits(q, R, Hs, ht, t) {
   box("col", q.xCol - q.rCol, q.colBase, q.xCol + q.rCol, q.colTop, 2 * q.rCol);
   box("C1", q.xC - q.rC, q.yC1, q.xC + q.rC, q.yC0, 2 * q.rC);
   box("C2", Math.min(q.x20, q.x21), q.y2c - q.r2, Math.max(q.x20, q.x21), q.y2c + q.r2, 2 * q.r2);
-  box("pump", q.xPump - q.sPump, q.yPump - q.sPump, q.xPump + q.sPump, q.yPump + q.sPump, 2 * q.sPump);
+  box("pump", q.xPump - 0.2 * q.sPump, q.yPump - 0.8 * q.sPump, q.xPump + 1.55 * q.sPump, q.yPump + 0.6 * q.sPump, 2 * q.sPump);   // v89: 정면 케이싱
   box("fore", q.xF - q.rRF, q.yRvF - (q.hdF || 0), q.xF + q.rRF, q.yTopF + (q.hdF || 0), 2 * q.rRF);
   box("main", q.xMn - q.rRM, q.yRvM - (q.hdM || 0), q.xMn + q.rRM, q.yTopM + (q.hdM || 0), 2 * q.rRM);
   for (const k in PIPES) { if (k === "RD") continue; for (const o of PIPES[k]) if (o.isMesh) { o.userData.spec = "pipe:" + k; SPEC_HIT.push(o); } }
@@ -2830,9 +2837,11 @@ function fxUpdate(dtReal) {
   // 탱크 액면 비말: 증기 속도가 사우더스–브라운 속도의 70 %를 넘으면 액면에서 방울이 튄다
   const ut = FX.force && FX.force.ut != null ? FX.force.ut : PR.uSB > 0 ? PR.uTank / PR.uSB : 0;   // FX.force: 시험용으로 그림만 강제로 켜 본다
   if (STYLE !== "iso") { const ends = [];   // v64: 액 물줄기 끝(목 → 탱크 액면, 받는 탱크, 분배 팔 아래 충전물)에서 작은 파란 방울
-    for (const k of ["foreStream", "mainStream"]) { const st = VES[k]; if (st && st.visible) ends.push([st.position.x, st.position.y - st.scale.y / 2, st.position.z, 1]); }
+    for (const k of ["foreStream", "mainStream", "colStream"]) { const st = VES[k], u = st && st.userData; if (!st || !st.visible || !u || u.bot == null || !(u.a > 0.98)) continue;   // v89: 앞머리가 액면에 닿은 뒤부터(빠지면 끝) · 정제기(목관 줄기)도
+      const kgC = (PR.Lkg || 0) + (PR.backKg || 0); ends.push([st.position.x, u.bot, st.position.z, k === "colStream" ? Math.max(0.15, Math.min(2.2, 0.12 + 0.12 * kgC)) : 1, 0.45 * PIPE_R * t * st.scale.x]); }
     if (FILL.RD) for (const sg of FILL.RD.segs) if (sg.ov && sg.ov.visible && FILL.RD.full) ends.push([sg.a.x + sg.d.x * sg.L, sg.a.y + sg.d.y * sg.L, sg.a.z + sg.d.z * sg.L, 0.5]);
-    for (const e of ends) fxEmit("spl", 12 * e[3], dt, () => { const v0 = (0.1 + 0.12 * Math.random()) * Math.sqrt(t); return { x: e[0] + (Math.random() - 0.5) * 0.008 * t, y: e[1], z: e[2] + (Math.random() - 0.5) * 0.008 * t, vx: (Math.random() - 0.5) * 0.6 * v0, vy: v0, vz: (Math.random() - 0.5) * 0.6 * v0, y0: e[1], life: 0.6 }; }); }
+    for (const e of ends) fxEmit("spl", 12 * e[3], dt, () => { const v0 = (0.1 + 0.12 * Math.random()) * Math.sqrt(t), sr = e[4] != null ? e[4] * 1.15 : 0.004 * t, a = Math.random() * 6.283, ca = Math.cos(a), sa = Math.sin(a), vh = (0.35 + 0.45 * Math.random()) * v0;   // v89: 줄기 끝 둘레에서 바깥으로(줄기 속에 묻히지 않게)
+      return { x: e[0] + ca * sr, y: e[1], z: e[2] + sa * sr, vx: ca * vh, vy: v0, vz: sa * vh, y0: e[1], life: 0.6 }; }); }
   if (false && boiling && ut > 0.7) fxEmit("spl", Math.min(80, 30 * (ut - 0.7) / 0.3 + 5), dt, () => { const r = M.R * 0.85 * Math.sqrt(Math.random()), a = Math.random() * 6.283, x = r * Math.cos(a), z = r * Math.sin(a), y = M.surfY(x, z);
     const v0 = (0.35 + 0.5 * Math.min(1.5, ut - 0.6) * Math.random()) * Math.sqrt(t); return { x, y, z, vx: (Math.random() - 0.5) * 0.2 * v0, vy: v0, vz: (Math.random() - 0.5) * 0.2 * v0, y0: y, life: 3 }; });
   // 13 끓는 기포: 그 자리 온도가 그 깊이의 끓는점 이상인 칸에서만 생긴다 (상압은 벽·바닥에서, 진공은 맨 위 1~2 cm에서만)
@@ -2853,7 +2862,7 @@ function fxUpdate(dtReal) {
     if (false && VLV.J && p.jOpen > 0 && sk > 1 && !PR.stopped && Hj > hh + 0.02) fxEmit("jst", Math.min(45, 8 + sk / 4), dt, () => { const a = Math.random() * 6.283; return { x: rJ * Math.cos(a), y: Hj - 0.01 * t, z: rJ * Math.sin(a), y0: hh, y1: Hj, vy: -(0.25 + 0.15 * Math.random()) * (Hj - hh), life: 8 }; }); }
   if (false && VLV.C1 && (p.mcw || 0) > 0) { const Hc = q.yC0 - q.yC1; fxEmit("wShell", Math.min(40, 4 + 14 * p.mcw / 2000), dt, () => { const a = Math.random() * 6.283, r = q.rC * (0.35 + 0.55 * Math.random()); return { x: q.xC + r * Math.cos(a), y: q.yC1 + 0.02 * Hc, z: r * Math.sin(a), y0: q.yC1, y1: q.yC0, vy: Hc * (0.2 + 0.25 * Math.min(2, p.mcw / 2000)), life: 10 }; }); }
   // 12 진공펌프 배기(펌프가 돌고 진공일 때, 리크·못 잡은 증기만큼), 4 비응축 가스 점
-  if (VLV.S && p.P < 700) fxEmit("pump", Math.min(20, 2 + p.leak * 2 + (PR.vdot > 0 ? 100 * (1 - (PR.fNC == null ? 1 : PR.fNC)) : 0)), dt, () => ({ x: q.xPump + q.sPump * 1.5, y: q.yPump, z: 0, vx: 0.08 * t, vy: 0.05 * t, life: 1.6 }));
+  if (VLV.S && p.P < 700) fxEmit("pump", Math.min(20, 2 + p.leak * 2 + (PR.vdot > 0 ? 100 * (1 - (PR.fNC == null ? 1 : PR.fNC)) : 0)), dt, () => ({ x: q.xPump + q.sPump * 1.51, y: q.yPump + q.sPump * 0.4, z: 0, vx: 0.08 * t, vy: 0.05 * t, life: 1.6 })   /* v89: 새 토출 노즐 끝 */);
   if (boiling && air > 0.03) fxEmit("air", 20 * air, dt, () => { const Hc = (q.yC0 - q.yC1) * air; return { x: q.xC + (Math.random() - 0.5) * q.rC * 1.4, y: q.yC1 + Math.random() * Hc, z: (Math.random() - 0.5) * q.rC * 1.4, vx: 0, vy: 0.01 * t * (Math.random() - 0.5), life: 2 }; });
   // 8 안전밸브 분출
   if (false && STYLE !== "iso" && VLV.C1 && PR.vdot > 1 && !PR.stopped && (PR.c1 || 0) > 0.01 && (PR.condKg || 0) > 0.05) {   /* v83: 따로 뿌리던 방울 대신 점이 방울로 */ const Hc = q.yC0 - q.yC1, lv = q.yC1 + Math.min(Hc, PR.hC1 || 0) + 0.004 * t, top = q.yC1 + Hc * (1 - Math.max(0.05, Math.min(CONDF, 1)) * 0.9);   // v82: U튜브 표면에서 맺혀 떨어지는 응축액 방울(응축 구간에서 고인 액면까지)
@@ -2902,7 +2911,7 @@ function fxFocus(key) {
   else if (key === "C1") { tx = (q.xC + q.x20) / 2; ty = (q.yC0 + q.yC1) / 2; d = 0.5; }
   else if (key === "fore") { tx = q.xF; ty = (q.yRvF + q.yTopF) / 2; d = 0.5; }
   else if (key === "main") { tx = (q.xMn + q.xF) / 2; ty = (q.yRvM + q.yTopF) / 2; d = 0.6; }
-  else if (key === "pump") { tx = q.xPump; ty = q.yPump; d = 0.45; }
+  else if (key === "pump") { tx = q.xPump + 0.66 * q.sPump; ty = q.yPump; d = 0.45; }
   else { tx = 0; ty = M.p.H * 0.6; d = 0.65; }
   fitView(); USERCAM = true; const dist = 2.4 * d; CAMFLY = { from: orbit.target.clone(), to: new THREE.Vector3(tx, ty, 0), d0: orbit.dist, d1: dist, t0: performance.now(), dur: 650 };
 }
@@ -2927,7 +2936,8 @@ let pipeFore = [], pipeMain = [];
 // ---------- 밸브 ----------
 const VLV = { J: true, V: true, R: true, P: true, F: true, M: false, S: true, C1: true, C2: true };
 const PCV = { man: false, open: 100 };   // v86: 진공 조절 밸브(수동이면 개도 고정)
-const VALVE_MESH = {}, VALVE_HIT = [];
+const VALVE_MESH = {}, VALVE_HIT = [], VDOT = {};   // v89: VDOT = 밸브 상태 점(키 → 점)
+function valveShownOpen(k) { if (k === "J") return !!VLV.J && !!CUR && CUR.jOpen > 0; if (k === "S") return !!VLV.S && (!PCV.man || PCV.open > 0); return !!VLV[k]; }   // v89: 조절 밸브는 0 %일 때만 닫힘
 const COL_K = 6;   // 컬럼 예열 구간 수 (아래 → 위)
 function cutState() { return VLV.F && !VLV.M ? "fore" : VLV.M && !VLV.F ? "main" : VLV.F && VLV.M ? "both" : "none"; }
 function syncValveUI() {
@@ -3077,8 +3087,10 @@ function makeMats() {
   const LQ = LIQ(); cA.setHex(LQ.A); cB.setHex(LQ.B);
   mats.pipeLiq = Std({ color: LQ.std, emissive: LQ.em, transparent: !STEELISH(), opacity: glowOp, side: THREE.DoubleSide, depthWrite: STEELISH(), metalness: 0.2, roughness: 0.3, toon: LQ.pipe, hmi: LQ.pipe, map: FLOW.hi });   // v52: 매끈한 한 색 + 지나가는 하이라이트
   mats.stream = Std({ color: LQ.std, emissive: LQ.em, transparent: true, opacity: 0.7, depthWrite: false, metalness: 0.2, roughness: 0.3, toon: LQ.pipe, hmi: LQ.pipe, map: FLOW.hi });
-  mats.vOpen = Std({ color: 0x3fb950, emissive: 0x0f3d1a, metalness: 0.3, roughness: 0.5, draw: 0x3fb950, toon: 0x39d353, hmi: 0x27c93f });
-  mats.vClosed = Std({ color: 0xd64545, emissive: 0x4a1010, metalness: 0.3, roughness: 0.5, draw: 0xd64545, toon: 0xff5c5c, hmi: 0xe5393a });
+  mats.vOpen = Std({ color: 0x4f9d68, emissive: 0x0a2414, metalness: 0.3, roughness: 0.5, draw: 0x4f9d68, toon: 0x5aa874, hmi: 0x4f9d68 });   /* v89: 차분한 초록 */
+  mats.vClosed = Std({ color: 0xc0504d, emissive: 0x2a0c0c, metalness: 0.3, roughness: 0.5, draw: 0xc0504d, toon: 0xcc5c58, hmi: 0xc0504d });   /* v89: 차분한 빨강 */
+  mats.vGrey = Std({ color: dark ? 0x7d8791 : 0x8a949d, metalness: 0.6, roughness: 0.4, draw: 0xe9edf1, toon: 0x8794a1, hmi: 0x56606a });   /* v89: 밸브 몸통 = 관보다 한 단계 짙은 회색 */
+  mats.vGrey2 = Std({ color: dark ? 0x9aa3ab : 0xa3acb4, metalness: 0.6, roughness: 0.4, draw: 0xe9edf1, toon: 0x9ba7b3, hmi: 0x77818b });
   mats.pump = Std({ color: dark ? 0x5a6670 : 0x6c7a85, metalness: 0.4, roughness: 0.5, draw: 0xe9edf1, toon: 0x7b8a99, hmi: 0x6b7680 });
   jacketMat = steel ? new THREE.MeshStandardMaterial({ color: 0xd6dbe0, emissive: 0x000000, metalness: 0.3, roughness: 0.4, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false })   // v56: 연한 반투명
     : toon ? new THREE.MeshToonMaterial({ color: 0xeab676, emissive: 0x000000, gradientMap: TOON_GRAD, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false })
@@ -3180,7 +3192,7 @@ function addEdges(g) {
 }
 // 밸브 이름표 스프라이트 (한글 짧은 이름)
 const VALVE_NAME = { J: "스팀", V: "증기", R: "환류", P: "유출", F: "초류", M: "본류", S: "진공", C1: "냉각수1", C2: "냉각수2" };
-const VALVE_TAGNAME = { J: "스팀 CV", V: "증기 밸브", R: "환류 차단", P: "유출 차단", F: "초류 밸브", M: "본류 밸브", S: "진공 밸브", C1: "냉각수1 밸브", C2: "냉각수2 밸브" };   // v52
+const VALVE_TAGNAME = { J: "스팀 CV", V: "증기 밸브", R: "환류 FCV-072", P: "유출 FCV-073", F: "초류 밸브", M: "본류 밸브", S: "진공 밸브", C1: "냉각수1 밸브", C2: "냉각수2 밸브" };   // v52
 const tagCache = {};
 function tagTex(key, open) {
   const k = key + (open ? "o" : "c") + (isDark() ? "d" : "l");
@@ -3209,7 +3221,7 @@ function eqRoute(q, t) {   // v82: 본류·초류 탱크 위 경판 노즐 → (
   const xm = q.xMn + 0.32 * q.rRM, xf = q.xF - 0.55 * q.rRF, tail = [[xT, yH, zb], [xT, q.y2c, zb], [xT, q.y2c, -0.02 * t]];
   return { M: [[xm, head(q.xMn, q.rRM, q.yTopM, q.hdM, xm), zb], [xm, yH, zb]].concat(tail), F: [[xf, head(q.xF, q.rRF, q.yTopF, q.hdF, xf), zb], [xf, yH, zb]].concat(tail) }; }
 function buildTank(m) {
-  disposeGroup(tankGroup); INSTR_HIT.length = 0; D3_LBL.length = 0; VALVE_HIT.length = 0; HMI_TAGS.length = 0; for (const k in PIPES) delete PIPES[k]; for (const k in VALVE_PARTS) delete VALVE_PARTS[k];
+  disposeGroup(tankGroup); INSTR_HIT.length = 0; D3_LBL.length = 0; VALVE_HIT.length = 0; HMI_TAGS.length = 0; for (const k in PIPES) delete PIPES[k]; for (const k in VALVE_PARTS) delete VALVE_PARTS[k]; for (const k in VDOT) delete VDOT[k];
   const fillKeep = {}; for (const k in FILL) { fillKeep[k] = [FILL[k].head / Math.max(1e-9, FILL[k].Ltot), FILL[k].tail / Math.max(1e-9, FILL[k].Ltot)]; delete FILL[k]; }   // 다시 지어도 관 속 액은 그대로
   const p = m.p, R = m.R, hh = m.hh, Hs = m.Hs, ht = m.ht, topY = m.topY, V = new THREE.Vector3, steelS = STEELISH(), hmi = HMI();
   cylShell(R, Hs - hh, hh + (Hs - hh) / 2, 0, tankGroup);
@@ -3254,7 +3266,7 @@ function buildTank(m) {
     if (steelS) { const band = opaque(new THREE.Mesh(new THREE.CylinderGeometry(Rj + 0.003, Rj + 0.003, 0.03 * p.T, 96, 1, true), mats.steel)); band.position.y = Hj - 0.015 * p.T; tankGroup.add(band); }
     // 열매체 들어가는 관(아래)·나가는 관(위), 응축기 반대쪽
     const rj = 0.02 * p.T, pm = steelS ? mats.steamPipe : mats.pipe;
-    pipeSeg(V.set(-Rj - 0.14 * p.T, Math.max(0.1 * p.T, hh), 0).clone(), new THREE.Vector3(-Rj, Math.max(0.1 * p.T, hh), 0), rj, pm, tankGroup, "J");
+    pipeSeg(V.set(-Rj - 0.36 * p.T, Math.max(0.1 * p.T, hh), 0).clone(), new THREE.Vector3(-Rj, Math.max(0.1 * p.T, hh), 0), rj, pm, tankGroup, "J");   // v89: 조절 밸브가 탱크 왼쪽 바깥에 보이게 길게
     pipeSeg(new THREE.Vector3(-Rj - 0.14 * p.T, Hj - 0.03 * p.T, 0), new THREE.Vector3(-Rj, Hj - 0.03 * p.T, 0), rj, pm, tankGroup, "J");
   }
   // 바닥판(격자)·다리·모터 받침
@@ -3266,10 +3278,32 @@ function buildTank(m) {
     if (steelS) { const pad = opaque(new THREE.Mesh(new THREE.BoxGeometry(0.07 * p.T, 0.012 * p.T, 0.07 * p.T), mats.steel)); pad.position.set(leg.position.x, -0.058 * p.T, leg.position.z); tankGroup.add(pad); }
   }
   const q = m.pipe, t = p.T, rp = PIPE_R * t, V3 = (x, y, z = 0) => new THREE.Vector3(x, y, z);
+  // v89: 작은 무채색 밸브 — 몸통(관 지름의 1.45배) + 플랜지 + 구동부(조절 밸브 = 다이어프램, 온오프 = 작은 원통) + 상태 점 하나. 누르는 영역은 넉넉하게
+  const vSmall = (key, mid, d, up, r0, kind, opt) => {
+    opt = opt || {}; const Y = new THREE.Vector3(0, 1, 0), g = new THREE.Group(); tankGroup.add(g);
+    const add = (geo, mat, pos, axis) => { const o = opaque(new THREE.Mesh(geo, mat)); o.position.copy(pos); if (axis) o.quaternion.setFromUnitVectors(Y, axis); g.add(o); if (opt.spec) { o.userData.spec = opt.spec; INSTR_HIT.push(o); } return o; };
+    const rb = r0 * 1.45; add(new THREE.SphereGeometry(rb, 18, 12), mats.vGrey, mid);
+    for (const sg of [-1, 1]) add(new THREE.CylinderGeometry(r0 * 1.3, r0 * 1.3, r0 * 0.35, 14), mats.vGrey2, mid.clone().addScaledVector(d, sg * rb), d);
+    let top;
+    if (kind === "cv") { add(new THREE.CylinderGeometry(r0 * 0.2, r0 * 0.2, r0 * 1.6, 8), mats.vGrey2, mid.clone().addScaledVector(up, rb + r0 * 0.6), up);
+      add(new THREE.CylinderGeometry(r0 * 1.45, r0 * 1.45, r0 * 0.26, 20), mats.vGrey2, mid.clone().addScaledVector(up, rb + r0 * 1.4), up);
+      const dm = add(new THREE.SphereGeometry(r0 * 1.45, 20, 8, 0, Math.PI * 2, 0, Math.PI / 2), mats.vGrey, mid.clone().addScaledVector(up, rb + r0 * 1.52), up); dm.scale.set(1, 0.36, 1); top = rb + r0 * 2.1; }
+    else { add(new THREE.CylinderGeometry(r0 * 0.2, r0 * 0.2, r0 * 0.9, 8), mats.vGrey2, mid.clone().addScaledVector(up, rb + r0 * 0.35), up);
+      add(new THREE.CylinderGeometry(r0 * 0.5, r0 * 0.5, r0 * 2.0, 12), mats.vGrey, mid.clone().addScaledVector(up, rb + r0 * 1.1), d); top = rb + r0 * 1.6; }
+    const wheelG = new THREE.Group(); wheelG.position.copy(mid).addScaledVector(up, top + r0 * 0.45); g.add(wheelG);
+    const dot = opaque(new THREE.Mesh(new THREE.SphereGeometry(r0 * 0.5, 12, 8), valveShownOpen(key) ? mats.vOpen : mats.vClosed)); wheelG.add(dot); VDOT[key] = dot;
+    if (opt.label) { const tg = nameSprite(opt.label); tg.visible = false; D3_LBL.push({ kind: "fic", key, text: opt.label, obj: tg }); tg.position.copy(wheelG.position).addScaledVector(up, r0 * 2 + 0.04 * t); tg.scale.set(0.26 * t, 0.075 * t, 1); tankGroup.add(tg); }
+    if (opt.noValve) return;
+    VALVE_MESH[key] = [dot];
+    const hit = new THREE.Mesh(new THREE.SphereGeometry(Math.max(r0 * 6, 0.06 * t), 8, 6)); hit.visible = false; hit.position.copy(mid).addScaledVector(up, rb); hit.userData.v = key; tankGroup.add(hit); VALVE_HIT.push(hit);
+    const tag = valveTag(key); tag.position.copy(wheelG.position).addScaledVector(up, r0 * 2 + 0.05 * t); tag.scale.set(0.2 * t, 0.083 * t, 1); tag.visible = false; tankGroup.add(tag);
+    VALVE_PARTS[key] = { wheelG, tag, parts: [dot] };
+  };
   // 밸브: 구형 몸통 + 양쪽 플랜지 + 보닛 + 축 + 바퀴 핸들(살 4개). 초록 열림 / 빨강 닫힘. 누르면 바퀴가 돌아간다
   const valveAt = (key, a, b, r0) => {
     const r = r0 * 1.15, mid = a.clone().add(b).multiplyScalar(0.5), d = b.clone().sub(a).normalize();
     const up = Math.abs(d.y) > 0.9 ? new THREE.Vector3(-1, 0, 0) : new THREE.Vector3(0, 1, 0), Y = new THREE.Vector3(0, 1, 0);   // v83: 세로 관 밸브 손잡이는 왼쪽(정면에서 보이게)
+    if (STYLE !== "iso") { vSmall(key, mid, d, up, r0, key === "J" ? "cv" : "onoff"); return; }   // v89: 작은 무채색 밸브
     const g = new THREE.Group(); tankGroup.add(g);
     if (hmi && key !== "J") { // v62: 자동 온오프 밸브 = 볼 밸브 몸통 + 열림/닫힘 띠 + 랙앤피니언 액추에이터 + 위치 표시기(wheelG, 90° 돈다)
       const wm = VLV[key] ? mats.vOpen : mats.vClosed, parts = [], rb = r * 1.75, Z = new THREE.Vector3(0, 0, 1), side = d.clone().cross(up).normalize();
@@ -3339,7 +3373,7 @@ function buildTank(m) {
       const dm = add(new THREE.SphereGeometry(r * 1.9, 24, 8, 0, Math.PI * 2, 0, Math.PI / 2), hmi ? mats.motor : mats.pump, at.clone().addScaledVector(up, r * 4.6), up); dm.scale.set(1, 0.4, 1); }
   };
   // 스팀/열매체 밸브 (자켓 아래 입구관)
-  valveAt("J", V3(-q.Rj - 0.14 * t, q.yJin), V3(-q.Rj, q.yJin), 0.02 * t);
+  valveAt("J", V3(-q.Rj - 0.27 * t, q.yJin), V3(-q.Rj - 0.17 * t, q.yJin), 0.02 * t);   // v89: 정제기 왼쪽 옆면(정면에서 보임)
   // ----- 컬럼 타워: 충전 몸통 + 둥근 꼭대기 + 둥근 바닥 (HMI처럼 받침 없이 떠 있다) -----
   { const bd = opaque(new THREE.Mesh(new THREE.SphereGeometry(q.rCol, 32, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mats.shell)); bd.scale.y = 0.45; bd.position.set(q.xCol, q.colBase, 0); tankGroup.add(bd); }
   cylShell(q.rCol, q.colTop - q.colBase, (q.colBase + q.colTop) / 2, q.xCol, tankGroup);
@@ -3349,7 +3383,7 @@ function buildTank(m) {
   { // 바닥 지지판(구멍 뚫린 판)
     const grid = opaque(new THREE.Mesh(new THREE.CylinderGeometry(q.rCol * 0.96, q.rCol * 0.96, 0.012 * t, 32), mats.tube)); grid.position.set(q.xCol, q.packY0 - 0.006 * t, 0); tankGroup.add(grid);
     for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2, rr = k ? q.rCol * 0.5 : 0; const h = new THREE.Mesh(new THREE.CylinderGeometry(q.rCol * 0.1, q.rCol * 0.1, 0.014 * t, 10), mats.motor); h.position.set(q.xCol + rr * Math.cos(a), q.packY0 - 0.006 * t, rr * Math.sin(a)); tankGroup.add(h); } }
-  { // 충전물: 폴 링(얇은 통 + 안으로 접힌 혀) 수백 개를 제멋대로 쌓는다(InstancedMesh). 1 m 넘으면 가운데 액 재분배기
+  { // 충전물: 폴 링(얇은 통 + 안으로 접힌 혀) 수백 개를 제멋대로 쌓는다(InstancedMesh). 위에서 아래까지 끊김 없이(v89: 가운데 재분배기 없음 — P&ID에 없다)
     const H = q.packY1 - q.packY0, mid = H > 0.6 ? q.packY0 + H / 2 : null, rr0 = q.rCol * 0.17, hr = rr0 * 1.1;
     const n = Math.round(Math.max(0, Math.floor(H / (0.014 * t))) * 3 * 0.4);   // v49: 40 %만 — 사이로 증기·액이 보이게
     if (n > 0) {
@@ -3360,7 +3394,7 @@ function buildTank(m) {
       let seed = 7; const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
       let k = 0;
       for (let i = 0; i < n; i++) {
-        const y = q.packY0 + hr * 0.6 + rnd() * (H - hr * 1.2); if (mid && Math.abs(y - mid) < 0.03 * t) continue;
+        const y = q.packY0 + hr * 0.6 + rnd() * (H - hr * 1.2);
         const a = rnd() * Math.PI * 2, rad = q.rCol * 0.78 * Math.sqrt(rnd());
         P.set(q.xCol + rad * Math.cos(a), y, rad * Math.sin(a)); E.set(rnd() * Math.PI, rnd() * Math.PI, rnd() * Math.PI); Q.setFromEuler(E);
         M4.compose(P, Q, Sc); rings.setMatrixAt(k, M4);
@@ -3369,9 +3403,7 @@ function buildTank(m) {
       }
       rings.count = k; tongs.count = k * 4; rings.instanceMatrix.needsUpdate = true; tongs.instanceMatrix.needsUpdate = true; tankGroup.add(rings); tankGroup.add(tongs);
     }
-    if (mid) { const rd = opaque(new THREE.Mesh(new THREE.CylinderGeometry(q.rCol * 0.96, q.rCol * 0.96, 0.014 * t, 32), mats.steel)); rd.position.set(q.xCol, mid, 0); tankGroup.add(rd);
-      for (let k2 = 0; k2 < 6; k2++) { const a = k2 / 6 * Math.PI * 2 + 0.3; const h = new THREE.Mesh(new THREE.CylinderGeometry(q.rCol * 0.09, q.rCol * 0.09, 0.05 * t, 8), mats.tube); h.position.set(q.xCol + q.rCol * 0.5 * Math.cos(a), mid, q.rCol * 0.5 * Math.sin(a)); tankGroup.add(h); }
-      const rf = opaque(new THREE.Mesh(new THREE.CylinderGeometry(q.rCol * 1.16, q.rCol * 1.16, 0.022 * t, 48), mats.steel)); rf.position.set(q.xCol, mid, 0); tankGroup.add(rf); } }
+  }   /* v89: 가운데 액 재분배기 그림 없앰 */
   { // v82: 환류 분사 노즐 2개 — 옆 노즐로 들어온 관이 충전층 위에서 짧은 가로 헤더로 갈라져, 아래를 향한 노즐 둘이 나란히 원뿔 모양으로 뿌린다(RD가 흐를 때만)
     const y = q.yDish, dx = q.rCol * 0.42, hd = opaque(new THREE.Mesh(new THREE.CylinderGeometry(rp * 0.5, rp * 0.5, 2 * dx, 12), mats.steel)); hd.position.set(q.xCol, y, 0); hd.rotation.z = Math.PI / 2; tankGroup.add(hd);
     const H = Math.max(0.01 * t, y - 0.04 * t - q.packY1 - 0.012 * t); VES.spray = [];
@@ -3416,23 +3448,18 @@ function buildTank(m) {
   condenserV(q.xC, q.rC, q.yC0, q.yC1, 7, "C1");
   // 응축액: 응축기 바닥 → 분배기 (키 C)
   pipeSeg(V3(q.xSpl, q.yC1 - 0.01 * t), V3(q.xSpl, q.ySpl + q.sSpl / 2), rp * 0.8, mats.pipe, tankGroup, "C");
-  { const yS = q.yC1 - 0.11 * t, sg = new THREE.Mesh(new THREE.CylinderGeometry(rp * 1.9, rp * 1.9, 0.07 * t, 20, 1, true), mats.glass); sg.position.set(q.xSpl, yS, 0); sg.renderOrder = 5; tankGroup.add(sg);   // v82: 사이트 글라스(응축액 출구 라인)
-    for (const dy of [-0.04, 0.04]) { const fl = opaque(new THREE.Mesh(new THREE.CylinderGeometry(rp * 2.3, rp * 2.3, 0.012 * t, 20), mats.steel)); fl.position.set(q.xSpl, yS + dy * t, 0); tankGroup.add(fl); } }
+  /* v89: 사이트 글라스 그림 없음(관이 반투명이라 응축액 줄기가 보인다) */
   // ----- 환류 분배기 상자 -----
   const spl = opaque(new THREE.Mesh(new THREE.BoxGeometry(q.sSpl, q.sSpl, q.sSpl), mats.steel)); spl.position.set(q.xSpl, q.ySpl, 0); tankGroup.add(spl);
   { const sx = q.xSpl + q.sSpl * 0.5 + q.sSpl * 0.16, sz = q.sSpl * 0.3, sh = q.sSpl * 0.9, sg = new THREE.Mesh(new THREE.CylinderGeometry(q.sSpl * 0.12, q.sSpl * 0.12, sh, 12), mats.glass); sg.position.set(sx, q.ySpl, sz); sg.renderOrder = 5; tankGroup.add(sg);   // v71: 분배기 액면계
     const lq = new THREE.Mesh(new THREE.CylinderGeometry(q.sSpl * 0.1, q.sSpl * 0.1, 1, 12), mats.stream); lq.position.set(sx, q.ySpl - sh / 2, sz); lq.scale.y = 1e-4; lq.visible = false; lq.renderOrder = 7; tankGroup.add(lq); VES.splLiq = lq; VES.splY0 = q.ySpl - sh / 2; VES.splH = sh; }
   // ----- 환류 관: 분배기 왼쪽 → 왼쪽 → 위로 → 컬럼 꼭대기 옆 (키 R) -----
-  pipeSeg(V3(q.xSpl - q.sSpl / 2, q.ySpl), V3(q.xRf, q.ySpl), rp * 0.7, mats.pipe, tankGroup, "R");
-  { const x0 = q.xSpl - q.sSpl / 2; instr("FT", V3(x0 - 0.14 * t, q.ySpl), V3(-1, 0, 0), rp * 0.7, null, "R"); instr("FCV", V3(x0 - 0.4 * t, q.ySpl), V3(-1, 0, 0), rp * 0.7, "환류 FIC-072", "R");   // v49
-    valveAt("R", V3(x0 - 0.64 * t, q.ySpl), V3(x0 - 0.72 * t, q.ySpl), rp * 0.7); }
-  pipeSeg(V3(q.xRf, q.ySpl), V3(q.xRf, q.yRf), rp * 0.7, mats.pipe, tankGroup, "R");
-  pipeSeg(V3(q.xRf, q.yRf), V3(q.xCol, q.yRf), rp * 0.7, mats.pipe, tankGroup, "R");   // v61: 옆 노즐 → 가운데(분배 팔)
+  pipeSeg(V3(q.xSpl - q.sSpl / 2, q.ySpl), V3(q.xCol, q.yRf), rp * 0.7, mats.pipe, tankGroup, "R");   // v90: 분배기 → 컬럼 옆 노즐까지 수평 직선 하나(꺾임·이음 플랜지 없음)
+  { const x0 = q.xSpl - q.sSpl / 2; vSmall("R", V3((q.xCol + q.rCol + x0) / 2, q.ySpl), V3(-1, 0, 0), V3(0, 1, 0), rp * 0.7, "cv"); }   /* v90: 직선의 가운데 */   // v89: 환류 = FCV-072 하나(유량계·차단 밸브 그림 없음, 닫힘 = 0 %)
   /* v61: 컬럼 안 세로 내림관 없음 */
   // ----- 유출 관 → 갈림 → 본류(왼쪽)·초류(오른쪽) 탱크 (키 P, F, M) -----
   pipeSeg(V3(q.xSpl, q.ySpl - q.sSpl / 2), V3(q.xSpl, q.yValve), rp * 0.8, mats.pipe, tankGroup, "P");
-  { const y0 = q.ySpl - q.sSpl / 2; instr("FT", V3(q.xSpl, y0 - 0.14 * t), V3(0, -1, 0), rp * 0.8, null, "P"); instr("FCV", V3(q.xSpl, y0 - 0.4 * t), V3(0, -1, 0), rp * 0.8, "유출 FIC-073", "P");   // v49
-    valveAt("P", V3(q.xSpl, y0 - 0.64 * t), V3(q.xSpl, y0 - 0.72 * t), rp * 0.8); }
+  { const y0 = q.ySpl - q.sSpl / 2; vSmall("P", V3(q.xSpl, y0 - 0.26 * t), V3(0, -1, 0), V3(-1, 0, 0), rp * 0.8, "cv"); }   // v89: 유출 = FCV-073 하나
   const tee = opaque(new THREE.Mesh(new THREE.SphereGeometry(rp * 1.1, 12, 10), mats.steel)); tee.position.set(q.xSpl, q.yValve, 0); tankGroup.add(tee);
   if (Math.abs(q.xMn - q.xSpl) > 1e-4) { pipeSeg(V3(q.xSpl, q.yValve), V3(q.xMn, q.yValve), rp * 0.8, mats.pipe, tankGroup, "P"); const tee2 = opaque(new THREE.Mesh(new THREE.SphereGeometry(rp * 1.1, 12, 10), mats.steel)); tee2.position.set(q.xMn, q.yValve, 0); tankGroup.add(tee2); }   // v80: 유출 헤더 → 본류 위 티
   pipeSeg(V3(q.xMn, q.yValve), V3(q.xMn, q.yTopM + q.hdM - 0.01 * t), rp * 0.7, mats.pipe, tankGroup, "M");   // 본류 가지(티에서 곧장 아래)
@@ -3469,22 +3496,27 @@ function buildTank(m) {
       const bon = opaque(new THREE.Mesh(new THREE.SphereGeometry(r * 1.02, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), mats.steel)); bon.scale.y = 0.55; bon.rotation.z = x === x0 ? Math.PI / 2 : -Math.PI / 2; bon.position.set(x, y, 0); tankGroup.add(bon); }
     for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2, rr = i ? r * 0.55 : 0; const tb = new THREE.Mesh(new THREE.CylinderGeometry(0.035 * r, 0.035 * r, L - 0.02 * t, 6), BARMAT);   /* v72 */ tb.rotation.z = Math.PI / 2; tb.position.set(cx, y + rr * Math.cos(a), rr * Math.sin(a)); tankGroup.add(tb); }
     const rw = 0.16 * r;   // 냉각수: 왼쪽 아래로 들어가(밸브 C2) 오른쪽 위로 나간다 (키 W2)
-    pipeSeg(V3(x0 + 0.1 * t, y - r), V3(x0 + 0.1 * t, y - r - 0.14 * t), rw, mats.pipe, tankGroup, "W2");
-    pipeSeg(V3(x0 + 0.1 * t, y - r - 0.14 * t), V3(x0 - 0.12 * t, y - r - 0.14 * t), rw, mats.pipe, tankGroup, "W2");
+    pipeSeg(V3(x0 + 0.1 * t, y - r), V3(x0 + 0.1 * t, y - r - 0.24 * t), rw, mats.pipe, tankGroup, "W2");   // v89: 꺾임 없이 곧게 아래로(균압 관과 안 겹치게)
     pipeSeg(V3(x1 - 0.22 * t, y + r), V3(x1 - 0.22 * t, y + r + 0.14 * t), rw, mats.pipe, tankGroup, "W2");
-    valveAt("C2", V3(x0 - 0.01 * t, y - r - 0.14 * t), V3(x0 - 0.09 * t, y - r - 0.14 * t), rw); }
+    valveAt("C2", V3(x0 + 0.1 * t, y - r - 0.11 * t), V3(x0 + 0.1 * t, y - r - 0.17 * t), rw); }
   pipeSeg(V3(q.x2o, q.y2c - q.r2 + 0.01 * t), V3(q.x2o, q.yJ), rp * 0.6, mats.pipe, tankGroup, "L2"); pipeSeg(V3(q.x2o, q.yJ), V3(q.xF + 0.01 * t, q.yJ), rp * 0.6, mats.pipe, tankGroup, "L2");   // v82: 2차 응축액 → F 가지관 T
   /* v82: 초류 탱크 위 두 번째 노즐 없음(L2는 F 가지관으로) */
   pipeSeg(V3(q.x2o, q.y2c + q.r2 - 0.01 * t), V3(q.x2o, q.yPumpLine), rp * 0.6, mats.pipe, tankGroup, "S");
   pipeSeg(V3(q.x2o, q.yPumpLine), V3(q.xPump, q.yPumpLine), rp * 0.6, mats.pipe, tankGroup, "S");
-  instr("FCV", V3(q.x2o + 0.12 * t, q.yPumpLine), V3(1, 0, 0), rp * 0.6, "진공 조절 밸브 PCV", "S");   // v86: 다이어프램 조절 밸브
-  pipeSeg(V3(q.xPump, q.yPumpLine), V3(q.xPump, q.yPump + q.sPump * 0.5), rp * 0.6, mats.pipe, tankGroup, "S");
-  { // 진공펌프: 둥근 몸통 + 모터, 오른쪽으로 배기
-    const s = q.sPump, body = opaque(new THREE.Mesh(new THREE.CylinderGeometry(s * 0.5, s * 0.5, s * 0.9, 24), mats.pump)); body.rotation.x = Math.PI / 2; body.position.set(q.xPump, q.yPump, 0.1 * s); tankGroup.add(body);
-    const cap = opaque(new THREE.Mesh(new THREE.CylinderGeometry(s * 0.56, s * 0.56, s * 0.12, 24), mats.steel)); cap.rotation.x = Math.PI / 2; cap.position.set(q.xPump, q.yPump, 0.55 * s); tankGroup.add(cap);
-    const guard = opaque(new THREE.Mesh(new THREE.BoxGeometry(s * 0.5, s * 0.5, s * 0.3), mats.steel)); guard.position.set(q.xPump, q.yPump, -0.5 * s); tankGroup.add(guard);
-    const motor = opaque(new THREE.Mesh(new THREE.CylinderGeometry(s * 0.42, s * 0.42, s * 1.0, 24), mats.motor)); motor.rotation.x = Math.PI / 2; motor.position.set(q.xPump, q.yPump, -1.15 * s); tankGroup.add(motor);
-    pipeSeg(V3(q.xPump + s * 0.5, q.yPump), V3(q.xPump + s * 1.5, q.yPump), rp * 0.5, mats.pipe, tankGroup, "S");   // 배기
+  vSmall("S", V3(q.x2o + 0.12 * t, q.yPumpLine), V3(1, 0, 0), V3(0, 1, 0), rp * 0.6, "cv", { spec: "pipe:S", label: "진공 PCV", noValve: true });   // v86 · v89: 작은 조절 밸브(누르면 스펙)
+  pipeSeg(V3(q.xPump, q.yPumpLine), V3(q.xPump, q.yPump), rp * 0.6, mats.pipe, tankGroup, "S"); pipeSeg(V3(q.xPump, q.yPump), V3(q.xPump + q.sPump * 0.16, q.yPump), rp * 0.6, mats.pipe, tankGroup, "S");   // v89: 케이싱 옆(흡입)으로
+  { // v89: 진공펌프 = P&ID 원심 펌프 기호처럼 — 정면에 원형 케이싱(축이 화면 앞뒤), 위 가장자리에서 오른쪽 접선 토출, 아래 받침, 모터는 뒤
+    const s = q.sPump, cx = q.xPump + s * 0.66, cy = q.yPump, Z = new THREE.Vector3(0, 0, 1), add = (geo, mat, x, y, z, rx) => { const o = opaque(new THREE.Mesh(geo, mat)); o.position.set(x, y, z); if (rx) o.rotation.x = Math.PI / 2; tankGroup.add(o); return o; };
+    add(new THREE.CylinderGeometry(s * 0.5, s * 0.5, s * 0.36, 32), mats.pump, cx, cy, 0, true);   // 케이싱
+    add(new THREE.CylinderGeometry(s * 0.53, s * 0.53, s * 0.05, 32), mats.vGrey2, cx, cy, s * 0.19, true);   // 앞 덮개 테
+    { const rg = add(new THREE.TorusGeometry(s * 0.3, s * 0.022, 8, 32), mats.vGrey, cx, cy, s * 0.22); rg.quaternion.setFromUnitVectors(Z, Z); }   // 임펠러 암시(얕은 동심원)
+    add(new THREE.CylinderGeometry(s * 0.1, s * 0.1, s * 0.06, 16), mats.vGrey, cx, cy, s * 0.23, true);   // 허브
+    const yD = cy + s * 0.4; pipeSeg(V3(cx, yD), V3(cx + s * 0.85, yD), rp * 0.55, mats.pipe, tankGroup, "S");   // 토출: 위 가장자리 접선 방향
+    { const fl = add(new THREE.CylinderGeometry(rp * 1.1, rp * 1.1, s * 0.05, 14), mats.vGrey2, cx + s * 0.85, yD, 0); fl.rotation.z = Math.PI / 2; }
+    add(new THREE.BoxGeometry(s * 0.36, s * 0.16, s * 0.3), mats.pump, cx, cy - s * 0.55, 0);   // 받침 목
+    add(new THREE.BoxGeometry(s * 1.5, s * 0.08, s * 1.3), mats.vGrey2, cx, cy - s * 0.66, -s * 0.35);   // 베이스 판
+    add(new THREE.BoxGeometry(s * 0.34, s * 0.34, s * 0.26), mats.steel, cx, cy, -s * 0.33);   // 커플링 덮개
+    add(new THREE.CylinderGeometry(s * 0.36, s * 0.36, s * 0.7, 24), mats.motor, cx, cy - s * 0.04, -s * 0.81, true);   // 모터(뒤)
   }
   if (hmi) { // HMI 계기 태그: 설비 옆에 실시간 값
     const f = (v, d) => Number.isFinite(v) ? v.toFixed(d) : "–", dP = () => (CUR && CUR.P < 10 ? 2 : CUR && CUR.P < 100 ? 1 : 0);
@@ -3494,9 +3526,9 @@ function buildTank(m) {
     hmiTag("TI 자켓", "℃", () => PR && PR.TjEff != null ? f(PR.TjEff, 0) : CUR ? f(CUR.Tj, 0) : null, V3(-q.Rj - 0.36 * t, Math.max(0.6 * t, 0.92 * Hs) - 0.8 * t), t);
     hmiTag("ZI 스팀 밸브", "%", () => CUR ? f(VLV.J ? CUR.jOpen * 100 : 0, 0) : null, V3(-q.Rj - 0.36 * t, Math.max(0.6 * t, 0.92 * Hs) - 0.6 * t), t);
     hmiTag("TI-H075 탑 온도", "℃", () => PR && f(PR.Thead, 1), V3(q.xCol - q.rCol - 0.3 * t, q.colTop - 0.28 * t), t);
-    hmiTag("PI 탱크 압력", "mmHg", () => PR && f(PR.Pstill, dP()), V3(q.xPump, q.yPump + q.sPump * 1.6), t);
+    hmiTag("PI 탱크 압력", "mmHg", () => PR && f(PR.Pstill, dP()), V3(q.xPump + 0.66 * q.sPump, q.yPump + q.sPump * 1.6), t);
     hmiTag("TIC-H071D 응축액 출구", "℃", () => PR && TBOT() != null ? f(TBOT(), 1) : null, V3(q.xC + q.rC + 0.34 * t, q.yC1 - 0.13 * t), t);   // v82: 출구 라인 온도(사이트 글라스 옆)
-    hmiTag("FI 환류", "kg/h", () => PR && f(refluxNow(), 0), V3(q.xSpl - q.sSpl / 2 - 0.27 * t, q.ySpl - 0.22 * t), t);   // v49: 유량계 위(계기를 가리지 않게)
+    hmiTag("FI 환류", "kg/h", () => PR && f(refluxNow(), 0), V3((q.xCol + q.rCol + q.xSpl - q.sSpl / 2) / 2, q.ySpl - 0.22 * t), t);   // v90: 환류 조절 밸브 아래
     hmiTag("FI 유출", "kg/h", () => PR && f(PR.Dkg, 0), V3(q.xSpl + 0.32 * t, q.ySpl - q.sSpl / 2 - 0.3 * t), t);
     hmiTag("WI 초류 무게", "kg", () => PR && f(PR.ves.fore.A + PR.ves.fore.B, 1), V3(q.xF + q.rRF + 0.24 * t, (q.yRvF + q.yTopF) / 2), t);
     hmiTag("WI 본류 무게", "kg", () => PR && f(PR.ves.main.A + PR.ves.main.B, 1), V3(q.xMn + q.rRM + 0.3 * Math.max(2 * q.rRM, 2 * q.rRF), (q.yRvM + q.yTopM) / 2 + 0.1 * t), t);
@@ -3703,13 +3735,13 @@ function vaporRoutes(m) {
   const cond1 = [S([q.xC, q.yC0, 0], [q.xC, q.yC1, 0], 0.3 * t, 2, q.rC * 0.6), S([q.xC, q.yC1, 0], [q.xSpl, q.ySpl, 0], 0.6 * t, 3, rp * 0.6)];
   const pass1 = [S([q.xC, q.yC0, 0], [q.xC, q.yC1, 0], U, 1, q.rC * 0.6), S([q.xC, q.yC1, 0], [q.xSpl, q.ySpl, 0], U, 1, rp * 0.6)];
   const back = [S([q.xCol, q.packY0, 0], [q.xCol, q.colBase, 0], 0.5 * t, 5, q.rCol * 0.5), S([q.xCol, q.colBase, 0], [q.xN, yS + 0.01 * t, 0], 0.45 * t, 5, 0.05 * t)];   // 컬럼 액은 목을 지나 바로 탱크로 (방울로 그려 액면까지 떨어지는 게 보인다)
-  const reflux = [S([q.xSpl, q.ySpl, 0], [q.xRf, q.ySpl, 0], 0.8 * t, 3, rp * 0.45), S([q.xRf, q.ySpl, 0], [q.xRf, q.yRf, 0], 0.8 * t, 3, rp * 0.45), S([q.xRf, q.yRf, 0], [q.xCol, q.yRf, 0], 0.8 * t, 3, rp * 0.45),
+  const reflux = [S([q.xSpl, q.ySpl, 0], [q.xRf, q.ySpl, 0], 0.8 * t, 3, rp * 0.45), S([q.xRf, q.ySpl, 0], [q.xCol + q.rCol, q.yRf, 0], 0.8 * t, 3, rp * 0.45), S([q.xCol + q.rCol, q.yRf, 0], [q.xCol, q.yRf, 0], 0.8 * t, 3, rp * 0.45),   /* v90: 길이 0인 구간이 없게 */
     S([q.xCol, q.packY1, 0], [q.xCol, q.packY0, 0], 0.25 * t * kLf, 5, q.rCol * 0.6)].concat(back);
   const yRvOf = (key) => key === "fore" ? q.yRvF : q.yRvM, yTopOf = (key) => key === "fore" ? q.yTopF : q.yTopM, yLv = (key) => vesY(q, key, vesLevel(key)) + 0.004 * t;   // v49: 경판 용기 액면
   const prod = (key) => { const x = key === "fore" ? q.xF : q.xMn; return [S([q.xSpl, q.ySpl, 0], [q.xSpl, q.yValve, 0], 0.8 * t, 3, rp * 0.6), S([q.xSpl, q.yValve, 0], [x, q.yValve, 0], 0.8 * t, 3, rp * 0.5), S([x, q.yValve, 0], [x, yLv(key), 0], 0.8 * t, 3, rp * 0.5)]; };
   const to2 = [S([q.xSpl, q.ySpl, 0], [q.x20, q.y2c, 0], U, 1, rp * 0.45)];
   const cond2 = [S([q.x20, q.y2c, 0], [q.x2o, q.y2c, 0], 0.3 * t, 2, q.r2 * 0.6), S([q.x2o, q.y2c, 0], [q.x2o, q.yJ, 0], 0.8 * t, 3, rp * 0.4), S([q.x2o, q.yJ, 0], [q.xF, q.yJ, 0], 0.8 * t, 3, rp * 0.4), S([q.xF, q.yJ, 0], [q.xF, yLv("fore"), 0], 0.8 * t, 3, rp * 0.4)];   // v82
-  const pumpOut = [S([q.x20, q.y2c, 0], [q.x2o, q.y2c, 0], U, 1, q.r2 * 0.6), S([q.x2o, q.y2c, 0], [q.x2o, q.yPumpLine, 0], U, 1, rp * 0.4), S([q.x2o, q.yPumpLine, 0], [q.xPump, q.yPumpLine, 0], U, 1, rp * 0.4), S([q.xPump, q.yPumpLine, 0], [q.xPump, q.yPump + q.sPump * 0.5, 0], U, 1, rp * 0.4), S([q.xPump + q.sPump * 0.5, q.yPump, 0], [q.xPump + q.sPump * 1.5, q.yPump, 0], U, 1, rp * 0.3)];
+  const pumpOut = [S([q.x20, q.y2c, 0], [q.x2o, q.y2c, 0], U, 1, q.r2 * 0.6), S([q.x2o, q.y2c, 0], [q.x2o, q.yPumpLine, 0], U, 1, rp * 0.4), S([q.x2o, q.yPumpLine, 0], [q.xPump, q.yPumpLine, 0], U, 1, rp * 0.4), S([q.xPump, q.yPumpLine, 0], [q.xPump, q.yPump, 0], U, 1, rp * 0.4), S([q.xPump + q.sPump * 0.66, q.yPump + q.sPump * 0.4, 0], [q.xPump + q.sPump * 1.51, q.yPump + q.sPump * 0.4, 0], U, 1, rp * 0.3)];
   const yMid = q.packY0 + (q.packY1 - q.packY0) * (0.15 + 0.75 * (PR && PR.TcolMean != null && PR.Tbub > p.Tamb ? Math.max(0, Math.min(1, (PR.TcolMean - p.Tamb) / (PR.Tbub - p.Tamb))) : 0));
   const colBack = common.slice(0, 3).concat([S([q.xCol, q.packY0, 0], [q.xCol, yMid, 0], U, 4, q.rCol * 0.6), S([q.xCol, yMid, 0], [q.xCol, q.packY0, 0], 0.25 * t * kLf, 5, q.rCol * 0.6)], back);
   return {
@@ -4000,7 +4032,7 @@ function valveAtPointer(e) {
   ray.setFromCamera(ndc, camera); const hits = ray.intersectObjects(VALVE_HIT, false);
   return hits.length ? hits[0].object.userData.v : null;
 }
-let hintDefault = "드래그로 화면 이동 · 휠로 확대 · 오른쪽 버튼(또는 Shift) 드래그로 회전 · 밸브 핸들을 누르면 개폐 (초록 열림 · 빨강 닫힘) · 설비·배관을 누르면 스펙 입력";
+let hintDefault = "드래그로 화면 이동 · 휠로 확대 · 오른쪽 버튼(또는 Shift) 드래그로 회전 · 밸브를 누르면 개폐 (밸브 위 작은 점: 초록 열림 · 빨강 닫힘) · 설비·배관을 누르면 스펙 입력";
 canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 const _pr = new THREE.Vector3(), _pu = new THREE.Vector3();
 canvas.addEventListener("pointerdown", (e) => { try { canvas.setPointerCapture(e.pointerId); } catch (_) {} pointers.set(e.pointerId, [e.clientX, e.clientY]); pDown = { id: e.pointerId, x: e.clientX, y: e.clientY }; if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); dist0 = orbit.dist; } });
@@ -5121,6 +5153,11 @@ let PB_DTP_MAX = 6;   // 시험용으로 window.__dt.pbDtpMax(v)로 바꿀 수 �
 function pbTick(dtReal) {
   const acc = Math.max((PR && PR.accelUse) || 0, (CUR && CUR.accel) || 0) || 100;   // v50: 배속을 올린 직후엔 새 배속 기준으로 걸음 수를 막는다
   const sps = !TURBO && F && F.dt > 0 && REPLAY == null ? (PB_RATE > 0 ? PB_RATE / (F.dt * acc) : 1 / F.dt) : 0;   // v44: 최대 속도 = 고른 배속까지(공정 초 ÷ 실제 초 ≤ 배속). 남는 계산 힘은 화면에 — 전에는 GPU가 배속의 3~4배로 달려 화면이 13 fps로 떨어졌다
+  if (solver.kind === "LUMP" && sps > 0 && F && F.dt > 0) {   // v89: 가벼운 계산은 한 프레임 몫을 공정 6 s 이하 조각으로 나눠 돌린다(조각마다 공학 식 한 번) — ×1000도 실제로, 정확도는 ×30과 같게
+    pbAcc = Math.min(pbAcc + dtReal * sps, sps * 0.25 + 2); const nF = Math.max(1, Math.floor(PB_DTP_MAX / (F.dt * acc))); let k = 0;
+    while (pbAcc >= 1 && k++ < 80) { solver.cap = Math.min(Math.floor(pbAcc), nF); const n = solver.tick(); if (!n) break; pbAcc -= n; }
+    return;
+  }
   if (solver.kind !== "CPU") {
     if (sps > 0) { pbAcc = Math.min(pbAcc + dtReal * sps, sps * 0.25 + 2); solver.cap = Math.floor(pbAcc); }
     else { solver.cap = F && F.dt > 0 ? Math.max(1, Math.floor(PB_DTP_MAX / (F.dt * acc))) : null; pbAcc = 0; }
@@ -5131,8 +5168,34 @@ function pbTick(dtReal) {
     solver.tick();
   }
 }
-$("pbRate").addEventListener("change", () => { PB_RATE = parseFloat($("pbRate").value) || 0; pbAcc = 0; store.set("dt.pbRate", String(PB_RATE)); });
-{ const v = store.get("dt.pbRate"); if (v != null && $("pbRate").querySelector(`option[value="${v}"]`)) { $("pbRate").value = v; PB_RATE = parseFloat(v) || 0; } }
+// v89: 속도 단추 하나 — SPEED = 공정 초 ÷ 실제 초. 재생 속도(PB_RATE) = SPEED, 배속(한 걸음의 공정 시간 배율) = 격자는 SPEED, 가벼운 계산은 30까지(걸음을 더 자주)
+const SPD_MIN = 0.25, SPD_MAX = 1000, SPD_DEF = 30, LUMP_ACC = 30;
+let SPEED = SPD_DEF, SPD_AT = 0, SPD_KIND = "", SPD_REAL = 0, SPD_LAST = NaN, SPD_SET = false;
+function spdClamp(v) { v = Math.max(SPD_MIN, Math.min(SPD_MAX, Number.isFinite(v) && v > 0 ? v : SPD_DEF)); const k = Math.pow(10, Math.floor(Math.log10(v)) - 3); return Math.round(v / k) * k; }   // 유효 4자리(×1.5 ÷1.5 하면 제자리)
+function spdFmt(v) { return v >= 10 ? String(Math.round(v)) : v >= 1 ? String(Math.round(v * 10) / 10) : String(Math.round(v * 100) / 100); }
+function spdAcc() { return Math.max(1, Math.min(SPEED, solver.kind === "LUMP" ? LUMP_ACC : SPD_MAX)); }
+function applySpeed(force) {
+  PB_RATE = SPEED; pbAcc = 0; SPD_KIND = solver.kind; const a = spdAcc(), e = $("accel");
+  if (force || Math.abs((parseFloat(e.value) || 0) - a) > 1e-9) { SPD_SET = true; e.value = String(a); e.dispatchEvent(new Event("change", { bubbles: true })); SPD_SET = false; }
+  SPD_LAST = a; spdRender();
+}
+function setSpeed(v) { SPEED = spdClamp(v); SPD_AT = performance.now(); SPD_REAL = 0; applySpeed(false); }
+function spdRender() {
+  const c = $("spdCur"); if (!c) return;
+  const lag = SPD_REAL > 0 && performance.now() - SPD_AT > 2500 && !paused && REPLAY == null && PR && !PR.stopped && SPD_REAL < SPEED * 0.9;
+  const t = `현재 ×${spdFmt(SPEED)}${lag ? ` (실제 ×${spdFmt(SPD_REAL)})` : ""}`; if (c.textContent !== t) c.textContent = t;
+  const lo = SPEED <= SPD_MIN + 1e-9, hi = SPEED >= SPD_MAX - 1e-9; $("spdD2").disabled = $("spdD15").disabled = lo; $("spdU15").disabled = $("spdU2").disabled = hi;
+  const w = $("spdWarn"); if (w) w.hidden = !(solver.kind !== "LUMP" && SPEED > 300);
+}
+function spdTick() {   // 프레임마다: 다른 곳(조건 불러오기·시험)이 배속 칸을 바꿨으면 그 값을 속도로, 계산 방식이 바뀌면 배속을 다시 맞춘다
+  if (TURBO || FASTJ || SPD_SET) return; const av = parseFloat($("accel").value);
+  if (Number.isFinite(av) && av > 0 && Number.isFinite(SPD_LAST) && Math.abs(av - SPD_LAST) > 1e-9) { SPEED = spdClamp(av); SPD_AT = performance.now(); SPD_REAL = 0; applySpeed(false); }
+  else if (solver.kind !== SPD_KIND) applySpeed(false);
+}
+$("spdD2").addEventListener("click", () => setSpeed(SPEED / 2)); $("spdD15").addEventListener("click", () => setSpeed(SPEED / 1.5));
+$("spdU15").addEventListener("click", () => setSpeed(SPEED * 1.5)); $("spdU2").addEventListener("click", () => setSpeed(SPEED * 2));
+$("spdCur").addEventListener("click", () => setSpeed(SPD_DEF));
+$("accel").addEventListener("change", () => { if (SPD_SET || TURBO || FASTJ) return; SPEED = spdClamp(parseFloat($("accel").value)); SPD_AT = performance.now(); SPD_REAL = 0; applySpeed(false); });   // 시험·조건이 배속 칸을 직접 바꾸면(가벼운 계산은 칸이 30이라 값만으로는 못 알아챈다)
 
 // 미래로 가기: 지금의 받는 속도로 초류 끝·배치 끝 시각을 어림하고, 그 시각까지 그리지 않고 300배로 계산해 넘어간다
 let TURBO = null, FASTJ = null;   // v55: 빠른 점프 중이면 { from: 원래 계산기 종류 }
@@ -5171,7 +5234,7 @@ function jumpMenuRender() {
 let BUSY_UNTIL = 0;   // v77: 조건 불러오기 직후 이 시각까지 '미래로'를 기다리게 한다
 function jumpBusy() { const now = performance.now(); return now < BUSY_UNTIL || (PERF === "auto" && BENCH.phase < 3 && !!ST && !paused && solver.kind !== "LUMP"); }
 function startJump(kind, hours) {
-  if (jumpBusy() && (startJump.tries = (startJump.tries || 0) + 1) <= 50) { $("viewhint").textContent = "조건 반영·계산 방식 판정이 끝나면 '미래로'를 시작한다"; clearTimeout(startJump.tw); startJump.tw = setTimeout(() => startJump(kind, hours), 300); return "wait"; }   // v77
+  if (jumpBusy() && (startJump.tries = (startJump.tries || 0) + 1) <= 50) { $("viewhint").textContent = "조건 반영·계산 방식 판정이 끝나면 계산을 이어 간다"; clearTimeout(startJump.tw); startJump.tw = setTimeout(() => startJump(kind, hours), 300); return "wait"; }   // v77
   startJump.tries = 0;
   const e = jumpEst(); if (!e || !CUR || !PR || PR.stopped && kind !== "at") return false;
   if (REPLAY != null) tlLive();
@@ -5185,14 +5248,14 @@ function startJump(kind, hours) {
     if ((!fj || fj.checked) && solver.kind !== "LUMP" && span / JRATE > 15) { FASTJ = { from: solver.kind }; fastToLump(); } }
   TURBO = { kind, cond, est, t0, cap, label, real0: performance.now(), accelPrev: CUR.accel, last: 0, est0: e, fast: !!FASTJ };
   if (CUR.accel !== JUMP_ACCEL) { $("accel").value = String(JUMP_ACCEL); $("accel").dispatchEvent(new Event("change", { bubbles: true })); }
-  $("jumpMenu").hidden = true; $("turbo").hidden = false; turboUI(true);
+  $("jumpMenu").hidden = true; turboUI(true);   // v89: 진행 상자 안 띄움
   return true;
 }
 function turboUI(force) {
   const T = TURBO; if (!T) return; const now = performance.now(); if (!force && now - T.last < 200) return; T.last = now;
   const done = PR.t - T.t0, tot = T.est != null ? Math.max(1, T.est - T.t0) : null;
   $("turboBar").style.width = (tot ? Math.min(100, done / tot * 100) : (done / 3600 % 1) * 100).toFixed(1) + "%";
-  $("turboTxt").innerHTML = (T.fast ? `<small class="fastj">빠른 점프 · 탱크 단순 계산(오차 0.5 % 이내)</small><br>` : "") + `공정 ${tlFmt(PR.t)}${T.est != null ? ` / 예상 ${tlFmt(T.est)}` : ""}<br>실제 경과 ${((now - T.real0) / 1000).toFixed(0)}초 · 초류 ${fmt(PR.ves.fore.A + PR.ves.fore.B, 1)} kg · 본류 ${fmt(PR.ves.main.A + PR.ves.main.B, 1)} kg`;
+  $("turboTxt").innerHTML = (T.fast ? `<small class="fastj">탱크 단순 계산</small><br>` : "") + `공정 ${tlFmt(PR.t)}${T.est != null ? ` / 예상 ${tlFmt(T.est)}` : ""}<br>실제 경과 ${((now - T.real0) / 1000).toFixed(0)}초 · 초류 ${fmt(PR.ves.fore.A + PR.ves.fore.B, 1)} kg · 본류 ${fmt(PR.ves.main.A + PR.ves.main.B, 1)} kg`;
 }
 function placeToast() { const jd = $("jumpDone"), hud = $("hud"), st = $("stage"); if (!jd || !hud || !st) return; const h = hud.getBoundingClientRect(), r = st.getBoundingClientRect(); if (h.height > 0) jd.style.top = Math.max(54, Math.round(h.bottom - r.top + 8)) + "px"; }   // v87: 상태 칩(두 줄이 되면 그만큼) 아래
 { const jd = document.getElementById("jumpDone"); if (jd) new MutationObserver(() => { if (!jd.hidden) placeToast(); }).observe(jd, { attributes: true, attributeFilter: ["hidden"] }); }
@@ -5203,13 +5266,13 @@ function turboField() {   // 필드가 올 때마다(계산은 계속됨): 도�
 function turboFrame() { turboUI(false); }
 function endJump(arrived) {
   const T = TURBO; if (!T) return; TURBO = null;
-  if (CUR && T.accelPrev !== CUR.accel) { $("accel").value = String(T.accelPrev); $("accel").dispatchEvent(new Event("change", { bubbles: true })); }
+  if (CUR) applySpeed(true);   // v89: 점프 전 속도 단추 값으로
   { const secR = (performance.now() - T.real0) / 1000; if (!T.fast && solver.kind !== "LUMP" && secR > 3 && PR.t - T.t0 > 600) { JRATE = (PR.t - T.t0) / secR; store.set("dt.jrate", JRATE.toFixed(1)); } }   // v55: 격자 점프 속도 기억
   $("turbo").hidden = true;
   const sec = ((performance.now() - T.real0) / 1000).toFixed(0), dt = T.est != null && T.kind !== "h1" && T.kind !== "h6" && T.kind !== "at" ? (PR.t - T.est) : null;
   const diff = dt != null ? ` · 예상 ${tlFmt(T.est)}보다 ${dt >= 0 ? tlFmt(dt) + " 늦게" : tlFmt(-dt) + " 일찍"} (${fmt(Math.abs(dt) / Math.max(60, T.est - T.t0) * 100, 0)} %)` : "";
   $("jumpDone").innerHTML = `<button type="button" aria-label="닫기">×</button>${arrived ? "<b>도착</b>" : "<b>멈춤</b>"} · ${T.label} · 공정 ${tlFmt(PR.t)}${diff}<br>초류 ${fmt(PR.ves.fore.A + PR.ves.fore.B, 1)} kg · 본류 ${fmt(PR.ves.main.A + PR.ves.main.B, 1)} kg · 탱크 ${fmt(PR.m, 1)} kg · 실제 소요 ${sec}초${PR.stopped ? " · 증류 종료" : ""}`;
-  placeToast(); $("jumpDone").hidden = false; clearTimeout(endJump.tm); endJump.tm = setTimeout(() => { $("jumpDone").hidden = true; }, 15000);
+  /* v89: 도착 상자는 띄우지 않는다(글만 남겨 시험이 읽음) */
   if (FASTJ) { FASTJ = null; fastBack(); }   // v55: 원래 계산(격자)으로 — 그 순간 평균 온도로 채워 이어서 · v83: 알림을 쓴 뒤(전에는 새로 만든 빈 상태를 읽었다)
   prefillFlows();   // v61 · v83
   tempRange(); buildSlice(); updateLegend(); renderResults(); renderScn(); drawGraphs(); updateReceiver(); updateHmiTags(performance.now(), true);
@@ -5217,9 +5280,9 @@ function endJump(arrived) {
 { const st = $("stage");
   const mk = (id, cls, html) => { const d = document.createElement("div"); d.id = id; d.className = cls; d.hidden = true; d.innerHTML = html; st.appendChild(d); return d; };
   mk("jumpMenu", "jumpmenu", "");
-  mk("turbo", "turbo", `<div class="tb"><b>미래로 가는 중</b> · 화면은 멈추고 계산만 한다<div class="bar"><i id="turboBar"></i></div><div class="tl2" id="turboTxt"></div><button type="button" id="turboStop">여기서 멈추기</button></div>`);
+  mk("turbo", "turbo", `<div class="tb"><b>계산 중</b><div class="bar"><i id="turboBar"></i></div><div class="tl2" id="turboTxt"></div><button type="button" id="turboStop">여기서 멈추기</button></div>`);
   mk("jumpDone", "jumpdone", "");
-  $("tlJump").addEventListener("click", () => { const m = $("jumpMenu"); if (m.hidden) { jumpMenuRender(); m.hidden = false; } else m.hidden = true; });
+  if ($("tlJump")) $("tlJump").addEventListener("click", () => { const m = $("jumpMenu"); if (m.hidden) { jumpMenuRender(); m.hidden = false; } else m.hidden = true; });
   $("jumpMenu").addEventListener("click", (e) => { const t = e.target.closest("button"); if (!t) return; if (t.classList.contains("jm-x")) { $("jumpMenu").hidden = true; return; }
     const k = t.dataset.j; if (!k || t.disabled) return; if (k === "at") { const h = parseFloat($("jmH").value); if (Number.isFinite(h)) startJump("at", h); } else startJump(k); });
   $("turboStop").addEventListener("click", () => endJump(false));
@@ -5523,7 +5586,8 @@ function frame(now) {
   if (!TURBO && FPS_CAP && now - lastDrawAt < 1000 / FPS_CAP - 2) { requestAnimationFrame(frame); return; }   // v40: 저사양이면 그리기만 덜 한다
   lastDrawAt = now; perfInfo(now);
   const dtReal = Math.min(0.1, (now - last) / 1000); last = now;
-  if (now - (frame.pbAt || 0) > 500) { const r = paused || !PR || !frame.pbAt || PR.t < (frame.pbT || 0) ? 0 : (PR.t - frame.pbT) / ((now - frame.pbAt) / 1000); frame.pbAt = now; frame.pbT = PR ? PR.t : 0; /* v44: 실제로 흐른 공정 초 ÷ 실제 초 */ $("pbReal").textContent = r > 0 ? `현재 ×${r >= 10 ? r.toFixed(0) : r.toFixed(r >= 1 ? 1 : 2)}` : ""; }
+  if (now - (frame.pbAt || 0) > 500) { const r = paused || !PR || !frame.pbAt || PR.t < (frame.pbT || 0) ? 0 : (PR.t - frame.pbT) / ((now - frame.pbAt) / 1000); frame.pbAt = now; frame.pbT = PR ? PR.t : 0; /* v44: 실제로 흐른 공정 초 ÷ 실제 초 */ SPD_REAL = r > 0 ? (SPD_REAL > 0 ? SPD_REAL + (r - SPD_REAL) * 0.5 : r) : 0; spdRender(); }   /* v89: 실제 속도는 단추 가운데에(못 따라갈 때만) */
+  spdTick();   // v89
   if (TURBO) { turboFrame(now); requestAnimationFrame(frame); return; }   // 미래로 가는 동안은 그리지 않고 계산만
   const slow = PB_RATE > 0 && PB_RATE < 1 ? PB_RATE : 1;   // ×0.5·×0.25: 화면 움직임도 같이 느리게
   if (M && !paused && F && F.U) {
@@ -5540,9 +5604,10 @@ function frame(now) {
   if (CUR && M && STYLE !== "iso") { const w = 2 * Math.PI * (CUR.N || 0) * 0.06 * dtReal * slow; if (surfaceWire) surfaceWire.rotation.y -= w;   // v83: 교반에 맞춰 액면 격자가 돈다
     const sw = VES.swirl; if (sw) { const on = solver.kind === "LUMP" && !!(VES.stillLiq && VES.stillLiq.body.visible); sw.visible = on; if (on) { const y1 = M.surfY(0, 0), y0 = M.hh || 0; for (const ln of sw.children) { const k = ln.userData.k; ln.position.y = y0 + (y1 - y0) * (0.3 + 0.25 * k); ln.rotation.y -= w * (1.6 - 0.3 * k); } } } }
   if (FLOW.vap) { FLOW.vap.offset.y -= dtReal * 0.9 * slow; FLOW.liq.offset.y -= dtReal * 0.5 * slow; } if (FLOW.hi) FLOW.hi.offset.y -= dtReal * 0.45 * slow; liqTint();
+  for (const k in VDOT) { const m = valveShownOpen(k) ? mats.vOpen : mats.vClosed; if (VDOT[k].material !== m) VDOT[k].material = m; }   // v89: 상태 점(조절 밸브는 0 %일 때만 빨강)
   // 밸브 바퀴: 열림 0° / 닫힘 90°로 돌아가고, 마우스를 올리면 조금 커진다
   { const k = 1 - Math.exp(-dtReal / 0.16);   /* v62: 표시기 90° 회전이 눈에 보이게 */
-    for (const key in VALVE_PARTS) { const vp = VALVE_PARTS[key], target = VLV[key] ? 0 : Math.PI / 2, sc = VALVE_HOVER === key ? 1.25 : 1;
+    for (const key in VALVE_PARTS) { const vp = VALVE_PARTS[key], target = STYLE !== "iso" ? 0 : VLV[key] ? 0 : Math.PI / 2, sc = VALVE_HOVER === key ? 1.25 : 1;
       vp.wheelG.rotation.z += (target - vp.wheelG.rotation.z) * k; const s = vp.wheelG.scale.x + (sc - vp.wheelG.scale.x) * k; vp.wheelG.scale.setScalar(s); vp.tag.scale.x = 0.2 * (CUR ? CUR.T : 0.7) * (sc > 1.1 ? 1.15 : 1); } }
   if (STYLE === "iso") { isoFrame(now, paused ? 0 : dtReal * slow); if (BENCH.phase === 1 || BENCH.phase === 2) renderer.render(scene, camera); } else renderer.render(scene, camera);
   d3Labels(now);
@@ -5591,7 +5656,7 @@ function calloutLimits(W, H, cr) {   // 상단 칩·알림, 오른쪽 위 범례
   return { L: { top: 84, bot }, R: { top: topR, bot } };
 }
 const D3L = { box: null, svg: null, els: {}, paths: {}, at: 0 }, _d3v = new THREE.Vector3();
-const D3_INFO = { J: "자켓에 들어가는 스팀을 개도만큼 조절(운전 패널 TIC)", V: "컬럼 꼭대기 → 1차 응축기 증기 관", R: "분배기 → 컬럼 꼭대기 환류 관 차단", P: "분배기 → 회수 탱크 유출 관 차단(티 앞 공통 관)", F: "티 → 초류 탱크 가지", M: "티 → 본류 탱크 가지(제품)", S: "2차 응축기 → 진공펌프", C1: "1차 응축기 냉각수", C2: "2차 응축기 냉각수" };
+const D3_INFO = { J: "자켓에 들어가는 스팀을 개도만큼 조절(운전 패널 TIC)", V: "컬럼 꼭대기 → 1차 응축기 증기 관", R: "분배기 → 컬럼 꼭대기 환류 조절 밸브(FIC-072) · 끄면 0 % 닫힘", P: "분배기 → 회수 탱크 유출 조절 밸브(FIC-073, 티 앞 공통 관) · 끄면 0 % 닫힘", F: "티 → 초류 탱크 가지", M: "티 → 본류 탱크 가지(제품)", S: "2차 응축기 → 진공펌프", C1: "1차 응축기 냉각수", C2: "2차 응축기 냉각수" };
 function d3Proj(obj, W, H) { obj.getWorldPosition(_d3v); _d3v.project(camera); return { x: (_d3v.x + 1) / 2 * W, y: (1 - _d3v.y) / 2 * H, ok: _d3v.z < 1 && _d3v.x > -1 && _d3v.x < 1 && _d3v.y > -1 && _d3v.y < 1 }; }
 function d3Labels(now) {
   if (!D3L.box) { const st = canvas.parentElement; D3L.box = document.createElement("div"); D3L.box.className = "cl-box"; st.appendChild(D3L.box);
@@ -5646,10 +5711,10 @@ function tipShow(e, kind, key) {
   if (!id) { if (TIP.el) TIP.el.hidden = true; TIP.key = null; return; }
   if (!TIP.el) { TIP.el = document.createElement("div"); TIP.el.className = "cl-tip"; canvas.parentElement.appendChild(TIP.el); }
   let name, open = null, act;
-  if (kind === "valve") { name = VALVE_TAGNAME[key] || VALVE_NAME[key]; open = !!VLV[key]; act = "누르면 " + (open ? "닫는다" : "연다"); }
+  if (kind === "valve") { name = STYLE === "iso" && key === "R" ? "환류 차단" : STYLE === "iso" && key === "P" ? "유출 차단" : VALVE_TAGNAME[key] || VALVE_NAME[key];   /* v89: 도면판은 차단 밸브 그림 그대로 */ open = !!VLV[key]; act = "누르면 " + (open ? "닫는다" : "연다"); }
   else if (key === "fic:R" || key === "fic:P") { name = key === "fic:R" ? "환류 FIC-072 (유량계·컨트롤 밸브)" : "유출 FIC-073 (유량계·컨트롤 밸브)"; open = key === "fic:R" ? !!VLV.R : !!VLV.P; act = "누르면 그 관 스펙"; }
   else { const sp = SPEC[key]; name = sp ? sp.title : key; act = "누르면 스펙 입력"; }
-  const v0 = tipVal(key), v = kind === "valve" ? (key === "J" ? "다이어프램 조절 밸브" : "자동 온오프 밸브") + " · " + (open ? "열림" : "닫힘") + (v0 ? " · " + v0 : "") : v0;   // v62
+  const v0 = tipVal(key), v = kind === "valve" ? ((key === "J" || (STYLE !== "iso" && (key === "R" || key === "P"))) ? "조절 밸브" : "자동 온오프 밸브") + " · " + ((key === "J" || (STYLE !== "iso" && (key === "R" || key === "P"))) ? (valveShownOpen(key) ? "열림" : "0 % 닫힘") : open ? "열림" : "닫힘") + (v0 ? " · " + v0 : "") : v0;   // v62
   const html = `<b>${open == null ? "" : `<i data-open="${open ? 1 : 0}"></i>`}${name}</b>${v ? `<span>${v}</span>` : ""}<small>${act}</small>`;
   if (TIP.html !== html) { TIP.html = html; TIP.el.innerHTML = html; }
   TIP.el.hidden = false; TIP.el.dataset.dark = isDark() ? "1" : "0"; TIP.key = id;
