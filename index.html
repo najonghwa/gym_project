@@ -747,7 +747,7 @@ table.scn .x:hover{color:var(--bad)}
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v93 · 11-10 20:02</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v94 · 11-10 21:13</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -2095,6 +2095,7 @@ function jacketU(p, mix) {
   return { U: 1 / (1 / hi + p.Rwall + 1 / hj + 0.0002), hi, hAg, hNc, hj, Re, Pr };
 }
 // 충전탑 범람(Eckert 일반 압력손실 선도, Kessler–Wankat 피팅): X = F_LV, Y = u²·ρv·Fp·ψ·μ^0.2/(ρl·g). 영국 단위로 계산해 F-인자(Pa^0.5)로 돌려준다
+const packVoid = (p) => { const rb = p.packRho || 400, rs = p.pack && p.pack.mat === "세라믹" ? 2400 : 7850; return Math.max(0.4, Math.min(0.99, 1 - rb / rs)); };   // v94: 빈틈 비율 ε = 1 − 겉보기 밀도/재질 밀도
 function floodF(FLV, Fp, rhoV, rhoL, muL) {
   const lx = Math.log10(Math.max(0.005, Math.min(5, FLV)));
   const Y = Math.pow(10, -1.6678 - 1.085 * lx - 0.29655 * lx * lx);
@@ -2801,7 +2802,7 @@ function fxEmit(kind, rate, dt, make) { fxAcc[kind] = (fxAcc[kind] || 0) + rate 
 const fxPath = (pts) => { const segs = []; let L = 0; for (let i = 0; i + 1 < pts.length; i++) { const a = pts[i], b = pts[i + 1], l = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]); segs.push({ a, b, l, s0: L }); L += l; } return { segs, L }; };
 function fxAlong(path, s, out) { for (const g of path.segs) if (s <= g.s0 + g.l || g === path.segs[path.segs.length - 1]) { const f = g.l > 0 ? Math.min(1, Math.max(0, (s - g.s0) / g.l)) : 0; out[0] = g.a[0] + (g.b[0] - g.a[0]) * f; out[1] = g.a[1] + (g.b[1] - g.a[1]) * f; out[2] = g.a[2] + (g.b[2] - g.a[2]) * f; return out; } return out; }
 const _fp = [0, 0, 0];
-window.__flood = () => ({ lv: FX.floodLv || 0, liq: !!(FX.floodLiq && FX.floodLiq.visible), foam: !!(FX.floodFoam && FX.floodFoam.visible), fb: FXP.filter((x) => x.kind === "fb").length, spl: FXP.filter((x) => x.kind === "spl").length, ent: FXP.filter((x) => x.kind === "ent").length });
+window.__flood = () => ({ hL: PR ? PR.hLe : null, hLt: PR ? PR.hL : null, hFl: PR ? PR.hFl : null, eps: PR ? PR.epsP : null, Lmax: PR ? PR.Lmax : null, mFlood: PR ? PR.mFlood : null, mBed: PR ? PR.mFloodBed : null, mTop: PR ? PR.mFloodTop : null, mHeld: PR ? PR.mHeld : null, mHold0: PR ? PR.mHold0 : null, lv: FX.floodLv || 0, liq: !!(FX.floodLiq && FX.floodLiq.visible), foam: !!(FX.floodFoam && FX.floodFoam.visible), fb: FXP.filter((x) => x.kind === "fb").length, spl: FXP.filter((x) => x.kind === "spl").length, ent: FXP.filter((x) => x.kind === "ent").length });
 function fxUpdate(dtReal) {
   const q = FX.q, p = CUR; if (!q || !p || !PR || !M) { fxGeo.setDrawRange(0, 0); bubGeo.setDrawRange(0, 0); return; }
   const t = FX.t, live = !paused && !TURBO, dt = live ? dtReal : 0, boiling = PR.vdot > 1 && !PR.stopped, now = performance.now() / 1000;
@@ -2809,8 +2810,8 @@ function fxUpdate(dtReal) {
   // 1 범람
   const fon = floodOn(), fl = fon ? Math.max(0, Math.min(1, ((PR.flood || 0) - 1) / 0.3)) : 0, over = fon && (PR.flood || 0) > 1;   // v61: 차오름은 범람(> 1)일 때만
   { // v92: 범람 = 충전층에 액이 아래에서부터 차오르고(범람비 100 → 110 %), 다 차면 층 위 빈 공간까지 올라온다(110 → 130 %). 증기 거품(흰 점)이 그 속을 뚫고 올라가고 액면에서 방울이 튄다
-    const Fr = PR.flood || 0, tgt = boiling && fon && Fr > 1 ? Math.min(1, (Fr - 1) / 0.1) + Math.min(1, Math.max(0, (Fr - 1.1) / 0.2)) : 0;   // 0~1 충전층, 1~2 층 위 공간
-    FX.floodLv = (FX.floodLv || 0) + Math.max(-0.5 * dt, Math.min(0.3 * dt, tgt - (FX.floodLv || 0)));   // 화면 시간으로 3~7초에 걸쳐 차오르고 빠진다
+    const hx = Math.max(0, (PR.mHeld || 0) - (PR.mHold0 || 0)), mb = PR.mFloodBed || 0, mt = PR.mFloodTop || 0, tgt = mb > 0 && hx > 0.02 * mb ? Math.min(1, hx / mb) + (mt > 0 ? Math.max(0, Math.min(1, (hx - mb) / mt)) : 0) : 0;   // v94: 쌓인 액(계산) ÷ 자리 용량 — 0~1 충전층, 1~2 층 위 공간
+    FX.floodLv = (FX.floodLv || 0) + Math.max(-1.5 * dt, Math.min(1.5 * dt, tgt - (FX.floodLv || 0)));   // 계산값을 따라간다(화면에서 튀지 않게 초당 1.5까지)
     const lv = FX.floodLv, H = q.packY1 - q.packY0, Ha = Math.max(0, q.colTop - q.packY1 - 0.03 * t), bob = 0.008 * t * Math.sin(now * 7.3) + 0.005 * t * Math.sin(now * 12.1 + 1), yL = lv <= 1 ? q.packY0 + H * lv : q.packY1 + Ha * (lv - 1);
     if (lv > 0.01) { const h = Math.max(1e-3, yL + bob - q.packY0); FX.floodLiq.visible = true; FX.floodLiq.scale.y = h; FX.floodLiq.position.set(q.xCol, q.packY0 + h / 2, 0); FX.floodLiq.material.opacity = 0.3; if (VES.packRings) for (const o of VES.packRings) o.renderOrder = 7;   /* v93: 충전물을 액 위에 겹쳐 그린다 */ if (STYLE !== "iso") FX.floodLiq.material.color.copy(_lc); else FX.floodLiq.material.color.setHex(LIQ().pipe);
       const fm = FX.floodFoam; if (fm) { fm.visible = true; fm.scale.y = 0.03 * t * (0.8 + 0.3 * Math.sin(now * 9.1)); fm.position.set(q.xCol, yL + bob, 0); fm.material.color.copy(FX.floodLiq.material.color).lerp(_fxcB.setRGB(1, 1, 1), 0.6); }
@@ -3915,7 +3916,7 @@ function updateReceiver() {
   { const st = VES.colStream, fr = PR && PR.fr;   // 컬럼에서 돌아오는 액(환류·예열 응축·벽 응축)이 있으면 노즐에서 액면까지 물줄기
     if (st) { const flowing = !!(PR && !PR.stopped && PR.vdot > 1 && fr && ((FILL.RD && FILL.RD.full) || (fr.back || 0) > 0.02)), top = q.colBase - 0.01 * t, bot = M.surfY(q.xN, 0) + 0.004 * t;
       st.visible = flowing && top > bot; if (st.visible) { st.scale.y = top - bot; st.position.y = (top + bot) / 2; const kg = (PR.Lkg || 0) + (PR.backKg || 0), w = Math.max(0.9, Math.min(1.6, 0.9 + 0.7 * Math.sqrt(kg / 150)));   /* v83: 더 굵게 */ st.scale.x = st.scale.z = w; st.position.x = q.xN + Math.max(0, q.rCol * 0.45 - 0.45 * PIPE_R * t * w); }   /* v81: 목관 안벽 쪽 가는 줄기, 굵기 ∝ √유량 */
-      const fm = VES.colFilm; if (fm) { const on = flowing && q.packY1 > q.packY0 + 1e-3; fm.visible = on; if (on) { const H = q.packY1 - q.packY0; fm.scale.y = H; fm.position.y = q.packY0 + H / 2; fm.material.opacity = 0.12 + 0.28 * Math.min(1, (PR.Lkg || 0) / 300); } } } }   // v49: 액막 진하기 ∝ 환류량
+      const fm = VES.colFilm; if (fm) { const on = flowing && q.packY1 > q.packY0 + 1e-3; fm.visible = on; if (on) { const H = q.packY1 - q.packY0; fm.scale.y = H; fm.position.y = q.packY0 + H / 2; fm.material.opacity = Math.min(0.5, 0.08 + 1.2 * (PR.hLe != null ? PR.hLe : 0.05) / Math.max(0.3, PR.epsP || 0.9));   /* v94: 액막 진하기 ∝ 홀드업 h_L/ε */ } } } }   // v49: 액막 진하기 ∝ 환류량
   for (const st of [VES.colStream, VES.foreStream, VES.mainStream, VES.colFilm]) if (st) { const u = st.userData; u.on = !!st.visible; if (st.visible) { u.top = st.position.y + st.scale.y / 2; u.bot = st.position.y - st.scale.y / 2; } st.visible = !u.drip && !!(u.a > u.b + 1e-3); }   // v86: 목표만 기록(그림은 animStreams)
   updateFlowVis();
 }
@@ -4253,7 +4254,15 @@ function updateMix(p) {
   PR.xDss = columnTop(yA, PR.Neff, PR.Rcol);
   // 충전층 홀드업: 꼭대기 조성이 정상 상태값을 시정수 τ = 홀드업 질량 ÷ 컬럼 액 유량으로 따라간다 (지금은 즉시가 아니라 늦게 반응)
   { const Lkgs = ((PR.Lint || 0) + (PR.vdot || 0) / (PR.Rcol + 1)) / 3600;
-    PR.mHold = p.hold * Math.PI * p.Dcol * p.Dcol / 4 * p.Hpack * PR.mix.rho;
+    { const Ac = Math.PI * p.Dcol * p.Dcol / 4, Vb = Ac * p.Hpack, rho = PR.mix.rho, eps = packVoid(p), aP = p.packA || 150, phi = Math.max(0, PR.flood || 0);   // v94: Billet–Schultes 홀드업
+      const uFl = PR.Fcap > 0 && PR.rhoV > 0 ? PR.Fcap / Math.sqrt(PR.rhoV) : 0, LV = PR.vdot > 1 ? Math.max(0, PR.Lkg || 0) / PR.vdot : 0, rhs = 6 / G * aP * aP * eps * (PR.mix.mu / rho) * LV * ((PR.rhoV || 0) / rho) * uFl;
+      let hFl = eps / 3; if (rhs > 0) { let lo = eps / 3, hi = eps; for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (m * m * m * (3 * m - eps) < rhs) lo = m; else hi = m; } hFl = (lo + hi) / 2; }   // h³(3h − ε) = (6/g)·a²·ε·(μ/ρ)·(L/V)·(ρv/ρl)·u_Fl
+      const hS = Math.min(p.hold, hFl), hL = p.Hpack > 0 && PR.vdot > 1 ? hS + (hFl - hS) * Math.pow(Math.min(1, phi), 13) : hS;
+      let Lmax = Infinity; if (PR.vdot > 1 && PR.rhoV > 0 && p.Hpack > 0) { const Ffn = PR.Ff || 0;   // 지금 증기 속도가 범람 속도가 되는 액량(범람 선도를 액량에 대해 거꾸로)
+        if (capF(p, 0.005, PR.rhoV) <= Ffn) Lmax = 0; else if (capF(p, 5, PR.rhoV) < Ffn) { let lo = 0.005, hi = 5; for (let i = 0; i < 40; i++) { const m = Math.sqrt(lo * hi); if (capF(p, m, PR.rhoV) > Ffn) lo = m; else hi = m; } Lmax = lo * PR.vdot / Math.sqrt(PR.rhoV / rho); } }
+      const Hfree = Math.max(0.05, ((M && M.pipe && M.pipe.colHphys) || p.Hpack + 0.17) - p.Hpack);
+      PR.epsP = eps; PR.hS = hS; PR.hFl = hFl; PR.hL = hL; PR.Lmax = Lmax; PR.holdK = Vb * rho; if (PR.hLe == null) PR.hLe = hS; PR.mHold0 = PR.hLe * Vb * rho; PR.mFloodBed = Math.max(0, eps - hFl) * Vb * rho; PR.mFloodTop = Ac * Hfree * rho;
+      PR.mHold = PR.mHold0 + (PR.mFlood || 0); }
     PR.tauH = Lkgs > 1e-6 && p.Nst > 0 ? Math.min(7200, PR.mHold / Lkgs) : 0;
     if (PR.xDd == null || !PR.tauH) PR.xDd = PR.xDss; }
   PR.xD = PR.xDd;
@@ -4554,7 +4563,7 @@ function processStep(p) {
       const Lr = Math.max(0, flows.nL - flows.nBack - (flows.nSub || 0)), wantD = kgOf(flows.nD), wantR = kgOf(Lr), inC = wantD + wantR + kgOf(flows.nPool || 0);
       const M0 = PR.mC1 || 0, mSpl = rho * 0.002, Dc = Math.max(0.002, (p.DpipeC || 25) / 1000), mCp = rho * Math.PI * Dc * Dc / 4 * 0.3;   // 분배기 2 L, C 관 세로 0.3 m
       const hC0 = Math.max(0, M0 - mSpl - mCp) / rho / Ash, hHead = 0.1 * Math.min(1, M0 / mSpl) + 0.3 * Math.max(0, Math.min(1, (M0 - mSpl) / mCp)) + Math.min(Hc, hC0);   // 분배기 위로 고인 액 높이
-      const outlet = VLV.P && cutState() !== "none", wEnt = (PR.flood || 0) > 1 && p.Hpack > 0 && PR.vdot > 1 ? Math.min(0.6, 0.6 * ((PR.flood || 0) - 1) / 0.4) * PR.vdot / 3600 : 0,   /* v92: 범람으로 꼭대기를 넘어온 액(kg/s) — 응축기 → 환류 관 → 컬럼으로 되돌아 돌며 배출 능력을 차지한다 */ Wc = Math.max(0, Wg(p.DpipeC, 0.3 + Math.min(Hc, hC0), 1.0) - wEnt), Wr = VLV.R ? Math.max(0, Wg(p.DpipeR, 0.5 + hHead, 1.5) - wEnt) : 0, Wp = outlet ? Wg(p.DpipeP, 1.0 + hHead, 2.0) : 0;
+      const outlet = VLV.P && cutState() !== "none", wEnt = p.Hpack > 0 && PR.vdot > 1 && (PR.mFloodBed || 0) > 0 && (PR.mHeld || 0) - (PR.mHold0 || 0) >= ((PR.mFloodBed || 0) + (PR.mFloodTop || 0)) * 0.98 ? Math.max(0, (PR.Lkg || 0) - (PR.Lmax != null ? PR.Lmax : Infinity)) / 3600 : 0,   /* v94: 컬럼이 꼭대기까지 찼을 때 못 내려가는 액(L − L_max) */   /* v92: 범람으로 꼭대기를 넘어온 액(kg/s) — 응축기 → 환류 관 → 컬럼으로 되돌아 돌며 배출 능력을 차지한다 */ Wc = Math.max(0, Wg(p.DpipeC, 0.3 + Math.min(Hc, hC0), 1.0) - wEnt), Wr = VLV.R ? Math.max(0, Wg(p.DpipeR, 0.5 + hHead, 1.5) - wEnt) : 0, Wp = outlet ? Wg(p.DpipeP, 1.0 + hHead, 2.0) : 0;
       const S = Math.min(inC + M0, Wc * dtp), fic = OP.manual ? Math.max(0, OP.fic.sv || 0) / 3600 * dtp + Math.min(PR.ficDebt || 0, Math.max(0, OP.fic.sv || 0) / 60) : Infinity, fD = wantD + wantR > 1e-12 ? wantD / (wantD + wantR) : 0;
       let Dk = 0, Rk = 0;
       if (wantD + wantR > 1e-12 || M0 > 1e-9) {
@@ -4593,6 +4602,12 @@ function processStep(p) {
       const toKgH0 = (q) => q * Mv / 1000 / dtp * 3600, aS0 = 1 - Math.exp(-dtp / 20);
       PR.entKg += (toKgH0(nEp) - PR.entKg) * aS0; PR.entCapt += (toKgH0(nTop * eTank * capt) - PR.entCapt) * aS0; PR.entTot += eA + eB; }
     // 충전층 홀드업 채움: 내려오는 액이 먼저 충전물을 적신다. 고인 만큼은 탱크에서 빠져 컬럼에 머문다 (조성은 탱크 증기와 같다고 본다)
+    { const Lk = PR.Lkg || 0, Lmx = PR.Lmax != null ? PR.Lmax : Infinity, capM = (PR.mFloodBed || 0) + (PR.mFloodTop || 0); let mf = PR.mFlood || 0;   // v94: 범람으로 쌓이는 액
+      if ((PR.flood || 0) > 1 && PR.vdot > 1 && p.Hpack > 0) mf = Math.min(capM, mf + Math.max(0, Lk - Lmx) / 3600 * dtp); else if (mf > 0) mf = Math.max(0, mf - Math.max(0, (Number.isFinite(Lmx) ? Lmx : 1e9) - Lk) / 3600 * dtp);
+      { const tg = PR.hL != null ? PR.hL : p.hold, kv = PR.holdK || 0, tau = tg > (PR.hLe == null ? tg : PR.hLe) ? Math.max(60, Math.min(900, tg * kv / Math.max(1e-6, Lk / 3600))) : 60;   // 홀드업은 액이 채워 주는 시간(홀드업 질량 ÷ 액 유량, 60초 이상)에 걸쳐 늘고, 줄 때는 60초(가정)에 걸쳐 빠진다
+        PR.hLe = PR.hLe == null ? tg : PR.hLe + (tg - PR.hLe) * (1 - Math.exp(-dtp / tau)); if (kv > 0) PR.mHold0 = PR.hLe * kv; }
+      PR.mFlood = mf; PR.mHold = (PR.mHold0 != null ? PR.mHold0 : PR.mHold) + mf; }
+    if (PR.mHeld > PR.mHold + 1e-9) { const d = PR.mHeld - PR.mHold, dn = d / Mv * 1000; PR.mHeld -= d; PR.nA += dn * PR.y[0]; PR.nB += dn * PR.y[1]; }   // v94: 홀드업이 줄면 그만큼 정제기로
     if (PR.mHold > PR.mHeld + 1e-9 && flows.nL > 0) { const down = flows.nL * Mv / 1000, d = Math.min(PR.mHold - PR.mHeld, down); PR.mHeld += d; const dn = d / Mv * 1000, hA = Math.min(PR.nA, dn * PR.y[0]), hB = Math.min(PR.nB, dn * PR.y[1]); PR.nA -= hA; PR.nB -= hB; }
     const kA = dA * p.A.MW / 1000, kB = dB * p.B.MW / 1000, tot = Math.max(1e-12, nRem), ves = PR.ves;
     const sh = (q) => q / tot, cs = cutState();
@@ -4869,7 +4884,7 @@ function renderResults() {
     + card("자켓 전열계수 U", fmt(Ueff(p), 0) + "<small>W/(m²·K)</small>", p.Ucalc ? `벽 상관식 Nu = K·Re^⅔·Pr^⅓ · Re ${fmt(p.Ucalc.Re / 1000, 0)}k · 액측 h ${fmt(p.Ucalc.hi, 0)} · 열원측 h ${p.Ucalc.hj} · 벽 ${p.tw * 1000} mm · 오염 0.0002${PR.boilU ? ` · 비등 중 핵비등 h ${fmt(PR.boilU.hnb, 0)} 가산 ${fmt(p.U, 0)} → ${fmt(PR.boilU.U, 0)} (Rohsenow, 벽 과열 ${fmt(PR.boilU.dTw, 1)}℃, 열유속 ${fmt(PR.boilU.qw / 1000, 1)} kW/m²)` : ""}` : "직접 입력값 · 회전수로 계산하려면 탱크 카드에서 바꾼다 (핵비등 보정도 이때만 적용)")
     + (p.Hpack > 0 ? card("충전물 젖음 · 벽 효과", fmt(PR.Lv || 0, 2) + "<small>m³/m²h 액 부하</small>", `${p.pack.minL ? `최소 습윤 속도 ${p.pack.minL} m³/m²h (${p.pack.mat}) · 젖음 ${fmt((PR.wetF || 0) * 100, 0)}% → 유효 이론단 ${PR.Neff != null ? PR.Neff : p.Nst}/${p.Nst}` : "직접 입력 충전물 · 최소 습윤 판정 없음"}${p.wallRatio != null ? ` · 컬럼/충전물 지름비 ${fmt(p.wallRatio, 1)}${p.wallF > 1 ? ` < 8 → 벽 효과로 HETP ×${fmt(p.wallF, 2)} (${fmt(p.HETP0, 2)} → ${fmt(p.HETP, 2)} m)` : " (8 이상, 벽 효과 없음)"}` : ""}`, (boiling && (PR.wetF || 1) < 0.999) || p.wallF > 1) : "")
     + card("열손실", fmt((PR.Qloss + PR.Qcol) / 1000, 2) + "<small>kW</small>", `단열 ${p.tIns} mm · 외기 ${p.Tamb}℃ · 열관류율 ${fmt(p.Uloss, 2)} W/(m²·K) · 탱크 ${fmt(PR.Qloss / 1000, 2)} + 컬럼 ${fmt(PR.Qcol / 1000, 2)} kW · 누적 ${fmt(PR.Eloss / 1e6, 2)} MJ · 환류액 재가열 ${fmt((PR.Qret || 0) / 1000, 2)} kW (환류액 ${fmt(PR.TcolBot, 0)}℃ → 끓는점 ${fmt(PR.Tbub, 0)}℃, 누적 ${fmt((PR.Eret || 0) / 1e6, 2)} MJ)`)
-    + card("충전층 홀드업", fmt(PR.mHeld, 1) + "<small>/ " + fmt(PR.mHold, 1) + " kg</small>", `충전 부피의 ${fmt(p.hold * 100, 0)}% 액 체류 · 그만큼 탱크 액이 줄고 컬럼에 머문다 · 탑정 조성 응답 시정수 ${fmt(PR.tauH / 60, 1)} 분 (정상 상태 ${fmt((PR.xDss || 0) * 100, 1)} → 현재 ${fmt(PR.xD * 100, 1)} mol% A)`)
+    + card("충전층 홀드업", fmt(PR.mHeld, 1) + "<small>/ " + fmt(PR.mHold, 1) + " kg</small>", `충전 부피의 ${fmt((PR.hLe != null ? PR.hLe : p.hold) * 100, 1)}% 액 체류(범람점 ${fmt((PR.hFl || 0) * 100, 0)}% · 빈틈 ${fmt((PR.epsP || 0) * 100, 0)}%)${(PR.mFlood || 0) > 0.05 ? ` + 범람으로 쌓인 액 ${fmt(PR.mFlood, 1)} kg` : ""} · 그만큼 탱크 액이 줄고 컬럼에 머문다 · 탑정 조성 응답 시정수 ${fmt(PR.tauH / 60, 1)} 분 (정상 상태 ${fmt((PR.xDss || 0) * 100, 1)} → 현재 ${fmt(PR.xD * 100, 1)} mol% A)`)
     + card("컬럼 예열 응축", fmt(PR.Lwarm, 0) + "<small>kg/h</small>", `h·A·ΔT = 1500 × ${fmt(p.Acond, 1)} m² × (${fmt(PR.Tbub)} − ${fmt(PR.Tcol)}) ℃, 증기 잠열 공급량 이내 · 탑정 도달 증기 ${fmt(PR.pass * 100, 0)}% · 예열 열량 ${fmt(PR.Ewarm / 1e6, 2)} MJ / 필요 ${fmt(p.Ccol * Math.max(0, PR.Tbub - p.Tamb) / 1e6, 2)} MJ`)
     + card("증기 배관", fmt(PR.uPipe || 0, 1) + "<small>m/s</small>", `내경 ${p.Dpipe * 1000} mm · 상당 길이 ${p.Lpipe} m · 압력 손실 ${fmt(PR.dpPipe, 2)} mmHg (Darcy–Weisbach)`)
     + card("탱크 액면 위 증기 속도", fmt(PR.uTank || 0, 2) + "<small>m/s</small>", `비말동반 한계 ${fmt(PR.uSB || 0, 2)} m/s (Souders–Brown K 0.08) 대비 ${fmt(PR.uSB > 0 ? PR.uTank / PR.uSB * 100 : 0, 0)}%`, PR.uSB > 0 && PR.uTank / PR.uSB > 0.7)
@@ -5465,7 +5480,7 @@ function opRecipe(p, dtp) {   // v74: 레시피 단계 + 스팀 PI
     R.y = y; R.sp = sp; R.rT = rT; R.dT = dT; R.mv = mv;
   }
   if (R.st === 2) { const span = rv("rcpStabMin", 3) * 60, tol = rv("rcpStabT", 0.3), rf = (R.rf = R.rf == null ? (PR.Rkg || 0) : R.rf + ((PR.Rkg || 0) - R.rf) * (1 - Math.exp(-dtp / 300)))   /* v83: 5분 필터 */, okR = rT > 0 ? Math.abs(rf - rT) <= rv("rcpStabR", 10) / 100 * rT : true;
-    R.thf = R.thf == null ? PR.Thead : R.thf + (PR.Thead - R.thf) * (1 - Math.exp(-dtp / 120));   // v83: 2분 필터 R.win.push([PR.t, R.thf]); while (R.win.length && R.win[0][0] < PR.t - span) R.win.shift();
+    R.thf = R.thf == null ? PR.Thead : R.thf + (PR.Thead - R.thf) * (1 - Math.exp(-dtp / 120));   /* v83: 2분 필터 */ R.win.push([PR.t, R.thf]);   /* v94: 주석에 먹혀 있던 것 되살림 */ while (R.win.length && R.win[0][0] < PR.t - span) R.win.shift();
     let a = Infinity, z = -Infinity; for (const w of R.win) { a = Math.min(a, w[1]); z = Math.max(z, w[1]); }
     R.okT = okR && z - a <= 2 * tol ? (R.okT || 0) + dtp : 0;
     if (R.okT >= span) rcpStage(3, `탑 온도 ±${tol} ℃·환류 ±${rv("rcpStabR", 10)} % ${rv("rcpStabMin", 3)}분 안정`);
