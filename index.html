@@ -727,7 +727,7 @@ table.scn .x:hover{color:var(--bad)}
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v87 · 11-10 15:04</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v88 · 11-10 15:18</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -3028,7 +3028,7 @@ function rerouteVapor() {
   const fr = PR.fr, head = { refluxFull: 10, fore: 10, main: 10, held: 9, c2fore: 10, vent: 10, pass2fore: 10, passvent: 10, colBack: 3, stuck: 5, sealed: 1 };
   const fam = (r) => r === "pass2fore" || r === "passvent" ? "pass" : r === "colBack" || r === "stuck" || r === "sealed" ? "tank" : "cond";
   for (let i = VP.length - 1; i >= 0; i--) {
-    const v = VP[i]; if (routeOK(v.route)) continue; const nr = pickRoute(fr); if (nr === v.route) continue;   // v87: 막힌 길에 있는 점만 다시 고른다
+    const v = VP[i]; if (routeOK(v.route)) continue; let nr = v.route; for (let k = 0; k < 16; k++) { const c = pickRoute(fr); if (c !== v.route && fam(c) === fam(v.route) && routeOK(c)) { nr = c; break; } } if (nr === v.route) continue;   // v87: 막힌 길에 있는 점만, 같은 갈래 안에서 다시 고른다(없으면 그대로)
     const shared = fam(nr) === fam(v.route) ? Math.min(head[nr] || 0, head[v.route] || 0) : Math.min(8, head[nr] || 0, head[v.route] || 0);
     if (v.s < shared) v.route = nr; else VP.splice(i, 1);
   }
@@ -4679,7 +4679,7 @@ function renderResults() {
   const ves = PR.ves, fm = ves.fore.A + ves.fore.B, mm = ves.main.A + ves.main.B, tm = PR.m2;
   const wAf = fm > 0 ? ves.fore.A / fm : 0, wBm = mm > 0 ? ves.main.B / mm : 0;
   const boiling = ready && Tm >= PR.Tbub - 0.3 && !PR.stopped;
-  const cs = cutState(), cutName = cs === "fore" ? "초류" : cs === "main" ? "본류" : cs === "both" ? "초류·본류 동시 회수" : "회수 밸브 닫힘(전량 환류)";
+  const cs = cutState(), cutName = cs === "fore" ? "초류" : cs === "main" ? "본류" : cs === "both" ? "초류·본류 동시" : "회수 밸브 닫힘(전량 환류)";   /* v87: "… 회수 회수 중" 중복 */
   const closed = Object.keys(VLV).filter((k) => !VLV[k] && k !== "F" && k !== "M");   // 초류·본류는 어느 한쪽이 닫혀 있는 게 정상이라 경고하지 않는다
   const VN = { J: "스팀", V: "증기", R: "환류", P: "유출", F: "초류", M: "본류", S: "진공", C1: "1차 냉각수", C2: "2차 냉각수" };
   const Tbot = tbDepth(PR.h);
