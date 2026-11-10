@@ -727,7 +727,7 @@ table.scn .x:hover{color:var(--bad)}
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v86 · 11-10 14:36</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v87 · 11-10 15:04</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -2931,7 +2931,7 @@ const VALVE_MESH = {}, VALVE_HIT = [];
 const COL_K = 6;   // 컬럼 예열 구간 수 (아래 → 위)
 function cutState() { return VLV.F && !VLV.M ? "fore" : VLV.M && !VLV.F ? "main" : VLV.F && VLV.M ? "both" : "none"; }
 function syncValveUI() {
-  document.querySelectorAll("#valves button").forEach((b) => b.setAttribute("aria-pressed", String(!!VLV[b.dataset.v])));
+  document.querySelectorAll("#valves button[data-v]").forEach((b) => b.setAttribute("aria-pressed", String(!!VLV[b.dataset.v])));   // v87: data-v 있는 단추만
   for (const k in VALVE_MESH) for (const o of VALVE_MESH[k]) o.material = VLV[k] ? mats.vOpen : mats.vClosed;
   for (const k in VALVE_PARTS) VALVE_PARTS[k].tag.material.map = tagTex(k, !!VLV[k]);
   updateFlowVis();
@@ -3002,6 +3002,7 @@ function updateFlowVis() {
   }
 }
 function setValve(k, open) {
+  if (!(k in VLV)) return;   // v87: 모르는 키는 무시
   if (k === "V") { VLV.V = true; return; }   // v86: 증기 밸브 없음
   if (REPLAY != null) { $("viewhint").textContent = "되감기 재생 중에는 밸브를 조작할 수 없다 · '지금'을 누르면 현재로 돌아온다"; return; }
   VLV[k] = !!open; syncValveUI();
@@ -3021,12 +3022,13 @@ function pickRoute(fr) {
   if (r < b0 + fr.L + fr.D + (fr.held || 0) + fr.n2) return VLV.C1 ? "c2fore" : "pass2fore";
   return VLV.C1 ? "vent" : "passvent";
 }
+function routeOK(r) { switch (r) { case "refluxFull": return !!VLV.R; case "fore": return !!(VLV.P && VLV.F); case "main": return !!(VLV.P && VLV.M); case "c2fore": case "vent": return !!VLV.C1; case "pass2fore": case "passvent": return !VLV.C1; case "sealed": return !VLV.V; default: return true; } }   // v87: 이 경로가 지금도 열려 있나
 function rerouteVapor() {
   if (!PR || !PR.fr || !VP.length) return;
   const fr = PR.fr, head = { refluxFull: 10, fore: 10, main: 10, held: 9, c2fore: 10, vent: 10, pass2fore: 10, passvent: 10, colBack: 3, stuck: 5, sealed: 1 };
   const fam = (r) => r === "pass2fore" || r === "passvent" ? "pass" : r === "colBack" || r === "stuck" || r === "sealed" ? "tank" : "cond";
   for (let i = VP.length - 1; i >= 0; i--) {
-    const v = VP[i], nr = pickRoute(fr); if (nr === v.route) continue;
+    const v = VP[i]; if (routeOK(v.route)) continue; const nr = pickRoute(fr); if (nr === v.route) continue;   // v87: 막힌 길에 있는 점만 다시 고른다
     const shared = fam(nr) === fam(v.route) ? Math.min(head[nr] || 0, head[v.route] || 0) : Math.min(8, head[nr] || 0, head[v.route] || 0);
     if (v.s < shared) v.route = nr; else VP.splice(i, 1);
   }
@@ -5014,7 +5016,7 @@ $("pack").innerHTML = Object.entries(PACKS).map(([k, v]) => `<option value="${k}
 $("jOpen").addEventListener("input", () => { $("jOpenV").textContent = $("jOpen").value + "%"; if (USERACT && PR && (OP.recipe || !OP.manual) && CUR) CUR.jOpen = Math.max(0, Math.min(100, parseFloat($("jOpen").value) || 0)) / 100; if (USERACT && PR && (OP.recipe || !OP.manual) && !OP.hold.J) { OP.hold.J = true; opLog(`스팀 개도 수동 ${$("jOpen").value} % (자동 조절 끔)`); opRender(true); } soon(); });   // v86
 for (const id of ["aA", "wallMat", "Hs", "tCol", "kIns", "Psteam", "nElb", "nTee", "nVg", "nVgl", "T", "H", "D", "C", "bottom", "type", "grid", "subA", "subB", "wA", "wC", "T0", "P", "Tj", "mSteamMax", "valveChar", "valveR", "Hj", "U", "accel", "cName", "cTb", "cHv", "cMW", "cCp", "cRho", "cMu", "cPv", "cPvT", "Hpack", "HETP", "Dcol", "Rr", "f2", "dp", "swMode", "swT", "swM", "capF", "capM", "UA1", "UA2", "Tcw", "mcw",
   "pack", "packFill", "holdC", "DpipeC", "DpipeR", "DpipeP", "startTR", "hold", "heatMode", "mHm", "tIns", "Tamb", "Umode", "kL", "tw", "Dpipe", "Lpipe", "UAmode", "A1", "A2", "Uc", "Spump", "leak", "packRho", "packA", "Tlim"]) $(id).addEventListener("change", soon);
-document.querySelectorAll("#valves button").forEach((b) => b.addEventListener("click", () => setValve(b.dataset.v, b.getAttribute("aria-pressed") !== "true")));
+document.querySelectorAll("#valves button[data-v]").forEach((b) => b.addEventListener("click", () => setValve(b.dataset.v, b.getAttribute("aria-pressed") !== "true")));   // v87: #sAuto 등 data-v 없는 단추 제외
 // 채우는 양의 단위를 바꾸면 지금 값을 그 단위로 환산해 보여 준다 (액은 그대로)
 let lastFill = $("fillMode").value;
 $("fillMode").addEventListener("change", () => {
@@ -5192,6 +5194,8 @@ function turboUI(force) {
   $("turboBar").style.width = (tot ? Math.min(100, done / tot * 100) : (done / 3600 % 1) * 100).toFixed(1) + "%";
   $("turboTxt").innerHTML = (T.fast ? `<small class="fastj">빠른 점프 · 탱크 단순 계산(오차 0.5 % 이내)</small><br>` : "") + `공정 ${tlFmt(PR.t)}${T.est != null ? ` / 예상 ${tlFmt(T.est)}` : ""}<br>실제 경과 ${((now - T.real0) / 1000).toFixed(0)}초 · 초류 ${fmt(PR.ves.fore.A + PR.ves.fore.B, 1)} kg · 본류 ${fmt(PR.ves.main.A + PR.ves.main.B, 1)} kg`;
 }
+function placeToast() { const jd = $("jumpDone"), hud = $("hud"), st = $("stage"); if (!jd || !hud || !st) return; const h = hud.getBoundingClientRect(), r = st.getBoundingClientRect(); if (h.height > 0) jd.style.top = Math.max(54, Math.round(h.bottom - r.top + 8)) + "px"; }   // v87: 상태 칩(두 줄이 되면 그만큼) 아래
+{ const jd = document.getElementById("jumpDone"); if (jd) new MutationObserver(() => { if (!jd.hidden) placeToast(); }).observe(jd, { attributes: true, attributeFilter: ["hidden"] }); }
 function turboField() {   // 필드가 올 때마다(계산은 계속됨): 도착 판정
   const T = TURBO; if (!T || !PR) return;
   if (PR.stopped || T.cond() || PR.t >= T.cap) endJump(true);
@@ -5205,7 +5209,7 @@ function endJump(arrived) {
   const sec = ((performance.now() - T.real0) / 1000).toFixed(0), dt = T.est != null && T.kind !== "h1" && T.kind !== "h6" && T.kind !== "at" ? (PR.t - T.est) : null;
   const diff = dt != null ? ` · 예상 ${tlFmt(T.est)}보다 ${dt >= 0 ? tlFmt(dt) + " 늦게" : tlFmt(-dt) + " 일찍"} (${fmt(Math.abs(dt) / Math.max(60, T.est - T.t0) * 100, 0)} %)` : "";
   $("jumpDone").innerHTML = `<button type="button" aria-label="닫기">×</button>${arrived ? "<b>도착</b>" : "<b>멈춤</b>"} · ${T.label} · 공정 ${tlFmt(PR.t)}${diff}<br>초류 ${fmt(PR.ves.fore.A + PR.ves.fore.B, 1)} kg · 본류 ${fmt(PR.ves.main.A + PR.ves.main.B, 1)} kg · 탱크 ${fmt(PR.m, 1)} kg · 실제 소요 ${sec}초${PR.stopped ? " · 증류 종료" : ""}`;
-  $("jumpDone").hidden = false; clearTimeout(endJump.tm); endJump.tm = setTimeout(() => { $("jumpDone").hidden = true; }, 15000);
+  placeToast(); $("jumpDone").hidden = false; clearTimeout(endJump.tm); endJump.tm = setTimeout(() => { $("jumpDone").hidden = true; }, 15000);
   if (FASTJ) { FASTJ = null; fastBack(); }   // v55: 원래 계산(격자)으로 — 그 순간 평균 온도로 채워 이어서 · v83: 알림을 쓴 뒤(전에는 새로 만든 빈 상태를 읽었다)
   prefillFlows();   // v61 · v83
   tempRange(); buildSlice(); updateLegend(); renderResults(); renderScn(); drawGraphs(); updateReceiver(); updateHmiTags(performance.now(), true);
@@ -5275,7 +5279,7 @@ function recipePanel(p) {   // v74: 레시피 패널 — 단계, 목표·현재,
   return `<div class="op-fp"><div class="op-tag">레시피 <small>${RCPN[st] || "대기"}</small></div>
     <div class="op-row"><span>환류</span><b>${f1(PR && PR.Rkg)} / ${R ? f1(R.rT) : "–"}</b><span>유출</span><b>${f1(PR && PR.Dkg)} / ${R ? f1(R.dT) : "–"}</b></div>
     <div class="op-row"><span>스팀 MV</span><b>${Math.round((p.jOpen || 0) * 100)} % ${OP.hold.J ? "<small class=op-held>수동</small>" : "<small>자동</small>"}</b><span>응축</span><b>${R ? f1(R.y) : "–"} / ${R ? f1(R.sp) : "–"} kg/h</b></div>
-    ${OP.hold.J ? `<div class="op-btns"><button type="button" data-op="steamAuto">스팀 자동(PI)으로</button></div>` : ""}${holdNote()}
+    ${OP.hold.J ? `<div class="op-btns"><button type="button" data-op="steamAuto">스팀 자동(PI)으로</button></div>` : ""}${!OP.hold.J && ["R", "P", "F", "M"].some((k) => OP.hold[k]) && R ? `<p class="op-note">스팀 PI는 응축량(환류 + 유출)을 ${f1(R.sp)} kg/h로 맞춘다 — 사용자가 잡은 밸브 때문에 환류·유출 나눔은 목표와 다를 수 있다(유출이 막히면 응축액 전부가 환류)</p>` : ""}${holdNote()}
     <p class="op-note">${left}</p>${PR && PR.rcpWarn ? `<p class="op-warn">${PR.rcpWarn}</p>` : ""}
     <div class="op-btns"><button type="button" data-op="rcpNext"${st >= 1 && st < 4 ? "" : " disabled"}>다음 단계로</button></div></div>`;
 }
