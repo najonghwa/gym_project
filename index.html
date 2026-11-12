@@ -818,13 +818,21 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
 .vgauge button{font:inherit;color:#dbe4ec;background:#1d2833;border:1px solid #3d4a57;border-radius:3px;padding:2px 8px;cursor:pointer}
 .dcs-tag.act{cursor:pointer;border-color:#5a7a92}
 
+/* v103 */
+.hud > .chip{max-width:min(520px,58vw);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.ckey{position:absolute;left:12px;z-index:5;display:flex;align-items:center;gap:6px;font:11px/1.2 system-ui,sans-serif;color:var(--muted,#9aa6b2);pointer-events:auto;white-space:nowrap}
+.ckey[hidden]{display:none}
+.ckey i{display:inline-block;width:70px;height:7px;border-radius:2px;background:linear-gradient(90deg,#1d3fb8,#1fa4c9,#5fd38a,#f2d544,#f06a2a)}
+.ckey .ck-w{color:#f0a24a}
+
 </style>
 
 <div class="app" id="app">
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v102 · 11-12 21:59</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v103 · 11-12 23:03</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -2817,7 +2825,7 @@ function fx1Build(q, t) {
 }
 function fx1Update() {
   const pp = F1D.pipe, on = !!pp && $("tVapor").checked;
-  FX1.pipe.forEach((m, i) => { const Ma = on ? (pp.Ma[i] + pp.Ma[i + 1]) / 2 : 0; m.visible = on && Ma > 0.5; if (!m.visible) return;   /* v61: 마하수 색 칸은 초킹 우려 때만 */
+  FX1.pipe.forEach((m, i) => { const Ma = on ? (pp.Ma[i] + pp.Ma[i + 1]) / 2 : 0; m.visible = false && on && Ma > 0.5; if (!m.visible) return;   /* v103: 증기관 마하수 색 칸 없음(알림에만) */   /* v61: 마하수 색 칸은 초킹 우려 때만 */
     if (Ma < 0.5) m.material.color.copy(MA0).lerp(MA1, Ma / 0.5); else m.material.color.copy(MA1).lerp(MA2, Math.min(1, (Ma - 0.5) / 0.5)); m.material.opacity = 0.3 + 0.35 * Math.min(1, Ma); });
   const paint = (arr, cd) => arr.forEach((m, i) => { m.visible = !!cd; if (!cd) return; const c = cd.cells[i]; if (!c) { m.visible = false; return; }
     m.material.color.copy(CV1).lerp(CV0, c.V); m.material.opacity = 0.12 + 0.2 * (1 - c.V) + 0.12 * Math.min(1, c.yA * 10); });
@@ -2904,7 +2912,34 @@ const _fp = [0, 0, 0];
 window.__glf = () => (PR && PR.glf ? { need: +PR.glf.need.toFixed(3), zL: +PR.glf.zL.toFixed(3), Hmax: +PR.glf.Hmax.toFixed(3), blocked: PR.glf.blocked, flow: PR.glf.flow, trap: !!(PR.gl && PR.gl.trap), ovKg: +(PR.ovKg || 0).toFixed(2), Tbot: TBOT() != null ? +TBOT().toFixed(1) : null, c1Wet: +(PR.c1Wet || 0).toFixed(3), R: +(PR.Rkg || 0).toFixed(2), D: +(PR.Dkg || 0).toFixed(2), rsv: OP.rfic.sv, st: PR.rcp ? PR.rcp.st : null } : null);   // v98 시험용
 window.__gl = () => (PR && PR.gl ? { lock: PR.gl.lock, seal: PR.gl.seal, want: PR.gl.want, Pr: +PR.gl.Pr.toFixed(3), P1: +PR.gl.P1.toFixed(3), dP: +PR.gl.dP.toFixed(3), thr: +PR.gl.thr.toFixed(2), thrU: +PR.gl.thrU.toFixed(2), PF: +PR.gl.F.P.toFixed(3), PM: +PR.gl.M.P.toFixed(3), nGas: PR.gl.nGas, eq: !!VLV.EQV, nLock: PR.gl.nLock || 0, st: PR.rcp ? PR.rcp.st : null } : null);   // v97 시험용
 window.__flood = () => ({ carryKg: PR ? PR.carryKg || 0 : 0, colFull: !!(PR && PR.colFull), condc: CONDC ? CONDC.map((x) => +x.toFixed(2)) : null, cProf: PR && PR.cProf ? PR.cProf.map((x) => +(x * 3600).toFixed(2)) : null, dpPack: PR ? PR.dpPack : null, dpLiq: PR && CUR ? Math.max(0, (PR.mHeld || 0) - (PR.mHold0 || 0)) * 9.81 / (Math.PI * CUR.Dcol * CUR.Dcol / 4) / 133.322 : 0, ovKg: PR ? PR.ovKg || 0 : 0, ovTot: PR ? PR.ovTot || 0 : 0, pumpLiqKg: PR ? PR.pumpLiqKg || 0 : 0, dPvap: PR ? PR.dPvap || 0 : 0, hL: PR ? PR.hLe : null, hLt: PR ? PR.hL : null, hFl: PR ? PR.hFl : null, eps: PR ? PR.epsP : null, Lmax: PR ? PR.Lmax : null, mFlood: PR ? PR.mFlood : null, mBed: PR ? PR.mFloodBed : null, mTop: PR ? PR.mFloodTop : null, mHeld: PR ? PR.mHeld : null, mHold0: PR ? PR.mHold0 : null, lv: FX.floodLv || 0, liq: !!(FX.floodLiq && FX.floodLiq.visible), foam: !!(FX.floodFoam && FX.floodFoam.visible), fb: FXP.filter((x) => x.kind === "fb").length, spl: FXP.filter((x) => x.kind === "spl").length, ent: FXP.filter((x) => x.kind === "ent").length });
+
+// v103: 정제기 액 몸통 — 가장자리(벽 쪽) = Tw, 가운데 = Tm. 화면 각도로 섞는다(옆에서 보면 벽 쪽 층이 가장자리에 보인다)
+const LIQB = { mesh: null };
+function liqBody() {
+  const on = !!(M && PR && solver.kind === "LUMP" && STYLE !== "iso" && $("view").value === "temp" && $("sliceAt").value !== "off");
+  if (!LIQB.mesh) { const mat = new THREE.ShaderMaterial({ uniforms: { cB: { value: new THREE.Color() }, cW: { value: new THREE.Color() }, op: { value: 0.42 }, w: { value: 0.32 } }, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      vertexShader: "varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }",
+      fragmentShader: "uniform vec3 cB; uniform vec3 cW; uniform float op; uniform float w; varying vec3 vN; varying vec3 vV; void main(){ float f = 1.0 - abs(dot(normalize(vN), normalize(vV))); float k = smoothstep(1.0 - w, 1.0, f); gl_FragColor = vec4(mix(cB, cW, k), op); }" });
+    LIQB.mesh = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 48, 1, true), mat); LIQB.mesh.renderOrder = 3; LIQB.mesh.visible = false; world.add(LIQB.mesh); }
+  const me = LIQB.mesh; me.visible = on; if (!on) return;
+  const p = CUR, h = Math.max(0.01, PR.h || p.H), R = M.R * 0.985, Tm = PR.Tmean, Tj = PR.TjEff != null ? PR.TjEff : p.Tj, hi = p.Ucalc && p.Ucalc.hi > 0 ? p.Ucalc.hi : null;
+  const heat = VLV.J && CUR.jOpen > 0 && !PR.stopped && hi, Tw = heat ? Tm + Math.min(1, Ueff(p) / hi) * (Tj - Tm) : Tm;   // 직렬 저항: q = U(Tj − Tm) = h_i(Tw − Tm)
+  const y0 = M.hh || 0; if (h <= y0 + 0.01) { me.visible = false; return; } me.scale.set(R, h - y0, R); me.position.set(0, (h + y0) / 2, 0);   /* 경판 위 직관부만 */ tempColor(Tm, me.material.uniforms.cB.value); tempColor(Tw, me.material.uniforms.cW.value); LIQB.Tw = Tw;
+}
+
+function colorKey() {   // v103: 왼쪽 아래 한 줄 — 색의 뜻
+  let el = document.getElementById("colorKey"); if (!el) { el = document.createElement("div"); el.id = "colorKey"; el.className = "ckey"; canvas.parentElement.appendChild(el); }
+  const on = false; if (el.hidden === on) el.hidden = !on; if (!on) return;   /* v103: 오른쪽 위 온도 범례와 겹쳐 뺌 */
+  const now = performance.now(); if (now - (colorKey.at || 0) < 500) return; colorKey.at = now;
+  const glow = FX.vGlow && FX.vGlow.some((g) => g.visible), chk = !!PR.choked;
+  const lump = LIQB.mesh && LIQB.mesh.visible && LIQB.Tw != null && LIQB.Tw - PR.Tmean > 0.5;
+  const html = `<span title="${lump ? `정제기 가장자리 = 벽에 붙은 액 ${LIQB.Tw.toFixed(0)}℃ = Tm + (U/h)(Tj − Tm). 실제 층 두께는 0.2 mm 정도라 보이게 두껍게 그렸다` : "충전물 고리·왼쪽 띠·정제기 액의 색"}">온도</span><i></i><span>${Math.round(tLo)}~${Math.round(tHi)}℃</span>${false && lump ? `<span class="ck-n" title="단순 계산은 탱크 안 온도가 하나(완전 혼합). 벽에 붙은 액만 따로 Tw = Tm + (U/h)(Tj − Tm)로 구한다. 실제 이 층 두께는 0.2 mm 정도라 보이게 두껍게 그렸다">· 정제기 가장자리 = 벽면 액 ${LIQB.Tw.toFixed(0)}℃</span>` : ""}${false && glow ? `<span class="ck-w" title="증기관 속 증기 속도(Mach) — 진공에서는 증기 밀도가 작아 속도가 빨라진다. 0.7을 넘으면 주황, 초킹(더 못 지나감)이면 빨강">· 증기관 ${chk ? "빨강 = 초킹" : "주황 = 음속 가까움"} Mach ${(PR.Mach || 0).toFixed(2)}</span>` : ""}`;
+  if (el.dataset.h !== html) { el.dataset.h = html; el.innerHTML = html; }
+  const dock = document.querySelector(".valvedock"), st = canvas.parentElement.getBoundingClientRect();
+  if (dock && getComputedStyle(dock).position === "absolute") { const r = dock.getBoundingClientRect(); el.style.top = (r.top - st.top - 24) + "px"; el.style.bottom = "auto"; }
+}
 function fxUpdate(dtReal) {
+  liqBody(); colorKey();
   const q = FX.q, p = CUR; if (!q || !p || !PR || !M) { fxGeo.setDrawRange(0, 0); bubGeo.setDrawRange(0, 0); return; }
   const t = FX.t, live = !paused && !TURBO, dt = live ? dtReal : 0, boiling = PR.vdot > 1 && !PR.stopped, now = performance.now() / 1000;
   const blink = 0.5 + 0.5 * Math.sin(now * 6);
@@ -2930,9 +2965,9 @@ function fxUpdate(dtReal) {
       FX.secT = { at: now2, a: bubbleT([1, 0, 0], [p.A, p.B, p.Cs], Pt), b: bubbleT([0, 1, 0], [p.A, p.B, p.Cs], Ps) }; }
     let lo = FX.secT.a, span = Math.max(1, FX.secT.b - FX.secT.a);
     { let tmin = Infinity, tmax = -Infinity; for (const T of PR.Tsec) if (T > p.Tamb + 2) { tmin = Math.min(tmin, T); tmax = Math.max(tmax, T); } if (tmax > tmin - 1e-9 && tmin < Infinity) { const mid = (tmin + tmax) / 2; span = Math.max(6, tmax - tmin); lo = mid - span / 2; } }   // v63: 3D는 컬럼 실제 위아래 온도 사이(최소 6 K) 눈금 — 아래 빨강 → 위 파랑
-    for (let i = 0; i < FX.sec.length; i++) { const T = PR.Tsec[i]; rampColor((T - lo) / span, _fxc); FX.sec[i].material.color.copy(_fxc); FX.sec[i].material.opacity = p.Hpack > 0 && (T > p.Tamb + 2) ? 0.95 : 0;   /* v63: 0.28 → 0.36 */ FX.sec[i].visible = FX.sec[i].material.opacity > 0; }
+    for (let i = 0; i < FX.sec.length; i++) { const T = PR.Tsec[i]; rampColor((T - lo) / span, _fxc); FX.sec[i].material.color.copy(_fxc); tempColor(T, _fxc); FX.sec[i].material.color.copy(_fxc); FX.sec[i].material.opacity = p.Hpack > 0 && (T > p.Tamb + 2) ? 0.95 : 0;   /* v103: 정제기와 같은 눈금 */   /* v63: 0.28 → 0.36 */ FX.sec[i].visible = FX.sec[i].material.opacity > 0; }
     { const RG = VES.packRings, fr = VES.packFrac, K = PR.Tsec.length; if (RG && fr && K && now2 - (FX.ringAt || 0) > 400) { FX.ringAt = now2;   /* v101: 충전물 고리 = 그 높이 구간 온도 색(띠와 같은 눈금), 차가운 구간은 회색 */
-      const cs = PR.Tsec.map((T) => p.Hpack > 0 && T > p.Tamb + 2 ? rampColor((T - lo) / span, new THREE.Color()) : VES.packGrey), [rings, tongs] = RG;
+      const cs = PR.Tsec.map((T) => p.Hpack > 0 && T > p.Tamb + 2 ? tempColor(T, new THREE.Color()) : VES.packGrey), [rings, tongs] = RG;
       for (let k = 0; k < rings.count; k++) { const c0 = cs[Math.min(K - 1, Math.floor(fr[k] * K))]; rings.setColorAt(k, c0); for (let s = 0; s < 4; s++) tongs.setColorAt(k * 4 + s, c0); }
       if (rings.instanceColor) rings.instanceColor.needsUpdate = true; if (tongs.instanceColor) tongs.instanceColor.needsUpdate = true; } } }
   // 환류 줄기(RD): 범람이면 가늘어지고, 젖음이 모자라면 줄기 수가 준다
@@ -2941,7 +2976,7 @@ function fxUpdate(dtReal) {
     (PIPES.RD || []).forEach((o, j) => { if (o.geometry && o.geometry.type === "CylinderGeometry") { o.scale.x = o.scale.z = thin; } }); }
   // 3 초킹·고속
   const mach = PR.Mach || 0, chk = !!PR.choked && boiling;
-  for (const c of FX.vGlow) { c.visible = boiling && (chk || mach > 0.7); if (c.visible) { c.material.color.setHex(chk ? 0xff3b2f : 0xff8a1f); c.material.opacity = 0.18 + 0.2 * blink; } }
+  for (const c of FX.vGlow) { c.visible = false && boiling && (chk || mach > 0.7);   /* v103: 색 경고 없음(알림에만) */ if (c.visible) { c.material.color.setHex(chk ? 0xff3b2f : 0xff8a1f); c.material.opacity = 0.3; } }   /* v103: 깜빡임 없이 */
   // 4 비응축 가스
   const air = Math.max(0, Math.min(0.8, 1 - (PR.fNC == null ? 1 : PR.fNC)));
   if (boiling && air > 0.03) { const Hc = q.yC0 - q.yC1, h = Hc * air; FX.air.visible = true; FX.air.scale.y = h; FX.air.position.set(q.xC, q.yC1 + h / 2, 0); FX.air.material.opacity = 0.45 + 0.4 * air;
@@ -3972,9 +4007,9 @@ function stepVapor(m, dtReal) {   // v81: 증기 점 = 하나로 이어진 흐�
     if (n >= MAXD) break;
     let px, py, pz;
     if (v.cd >= 0) {   // 응축 중: 파란 점, 흐려짐
-      const D = v.dur || 0.6, u = Math.min(1, v.cd / D), a = v.acc ? 1 : Math.max(0, 1 - u); px = v.cx; py = v.cy - (v.fall || 0) * (v.acc ? u * u : u); pz = v.cz;   // v83: 응축기 방울은 가속하며 떨어지고 흐려지지 않음
+      const D = v.dur || 0.6, u = Math.min(1, v.cd / D), a = v.acc || v.route === "refluxFull" || v.route === "colBack" ? 1 : Math.max(0, 1 - u); px = v.cx; py = v.cy - (v.fall || 0) * (v.acc ? u * u : u); pz = v.cz;   // v83: 응축기 방울은 가속하며 떨어지고 흐려지지 않음
       if (v.acc) { if (nd < MAXV) { const tl = Math.min(0.04 * t, 0.06 * 2 * (v.fall || 0) * u / D), o3 = nd * 3, o6 = nd * 6; if (v.sl && v.cd > D) { px = v.cx + (v.sx - v.cx) * Math.min(1, (v.cd - D) / v.sl); py = v.cy - (v.fall || 0); }   /* 바닥을 따라 흐름 */ dpPos[o3] = px; dpPos[o3 + 1] = py; dpPos[o3 + 2] = pz; dlPos[o6] = dlPos[o6 + 3] = px; dlPos[o6 + 1] = py; dlPos[o6 + 4] = py + tl; dlPos[o6 + 2] = dlPos[o6 + 5] = pz; nd++; } continue; }   /* v92: 방울은 따로(또렷한 파랑) */
-      if (v.acc) cVap.copy(_lc.r + _lc.g + _lc.b > 0 ? _lc : dcol).multiplyScalar(1.15); else cVap.copy(cWhite).lerp(_lc.r + _lc.g + _lc.b > 0 ? _lc : dcol, Math.min(1, v.cd / 0.15)).multiplyScalar(0.35 + 0.65 * a);   // v83: 방울 = 또렷한 파랑
+      if (v.acc) cVap.copy(_lc.r + _lc.g + _lc.b > 0 ? _lc : dcol).multiplyScalar(1.15); else cVap.copy(cWhite).lerp(_lc.r + _lc.g + _lc.b > 0 ? _lc : dcol, Math.min(1, v.cd / 0.03)).multiplyScalar(0.35 + 0.65 * a);   // v83: 방울 = 또렷한 파랑
     } else {
       const seg = RT[v.route][v.s]; if (!seg) continue;
       if (seg.kind === 5) {   /* v101: 컬럼 안을 내려가는 액(환류·벽 응축액) = 파란 방울. 속도는 액막 속도 비례, 수는 그 경로 몫 */
@@ -5685,12 +5720,14 @@ function endJump(arrived) {
 }
 
 // 위 알림 칩: 상태·경과·진공은 한 줄로 늘 보이고, 경고·주의는 '알림 n개'로 접어 두었다가 누르면 펼친다
-let HUD_OPEN = store.get("dt.hudOpen") === "1";
+let HUD_OPEN = store.get("dt.hudOpen4") === "1";   /* v103: 새 키 — 처음에는 접힘 */
 function hudRender(html) {
   const hud = $("hud"), parts = html.match(/<span class="chip[^"]*">[\s\S]*?<\/span>/g) || [];
   const main = [], alerts = [];
-  let promo = false; parts.forEach((c, i) => { if (i > 0 && !promo && /class="chip bad/.test(c)) { promo = true; main.push(c); return; }   /* v102: 가장 앞 경고 하나는 늘 보이게 */
-    if (i > 0 && /class="chip (bad|warn)/.test(c)) { const f = fxFocusOf(c.replace(/<[^>]+>/g, "")); alerts.push(f ? c.replace('<span class="chip', `<span data-focus="${f}" title="누르면 해당 설비로 이동" class="chip`) : c); } else main.push(c); });
+  parts.forEach((c, i) => { if (/진공 설정|사용자 조작|레시피 [①②③④]|수동 운전|자유 운전|환류비 운전/.test(c)) return; if (/class="chip (bad|warn)/.test(c) || /가열 정지/.test(c)) { const f = fxFocusOf(c.replace(/<[^>]+>/g, "")); alerts.push(f ? c.replace('<span class="chip', `<span data-focus="${f}" title="누르면 해당 설비로 이동" class="chip`) : c); } else main.push(c); });
+  main.length = 0;   /* v103: 그림 위 상태 칩 없음(맨 위 줄에 있다) */
+  const tt = (c) => { const full = c.replace(/<[^>]+>/g, ""), short = full.split(" · ")[0]; return c.replace(/^<span /, '<span title="' + full.replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;") + '" ').replace(/>[\s\S]*<\/span>$/, ">" + short + "</span>"); };   /* v103: 칩은 한 줄, 전체 글은 마우스를 대면 */
+  for (let i = 0; i < main.length; i++) main[i] = tt(main[i]); for (let i = 0; i < alerts.length; i++) alerts[i] = tt(alerts[i]);
   let h = main.join("");
   if (alerts.length) {
     const bad = alerts.some((c) => /class="chip bad/.test(c));
@@ -5699,7 +5736,7 @@ function hudRender(html) {
   }
   if (hud.innerHTML !== h) hud.innerHTML = h;
 }
-$("hud").addEventListener("click", (e) => { const fc = e.target.closest("[data-focus]"); if (fc) { fxFocus(fc.dataset.focus); return; } if (e.target.closest('[data-hud="toggle"]')) { HUD_OPEN = !HUD_OPEN; store.set("dt.hudOpen", HUD_OPEN ? "1" : "0"); renderResults(); } });
+$("hud").addEventListener("click", (e) => { const fc = e.target.closest("[data-focus]"); if (fc) { fxFocus(fc.dataset.focus); return; } if (e.target.closest('[data-hud="toggle"]')) { HUD_OPEN = !HUD_OPEN; store.set("dt.hudOpen4", HUD_OPEN ? "1" : "0"); renderResults(); } });
 
 // ===== v37: 운전 패널 (DCS 페이스플레이트 느낌) =====
 { const m0 = store.get("dt.opMode") || "3"; OP.manual = m0 !== "0"; OP.free = m0 === "2"; OP.recipe = m0 === "3"; }   // v73 · v74: 기본 = 레시피
@@ -5952,7 +5989,7 @@ const BENCH = { phase: 0, t0: 0, s0: 0, f0: 0 };
 function perfBench(now) {
   if (PERF !== "auto" || BENCH.phase >= 3 || !ST || paused || solver.kind === "LUMP" || TURBO || FASTJ) return;   /* v77: 점프 중엔 판정 보류 */
   const key = GPU_NAME + "|" + solver.kind + "|v78", saved = (() => { try { return JSON.parse(store.get("dt.bench") || "null"); } catch (e) { return null; } })();
-  if (BENCH.phase === 0) { if (saved && saved.key === key) { PERF_LOW = false; AUTO_LUMP = !!saved.lump; BENCH.phase = 3; if (saved.grid && $("grid").value !== String(saved.grid) && $("grid").querySelector(`option[value="${saved.grid}"]`)) { $("grid").value = String(saved.grid); $("grid").dispatchEvent(new Event("change", { bubbles: true })); } perfApply("auto"); return; }
+  if (BENCH.phase === 0) { if (saved && saved.key === key && saved.v === 103) { PERF_LOW = false; AUTO_LUMP = !!saved.lump; BENCH.phase = 3; if (saved.grid && $("grid").value !== String(saved.grid) && $("grid").querySelector(`option[value="${saved.grid}"]`)) { $("grid").value = String(saved.grid); $("grid").dispatchEvent(new Event("change", { bubbles: true })); } perfApply("auto"); return; }
     BENCH.phase = 1; BENCH.t0 = now + 1500; return; }
   if (BENCH.phase === 1 && now >= BENCH.t0) { BENCH.phase = 2; BENCH.t0 = now; BENCH.s0 = perfSteps(); BENCH.f0 = PERFT.frames; return; }
   if (BENCH.phase === 2 && now - BENCH.t0 >= 2500) {
@@ -5961,8 +5998,8 @@ function perfBench(now) {
     PERF_LOW = false;   /* v75: 판정이 화면을 깎지 않는다(정말 느릴 때만 frame에서) */
     let pick = N, note = ""; const ex = solver.kind === "GPU" ? 2.5 : 3, dtN = F && F.dt > 0 ? F.dt : 0, follow = (G) => dtN ? sps * dtN * Math.pow(N / G, ex + 1) : sps / target * Math.pow(N / G, ex);   // v44: 배속을 따라가는 비율 어림
     pick = null; for (const G of opts.slice().reverse()) if (G <= N && follow(G) >= 1.2 && (fps >= 24 || G < N)) { pick = G; break; }
-    AUTO_LUMP = pick == null || WEAK_GPU; if (WEAK_GPU && pick != null) { note = " · 내장 그래픽이라 가벼운 계산(CFD 끔 · 결과는 격자와 ±1 % · 화면은 그대로)"; pick = N; } else if (AUTO_LUMP) { pick = opts[0]; note = ` · 가장 거친 격자 ${opts[0]}로도 배속을 못 따라가(추정 ${Math.round(follow(opts[0]) / 1.4 * 100)} %) 가벼운 계산(CFD 끔 · 탱크 완전 혼합, 화면은 그대로)`; }
-    store.set("dt.bench", JSON.stringify({ key, grid: pick, low: PERF_LOW, lump: AUTO_LUMP, sps: Math.round(sps), fps: Math.round(fps) }));
+    const SOFT_GPU = /swiftshader|llvmpipe|software|basic render/i.test(GPU_NAME); AUTO_LUMP = pick == null || SOFT_GPU; if (SOFT_GPU && pick != null) { note = " · 소프트웨어 렌더링이라 가벼운 계산"; pick = N; } else if (WEAK_GPU && pick != null) { pick = opts[0]; note = " · 내장 그래픽이라 가장 거친 격자"; }   /* v103: 내장 그래픽도 따라가면 CFD */ else if (AUTO_LUMP) { pick = opts[0]; note = ` · 가장 거친 격자 ${opts[0]}로도 배속을 못 따라가(추정 ${Math.round(follow(opts[0]) / 1.4 * 100)} %) 가벼운 계산(CFD 끔 · 탱크 완전 혼합, 화면은 그대로)`; }
+    store.set("dt.bench", JSON.stringify({ v: 103, key, grid: pick, low: PERF_LOW, lump: AUTO_LUMP, sps: Math.round(sps), fps: Math.round(fps) }));
     const msg = `<b>이 PC에 맞춤</b> · ${GPU_NAME ? GPU_NAME.replace(/^ANGLE \(|\)$/g, "").slice(0, 60) : "그래픽 정보 없음"} · 측정 ${Math.round(sps)}스텝/s, ${Math.round(fps)}fps → ${AUTO_LUMP ? "가벼운 계산" : "격자 " + pick + "칸"}${note}`;
     if (pick !== N) { BENCH_SET = true; $("grid").value = String(pick); $("grid").dispatchEvent(new Event("change", { bubbles: true })); BENCH_SET = false; }
     perfApply("auto", msg);
@@ -6213,10 +6250,16 @@ function dcsLabels(on, now) {
     let v = null; try { v = T.fn(); } catch (e) { v = null; } const val = (v == null || v === "" || v === false ? "–" : v) + (T.unit === "℃" || T.unit === "%" ? "" : " ") + T.unit;
     if (el.dataset.n !== T.title) { el.dataset.n = T.title; el.firstChild.textContent = DCS_SHORT[T.title] || T.title; el.children[2].textContent = /계산/.test(T.title) ? "계산" : ""; el.title = T.title + (/계산/.test(T.title) ? " — 계기가 없는 계산값" : /스팀 밸브 개도|FI 환류/.test(T.title) ? " — 누르면 조절" : ""); el.classList.toggle("act", /스팀 밸브 개도|FI 환류/.test(T.title)); } if (el.children[1].textContent !== val) el.children[1].textContent = val;
     const w = el.offsetWidth || 80, h = el.offsetHeight || 30, al = T.al || "R";
-    its.push({ el, w, h, x: al === "L" ? a.x - w - 3 : al === "R" ? a.x + 3 : a.x - w / 2, y: al === "T" ? a.y - h - 3 : al === "B" ? a.y + 3 : a.y - h / 2 }); });
+    its.push({ el, w, h, al, x: al === "L" ? a.x - w - 3 : al === "R" ? a.x + 3 : a.x - w / 2, y: al === "T" ? a.y - h - 3 : al === "B" ? a.y + 3 : a.y - h / 2 }); });
   for (let i = HMI_TAGS.length; i < DCS.els.length; i++) DCS.els[i].hidden = true;
   { const cr = canvas.getBoundingClientRect(), bl = []; for (const sl of ["#opPanel", "#lblModeBox", "#sliceLegend"]) { const e = document.querySelector(sl); if (!e || e.hidden) continue; const r = e.getBoundingClientRect(); if (r.width > 0 && r.left - cr.left > W * 0.5) bl.push([r.left - cr.left, r.top - cr.top, r.bottom - cr.top]); }
     for (const it of its) for (const k of bl) if (it.x + it.w > k[0] - 4 && it.y < k[2] && it.y + it.h > k[1]) it.x = k[0] - it.w - 6; }   /* v102: 오른쪽 패널을 피한다 */
+  { const q = M.pipe, R0 = M.R, Rj = q.Rj || R0, cr = canvas.getBoundingClientRect(), obs = [];   /* v103: 설비 몸통을 피한다 */
+    const pr = (x0, x1, y0, y1, z) => { let a = 1e9, bb = -1e9, c0 = 1e9, d0 = -1e9; for (const x of [x0, x1]) for (const y of [y0, y1]) for (const zz of [-z, z]) { _d3v.set(x, y, zz); tankGroup.localToWorld(_d3v); _d3v.project(camera); const px = (_d3v.x + 1) / 2 * W, py = (1 - _d3v.y) / 2 * H; a = Math.min(a, px); bb = Math.max(bb, px); c0 = Math.min(c0, py); d0 = Math.max(d0, py); } obs.push([a, c0, bb, d0]); };
+    pr(-Rj, Rj, 0, M.topY, Rj); pr(q.xCol - q.rCol * 1.1, q.xCol + q.rCol * 1.1, q.colBase, q.colTop, q.rCol); pr(q.xC - q.rC * 1.2, q.xC + q.rC * 1.2, q.yC1, q.yC0, q.rC);
+    pr(q.xMn - q.rRM, q.xMn + q.rRM, q.yRvM - q.hdM, q.yTopM + q.hdM, q.rRM); pr(q.xF - q.rRF, q.xF + q.rRF, q.yRvF - q.hdF, q.yTopF + q.hdF, q.rRF); pr(q.x20, q.x21, q.y2c - q.r2, q.y2c + q.r2, q.r2);
+    { const hud = document.getElementById("hud"); if (hud) for (const e of hud.children) { const r = e.getBoundingClientRect(); if (r.width > 0) obs.push([r.left - cr.left, r.top - cr.top, r.right - cr.left, r.bottom - cr.top]); } }
+    for (let pass = 0; pass < 2; pass++) for (const it of its) for (const o of obs) { if (it.x < o[2] + 3 && it.x + it.w > o[0] - 3 && it.y < o[3] + 2 && it.y + it.h > o[1] - 2) { const L = o[0] - it.w - 5, Rr = o[2] + 5; it.x = it.al === "R" ? Rr : it.al === "L" ? L : (Math.abs(L - it.x) < Math.abs(Rr - it.x) ? L : Rr); } } }
   its.sort((p, q) => p.y - q.y);
   for (let i = 0; i < its.length; i++) { const B = its[i]; B.x = Math.max(2, Math.min(W - B.w - 2, B.x)); for (let j = 0; j < i; j++) { const A = its[j]; if (B.x < A.x + A.w + 2 && A.x < B.x + B.w + 2 && B.y < A.y + A.h + 2 && B.y + B.h > A.y - 2) B.y = A.y + A.h + 2; } }
   const bot = calloutLimits(W, H, canvas.getBoundingClientRect()).L.bot;   /* 아래 밸브 막대·안내 줄에 겹치면 숨김 */
