@@ -749,13 +749,18 @@ table.scn .x:hover{color:var(--bad)}
 .gl-steps{margin:6px 0 4px 18px;padding:0;font-size:12px;line-height:1.45}
 .gl-steps li{opacity:.55}.gl-steps li.on{opacity:1;font-weight:700}.gl-steps li.done{opacity:.8;text-decoration:line-through}
 
+/* v98 */
+.subh{margin:14px 0 4px;font-size:13px}
+.gl-box svg{max-width:330px}
+details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12px;color:var(--muted,#8a94a6)}
+
 </style>
 
 <div class="app" id="app">
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v97 · 11-11 23:19</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v98 · 11-12 10:15</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -837,7 +842,7 @@ table.scn .x:hover{color:var(--bad)}
 
     <div class="panel" data-tab="mat">
       <h2>물질 · 조성</h2>
-      <div class="presetrow"><button type="button" id="btnFlood" title="현재 배치에서 스팀 헤더 135 ℃, 밸브 100 %로 컬럼 범람 재현">스팀 과다 → 범람 재현</button><button type="button" id="btnCpHf">CpHf 정제 조건 불러오기</button><button type="button" id="btnGasLock" title="CpHf 조건 + 균압 밸브 닫힘 + U자에 액 남음 + 받는 탱크 25 torr로 ③ 초류 전환 때 유출관이 막히는 것을 재현(시연용: 시작 80 ℃, ③까지 1000배속)">유출관 가스 록 재현</button><span class="keynote">CpHf 315 kg에 TDMAHf 0.3 %·Cp2Hf 0.2 %, 0.1 torr, 스팀 개도 25 %. 탱크·컬럼 치수는 유지</span></div>
+      <div class="presetrow"><button type="button" id="btnFlood" title="현재 배치에서 스팀 헤더 135 ℃, 밸브 100 %로 컬럼 범람 재현">스팀 과다 → 범람 재현</button><button type="button" id="btnCpHf">CpHf 정제 조건 불러오기</button><button type="button" id="btnGasLock" title="CpHf 조건, 현장 운전 방식(환류 FIC-072 고정 · 유출 밸브 100 % · 균압 열림), 두 액봉 사이 가스로 ③ 초류 전환 때 유출관이 막히는 것을 재현(시연용: 시작 80 ℃, ③까지 1000배속)">유출관 막힘 재현</button><span class="keynote">CpHf 315 kg에 TDMAHf 0.3 %·Cp2Hf 0.2 %, 0.1 torr, 스팀 개도 25 %. 탱크·컬럼 치수는 유지</span></div>
       <div class="subrow">
         <label for="subA"><span class="swatch" style="background:#f2b544"></span>A · 저비점 성분</label>
         <select id="subA"></select>
@@ -923,14 +928,6 @@ table.scn .x:hover{color:var(--bad)}
       <div class="row"><label for="DpipeC">응축액 관 내경 <small>mm · 어디서 찾나 = P&amp;ID 라인 번호(응축액 라인) · 1차 응축기 → 분배기 중력 배출 한계 W = ρ·A·√(2gΔh/(1/Cd²+f·L/D)) · 응축액이 이보다 많으면 응축기 아래부터 고여 관 다발이 잠긴다</small></label><input id="DpipeC" type="number" min="2" max="200" step="1" value="25"></div>
       <div class="row"><label for="DpipeR">환류 관 내경 <small>mm · 기본 15A Sch40S(15.8 mm, P&amp;ID 15A-CCH-H0710) · 어디서 찾나 = P&amp;ID 라인 번호(환류 라인) · 분배기 → 탑정 중력 배출 한계 W_R = ρ·A·√(2gΔh/(1/Cd²+f·L/D)), Δh 0.5 m + 분배기 위 고인 액 높이, L 1.5 m · 환류가 이보다 많으면 분배기·응축기에 고인다</small></label><input id="DpipeR" type="number" min="2" max="200" step="0.1" value="15.8"></div>
       <div class="row"><label for="DpipeP">유출 관 내경 <small>mm · 기본 15A Sch40S(15.8 mm, P&amp;ID 15A-CCH-H0704) · 어디서 찾나 = P&amp;ID 라인 번호(유출 라인) · 분배기 → 회수 탱크 중력 배출 한계 W_P, Δh 1.0 m + 고인 액 높이, L 2 m</small></label><input id="DpipeP" type="number" min="2" max="200" step="0.1" value="15.8"></div>
-      <div class="row"><label for="glHc">유출관 분기점 → 고점 높이 <small>m · 가정값 0.20 · 분배기(분기점)에서 FT-H073·FCV-H073가 있는 유출관 고점까지 올라가는 높이. 유출 쪽 액을 미는 힘은 이 높이차뿐이다(환류관은 자유 배수) · 흐름 조건 P(받는 탱크) − P(응축기) &lt; ρ·g·h_c, CpHf 0.20 m = 17.7 torr</small></label><input id="glHc" type="number" min="0.01" max="5" step="0.01" value="0.2"></div>
-      <div class="row"><label for="glHu">유출관 분기점 → U자 바닥 깊이 <small>m · 가정값 0.35(고점 높이보다 커야 함) · 탱크 압력 차가 ρ·g·h_u를 넘으면 가스가 액봉을 뚫고 응축기 → 펌프로 빠진다</small></label><input id="glHu" type="number" min="0.01" max="10" step="0.01" value="0.35"></div>
-      <div class="row"><label for="glSeal0">시작 때 U자에 액 남음 <small>가정 · 지난 배치 액이 액봉에 남아 있으면 처음부터 가스 길이 막혀 있다. 끄면 유출액이 처음 지나갈 때 찬다</small></label><input id="glSeal0" type="checkbox"></div>
-      <div class="row"><label for="glP0F">초류 탱크 시작 압력 <small>torr · 0 = 응축기와 같게 · 균압 밸브가 닫혀 있을 때만 의미가 있다</small></label><input id="glP0F" type="number" min="0" max="760" step="0.5" value="0"></div>
-      <div class="row"><label for="glP0M">본류 탱크 시작 압력 <small>torr · 0 = 응축기와 같게</small></label><input id="glP0M" type="number" min="0" max="760" step="0.5" value="0"></div>
-      <div class="row"><label for="glLeakF">초류 탱크 리크 <small>torr/분 · 가정값 0 · 균압 밸브가 닫혀 있으면 이 빠르기로 탱크 압력이 오른다</small></label><input id="glLeakF" type="number" min="0" max="100" step="0.01" value="0"></div>
-      <div class="row"><label for="glLeakM">본류 탱크 리크 <small>torr/분 · 가정값 0</small></label><input id="glLeakM" type="number" min="0" max="100" step="0.01" value="0"></div>
-      <div class="row"><label for="glTv">탱크 가스가 유출관으로 빠지는 시정수 <small>s · 가정값 60 · 액봉이 비었거나 가스가 액봉을 뚫을 때 탱크 압력이 내려가는 빠르기(15A 관, 근거 실측 없음)</small></label><input id="glTv" type="number" min="1" max="3600" step="1" value="60"></div>
     </div>
 
     <div class="panel" data-tab="cut">
@@ -943,6 +940,24 @@ table.scn .x:hover{color:var(--bad)}
       <p class="pairnote" id="swnote" style="color:var(--muted)"></p>
       <div class="row"><label for="capF">초류 탱크 용량 <small>L · 0 = 초기 액의 40%</small></label><input id="capF" type="number" min="0" max="1000000" step="10" value="0"></div>
       <div class="row"><label for="capM">본류 탱크 용량 <small>L · 0 = 초기 액 부피</small></label><input id="capM" type="number" min="0" max="1000000" step="10" value="0"></div>
+      <h3 class="subh" id="glHead">분배 방식 · 유출관 막힘 <small>가정값 · P&amp;ID 아이소 도면 높이로 바꿔 넣는다</small></h3>
+      <div class="row"><label for="splitMode">분배 방식 <small>레시피·수동 운전에서 응축액을 나누는 방식</small></label><select id="splitMode"><option value="R" selected>환류 유량 고정(FIC-072) · 유출 밸브 100 % (현장 방식)</option><option value="D">유출 유량 고정(FIC-073) · 나머지 환류</option></select></div>
+      <div class="row"><label for="rficMode">환류 FIC-072 <small>자동 = 환류가 설정값으로 고정(남는 응축액은 응축기 아래에 쌓인다) · 수동 = 밸브 개도 고정이라 쌓인 액 높이의 √에 비례해 환류가 는다(추정)</small></label><select id="rficMode"><option value="auto" selected>자동 (유량 고정)</option><option value="man">수동 (개도 고정)</option></select></div>
+      <div class="row"><label for="glZc">분기점 → 유출관 고점 높이 z_c <small>m · 가정값 +0.05 · 고점 = FT-H073·FCV-H073. 양수 = 분기점보다 위. 진공에서는 사이펀이 거의 안 되므로 응축기 아래 액이 이 높이까지 차올라야 넘어간다</small></label><input id="glZc" type="number" min="-1" max="2" step="0.01" value="0.05"></div>
+      <div class="row"><label for="glHu">분기점 → U자 바닥 깊이 h_u <small>m · 가정값 0.35 · 분기점 바로 아래 U자 액봉</small></label><input id="glHu" type="number" min="0.01" max="10" step="0.01" value="0.35"></div>
+      <div class="row"><label for="glHd">하류 액봉 깊이 h_d <small>m · 가정값 0.30 · 고점 하류에서 가스를 막는 액봉(가지관 처짐, 받는 탱크 딥 파이프, 2차 응축액 합류부). 0 = 없음. 두 액봉 사이에 갇힌 가스는 최대 P_탱크 + ρ·g·h_d이므로 이만큼 더 밀어야 넘어간다</small></label><input id="glHd" type="number" min="0" max="5" step="0.01" value="0.3"></div>
+      <div class="row"><label for="glHmax">분기점 → 응축기 옆 노즐 높이 H_max <small>m · 가정값 0.30 · 응축액이 쌓일 수 있는 최대 높이. 넘으면 옆 노즐(미응축 증기 출구)로 2차 응축기 → 초류 탱크</small></label><input id="glHmax" type="number" min="0.15" max="3" step="0.01" value="0.3"></div>
+      <div class="row"><label for="glSeal0">시작 때 액봉 사이 갇힌 N2 <small>가정 · 지난 배치 끝이나 막힘을 뚫을 때 진공을 N2로 깨면 U자·처진 곳에 액이 남은 채 그 사이에 N2가 갇힌다. 진공을 다시 잡으면 약한 쪽 액봉을 뚫고 빠지다가 P_응축기 + ρ·g·min(h_u, h_d)에서 멈춘다 → 그 압력으로 시작. 끄면 갇힌 가스 없음(운전 압력 0.1 torr 가스는 1/수백으로 눌려 저항이 거의 없다)</small></label><input id="glSeal0" type="checkbox"></div>
+      <div class="row"><label for="glVg">액봉 사이 공간 부피 <small>L · 가정값 0.2(15A 관 1 m 정도) · 갇힌 가스 압력 P = n·R·T ÷ 남은 부피. 눌려서 공간의 5 % 아래가 되면 흐르는 액이 쓸어 간다(가정)</small></label><input id="glVg" type="number" min="0.01" max="50" step="0.01" value="0.2"></div>
+      <div class="row"><label for="glPsolid">고체 막힘이 버티는 압력 <small>torr · 선택, 기본 0</small></label><input id="glPsolid" type="number" min="0" max="760" step="0.5" value="0"></div>
+      <details class="glref"><summary>참고: 균압 밸브를 닫았을 때 (v97)</summary>
+      <div class="row"><label for="glHc">유출 FIC·환류비 방식의 분기점 → 고점 높이 <small>m · 균압 닫힘 + 환류 자유 배수일 때만 쓰는 v97 판단(P_탱크 − P_응축기 ≥ ρ·g·h_c면 막힘)</small></label><input id="glHc" type="number" min="0.01" max="5" step="0.01" value="0.2"></div>
+      <div class="row"><label for="glP0F">초류 탱크 시작 압력 <small>torr · 0 = 응축기와 같게 · 균압 밸브가 닫혀 있을 때만 의미</small></label><input id="glP0F" type="number" min="0" max="760" step="0.5" value="0"></div>
+      <div class="row"><label for="glP0M">본류 탱크 시작 압력 <small>torr</small></label><input id="glP0M" type="number" min="0" max="760" step="0.5" value="0"></div>
+      <div class="row"><label for="glLeakF">초류 탱크 리크 <small>torr/분 · 균압 닫힘일 때</small></label><input id="glLeakF" type="number" min="0" max="100" step="0.01" value="0"></div>
+      <div class="row"><label for="glLeakM">본류 탱크 리크 <small>torr/분</small></label><input id="glLeakM" type="number" min="0" max="100" step="0.01" value="0"></div>
+      <div class="row"><label for="glTv">탱크 가스가 유출관으로 빠지는 시정수 <small>s · 가정값 60</small></label><input id="glTv" type="number" min="1" max="3600" step="1" value="60"></div>
+      </details>
       <p class="note">전환 기준에 도달하면 초류 밸브가 닫히고 본류 밸브가 열린다. 회수 탱크가 97% 차면 해당 회수 밸브가 자동으로 닫힌다(고액위 인터록). 그 밖의 밸브는 자동으로 바뀌지 않는다. 3D 화면의 밸브 핸들을 누르거나 오른쪽 밸브 패널에서 직접 열고 닫는다.</p>
     </div>
 
@@ -2284,6 +2299,7 @@ function readInputs() {
     UA1: UAmode === "area" ? Uc * num("A1", 0.05, 1000, 3) : num("UA1", 10, 1e6, 1500), UA2: UAmode === "area" ? Uc * num("A2", 0.05, 1000, 0.8) : num("UA2", 10, 1e6, 400), UAmode, Uc, Tcw: num("Tcw", -30, 90, 20), mcw: num("mcw", 10, 1e6, 2000),
     swMode: $("swMode").value, swT: num("swT", -50, 400, 100), swM: num("swM", 0, 1e5, 30), capF: num("capF", 0, 1e6, 0), capM: num("capM", 0, 1e6, 0),
     glHc: num("glHc", 0.01, 5, 0.2), glHu: num("glHu", 0.01, 10, 0.35), glSeal0: !!($("glSeal0") && $("glSeal0").checked), glLeakF: num("glLeakF", 0, 100, 0), glLeakM: num("glLeakM", 0, 100, 0), glP0F: num("glP0F", 0, 760, 0), glP0M: num("glP0M", 0, 760, 0), glTv: num("glTv", 1, 3600, 60),   /* v97: 유출관 가스 록 (가정값) */
+    splitMode: $("splitMode") ? $("splitMode").value : "D", rficMode: $("rficMode") ? $("rficMode").value : "auto", glZc: num("glZc", -1, 2, 0.05), glHd: num("glHd", 0, 5, 0.3), glHmax: num("glHmax", 0.15, 3, 0.3), glPsolid: num("glPsolid", 0, 760, 0), glVg: num("glVg", 0.01, 50, 0.2),   /* v98: 현장 분배 방식 · 유출관 높이(가정값) */
     // P&ID·명판에서 오는 값: 열원, 단열, 배관, 진공펌프
     heatMode, mHm: num("mHm", 10, 1e6, 5000), tIns: num("tIns", 0, 500, 50), Tamb: num("Tamb", -40, 60, 20), Umode, kL: num("kL", 0.05, 1, 0.13), tw: num("tw", 1, 50, 8) / 1000,
     Dpipe: num("Dpipe", 10, 2000, 80) / 1000, Lstr: num("Lpipe", 0, 200, 5), Spump: num("Spump", 1, 1e5, 50), leak: num("leak", 0, 100, 2),
@@ -2463,7 +2479,7 @@ const SPEC = {
   main: { title: "본류 탱크", src: "회수 탱크 사양서 — 용량(L)", ids: ["capM"] },
   "pipe:C": { title: "응축액 관 (1차 응축기 → 분배기)", src: "응축기·배관 홀드업(체류 액)과 중력 배출 한계(관 내경)를 쓴다", ids: ["holdC", "DpipeC"], pipe: "DpipeC", note: () => drainNote("C") },
   "pipe:R": { title: "환류 관 (분배기 → 탑정)", src: "P&ID 15A-CCH-H0710(낙차 MIN. 500 mm). 운전 조건. 실제 환류비는 RTDB 환류 유량 ÷ 유출 유량", ids: ["Rr", "DpipeR"], pipe: "DpipeR", note: () => drainNote("R") },
-  "pipe:P": { title: "유출 관 (분배기 → 회수 탱크)", src: "P&ID 15A-CCH-H0704(질량유량계 FT-H073 → FCV-H073). 운전 일지·RTDB의 초류→본류 전환 시각과 그때의 탑 온도·초류 무게", ids: ["swMode", "swT", "swM", "DpipeP", "glHc", "glHu", "glSeal0"], pipe: "DpipeP", note: () => drainNote("P") },
+  "pipe:P": { title: "유출 관 (분배기 → 회수 탱크)", src: "P&ID 15A-CCH-H0704(질량유량계 FT-H073 → FCV-H073). 운전 일지·RTDB의 초류→본류 전환 시각과 그때의 탑 온도·초류 무게", ids: ["swMode", "swT", "swM", "DpipeP", "splitMode", "rficMode", "glZc", "glHu", "glHd", "glHmax", "glSeal0", "glVg", "glPsolid"], pipe: "DpipeP", note: () => drainNote("P") },
   "pipe:EQ": { title: "회수 탱크 균압 라인", src: "탱크 압력을 2차 응축기 입구와 같게 유지(사용자 설명: 진공이 탱크까지 고르게 걸리게). 계산은 균압 밸브(EQV)가 열려 있으면 회수 탱크 압력이 2차 응축기 입구 압력을 시정수 20 s(가정)로 따라간다. 닫으면 탱크 압력 = 시작 압력 + 리크 × 시간(액이 들어오면 P·V 일정으로 눌림) — 유출관 가스 록 판단에 쓴다. 탱크에서 다시 증발해 이 관으로 가는 양은 계산에 넣지 않았다", ids: ["glP0F", "glP0M", "glLeakF", "glLeakM", "glTv"] },
   "pipe:T2": { title: "1차 → 2차 응축기 (미응축 증기)", src: "무게 수지 차이로 역산한다", ids: ["f2"] },
 };
@@ -2636,7 +2652,7 @@ world.add(tankGroup); world.add(agitator);
 // ===== v37: 수동 운전 상태 (일찍 선언: 배치 시작 때 이미 쓰인다) =====
 // 수동에서는 시작 전환류 자동 판단·초류→본류 자동 전환을 끄고, 스팀은 TIC(손 MV 또는 자동 PI), 유출은 FIC 설정 유량으로, 초류·본류는 밸브로 직접 한다.
 // 안전 인터록(받는 탱크 고액위 LAH·안전밸브)은 그대로 둔다
-const OP = { manual: false, free: false, recipe: false, rOpen: 100, pOpen: 100, lah: true, tic: { auto: false, sv: 75, I: 0 }, fic: { sv: 0 }, hold: {} };   // v86: hold = 사용자가 손댄 항목(밸브 키·J = 스팀 개도)   // v73: free = 자유 운전
+const OP = { manual: false, free: false, recipe: false, rOpen: 100, pOpen: 100, lah: true, tic: { auto: false, sv: 75, I: 0 }, fic: { sv: 0 }, rfic: { sv: 0 }, hold: {} };   /* v98: rfic = 환류 FIC-072 설정 */   // v86: hold = 사용자가 손댄 항목(밸브 키·J = 스팀 개도)   // v73: free = 자유 운전
 // FIC: 꼭대기 응축액 V_top 중 유출 D = min(설정, V_top), 나머지가 환류. 환류비 R = L/D를 거꾸로 정한다 (과냉 보정 sub만큼 외부 환류비를 줄여 둔다)
 function opFicR(Vtop, sub) {
   const Dsp = Math.max(0, OP.fic.sv || 0);
@@ -2820,6 +2836,7 @@ function fxEmit(kind, rate, dt, make) { fxAcc[kind] = (fxAcc[kind] || 0) + rate 
 const fxPath = (pts) => { const segs = []; let L = 0; for (let i = 0; i + 1 < pts.length; i++) { const a = pts[i], b = pts[i + 1], l = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]); segs.push({ a, b, l, s0: L }); L += l; } return { segs, L }; };
 function fxAlong(path, s, out) { for (const g of path.segs) if (s <= g.s0 + g.l || g === path.segs[path.segs.length - 1]) { const f = g.l > 0 ? Math.min(1, Math.max(0, (s - g.s0) / g.l)) : 0; out[0] = g.a[0] + (g.b[0] - g.a[0]) * f; out[1] = g.a[1] + (g.b[1] - g.a[1]) * f; out[2] = g.a[2] + (g.b[2] - g.a[2]) * f; return out; } return out; }
 const _fp = [0, 0, 0];
+window.__glf = () => (PR && PR.glf ? { need: +PR.glf.need.toFixed(3), zL: +PR.glf.zL.toFixed(3), Hmax: +PR.glf.Hmax.toFixed(3), blocked: PR.glf.blocked, flow: PR.glf.flow, trap: !!(PR.gl && PR.gl.trap), ovKg: +(PR.ovKg || 0).toFixed(2), Tbot: TBOT() != null ? +TBOT().toFixed(1) : null, c1Wet: +(PR.c1Wet || 0).toFixed(3), R: +(PR.Rkg || 0).toFixed(2), D: +(PR.Dkg || 0).toFixed(2), rsv: OP.rfic.sv, st: PR.rcp ? PR.rcp.st : null } : null);   // v98 시험용
 window.__gl = () => (PR && PR.gl ? { lock: PR.gl.lock, seal: PR.gl.seal, want: PR.gl.want, Pr: +PR.gl.Pr.toFixed(3), P1: +PR.gl.P1.toFixed(3), dP: +PR.gl.dP.toFixed(3), thr: +PR.gl.thr.toFixed(2), thrU: +PR.gl.thrU.toFixed(2), PF: +PR.gl.F.P.toFixed(3), PM: +PR.gl.M.P.toFixed(3), nGas: PR.gl.nGas, eq: !!VLV.EQV, nLock: PR.gl.nLock || 0, st: PR.rcp ? PR.rcp.st : null } : null);   // v97 시험용
 window.__flood = () => ({ carryKg: PR ? PR.carryKg || 0 : 0, colFull: !!(PR && PR.colFull), condc: CONDC ? CONDC.map((x) => +x.toFixed(2)) : null, cProf: PR && PR.cProf ? PR.cProf.map((x) => +(x * 3600).toFixed(2)) : null, dpPack: PR ? PR.dpPack : null, dpLiq: PR && CUR ? Math.max(0, (PR.mHeld || 0) - (PR.mHold0 || 0)) * 9.81 / (Math.PI * CUR.Dcol * CUR.Dcol / 4) / 133.322 : 0, ovKg: PR ? PR.ovKg || 0 : 0, ovTot: PR ? PR.ovTot || 0 : 0, pumpLiqKg: PR ? PR.pumpLiqKg || 0 : 0, dPvap: PR ? PR.dPvap || 0 : 0, hL: PR ? PR.hLe : null, hLt: PR ? PR.hL : null, hFl: PR ? PR.hFl : null, eps: PR ? PR.epsP : null, Lmax: PR ? PR.Lmax : null, mFlood: PR ? PR.mFlood : null, mBed: PR ? PR.mFloodBed : null, mTop: PR ? PR.mFloodTop : null, mHeld: PR ? PR.mHeld : null, mHold0: PR ? PR.mHold0 : null, lv: FX.floodLv || 0, liq: !!(FX.floodLiq && FX.floodLiq.visible), foam: !!(FX.floodFoam && FX.floodFoam.visible), fb: FXP.filter((x) => x.kind === "fb").length, spl: FXP.filter((x) => x.kind === "spl").length, ent: FXP.filter((x) => x.kind === "ent").length });
 function fxUpdate(dtReal) {
@@ -4194,6 +4211,20 @@ function startProcess(p) {
   updateMix(p);
 }
 
+
+/* v98: 현장 분배 방식(환류 FIC-072 고정 · 유출 FCV-073 100 %) — 레시피·수동에서 분배 방식이 'R'일 때 */
+function fieldMode(p) { p = p || CUR; return !!(p && p.splitMode === "R" && OP.manual && !OP.free); }
+// v98: 두 액봉 사이 갇힌 가스 — P_g = n·R·T / (V_g − 들어온 액). 하류 액봉을 넘는 압력(P_탱크 + ρ·g·h_d)이 되면 그만큼 빠진다.
+//      눌린 가스가 공간의 5 % 아래가 되면 흐르는 액이 쓸어 간다(가정) → 갇힌 가스 없음
+function glPg(g, p) { const Vf = Math.max(1e-7, (p.glVg || 0.2) / 1000 - (g.Vl || 0)); return (g.n || 0) * R_GAS * 298.15 / Vf / 133.322; }
+function glPocket(g, p, dV, rg) { const Vg = (p.glVg || 0.2) / 1000, Pcap = (g.Pr || 0) + rg * Math.max(0, p.glHd || 0), RT = R_GAS * 298.15;
+  g.Vl = Math.min(Vg * 0.999, (g.Vl || 0) + dV); const Vf = Vg - g.Vl, nMax = Pcap * 133.322 * Vf / RT; if (g.n > nMax) g.n = nMax;   // 하류 액봉으로 빠짐
+  if ((g.n || 0) * RT / (Math.max(1e-6, Pcap) * 133.322) < 0.05 * Vg || Vf < 0.05 * Vg) { g.trap = false; g.Vl = 0; g.n = 0; opLog("액봉 사이 가스가 다 눌려 흐르는 액에 쓸려 나감 · 유출관 정상"); } }
+function opFicRR(Vtop, sub) {   // 환류 설정 Rsp가 그대로 나가도록 하는 컬럼 환류비: 외부 환류 = Rc·D, D = Vtop/(Rc(1+sub)+1) → Rc = Rsp/(Vtop − Rsp(1+sub))
+  const Rsp = Math.max(0, OP.rfic.sv || 0); PR.ficShort = false;
+  if (Rsp <= 0.01) { PR.rficShort = false; return 0; }
+  const den = Vtop - Rsp * (1 + sub); PR.rficShort = Vtop > 0.5 && den <= 0;
+  return den > 1e-6 ? Rsp / den : 1e4; }
 /* v97: 유출관 가스 록 — 유출관(15A)은 분기점 → U자 액봉 → 오르막 → 고점(FT-H073·FCV-H073) → 초류·본류 밸브 → 받는 탱크.
    환류관이 자유 배수라 유출 쪽 액을 미는 힘은 분기점과 고점의 높이차 h_c 뿐이다.
    흐름 조건: P_탱크 − P_응축기 < ρ·g·h_c (공식, 정수두). 깨지면 오르막 액면이 분기점 아래 ΔP/(ρg)에 멈추고 유출 0, 응축액은 전부 환류.
@@ -4206,7 +4237,7 @@ function glStep(p, dtp) {
   if (!PR || !(dtp > 0)) return;
   const TOR = 133.322, P1 = Number.isFinite(PR.Pcond) ? PR.Pcond : PR.Ppump;
   let g = PR.gl;
-  if (!g) { const p0 = (v) => v > 0 ? v : P1; g = PR.gl = { F: { P: p0(p.glP0F), Vg: 0 }, M: { P: p0(p.glP0M), Vg: 0 }, seal: !!p.glSeal0, lock: false, nGas: 0, dP: 0, thr: 0, thrU: 0, Pr: P1, P1, closed: !VLV.EQV, want: false }; }
+  if (!g) { const p0 = (v) => v > 0 ? v : P1; g = PR.gl = { F: { P: p0(p.glP0F), Vg: 0 }, M: { P: p0(p.glP0M), Vg: 0 }, seal: !!p.glSeal0, trap: !!p.glSeal0, Vl: 0, n: 0, lock: false, nGas: 0, dP: 0, thr: 0, thrU: 0, Pr: P1, P1, closed: !VLV.EQV, want: false }; }
   if (!VLV.EQV) g.closed = true;
   const rho = PR.mix && PR.mix.rho > 0 ? PR.mix.rho : 1000, hc = Math.max(0.01, p.glHc || 0.2), hu = Math.max(hc, p.glHu || 0.35), tv = Math.max(1, p.glTv || 60);
   const thr = rho * G * hc / TOR, thrU = rho * G * hu / TOR, aE = 1 - Math.exp(-dtp / 20), aV = 1 - Math.exp(-dtp / tv), Tg = 298.15;
@@ -4218,20 +4249,56 @@ function glStep(p, dtp) {
       t.P = Math.min(760, t.P + Math.max(0, k === "F" ? p.glLeakF || 0 : p.glLeakM || 0) / 60 * dtp); }
     t.Vg = Vg; }
   const Pr = conn.F && conn.M ? Math.max(g.F.P, g.M.P) : conn.M ? g.M.P : g.F.P, dP = Pr - P1;
-  let lock = want && dP >= thr && (!VLV.EQV || g.lock);   // 균압 열림에서는 새로 막히지 않는다(이미 막힌 것은 압력이 문턱 아래로 내려가야 풀린다)
+  let lock = !fieldMode(p) && want && dP >= thr && (!VLV.EQV || g.lock);   // v98: 현장 방식은 분배 계산에서 액위로 판단   // 균압 열림에서는 새로 막히지 않는다(이미 막힌 것은 압력이 문턱 아래로 내려가야 풀린다)
   const vent = (k, floor) => { const t = g[k]; if (!g.closed || !conn[k] || t.P <= floor) return;   /* 균압이 한 번도 안 닫혔으면 탱크 = 응축기 쪽(기본값 그대로) */ const d = (t.P - floor) * aV; t.P -= d; nGas += d * TOR * t.Vg / (R_GAS * Tg) / dtp; };
   if (!g.seal) { vent("F", P1); vent("M", P1); }   // 액봉이 비었다: 탱크 가스가 유출관을 거슬러 응축기 → 펌프로(액이 U자를 다시 채울 때까지)
   else if (lock && dP > thrU) { vent("F", P1 + thrU); vent("M", P1 + thrU); }   // 액봉을 뚫고 거품으로 빠진다(ρ·g·h_u까지)
   const Dp = Math.max(0.002, (p.DpipeP || 15.8) / 1000), mU = rho * Math.PI * Dp * Dp / 4 * (2 * hu + 0.1);   // U자에 고이는 액(추정: 관 단면 × (2·h_u + 0.1 m))
   if (!lock && want && !g.seal) { g.fillKg = (g.fillKg || 0) + Math.max(0, PR.Dkg || 0) / 3600 * dtp; if (g.fillKg >= mU) g.seal = true; }   // 유출액이 U자 부피만큼 지나가면 액봉이 찬다
   if (g.seal) g.fillKg = 0; g.mU = mU;
+  if (g.trap && g.n0set !== true) { g.n0set = true; const Pg0 = P1 + rho * G / 133.322 * Math.min(hu, Math.max(0, p.glHd || 0)); g.n = Pg0 * 133.322 * (p.glVg || 0.2) / 1000 / (R_GAS * 298.15); g.Pg0 = Pg0; }   // v98: 갇힌 N2는 약한 쪽 액봉 높이만큼의 압력으로 시작
   g.nGas = nGas; g.dP = dP; g.thr = thr; g.thrU = thrU; g.Pr = Pr; g.P1 = P1; g.want = want; g.rhoG = rho * G / TOR; g.hc = hc; g.hu = hu;
   if (lock !== g.lock) { g.lock = lock; if (lock) { g.lockAt = PR.t; g.nLock = (g.nLock || 0) + 1; opLog(`유출관 가스 록 · 받는 탱크 ${glF(Pr)} − 응축기 ${glF(P1)} torr ≥ 문턱 ${glF(thr)} torr · 유출 0, 응축액 전부 환류`); }
     else opLog(`유출관 가스 록 풀림 · 탱크 ${glF(Pr)} torr · 액이 고점을 넘어 받는 탱크로`); updateMix(p); }
-  if (GL_DEMO && !GL_DEMO.slowed && PR.rcp && PR.rcp.st >= 3) { GL_DEMO.slowed = true; setTimeout(() => { const e = $("accel"); if (e) { e.value = "30"; e.dispatchEvent(new Event("change", { bubbles: true })); } $("viewhint").textContent = "③ 초류 전환 · 유출관 가스 록 시연: 운전 패널의 '유출관 가스 록' 그림에서 오르막 액면이 분기점 아래에 멈추고 그 위 고점까지 갇힌 가스(주황)를 본 뒤 '균압 밸브 열기' 또는 'N2 역블로'를 누른다(30배속으로 낮춤 · 3D를 보려면 '그림 접기')"; }, 0); }
+  if (GL_DEMO && PR.glf && PR.glf.blocked && PR.glf.want) GL_DEMO.seenBlock = true;   // v98
+  if (GL_DEMO && !GL_DEMO.slowed && PR.rcp && PR.rcp.st >= 3) { GL_DEMO.slowed = true; setTimeout(() => { const e = $("accel"); if (e) { e.value = "30"; e.dispatchEvent(new Event("change", { bubbles: true })); } $("viewhint").textContent = "③ 초류 전환 · 유출관 가스 록 시연: 운전 패널의 '유출관 막힘' 그림에서 응축기 아래 액위가 H_max(옆 노즐)에서 멈추고 필요 액위에 못 닿는 것을 본 뒤 'N2 역블로'를 누르거나 유출 탭에서 고점 높이·하류 액봉을 줄인다(30배속으로 낮춤 · 3D를 보려면 '그림 접기')"; }, 0); }
+}
+
+// v98: 현장 방식 유출관 단면 — 응축기 아래 쌓인 액위, 분기점(0), H_max(옆 노즐), 필요 액위, U자, 고점, 하류 액봉, 갇힌 가스. 높이는 모두 위 식의 값
+function glFieldPanel() {
+  const f = PR && PR.glf, g = PR && PR.gl; if (!f || !(f.want || GL_DEMO)) return "";
+  const W = 320, Hh = 220, zTop = Math.max(f.Hmax, f.need, f.zc) + 0.05, zBot = Math.min(-f.hu, -0.05 - f.hdIn) - 0.04, sc = (Hh - 30) / (zTop - zBot), Y = (z) => 16 + (zTop - z) * sc;
+  const LQ = "#3d9bd1", GS = "#e08a2c", EM = "#9aa3b2", LN = "var(--line, #c9ced6)", seg = (d, col, w) => `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const xS = 30, xD0 = 58, xR = 92, xFT = 112, xFC = 140, xH = 166, xS2 = 196, xT = 236, z2 = -0.05;
+  const zr = f.flow ? f.zc : Math.max(-f.hu, Math.min(f.zc, f.zL - f.hd));   // 오르막 액면: 응축기 아래 액위 − 탱크 압력 차 − 갇힌 가스(h_d)
+  const sealOK = g ? g.seal || g.trap || f.flow : true;
+  let a = `<rect x="${xS - 9}" y="${Y(f.Hmax)}" width="18" height="${Y(0) - Y(f.Hmax)}" fill="none" stroke="${EM}"/>`;   // 응축액 관 · 응축기 바닥(분기점 → 옆 노즐)
+  if (f.zL > 0.001) a += `<rect x="${xS - 7}" y="${Y(Math.min(f.zL, f.Hmax))}" width="14" height="${Y(0) - Y(Math.min(f.zL, f.Hmax))}" fill="${LQ}" opacity="0.85"/>`;
+  const path = `M${xS} ${Y(0)} H${xD0} V${Y(-f.hu) - 6} Q${xD0} ${Y(-f.hu)} ${xD0 + 6} ${Y(-f.hu)} H${xR - 6} Q${xR} ${Y(-f.hu)} ${xR} ${Y(-f.hu) - 6} V${Y(f.zc)} H${xH} V${Y(z2 - f.hdIn) - 6} Q${xH} ${Y(z2 - f.hdIn)} ${xH + 6} ${Y(z2 - f.hdIn)} H${xS2 - 6} Q${xS2} ${Y(z2 - f.hdIn)} ${xS2} ${Y(z2 - f.hdIn) - 6} V${Y(z2)} H${xT}`;
+  a += seg(path, LN, 8);
+  if (f.flow) a += seg(path, LQ, 4);
+  else { if (sealOK) a += seg(`M${xS} ${Y(0)} H${xD0} V${Y(-f.hu) - 6} Q${xD0} ${Y(-f.hu)} ${xD0 + 6} ${Y(-f.hu)} H${xR - 6} Q${xR} ${Y(-f.hu)} ${xR} ${Y(-f.hu) - 6} V${Y(zr)}`, LQ, 4);
+    if (g && g.trap) { a += seg(`M${xR} ${Y(zr)} V${Y(f.zc)} H${xH} V${Y(z2 - f.hdIn) - 6}`, GS, 4); if (f.hdIn > 0) a += seg(`M${xH} ${Y(z2 - f.hdIn) - 6} Q${xH} ${Y(z2 - f.hdIn)} ${xH + 6} ${Y(z2 - f.hdIn)} H${xS2 - 6} Q${xS2} ${Y(z2 - f.hdIn)} ${xS2} ${Y(z2 - f.hdIn) - 6} V${Y(z2)}`, LQ, 4); } }
+  const hl = (z, col, txt, dash, left) => `<line x1="${xS - 14}" y1="${Y(z)}" x2="${xT + 30}" y2="${Y(z)}" stroke="${col}" stroke-dasharray="${dash}"/><text x="${left ? xS + 14 : xT + 30}" y="${Y(z) - 3}" font-size="9.5" text-anchor="${left ? "start" : "end"}" fill="${col}">${txt}</text>`;
+  a += hl(0, EM, "분기점 0", "2 3", true) + hl(f.Hmax, EM, `옆 노즐 H_max ${(f.Hmax * 100).toFixed(0)} cm`, "4 3", false) + (f.want ? hl(f.need, "#d0453a", `필요 액위 ${(f.need * 100).toFixed(0)} cm`, "5 3", true) : "");
+  a += `<rect x="${xFT - 9}" y="${Y(f.zc) - 7}" width="18" height="14" rx="3" fill="var(--panel, #fff)" stroke="${EM}"/><text x="${xFT}" y="${Y(f.zc) + 3}" font-size="8.5" text-anchor="middle" fill="${EM}">FT</text>`
+    + `<path d="M${xFC - 7} ${Y(f.zc) - 6} L${xFC + 7} ${Y(f.zc) + 6} V${Y(f.zc) - 6} L${xFC - 7} ${Y(f.zc) + 6} Z" fill="var(--panel, #fff)" stroke="${EM}"/>`
+    + `<rect x="${xT}" y="${Y(z2) - 8}" width="30" height="20" rx="3" fill="none" stroke="${EM}"/>`
+    + `<text x="${xS}" y="${Hh - 2}" font-size="9.5" text-anchor="middle" fill="${EM}">응축기 아래</text><text x="${(xD0 + xR) / 2}" y="${Y(-f.hu) + 12}" font-size="9.5" text-anchor="middle" fill="${EM}">U자</text><text x="${(xH + xS2) / 2}" y="${Y(z2 - f.hdIn) + 12}" font-size="9.5" text-anchor="middle" fill="${EM}">하류 액봉</text><text x="${(xFT + xFC) / 2}" y="${Y(f.zc) - 10}" font-size="9.5" text-anchor="middle" fill="${EM}">고점 ${f.zc >= 0 ? "+" : ""}${(f.zc * 100).toFixed(0)} cm</text><text x="${xT + 15}" y="${Y(z2) + 24}" font-size="9.5" text-anchor="middle" fill="${EM}">탱크</text>`;
+  const st = f.flow ? "흐름 · 응축기 아래 액이 고점을 넘어 받는 탱크로" : f.blocked ? "막힘 · 필요 액위가 쌓일 수 있는 높이보다 높다 → 남는 응축액은 옆 노즐로 넘친다" : "쌓이는 중 · 필요 액위에 닿으면 넘어간다";
+  let h = `<div class="gl-box"><div class="op-tag">유출관 막힘 <small>파랑 = 액 · 주황 = 두 액봉 사이 갇힌 가스 · 높이는 가정값</small></div>`
+    + (GL_FOLD ? "" : `<svg viewBox="0 0 ${W} ${Hh}" width="100%" role="img" aria-label="유출관 높이 단면">${a}</svg>`)
+    + `<table class="gl-t"><tr><td>응축기 아래 액위</td><td><b>${(f.zL * 100).toFixed(1)}</b> cm</td><td>필요 액위</td><td><b class="${f.blocked ? "bad" : ""}">${(f.need * 100).toFixed(1)}</b> cm</td></tr>`
+    + `<tr><td>쌓일 수 있는 높이</td><td><b>${(f.Hmax * 100).toFixed(0)}</b> cm</td><td>탱크 − 응축기</td><td><b>${glF(g ? g.dP : 0)}</b> torr</td></tr>`
+    + `<tr><td>환류 FIC-072</td><td><b>${(f.Rk != null ? f.Rk : PR.Rkg || 0).toFixed(1)}</b> kg/h</td><td>유출 FT-H073</td><td><b>${(PR.Dkg || 0).toFixed(1)}</b> kg/h</td></tr></table>`
+    + `<p class="op-note">${st} · 필요 액위 = 고점 ${(f.zc * 100).toFixed(0)} + ${g && g.trap ? `갇힌 가스 ${glF(f.Pg)} torr` : "탱크 압력 차"} ${(f.hd * 100).toFixed(1)} cm${(PR.ovKg || 0) > 0.05 ? ` · 옆 노즐로 ${(PR.ovKg).toFixed(1)} kg/h → 2차 응축기 → 초류 탱크` : ""}</p>`
+    + `<div class="op-btns"><button type="button" data-op="glN2" title="두 액봉 사이 가스를 비운다(가스 길 열림). 현장은 진공을 깨고 N2로 거꾸로 불지만, 시뮬레이터는 진공 전체를 깨지 않고 액봉만 비우는 단순화다">N2 역블로</button><button type="button" data-op="glFold">${GL_FOLD ? "그림 펼치기" : "그림 접기"}</button></div>`;
+  if (GL_DEMO) { const s1 = !!GL_DEMO.seenBlock, s2 = s1 && f.flow;
+    h += `<ol class="gl-steps"><li class="${s1 && !s2 ? "on" : s1 ? "done" : ""}">③ 초류 전환 → 유출 0 · 응축기 아래 액위가 오르다 H_max에서 멈추고 옆 노즐로 넘침 · TICH071D 하락</li><li class="${s2 ? "on" : ""}">N2 역블로(갇힌 가스 비움) 또는 유출 탭에서 고점 높이·하류 액봉을 줄인다 → 필요 액위 &lt; H_max → 유출</li></ol>`; }
+  return h + `</div>`;
 }
 function glF(v) { return Number.isFinite(v) ? (Math.abs(v) < 10 ? v.toFixed(2) : v.toFixed(1)) : "–"; }
-function glN2() { if (!PR || !PR.gl) return; PR.gl.seal = false; PR.gl.fillKg = 0; PR.gl.n2At = PR.t; opLog("N2 역블로 · 유출관 액봉을 비움(가스 길 열림) — 현장은 진공을 깨고 불지만 시뮬레이터는 액봉만 비우는 단순화"); }
+function glN2() { if (!PR || !PR.gl) return; PR.gl.seal = false; PR.gl.trap = false; PR.gl.n = 0; PR.gl.Vl = 0; PR.gl.fillKg = 0; PR.gl.n2At = PR.t; opLog("N2 역블로 · 유출관 액봉을 비움(가스 길 열림) — 현장은 진공을 깨고 불지만 시뮬레이터는 액봉만 비우는 단순화"); }
 // 운전 패널 아래 그림: 유출관 높이 단면(분기점 → U자 → 고점 → 받는 탱크). 액면 높이는 위 식의 값으로만 그린다
 function glPanel() {
   const g = PR && PR.gl; if (!g || !(g.closed || g.lock || GL_DEMO)) return "";
@@ -4333,7 +4400,7 @@ function updateMix(p) {
   { let Rc = PR.Reff, RcSS = PR.Reff;
     const V = PR.vdot || 0, back = (PR.Lcol || 0) + (PR.Lwarm || 0), Vtop = Math.max(0, V - back);
     PR.pass = V > 1e-6 ? Vtop / V : 1;
-    if (OP.manual && !OP.free && Rc < 1000 && VLV.R) { const sub0 = TBOT() != null && PR.Tsat != null && PR.lam > 0 ? Math.max(0, Math.min(0.5, PR.mix.cp * (PR.Tsat - TBOT()) / PR.lam)) : 0; Rc = RcSS = opFicR(Vtop, sub0); PR.Reff = Rc; } else PR.ficShort = false;   // v37 FIC
+    if (OP.manual && !OP.free && Rc < 1000 && VLV.R) { const sub0 = TBOT() != null && PR.Tsat != null && PR.lam > 0 ? Math.max(0, Math.min(0.5, PR.mix.cp * (PR.Tsat - TBOT()) / PR.lam)) : 0; Rc = RcSS = fieldMode(p) ? opFicRR(Vtop, sub0) : opFicR(Vtop, sub0); PR.Reff = Rc; } else PR.ficShort = false;   // v37 FIC
     if (Rc < 1000) {
       const sub = TBOT() != null && PR.Tsat != null && PR.lam > 0 ? Math.max(0, Math.min(0.5, PR.mix.cp * (PR.Tsat - TBOT()) / PR.lam)) : 0;   /* v72: 고인 액으로 더 식은 환류 */
       const Rs = Rc * (1 + sub), D = Vtop / (Rs + 1), Dss = Math.max(0, V - (PR.Lcol || 0)) / (Rs + 1);
@@ -4669,13 +4736,20 @@ function processStep(p) {
       const Ash = Math.PI * qq.rC * qq.rC * 0.7, Hc = Math.max(0.05, qq.yC0 - qq.yC1);   // 고이는 단면 = 쉘 단면의 70 %(관 다발 몫 뺌)
       const Wg = (Dmm, dh, L) => { const D = Math.max(0.002, (Dmm || 25) / 1000), A = Math.PI * D * D / 4; return rho * A * Math.sqrt(2 * 9.81 * Math.max(0, dh) / (1 / 0.36 + 0.03 * L / D)); };   // kg/s
       const Lr = Math.max(0, flows.nL - flows.nBack - (flows.nSub || 0)), wantD = kgOf(flows.nD), wantR = kgOf(Lr), inC = wantD + wantR + kgOf(flows.nPool || 0);
-      const M0 = PR.mC1 || 0, mSpl = rho * 0.002, Dc = Math.max(0.002, (p.DpipeC || 25) / 1000), mCp = rho * Math.PI * Dc * Dc / 4 * 0.3;   // 분배기 2 L, C 관 세로 0.3 m
-      const hC0 = Math.max(0, M0 - mSpl - mCp) / rho / Ash, hHead = 0.1 * Math.min(1, M0 / mSpl) + 0.3 * Math.max(0, Math.min(1, (M0 - mSpl) / mCp)) + Math.min(Hc, hC0);   // 분배기 위로 고인 액 높이
-      const outlet = outOpen(), colFull = p.Hpack > 0 && PR.vdot > 1 && (PR.mFloodBed || 0) > 0 && (PR.mHeld || 0) - (PR.mHold0 || 0) >= ((PR.mFloodBed || 0) + (PR.mFloodTop || 0)) * 0.98, wEnt = 0,   /* v95: 컬럼이 꼭대기까지 찼나 */ Wc = Math.max(0, Wg(p.DpipeC, 0.3 + Math.min(Hc, hC0), 1.0) - wEnt), Wr = VLV.R ? Math.max(0, Wg(p.DpipeR, 0.5 + hHead, 1.5) - wEnt) : 0, Wp = outlet ? Wg(p.DpipeP, 1.0 + hHead, 2.0) : 0;
+      const FM = fieldMode(p), hVd = Math.max(0.02, (qq.yV2 != null ? qq.yV2 : qq.yC1 + 0.07) - qq.yC1), LCP = FM ? Math.max(0.02, (p.glHmax || 0.3) - 0.1 - hVd) : 0.3;   // v98: 현장 방식은 분기점 → 옆 노즐 = H_max(분배기 0.1 m + C 관 세로 + 응축기 바닥 → 옆 노즐)
+      const M0 = PR.mC1 || 0, mSpl = rho * 0.002, Dc = Math.max(0.002, (p.DpipeC || 25) / 1000), mCp = rho * Math.PI * Dc * Dc / 4 * LCP;   // 분배기 2 L, C 관 세로 0.3 m
+      const hC0 = Math.max(0, M0 - mSpl - mCp) / rho / Ash, hHead = 0.1 * Math.min(1, M0 / mSpl) + LCP * Math.max(0, Math.min(1, (M0 - mSpl) / mCp)) + Math.min(Hc, hC0);   // 분배기 위로 고인 액 높이
+      const outlet = outOpen(), colFull = p.Hpack > 0 && PR.vdot > 1 && (PR.mFloodBed || 0) > 0 && (PR.mHeld || 0) - (PR.mHold0 || 0) >= ((PR.mFloodBed || 0) + (PR.mFloodTop || 0)) * 0.98, wEnt = 0,   /* v95: 컬럼이 꼭대기까지 찼나 */ Wc = Math.max(0, Wg(p.DpipeC, LCP + Math.min(Hc, hC0), 1.0) - wEnt), Wr = VLV.R ? Math.max(0, Wg(p.DpipeR, 0.5 + hHead, 1.5) - wEnt) : 0, Wp = outlet ? Wg(p.DpipeP, 1.0 + hHead, 2.0) : 0;
       const S = Math.min(inC + M0, Wc * dtp), fic = OP.manual ? Math.max(0, OP.fic.sv || 0) / 3600 * dtp + Math.min(PR.ficDebt || 0, Math.max(0, OP.fic.sv || 0) / 60) : Infinity, fD = wantD + wantR > 1e-12 ? wantD / (wantD + wantR) : 0;
       let Dk = 0, Rk = 0;
       if (wantD + wantR > 1e-12 || M0 > 1e-9) {
-        if (OP.free) { const wd = outlet ? Wp * dtp * OP.pOpen / 100 : 0, wr = VLV.R ? Wr * dtp * OP.rOpen / 100 : 0, cap = wd + wr; if (cap > 1e-12) { const take = Math.min(S, cap); Dk = take * wd / cap; Rk = take * wr / cap; } }   // v73: 자유 운전 = 출구 능력 비례
+        if (FM) { const g = PR.gl || {}, rg = rho * G / 133.322, dPm = Math.max(0, (g.Pr || 0) - (g.P1 || 0)) / rg, P1g = Number.isFinite(g.P1) ? g.P1 : PR.Pcond, _cap = g.trap ? glPocket(g, p, 0, rg) : 0, Pg = g.trap ? glPg(g, p) : null, hd = g.trap ? Math.max(0, Pg - P1g) / rg : dPm, need = (p.glZc || 0) + hd + Math.max(0, p.glPsolid || 0) / rg, want = !!VLV.P && cutState() !== "none", Hmax = 0.1 + LCP + hVd;   // v98: 넘어가려면 필요한 액위
+          if (VLV.R) { if (!want) Rk = Math.min(S, Wr * dtp);   // 유출이 닫혀 있으면(전환류) 응축액이 전부 환류로
+            else { const rsp = Math.max(0, OP.rfic.sv || 0) / 3600 * dtp, rq = p.rficMode === "man" ? rsp * Math.sqrt(Math.max(0.01, 0.5 + hHead) / 0.6) : rsp; Rk = Math.min(S, rq, Wr * dtp); } }   // 자동 = FIC 설정 고정, 수동 = 개도 고정(머리 √)
+          const head = hHead - need; Dk = want && head > 0 ? Math.min(Math.max(0, S - Rk), Wg(p.DpipeP, head, 2.0) * dtp) : 0;   // 진공: 사이펀 없음 — 고점(필요 액위) 위로 넘친 머리만큼만 흐른다
+          if (g.trap && Dk > 0) glPocket(g, p, Dk / rho, rg);   // 고점을 넘은 액이 액봉 사이 공간을 채워 가스를 누른다
+          PR.glf = { t: PR.t, Rk: Rk / dtp * 3600, Dk: Dk / dtp * 3600, need, zL: hHead, Hmax, want, hd, dPm, Pg, zc: p.glZc || 0, hu: Math.max(0.01, p.glHu || 0.35), hdIn: Math.max(0, p.glHd || 0), blocked: want && need >= Hmax - 1e-6, flow: Dk > 1e-9 }; }
+        else if (OP.free) { const wd = outlet ? Wp * dtp * OP.pOpen / 100 : 0, wr = VLV.R ? Wr * dtp * OP.rOpen / 100 : 0, cap = wd + wr; if (cap > 1e-12) { const take = Math.min(S, cap); Dk = take * wd / cap; Rk = take * wr / cap; } }   // v73: 자유 운전 = 출구 능력 비례
         else if (OP.manual) { Dk = outlet ? Math.min(fic, S, Wp * dtp) : 0; Rk = VLV.R ? Math.min(S - Dk, Wr * dtp) : 0; }   // 수동: 유출은 FIC까지, 환류는 나머지(열려 있을 때)
         else { const fd = wantD + wantR > 1e-12 ? fD : outlet ? (VLV.R ? 1 / ((PR.Reff < 1000 ? PR.Reff : p.Rr) + 1) : 1) : 0;   // 자동: 이번 걸음 응축액을 R/(R+1)로 나누고, 고인 액은 환류 쪽 여유로만 빠진다(환류가 닫혀 있으면 유출이 전부 받는다)
           Dk = Math.min(VLV.R ? Math.min(inC, S) * fd : S, Wp * dtp); Rk = VLV.R ? Math.min(S - Dk, Math.min(inC, S) * (1 - fd) + M0, Wr * dtp) : 0; } }
@@ -4685,6 +4759,7 @@ function processStep(p) {
         const xd = Math.max(0, Math.min(1, PR.xD != null ? PR.xD : PR.y[0])), wA = xd * p.A.MW / Math.max(1e-9, xd * p.A.MW + (1 - xd) * p.B.MW), cs = cutState(), toD = Dk * (1 - sc), back = Rk * (1 - sc), ves = PR.ves;
         if (cs === "both") { ves.fore.A += toD * wA / 2; ves.fore.B += toD * (1 - wA) / 2; ves.main.A += toD * wA / 2; ves.main.B += toD * (1 - wA) / 2; } else if (cs === "fore" || cs === "main") { ves[cs].A += toD * wA; ves[cs].B += toD * (1 - wA); }
         PR.nA += back * wA / p.A.MW * 1000; PR.nB += back * (1 - wA) / p.B.MW * 1000; }
+      if (!FM) PR.glf = null;   // v98
       let M1o = M1; { const hV = Math.max(0.02, (qq.yV2 != null ? qq.yV2 : qq.yC1 + 0.07) - qq.yC1), hR = Math.max(0, M1 - mSpl - mCp) / rho / Ash, ov = hR > hV ? (hR - hV) * rho * Ash : 0, aO = 1 - Math.exp(-dtp / 20);   // v95: 고인 액이 옆 노즐을 넘으면 미응축 증기 관으로 넘친다
         let toF = 0, toP = 0; if (ov > 1e-9) { M1o = M1 - ov; const xo = Math.max(0, Math.min(1, PR.xD != null ? PR.xD : PR.y[0])), wO = xo * p.A.MW / Math.max(1e-9, xo * p.A.MW + (1 - xo) * p.B.MW); toF = Math.min(ov, Wg(p.DpipeP, 1.0, 2.0) * dtp); toP = ov - toF;   // 2차 응축기 → 초류 탱크 관이 받는 만큼, 나머지는 진공 쪽
           PR.ves.fore.A += toF * wO; PR.ves.fore.B += toF * (1 - wO); PR.ovTot = (PR.ovTot || 0) + toF; if (toP > 0) { PR.lost = (PR.lost || 0) + toP; PR.pumpLiq = (PR.pumpLiq || 0) + toP; } }
@@ -4738,7 +4813,8 @@ function processStep(p) {
     mv = (kA + kB) * (sh(flows.nD) + sh(flows.n2));
     PR.Eout += (kA + kB + eA + eB) * PR.mix.cp * (PR.Tbub - p.T0);
     const toKgH = (q) => q * Mv / 1000 / dtp * 3600, aS = 1 - Math.exp(-dtp / 20);   // 유량 표시는 시정수 20초(공정 시간)로 고른다: 한 걸음짜리 튐이 범람 판정을 흔들지 않게
-    PR.Lkg += (toKgH(flows.nL) - PR.Lkg) * aS; PR.Rkg = (PR.Rkg || 0) + (toKgH(Math.max(0, flows.nL - flows.nBack - (flows.nSub || 0))) - (PR.Rkg || 0)) * aS;   /* v73: 과냉 추가 응축(컬럼 안)은 빼고 R 관 유량만 */ PR.backKg = (PR.backKg || 0) + (toKgH(flows.nBack) - (PR.backKg || 0)) * aS;   /* v65: 실제 환류(R 관)와 컬럼 안 예열·벽 응축을 나눈다 */ PR.Dkg += (toKgH(flows.nD) - PR.Dkg) * aS; PR.m2kg += (toKgH(flows.n2) - PR.m2kg) * aS; PR.lostkg += (toKgH(flows.nLost) - PR.lostkg) * aS;
+    const fR0 = PR.Rkg || 0, fD0 = PR.Dkg || 0;   // v98
+    PR.Lkg += (toKgH(flows.nL) - PR.Lkg) * aS; PR.Rkg = (PR.Rkg || 0) + (toKgH(Math.max(0, flows.nL - flows.nBack - (flows.nSub || 0))) - (PR.Rkg || 0)) * aS;   /* v73: 과냉 추가 응축(컬럼 안)은 빼고 R 관 유량만 */ PR.backKg = (PR.backKg || 0) + (toKgH(flows.nBack) - (PR.backKg || 0)) * aS;   /* v65: 실제 환류(R 관)와 컬럼 안 예열·벽 응축을 나눈다 */ PR.Dkg += (toKgH(flows.nD) - PR.Dkg) * aS; if (PR.glf && PR.glf.t === PR.t) { PR.Rkg = fR0 + (PR.glf.Rk - fR0) * aS; PR.Dkg = fD0 + (PR.glf.Dk - fD0) * aS; }   /* v98: 현장 방식은 고인 액에서 나간 몫까지 */ PR.m2kg += (toKgH(flows.n2) - PR.m2kg) * aS; PR.lostkg += (toKgH(flows.nLost) - PR.lostkg) * aS;
     { const aF = 1 - Math.exp(-dtp / 20), A = PR.frA || (PR.frA = { nv: 0, L: 0, back: 0, D: 0, n2: 0, lost: 0, seal: 0, held: 0 }), cur = { nv, L: flows.nL - flows.nBack, back: flows.nBack, D: flows.nD, n2: flows.n2, lost: flows.nLost, seal: flows.nSeal, held: flows.nHeldC || 0 };   // v46: 공정 20초 평균
       for (const k in A) A[k] += (cur[k] / dtp - A[k]) * aF;
       PR.passS = PR.passS == null ? PR.pass : PR.passS + (PR.pass - PR.passS) * aF;
@@ -5054,6 +5130,7 @@ function renderResults() {
   if (p.valveChar === "eq") chips += `<span class="chip" title="밸브 100 % 스팀 ${p.mSteamMax} kg/h·단열 ${p.tIns} mm와 함께 RTDB 눈대중 두 점에 맞춘 임시 값(실데이터로 교체 예정)">스팀 밸브 등비 R ${p.valveR} · 임시 가정값</span>`;   /* v76 */   // v46
   if ((PR.ovKg || 0) > 1 && !PR.stopped) chips += `<span class="chip bad">1차 응축기 액이 넘쳐 2차 응축기 → 초류 탱크로 ${fmt(PR.ovKg, 0)} kg/h(분리 없이 넘어감)</span>`;   // v95
   if ((PR.pumpLiqKg || 0) > 0.5 && !PR.stopped) chips += `<span class="chip bad">진공펌프 쪽으로 액이 넘어감 ${fmt(PR.pumpLiqKg, 0)} kg/h</span>`;
+  if (PR.glf && PR.glf.want && !PR.glf.flow && !PR.stopped && PR.vdot > 0.5) { const f = PR.glf; chips += f.blocked ? `<span class="chip bad">유출관 막힘 · 필요 액위 ${fmt(f.need * 100, 0)} cm${f.Pg != null ? `(갇힌 N2 ${glF(f.Pg)} torr)` : ""} > 쌓일 수 있는 높이 ${fmt(f.Hmax * 100, 0)} cm · 응축기 아래 액위 ${fmt(f.zL * 100, 0)} cm${(PR.ovKg || 0) > 0.05 ? ` · 옆 노즐로 넘침 ${fmt(PR.ovKg, 1)} kg/h` : ""} · FT-H073 0</span>` : `<span class="chip">유출관 · 응축기 아래 액위 ${fmt(f.zL * 100, 0)} cm, ${fmt(f.need * 100, 0)} cm에 닿으면 넘어감</span>`; }   /* v98 */
   if (PR.gl && PR.gl.lock && !PR.stopped) chips += `<span class="chip bad">유출관 가스 록 · 받는 탱크 ${glF(PR.gl.Pr)} torr − 응축기 ${glF(PR.gl.P1)} torr = ${glF(PR.gl.dP)} > 문턱 ${glF(PR.gl.thr)} torr(분기점→고점 ${fmt(PR.gl.hc * 100, 0)} cm) · FT-H073 0 · FCV-H073 100 %</span>`;   /* v97 */
   if ((PR.dPvap || 0) > Math.max(0.5, 0.2 * CUR.P) && CUR.P < 700 && !PR.stopped) chips += `<span class="chip bad">진공펌프 과부하 · 응축 못 한 증기로 압력 +${fmt(PR.dPvap, PR.dPvap < 10 ? 1 : 0)} mmHg</span>`;
   if ((PR.mC1 || 0) > 0.3 && !PR.stopped) chips += `<span class="chip warn">${PR.poolCause ? PR.poolCause + " · " : ""}1차 응축기 액 고임 · 분배기 ${fmt(Math.min(100, (PR.splFrac || 0) * 100), 0)}%${(PR.hC1 || 0) > 0.002 ? ` · 응축기 액위 ${fmt(PR.hC1 * 1000, 0)} mm · 관 다발 ${fmt((PR.c1Wet || 0) * 100, 0)}% 잠김` : ""} · 배출 한계 C ${fmt(PR.Wdrain || 0, 0)} · R ${fmt(PR.WR || 0, 0)} · P ${fmt(PR.WP || 0, 0)} kg/h</span>`;   /* v71: 원인별 */
@@ -5267,7 +5344,7 @@ $("pack").innerHTML = Object.entries(PACKS).map(([k, v]) => `<option value="${k}
     sa.addEventListener("click", () => { PCV.man = false; so.value = "100"; VLV.S = true; show(); if (PR) { opLog("진공 PCV 자동"); updateFlowVis(); } }); show(); } }
 $("jOpen").addEventListener("input", () => { $("jOpenV").textContent = $("jOpen").value + "%"; if (USERACT && PR && (OP.recipe || !OP.manual) && CUR) CUR.jOpen = Math.max(0, Math.min(100, parseFloat($("jOpen").value) || 0)) / 100; if (USERACT && PR && (OP.recipe || !OP.manual) && !OP.hold.J) { OP.hold.J = true; opLog(`스팀 개도 수동 ${$("jOpen").value} % (자동 조절 끔)`); opRender(true); } soon(); });   // v86
 for (const id of ["aA", "wallMat", "Hs", "tCol", "kIns", "Psteam", "nElb", "nTee", "nVg", "nVgl", "T", "H", "D", "C", "bottom", "type", "grid", "subA", "subB", "wA", "wC", "T0", "P", "Tj", "mSteamMax", "valveChar", "valveR", "Hj", "U", "accel", "cName", "cTb", "cHv", "cMW", "cCp", "cRho", "cMu", "cPv", "cPvT", "Hpack", "HETP", "Dcol", "Rr", "f2", "dp", "swMode", "swT", "swM", "capF", "capM", "UA1", "UA2", "Tcw", "mcw",
-  "pack", "packFill", "holdC", "DpipeC", "DpipeR", "DpipeP", "startTR", "hold", "heatMode", "mHm", "tIns", "Tamb", "Umode", "kL", "tw", "Dpipe", "Lpipe", "UAmode", "A1", "A2", "Uc", "Spump", "leak", "packRho", "packA", "Tlim", "glHc", "glHu", "glSeal0", "glLeakF", "glLeakM", "glP0F", "glP0M", "glTv"]) $(id).addEventListener("change", soon);
+  "pack", "packFill", "holdC", "DpipeC", "DpipeR", "DpipeP", "startTR", "hold", "heatMode", "mHm", "tIns", "Tamb", "Umode", "kL", "tw", "Dpipe", "Lpipe", "UAmode", "A1", "A2", "Uc", "Spump", "leak", "packRho", "packA", "Tlim", "glHc", "glHu", "glSeal0", "glLeakF", "glLeakM", "glP0F", "glP0M", "glTv", "splitMode", "rficMode", "glZc", "glHd", "glHmax", "glPsolid", "glVg"]) $(id).addEventListener("change", soon);
 document.querySelectorAll("#valves button[data-v]").forEach((b) => b.addEventListener("click", () => setValve(b.dataset.v, b.getAttribute("aria-pressed") !== "true")));   // v87: #sAuto 등 data-v 없는 단추 제외
 // 채우는 양의 단위를 바꾸면 지금 값을 그 단위로 환산해 보여 준다 (액은 그대로)
 let lastFill = $("fillMode").value;
@@ -5312,7 +5389,7 @@ $("btnCpHf").addEventListener("click", () => { GL_DEMO = null;
   const set = (id, v) => { const e = $(id); if (!e) return; if (e.type === "checkbox") e.checked = !!v; else e.value = String(v); };
   set("subA", "tdmahf"); set("subB", "cphf"); set("wA", 0.3); set("wC", 0.2); set("aA", 1.5); set("Tlim", 120);
   set("fillMode", "kg"); set("H", 350); set("valveChar", "eq"); set("valveR", 50); set("mSteamMax", 45); set("tIns", 20);   /* v76: 임시 가정값 */ set("P", 0.1); set("leak", 0.05); set("Tj", 130); set("jOpen", 25); set("rpm", 80);
-  set("swMode", "M"); set("swM", 40); set("startTR", true); set("Rr", 1); set("accel", 300);
+  set("swMode", "M"); set("swM", 40); set("startTR", true); set("Rr", 1); set("accel", 300); set("splitMode", "R"); set("rficMode", "auto");   /* v98: 현장 분배 방식 */
   $("jOpenV").textContent = "25%"; lastFill = "kg"; BUSY_UNTIL = performance.now() + 1200; syncOutputs(); $("btnRestart").click();   /* v77 */
   $("viewhint").textContent = "CpHf 조건을 불러왔다(스팀 밸브 등비 R 50·최대 45 kg/h·단열 20 mm는 RTDB 눈대중 두 점 — MV 70 % 승온 1 ℃/분, 전환류 10 kg/h @ MV 25 % — 에 맞춘 임시 가정값): CpHf 350 kg, TDMAHf 0.3 %·Cp2Hf 0.2 %, 0.1 torr, 스팀 개도 25 %, 300배속(55시간 배치가 약 10분). 탱크·컬럼 치수는 기본값이다";
 });
@@ -5321,10 +5398,11 @@ $("btnGasLock").addEventListener("click", () => {   // v97: 유출관 가스 록
   set("subA", "tdmahf"); set("subB", "cphf"); set("wA", 0.3); set("wC", 0.2); set("aA", 1.5); set("Tlim", 120);
   set("fillMode", "kg"); set("H", 350); set("valveChar", "eq"); set("valveR", 50); set("mSteamMax", 45); set("tIns", 20); set("P", 0.1); set("leak", 0.05); set("Tj", 130); set("jOpen", 25); set("rpm", 80);
   set("swMode", "M"); set("swM", 40); set("startTR", true); set("Rr", 1); set("T0", 80); set("accel", 1000);
-  set("glHc", 0.2); set("glHu", 0.35); set("glSeal0", true); set("glP0F", 25); set("glP0M", 25); set("glLeakF", 0); set("glLeakM", 0); set("glTv", 60);
-  VLV.EQV = false; syncValveUI(); GL_DEMO = { slowed: false }; if (!OP.recipe && typeof opSetMode === "function") opSetMode("recipe");
+  set("splitMode", "R"); set("rficMode", "auto"); set("glZc", 0.05); set("glHu", 0.35); set("glHd", 0.3); set("glHmax", 0.3); set("glPsolid", 0); set("glSeal0", true);
+  set("glHc", 0.2); set("glP0F", 0); set("glP0M", 0); set("glLeakF", 0); set("glLeakM", 0); set("glTv", 60);
+  VLV.EQV = true; syncValveUI();   /* v98: 현장 — 균압 열림 */ GL_DEMO = { slowed: false }; if (!OP.recipe && typeof opSetMode === "function") opSetMode("recipe");
   $("jOpenV").textContent = "25%"; lastFill = "kg"; BUSY_UNTIL = performance.now() + 1200; syncOutputs(); $("btnRestart").click();
-  $("viewhint").textContent = "유출관 가스 록 재현: CpHf 350 kg · 0.1 torr · 균압 밸브 닫힘 · U자에 액 남음 · 초류·본류 탱크 25 torr(문턱 17.7 torr = 분기점→고점 0.20 m). 시연용으로 80 ℃에서 시작해 ③까지 1000배속, ③에서 30배속으로 낮춘다";
+  $("viewhint").textContent = "유출관 막힘 재현(현장 방식): CpHf 350 kg · 0.1 torr · 균압 열림 · 환류 FIC-072 자동 · 유출 FCV-073 100 % · 두 액봉에 액 남음(사이에 가스) · 고점 +5 cm + 하류 액봉 30 cm = 필요 액위 35 cm > 응축기 옆 노즐 30 cm. 시연용으로 80 ℃에서 시작해 ③까지 1000배속, ③에서 30배속으로 낮춘다";
 });
 $("btnTrend").addEventListener("click", () => { const c = $("trend").classList.toggle("closed"); $("btnTrend").textContent = c ? "펼치기" : "접기"; store.set("dt.trend", c ? "0" : "1"); });
 if (store.get("dt.trend") === "0" || (!store.get("dt.trend") && window.innerHeight < 900)) { $("trend").classList.add("closed"); $("btnTrend").textContent = "펼치기"; }   // v80
@@ -5547,7 +5625,7 @@ function opSetMode(mode) {   // v73: false = 환류비 자동, true = 수동, "f
   if (PR) {
     if (recipe) { PR.trDone = true; if (PR.rcp) PR.rcp.I = null; opLog("레시피 운전 전환" + (PR.rcp ? ` · ${RCPN[PR.rcp.st] || ""}부터` : "")); }
     else if (free) { PR.trDone = true; OP.tic.auto = false; opLog("자유 운전 전환 · 자동 판단 끔 · 분배는 출구 능력 비율"); }
-    else if (manual) { PR.trDone = true; if (!VLV.P) setValve("P", true); OP.fic.sv = Math.round(PR.Dkg || 0); OP.tic.sv = Math.round((PR.Tmean || 25) * 2) / 2; OP.tic.I = (CUR ? CUR.jOpen * 100 : 0); opLog("수동 운전 전환"); }
+    else if (manual) { PR.trDone = true; if (!VLV.P) setValve("P", true); OP.fic.sv = Math.round(PR.Dkg || 0); OP.rfic.sv = Math.round(PR.Rkg || 0);   /* v98 */ OP.tic.sv = Math.round((PR.Tmean || 25) * 2) / 2; OP.tic.I = (CUR ? CUR.jOpen * 100 : 0); opLog("수동 운전 전환"); }
     else opLog("자동 운전 전환");
   }
   opRender(true); renderResults();
@@ -5589,7 +5667,7 @@ function opRecipe(p, dtp) {   // v74: 레시피 단계 + 스팀 PI
   else if (R.st === 3) { rT = rv("rcpForeR", 4); dT = rv("rcpForeD", 2); setV("R", true); setV("F", true); setV("M", false); setV("P", true); }
   else if (R.st === 4) { rT = rv("rcpMainR", 4); dT = rv("rcpMainD", 6); setV("R", true); setV("F", false); setV("M", true); setV("P", true); }
   if (R.st >= 2) {
-    OP.fic.sv = dT;
+    OP.fic.sv = dT; OP.rfic.sv = rT;   // v98: 현장 방식이면 환류 목표가 FIC-072 설정, 유출은 나머지
     const y0 = (PR.Rkg || 0) + (PR.Dkg || 0); R.yf = R.yf == null ? y0 : R.yf + (y0 - R.yf) * (1 - Math.exp(-dtp / 45)); const y = R.yf, sp = rT + dT, e = sp - y;   // v76: 측정 필터 45 s
     const warm = R.st === 2 && !R.warmed && (PR.Rkg || 0) < 0.5 * rT && PR.t - R.t0 < 3 * 3600; if (R.st === 2 && !warm && !R.warmed) { R.warmed = true; R.t0w = PR.t; R.I = null; R.win = []; R.okT = 0; opLog(`레시피 ② 환류가 목표 절반 도달 · 환류 ${fmt(PR.Rkg || 0, 1)} kg/h · 이제 PI가 다듬음`); }   // v81: 끓기 전·예열 중에는 피드포워드 개도(적분 안 쌓음)
     const preQ = () => p.Hpack > 0 && !PR.colWarmed && PR.Tbub != null ? (p.Ccol || 0) * Math.max(0, PR.Tbub - (PR.Tcol != null ? PR.Tcol : p.Tamb)) / 1800 : 0;   // 컬럼 예열 몫(W): 30분에 데우는 열
@@ -5644,7 +5722,12 @@ function opRender(force) {
       <div class="op-row"><span>PV</span><b>${PR ? n0(PR.Tmean, 1) : "–"} ℃</b><span>SV</span><input type="number" step="0.5" data-op="ticsv" value="${OP.tic.sv}"${dis || (OP.tic.auto ? "" : " disabled")}><span>℃</span></div>
       <div class="op-row"><span>MV</span><b>${m && !OP.tic.auto ? Math.round(parseFloat($("jOpen").value) || 0) : mv} %</b><select data-op="ticmode"${dis}><option value="man"${OP.tic.auto ? "" : " selected"}>수동 (MV)</option><option value="auto"${OP.tic.auto ? " selected" : ""}>자동 (SV)</option></select></div>
       <div class="op-btns">${[-5, -1, 1, 5].map((d) => `<button type="button" data-op="mv" data-d="${d}"${m && !OP.tic.auto ? "" : " disabled"}>${d > 0 ? "+" : ""}${d}%</button>`).join("")}</div></div>`;
-    if (!OP.free && !OP.recipe) h += `<div class="op-fp"><div class="op-tag">FIC-073 <small>유출(제품) 유량 → 나머지 환류</small></div>
+    if (!OP.free && !OP.recipe && m && p.splitMode === "R") h += `<div class="op-fp"><div class="op-tag">FIC-072 <small>환류 유량 고정 → 나머지 유출(FCV-073 100 %)</small></div>
+      <div class="op-row"><span>PV</span><b>${n0(L, 1)} kg/h</b><span>SV</span><input type="number" min="0" step="0.5" data-op="rficsv" value="${OP.rfic.sv}"><span>kg/h</span></div>
+      <div class="op-row"><span>유출</span><b>${n0(D, 1)} kg/h</b><span>R</span><b>${R == null ? "전환류" : n0(R, 2)}</b></div>
+      <div class="op-btns">${[-5, -1, 1, 5].map((d) => `<button type="button" data-op="rfic" data-d="${d}">${d > 0 ? "+" : ""}${d}</button>`).join("")}</div>
+      ${PR && PR.rficShort ? `<p class="op-warn">설정 미달 · 탑정 응축액이 환류 설정보다 적어 전량 환류</p>` : ""}</div>`;
+    if (!OP.free && !OP.recipe && !(m && p.splitMode === "R")) h += `<div class="op-fp"><div class="op-tag">FIC-073 <small>유출(제품) 유량 → 나머지 환류</small></div>
       <div class="op-row"><span>PV</span><b>${n0(D, 1)} kg/h</b><span>SV</span><input type="number" min="0" step="0.5" data-op="ficsv" value="${m ? OP.fic.sv : n0(D, 1)}"${dis}><span>kg/h</span></div>
       <div class="op-row"><span>환류</span><b>${n0(L, 1)} kg/h</b><span>R</span><b>${R == null ? "전환류" : n0(R, 2)}</b></div>
       <div class="op-btns">${[-5, -1, 1, 5].map((d) => `<button type="button" data-op="fic" data-d="${d}"${dis}>${d > 0 ? "+" : ""}${d}</button>`).join("")}<button type="button" data-op="fic0"${dis}>0 (전환류)</button></div>
@@ -5658,9 +5741,9 @@ function opRender(force) {
     const ops = PR && PR.ops ? PR.ops.slice(-4).reverse() : [];
     if (ops.length) h += `<div class="op-log">${ops.map((o) => `<div><span>${tlFmt(o.t)}</span> · ${o.text}</div>`).join("")}</div>`;
   }
-  h += glPanel();   // v97
+  h += (PR && PR.glf ? glFieldPanel() : glPanel());   // v97 · v98
   opBox.classList.toggle("closed", !OP_OPEN);
-  if (h !== opLastHtml) { const act = document.activeElement && opBox.contains(document.activeElement) ? document.activeElement.dataset.op : null; if (act === "ticsv" || act === "ficsv" || act === "ropen" || act === "popen") return; opBox.innerHTML = h; opLastHtml = h; }
+  if (h !== opLastHtml) { const act = document.activeElement && opBox.contains(document.activeElement) ? document.activeElement.dataset.op : null; if (act === "ticsv" || act === "ficsv" || act === "rficsv" || act === "ropen" || act === "popen") return; opBox.innerHTML = h; opLastHtml = h; }
 }
 opBox.addEventListener("click", (e) => {
   const b = e.target.closest("[data-op]"); if (!b || b.disabled) return; const k = b.dataset.op;
@@ -5676,6 +5759,7 @@ opBox.addEventListener("click", (e) => {
   if (k === "mv") { const v = Math.max(0, Math.min(100, Math.round(parseFloat($("jOpen").value) || 0) + +b.dataset.d)); $("jOpen").value = String(v); $("jOpen").dispatchEvent(new Event("input", { bubbles: true })); opLog(`스팀 밸브 MV ${v} %`); }
   else if (k === "fic") { OP.fic.sv = Math.max(0, Math.round((OP.fic.sv + +b.dataset.d) * 10) / 10); opLog(`FIC 설정 ${OP.fic.sv} kg/h`); }
   else if (k === "fic0") { OP.fic.sv = 0; opLog("FIC 설정 0 (전환류)"); }
+  else if (k === "rfic") { OP.rfic.sv = Math.max(0, Math.round((OP.rfic.sv + +b.dataset.d) * 10) / 10); opLog(`FIC-072 환류 설정 ${OP.rfic.sv} kg/h`); }   // v98
   else if (k === "vF") setValve("F", !VLV.F);
   else if (k === "vM") setValve("M", !VLV.M);
   opRender(true);
@@ -5685,6 +5769,7 @@ opBox.addEventListener("change", (e) => {
   if (k === "ticsv") { const v = parseFloat(t.value); if (Number.isFinite(v)) { OP.tic.sv = v; opLog(`TIC 설정 ${v} ℃`); } }
   else if (k === "ticmode") { OP.tic.auto = t.value === "auto"; if (OP.tic.auto) { OP.tic.I = Math.round((CUR.jOpen || 0) * 100); if (PR) OP.tic.sv = Math.round(PR.Tmean * 2) / 2; } opLog(OP.tic.auto ? `TIC 자동 (SV ${OP.tic.sv} ℃)` : "TIC 손으로 (MV)"); }
   else if (k === "ficsv") { const v = parseFloat(t.value); if (Number.isFinite(v) && v >= 0) { OP.fic.sv = v; opLog(`FIC 설정 ${v} kg/h`); } }
+  else if (k === "rficsv") { const v = parseFloat(t.value); if (Number.isFinite(v) && v >= 0) { OP.rfic.sv = v; opLog(`FIC-072 환류 설정 ${v} kg/h`); } }   // v98
   else if (k === "ropen" || k === "popen") { const v = Math.max(0, Math.min(100, parseFloat(t.value) || 0)); OP[k === "ropen" ? "rOpen" : "pOpen"] = v; opLog(`${k === "ropen" ? "환류" : "유출"} FCV 개도 ${v} %`); }   /* v73 */
   else if (k === "lah") { OP.lah = t.checked; opLog(`고액위 인터록 ${OP.lah ? "켬" : "끔"}`); }
   opRender(true);
