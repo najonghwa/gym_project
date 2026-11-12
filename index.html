@@ -760,7 +760,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v98 · 11-12 10:15</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v99 · 11-12 12:27</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -2344,16 +2344,16 @@ function buildModel(p, Smeasured) {
   // 배치(t = 탱크 내경): 탱크 → 꼭대기 노즐에서 증기 관이 올라가 옆에 따로 선 컬럼 타워 하부로 들어간다. 컬럼 꼭대기 → 위의 가로형 1차 응축기 → 분배기 → 환류는 컬럼 꼭대기로,
   // 제품은 아래 받는 탱크 둘로. 분배기 오른쪽으로 2차 응축기(세로) → 초류 탱크, 그 위로 진공펌프(바닥). 컬럼 바닥에 모인 액은 별도 관으로 탱크로 되돌아온다
   const t = p.T, xN = 0.62 * R, rCol = Math.min(0.3 * t, Math.max(0.08 * t, (p.Dcol || 0.2) / 2)), Rj = R + 0.045 * t;
-  const yNz = Hs + ht * Math.sqrt(1 - 0.62 * 0.62) + 0.01 * t, xCol = xN, colBase = Math.max(yNz + 0.12 * t, yTop + 0.27 * t), packY0 = colBase + 0.06 * t, packY1 = packY0 + p.Hpack, colHphys = 0.24 * t + p.Hpack / Math.max(0.2, p.packFill || 1);   // v68: 그림은 낮게(목관은 모터 꼭대기 yTop + 0.23T 위 0.04T), 계산의 컬럼 높이는 예전 식   // 컬럼은 탱크 노즐 위에 수직으로 선다(컬럼 액은 바로 탱크로 떨어진다). 충전 비율만큼만 채우고 위는 비운다
+  const yNz = Hs + ht * Math.sqrt(1 - 0.62 * 0.62) + 0.01 * t, xCol = xN, dCol = 0.28 * t,   /* v99: 충전물 위 빈 공간을 줄인 만큼 목관을 늘린다(컬럼 꼭대기·응축기는 제자리) */ colBase = Math.max(yNz + 0.12 * t, yTop + 0.27 * t) + dCol, packY0 = colBase + 0.06 * t, packY1 = packY0 + p.Hpack, colHphys = 0.24 * t + p.Hpack / Math.max(0.2, p.packFill || 1);   // v68: 그림은 낮게(목관은 모터 꼭대기 yTop + 0.23T 위 0.04T), 계산의 컬럼 높이는 예전 식   // 컬럼은 탱크 노즐 위에 수직으로 선다(컬럼 액은 바로 탱크로 떨어진다). 충전 비율만큼만 채우고 위는 비운다
   const yV = colBase, yRet = Hs, xB = xCol, yDish = packY1 + 0.16 * t;   /* v82: 분사 원뿔이 보이게 */   // v68: 분배 팔은 충전층 바로 위   // yV·yRet·xB는 옛 옆 배관 자리(지금은 안 씀). yDish = 환류 분배기 접시 높이
   // 1차 응축기(세로): 컬럼 꼭대기 오른쪽. 증기 관이 컬럼 꼭대기에서 위로 → 오른쪽 → 응축기 꼭대기로 들어가고 바닥에서 응축액이 분배기로
   // v49: 회수 탱크 = 2:1 타원 경판 + 몸통(H/D 1.2). 지름은 용량(L, 0이면 본류 = 처음 액 부피, 초류 = 40 %)에서: V = π·D³·(1.2/4 + 1/12)
   const rcv = (capL, Vdef) => { const Vc = Math.max(1e-3, capL > 0 ? capL / 1000 : Vdef), D = Math.max(0.25 * t, Math.min(1.4 * t, Math.cbrt(Vc / (Math.PI * (1.2 / 4 + 1 / 12))))); return { r: D / 2, hd: D / 4, Hb: 1.2 * D }; };
   const V0d = liquidVolume(p, p.H0), RCM = rcv(p.capM, V0d), RCF = rcv(p.capF, 0.4 * V0d);
-  const gapV = 0.38 * Math.max(t, 2 * RCM.r, 2 * RCF.r), xMn0 = Rj + gapV + RCM.r, stepG = 0, rC = 0.11 * t, xC = Math.max(xMn0, xCol + rCol + 0.9 * t),   /* v81: 세 용기 틈 = 0.38 × 큰 지름, 1차 응축기·분배기는 본류 위 */ sSpl = 0.12 * t, ySpl = yDish,   /* v90: 분배기 = 환류 노즐 높이(환류 관이 꺾이지 않게) */ yC1 = yDish + 0.07 * t + sSpl / 2 + 0.36 * t, yC0 = yC1 + 0.34 * Hs, colTop = yC0, yPipe = colTop + 0.2 * t;   // v68: 응축기·분배기는 컬럼 오른쪽 옆(분배기는 분배 팔 바로 위라 환류는 내려가기만), 응축기 꼭대기 = 컬럼 꼭대기   // 분배기가 컬럼 꼭대기보다 위: 환류는 내려가기만 한다
+  const gapV = 0.38 * Math.max(t, 2 * RCM.r, 2 * RCF.r), xMn0 = Rj + gapV + RCM.r, stepG = 0, rC = 0.11 * t, xC = Math.max(xMn0, xCol + rCol + 0.9 * t),   /* v81: 세 용기 틈 = 0.38 × 큰 지름, 1차 응축기·분배기는 본류 위 */ sSpl = 0.12 * t, ySpl = yDish,   /* v90: 분배기 = 환류 노즐 높이(환류 관이 꺾이지 않게) */ yC1 = yDish - dCol + 0.07 * t + sSpl / 2 + 0.36 * t, yC0 = yC1 + 0.34 * Hs, colTop = yC0, yPipe = colTop + 0.2 * t;   // v68: 응축기·분배기는 컬럼 오른쪽 옆(분배기는 분배 팔 바로 위라 환류는 내려가기만), 응축기 꼭대기 = 컬럼 꼭대기   // 분배기가 컬럼 꼭대기보다 위: 환류는 내려가기만 한다
   const xSpl = xC, xRf = xCol + rCol + 0.2 * t, yRf = yDish;   // v61: 환류 노즐은 분배 팔 높이로 옆에서 들어온다
   // 받는 탱크: 분배기 아래 티에서 조금 내려온 높이(탱크 꼭대기 근처)에 떠 있다. 본류(왼쪽) 크고 낮게, 초류(오른쪽) 작게
-  const yValve = yDish + 0.07 * t - 0.95 * t,   /* v90: 유출 티·회수 탱크는 제자리 */ rRM = RCM.r, hdM = RCM.hd, rRF = RCF.r, hdF = RCF.hd, xMn = xMn0, xF = xMn0 + RCM.r + gapV + RCF.r;   // v81: 같은 틈
+  const yValve = yDish - dCol + 0.07 * t - 0.95 * t,   /* v90: 유출 티·회수 탱크는 제자리 */ rRM = RCM.r, hdM = RCM.hd, rRF = RCF.r, hdF = RCF.hd, xMn = xMn0, xF = xMn0 + RCM.r + gapV + RCF.r;   // v81: 같은 틈
   const yRvM = 0.1 * t + hdM, yRvF = 0.1 * t + hdF,   /* v93: 초류 탱크도 같은 바닥선 */ HrM = Math.max(0.6 * rRM, Math.min(RCM.Hb, yValve - 0.3 * t - yRvM - hdM)), HrF = Math.max(0.6 * rRF, Math.min(RCF.Hb, yValve - 0.3 * t - yRvF - hdF)), yTopM = yRvM + HrM, yTopF = yRvF + HrF;   // v49: 둘 다 바닥에 다리로 선다(yRv·yTop = 몸통 아래·위 끝)   // 본류 탱크는 정제기와 같은 바닥선, 초류 탱크는 띄운다
   // 2차 응축기(가로): 분배기 오른쪽, 같은 높이. 오른쪽 끝 바닥에서 응축액이 초류 탱크로, 오른쪽 끝 위에서 진공펌프로
   const r2 = 0.065 * t, x20 = Math.max(xSpl + 0.55 * t, xF + 0.5 * RCF.r + 0.08 * t - 0.72 * t), x21 = x20 + 0.72 * t, y2c = ySpl, x2o = x21 - 0.08 * t, yL2 = yTopF + 0.866 * hdF, yJ = yValve - 0.15 * t;   /* v82: L2가 F 가지관에 붙는 높이 */   // v60: 2차 응축기 출구가 초류 탱크 오른쪽 노즐 바로 위
