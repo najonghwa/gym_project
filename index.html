@@ -838,13 +838,16 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
 /* v109: 빈 범례 상자 없앰 */
 #stage > .legend{display:none!important}
 
+/* v112: 값은 이름 바로 뒤(남는 칸은 오른쪽 끝) */
+.dcs-tag b{min-width:0;text-align:left}
+
 </style>
 
 <div class="app" id="app">
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v111 · 11-13 19:27</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v112 · 11-13 20:00</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -6327,7 +6330,7 @@ function vGauge(e, k) {
   g.style.left = Math.max(4, x) + "px"; g.style.top = Math.max(4, y) + "px";
 }
 const DCS = { box: null, els: [], at: 0 };
-const DCS_SHORT = { "TI 탱크 내부": "탱크", "WI 정제기 무게": "정제기", "TI 자켓": "자켓", "ZI 스팀 밸브 개도": "스팀 개도", "TI-H075 탑 온도": "탑", "PI 탱크 압력": "압력", "TIC-H071D 응축액 출구": "응축액", "FI 환류": "환류", "FI 유출": "유출", "WI 초류 무게": "초류", "WI 본류 무게": "본류", "TI 컬럼 하부(계산)": "컬럼 하부", "TI 컬럼 중간(계산)": "컬럼 중간", "FI 증발(계산)": "증발" }, DCS_SKIP = { "SI 교반": 1, "냉각수 유량(가정)": 1 };   // v101: 짧은 이름 · 설정값은 뺌
+const DCS_SHORT = { "TI 탱크 내부": "탱크", "WI 정제기 무게": "정제기", "TI 자켓": "자켓", "ZI 스팀 밸브 개도": "스팀 개도", "TI-H075 탑 온도": "탑", "PI 탱크 압력": "압력", "TIC-H071D 응축액 출구": "하부", "FI 환류": "환류", "FI 유출": "유출", "WI 초류 무게": "초류", "WI 본류 무게": "본류", "TI 컬럼 하부(계산)": "컬럼 하부", "TI 컬럼 중간(계산)": "컬럼 중간", "FI 증발(계산)": "증발" }, DCS_SKIP = { "SI 교반": 1, "냉각수 유량(가정)": 1 };   // v101: 짧은 이름 · 설정값은 뺌
 function dcsLabels(on, now) {
   if (!DCS.box) { DCS.box = document.createElement("div"); DCS.box.className = "dcs-box"; canvas.parentElement.appendChild(DCS.box); }
   if (DCS.box.hidden === on) DCS.box.hidden = !on; if (!on || now - DCS.at < 120) return; DCS.at = now;
@@ -6335,7 +6338,7 @@ function dcsLabels(on, now) {
   while (DCS.els.length < HMI_TAGS.length) { const el = document.createElement("div"); el.className = "dcs-tag"; el.innerHTML = "<i></i><b></b><s></s>"; el.addEventListener("click", (ev) => { if (/스팀 밸브 개도/.test(el.dataset.n || "")) vGauge(ev, "J"); else if (el.dataset.n === "FI 환류") vGauge(ev, "R"); else if (el.dataset.n === "FI 유출" && OP.free) vGauge(ev, "P"); }); DCS.box.appendChild(el); DCS.els.push(el); }
   HMI_TAGS.forEach((T, i) => { const el = DCS.els[i]; if (!T.s || DCS_SKIP[T.title]) { el.hidden = true; return; } const a = d3Proj(T.s, W, H); if (!a.ok) { el.hidden = true; return; } el.hidden = false;
     let v = null; try { v = T.fn(); } catch (e) { v = null; } const val = (v == null || v === "" || v === false ? "–" : v) + (T.unit === "℃" || T.unit === "%" ? "" : " ") + T.unit;
-    if (el.dataset.n !== T.title) { el.dataset.n = T.title; el.firstChild.textContent = DCS_SHORT[T.title] || T.title; el.children[2].textContent = ""; el.classList.toggle("calc", /계산/.test(T.title));   /* v105: 꼬리표 대신 색·밑줄 */ el.title = T.title + (/계산/.test(T.title) ? " — 계기가 없는 계산값" : /스팀 밸브 개도|FI 환류/.test(T.title) ? " — 누르면 조절" : ""); el.classList.toggle("act", /스팀 밸브 개도|FI 환류/.test(T.title)); } if (el.children[1].textContent !== val) el.children[1].textContent = val;
+    if (el.dataset.n !== T.title) { el.dataset.n = T.title; el.firstChild.textContent = DCS_SHORT[T.title] || T.title; el.children[2].textContent = ""; el.classList.toggle("calc", /계산/.test(T.title));   /* v105: 꼬리표 대신 색·밑줄 */ el.title = T.title + (/계산/.test(T.title) ? " — 계기가 없는 계산값" : /스팀 밸브 개도|FI 환류/.test(T.title) ? " — 누르면 조절" : ""); el.classList.toggle("act", /스팀 밸브 개도|FI 환류/.test(T.title)); el.children[1].style.minWidth = ({ "℃": "6ch", "%": "6ch", "kg": "8ch", "kg/h": "10ch", "mmHg": "10ch" })[T.unit] || ""; }   /* v112: 칸 폭은 단위별 최대 자리수만 */ if (el.children[1].textContent !== val) el.children[1].textContent = val;
     if (!relay) return; const w = el.offsetWidth || 80, h = el.offsetHeight || 30, al = T.al || "R";
     its.push({ el, w, h, al, ax: a.x, ay: a.y, x: al === "L" ? a.x - w - 3 : al === "R" ? a.x + 3 : a.x - w / 2, y: al === "T" ? a.y - h - 3 : al === "B" ? a.y + 3 : a.y - h / 2 }); });
   for (let i = HMI_TAGS.length; i < DCS.els.length; i++) DCS.els[i].hidden = true;
