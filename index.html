@@ -835,13 +835,16 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
 #tlEnd{display:none!important}
 .dcs-tag b{display:inline-block;min-width:7.5ch;text-align:right;font-variant-numeric:tabular-nums}
 
+/* v109: 빈 범례 상자 없앰 */
+#stage > .legend{display:none!important}
+
 </style>
 
 <div class="app" id="app">
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v108 · 11-13 14:03</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v109 · 11-13 14:15</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -3183,7 +3186,7 @@ function updateFlowVis() {
   const vd = PR ? PR.vdot || 0 : 0, absq = { V: vd * tot, C: vd * tot, R: vd * fr.L, RD: vd * fr.L, P: vd * fr.D, F: vd * fr.D, M: vd * fr.D, T2: vd * (fr.n2 + fr.lost), L2: vd * fr.n2, S: vd * fr.lost };   // v42: 관마다 kg/h
   for (const k in absq) FLOWQ[k] = absq[k];   // v81
   on.R = on.C && full("C") && VLV.R && (fr.L > 0.01 || absq.R >= 0.3);   /* v95: 몫이 아니라 양으로 */ on.RD = on.R && full("R");
-  on.P = on.C && full("C") && VLV.P && (fr.D > 0.01 || absq.P >= 0.3) && cs !== "none"; on.F = on.P && full("P") && VLV.F; on.M = on.P && full("P") && VLV.M;
+  on.P = on.C && full("C") && VLV.P && (cs !== "none" ? (fr.D > 0.01 || absq.P >= 0.3) : !(FILL.P && FILL.P.full));   /* v109: 받는 탱크 밸브가 닫혀도 그 앞까지는 찬다 */ on.F = on.P && full("P") && VLV.F; on.M = on.P && full("P") && VLV.M;
   on.T2 = on.V && full("V") && (fr.n2 + fr.lost) > 1e-4;   /* v93: 옆 노즐 — 증기가 응축기에 닿으면 */ on.L2 = on.T2 && full("T2") && VLV.C2 && fr.n2 > 1e-4; on.S = (on.T2 && full("T2") && VLV.S && (fr.lost > 1e-4 || (leak && CUR.P < 700))) || (VLV.S && leak && !!CUR && CUR.P < 700);   // v46: 리크 공기만이라도   // 진공 운전이면 리크 공기가 늘 빠져나간다
   for (const k of ["T2", "L2", "S"]) if (absq[k] != null && absq[k] < (k === "S" ? 0.3 : 1) && !(k === "S" && leak)) on[k] = false;   /* v93: 2차 응축기 쪽은 1 kg/h부터 */
   { const ovq = PR ? PR.ovKg || 0 : 0; if (ovq > 1) { on.T2 = !!on.V; on.L2 = on.T2; absq.T2 = Math.max(absq.T2 || 0, ovq); absq.L2 = Math.max(absq.L2 || 0, ovq); FLOWQ.T2 = absq.T2; FLOWQ.L2 = absq.L2; share.T2 = 1; share.L2 = 1; } if (FILL.T2) fillLook(FILL.T2, !(ovq > 1)); }   // v95: 넘치는 액   // v81: 0.3 kg/h 미만은 표시 없음
@@ -3339,7 +3342,7 @@ function stepFill(dt) {
       f.ph = (f.ph || 0) + vv * dt; f.pf = (f.pf || 0) + Math.min(vP * dP, f.Ltot * dt / tauP);   /* v81 */ if (f.ph >= f.Ltot || f.pf >= f.Ltot) f.reached = true;   // v42: 토막 그림은 화면 속도, '끝에 닿음'은 공정 시간으로도
       f.head = Math.min(f.Ltot, Math.max(f.head, f.ph, f.pf)); f.tail = 0; }   // v52: 졸졸 흐를 때도 토막(애벌레) 대신 이어진 줄기
     else if (f.want) { f.tail = 0; f.head = Math.min(f.Ltot, f.head + adv); if ((k === "C" || k === "R") && STYLE !== "iso" && VF.holdFrac != null && VF.holdFrac < 0.999) { const Lc = FILL.C ? FILL.C.Ltot : 0, Lr = FILL.R ? FILL.R.Ltot : 0, fl = VF.holdFrac * (Lc + Lr); f.head = Math.min(f.head, k === "C" ? Math.min(Lc, fl) : Math.max(0, fl - Lc)); }   /* v86: 고인 양만큼 */ if (k === "V" && STYLE !== "iso" && VF.lenV > 0 && !(typeof TURBO !== "undefined" && TURBO) && $("tVapor").checked && dt > 0) f.head = Math.min(f.head, f.Ltot * Math.min(1, VF.headLenV / VF.lenV + 1e-3)); f.ph = 0; f.pf = 0; f.reached = false; }   // v81: 증기관은 점 앞머리까지만 찬다
-    else { f.ph = 0; f.pf = 0; f.reached = false; f.held = k === "P" && f.head > 0 && ISOFLOW && ISOFLOW.closed && ISOFLOW.closed[k];   /* v86: 밸브가 관 끝에 있는 유출 관만 갇힌 액(초류·본류·환류 가지는 밸브가 앞이라 빠진다) */ if (f.head > 0 && !f.held) { f.tail = Math.min(f.head, f.tail + adv); if (f.tail >= f.head - eps) f.head = f.tail = 0; } }   // v81: 밸브가 닫혀 갇힌 액은 그대로(빛 띠 없는 파랑)
+    else { f.ph = 0; f.pf = 0; f.reached = false; f.held = k === "P" && f.head > 0 && ((ISOFLOW && ISOFLOW.closed && ISOFLOW.closed[k]) || (VLV.P && cutState() === "none"));   /* v109: 닫힌 받는 탱크 밸브 앞에 고인 액 */   /* v86: 밸브가 관 끝에 있는 유출 관만 갇힌 액(초류·본류·환류 가지는 밸브가 앞이라 빠진다) */ if (f.head > 0 && !f.held) { f.tail = Math.min(f.head, f.tail + adv); if (f.tail >= f.head - eps) f.head = f.tail = 0; } }   // v81: 밸브가 닫혀 갇힌 액은 그대로(빛 띠 없는 파랑)
     if (f.want && f.trickle && (k === "C" || k === "R") && STYLE !== "iso" && VF.holdFrac != null && VF.holdFrac < 0.999) { const Lc = FILL.C ? FILL.C.Ltot : 0, Lr = FILL.R ? FILL.R.Ltot : 0, fl = VF.holdFrac * (Lc + Lr), cap = k === "C" ? Math.min(Lc, fl) : Math.max(0, fl - Lc); if (f.head > cap) f.head = cap; if (cap < f.Ltot - eps) { f.reached = false; f.ph = Math.min(f.ph || 0, cap); f.pf = Math.min(f.pf || 0, cap); } }   /* v86: 졸졸 흐름도 고인 양만큼 */
     const full = f.want && f.trickle ? !!f.reached : f.head >= f.Ltot - eps; if (full !== f.full) { f.full = full; changed = true; }
     for (const s of f.segs) {
@@ -5796,7 +5799,7 @@ function hudRender(html) {
   const tt = (c) => { const full = c.replace(/<[^>]+>/g, ""), short = full.split(" · ")[0]; return c.replace(/^<span /, '<span title="' + full.replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;") + '" ').replace(/>[\s\S]*<\/span>$/, ">" + short + "</span>"); };   /* v103: 칩은 한 줄, 전체 글은 마우스를 대면 */
   for (let i = 0; i < main.length; i++) main[i] = tt(main[i]); for (let i = 0; i < alerts.length; i++) alerts[i] = tt(alerts[i]);
   let h = main.join("");
-  if (alerts.length) {
+  if (false && alerts.length) {   /* v109: 알림 없음(그림으로 보인다) */
     const bad = alerts.some((c) => /class="chip bad/.test(c));
     h += `<button type="button" class="chip alerts ${bad ? "bad" : "warn"}" data-hud="toggle" aria-expanded="${HUD_OPEN}">알림 ${alerts.length}개 ${HUD_OPEN ? "▴" : "▾"}</button>`;
     if (HUD_OPEN) h += `<div class="hudlist">${alerts.join("")}</div>`;
