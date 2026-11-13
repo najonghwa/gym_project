@@ -841,7 +841,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v107 · 11-13 13:51</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v107 · 11-13 13:55</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -3145,7 +3145,7 @@ function vpTravel() {   // v42: 액면에서 컬럼 꼭대기까지 증기가 �
 }
 function fillLook(f, vap) {   // v42: 1차 냉각수를 끄면 C 관(1차 응축기 → 분배기)에는 응축액 대신 증기가 지나간다 — 덧관 색을 증기로
   if (!f || !!f.vapNow === !!vap || !mats.pipeOn) return; f.vapNow = !!vap; const src = vap ? mats.pipeOn : mats.pipeLiq;
-  for (const sg of f.segs) { sg.om.color.copy(src.color); if (sg.om.emissive && src.emissive) sg.om.emissive.copy(src.emissive); sg.om.map = src.map; sg.om.needsUpdate = true; if (sg.oeM) { sg.oeM.color.copy(src.color); if (sg.oeM.emissive && src.emissive) sg.oeM.emissive.copy(src.emissive); } }
+  for (const sg of f.segs) { sg.om.color.copy(src.color); if (!sg.om.userData.op0) sg.om.userData.op0 = sg.om.opacity; if (!vap && !sg.om.emissiveMap) { sg.om.color.setHex(LIQ().pipe); sg.om.opacity = Math.max(sg.om.userData.op0, 0.7); } else if (vap) sg.om.opacity = sg.om.userData.op0; if (sg.om.emissive && src.emissive) sg.om.emissive.copy(src.emissive); sg.om.map = src.map; sg.om.needsUpdate = true; if (sg.oeM) { sg.oeM.color.copy(src.color); if (sg.oeM.emissive && src.emissive) sg.oeM.emissive.copy(src.emissive); } }
 }
 function accelOf() { const e = $("accel"), v = parseFloat(e.value); if (Number.isFinite(v) && v > 0) return v; e.value = "30"; return 30; }   // v42: 목록에 없는 값이면 기본 30배
 let ISOFLOW = null;   // v44: 아이소 화면이 읽는 흐름 판정
@@ -3728,7 +3728,7 @@ function buildTank(m) {
     hmiTag("ZI 스팀 밸브 개도", "%", () => CUR ? (VLV.J ? f(CUR.jOpen * 100, 1) : "0.0") : null, V3(-q.Rj - 0.22 * t, q.yJin - 0.07 * t), t, "B");   /* v100: 스팀 밸브 바로 아래 개도 */
     hmiTag("TI-H075 탑 온도", "℃", () => PR && f(PR.Thead, 1), V3(q.xCol - q.rCol - 0.04 * t, q.colTop - 0.12 * t), t, "L");
     hmiTag("PI 탱크 압력", "mmHg", () => PR && f(PR.Pstill, 2), V3(q.xPump + 0.66 * q.sPump, q.yPump + q.sPump * 0.9), t, "T");
-    hmiTag("TIC-H071D 응축액 출구", "℃", () => PR && TBOT() != null && ((PR.condKg || 0) > 0.05 || (PR.mC1 || 0) > 0.01 || (PR.mHeldC || 0) > 0.01) ? f(TBOT(), 1) : null, V3(q.xSpl + q.sSpl * 0.8, q.yC1 - 0.02 * t), t, "R");   // v82: 출구 라인 온도(사이트 글라스 옆)
+    hmiTag("TIC-H071D 응축액 출구", "℃", () => PR && TBOT() != null && ((PR.condKg || 0) > 0.05 || (PR.mC1 || 0) > 0.01 || (PR.mHeldC || 0) > 0.01) ? f(TBOT(), 1) : null, V3(q.xC - q.rC - 0.02 * t, q.yC1 + 0.03 * t), t, "L");   /* v107: 넘침 관을 가리지 않게 */   // v82: 출구 라인 온도(사이트 글라스 옆)
     hmiTag("FI 환류", "kg/h", () => PR && f(refluxNow(), 1), V3((q.xCol + q.rCol + q.xSpl - q.sSpl / 2) / 2, q.ySpl - 0.04 * t), t, "B");   /* v100: 환류 관 바로 아래 */   // v90: 환류 조절 밸브 아래
     hmiTag("FI 유출", "kg/h", () => PR && f(PR.Dkg, 1), V3(q.xSpl + 0.03 * t, q.ySpl - q.sSpl / 2 - 0.42 * t), t, "R");   /* v100: 유출 관 옆 */
     hmiTag("WI 초류 무게", "kg", () => PR && f(PR.ves.fore.A + PR.ves.fore.B, 1), V3(q.xF + q.rRF + 0.08 * t, (q.yRvF + q.yTopF) / 2), t, "R");
