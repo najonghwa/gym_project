@@ -844,7 +844,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v109 · 11-13 14:15</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v110 · 11-13 19:02</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -2435,15 +2435,15 @@ function buildModel(p, Smeasured) {
   // v49: 회수 탱크 = 2:1 타원 경판 + 몸통(H/D 1.2). 지름은 용량(L, 0이면 본류 = 처음 액 부피, 초류 = 40 %)에서: V = π·D³·(1.2/4 + 1/12)
   const rcv = (capL, Vdef) => { const Vc = Math.max(1e-3, capL > 0 ? capL / 1000 : Vdef), D = Math.max(0.25 * t, Math.min(1.4 * t, Math.cbrt(Vc / (Math.PI * (1.2 / 4 + 1 / 12))))); return { r: D / 2, hd: D / 4, Hb: 1.2 * D }; };
   const V0d = liquidVolume(p, p.H0), RCM = rcv(p.capM, V0d), RCF = rcv(p.capF, 0.4 * V0d);
-  const gapV = 0.38 * Math.max(t, 2 * RCM.r, 2 * RCF.r), xMn0 = Rj + gapV + RCM.r, stepG = 0, rC = 0.11 * t, xC = Math.max(xMn0, xCol + rCol + 0.9 * t),   /* v81: 세 용기 틈 = 0.38 × 큰 지름, 1차 응축기·분배기는 본류 위 */ sSpl = 0.12 * t, ySpl = yDish,   /* v90: 분배기 = 환류 노즐 높이(환류 관이 꺾이지 않게) */ yC1 = yDish + 0.07 * t + sSpl / 2 + 0.12 * t, yC0 = yC1 + 0.34 * Hs, colTop = packY1 + 0.36 * t, yPipe = yC0 + 0.2 * t;   /* v102: 응축기는 컬럼 꼭대기보다 위(바닥 → 분배기 → 환류 노즐 내리막), 증기관은 꼭대기에서 위로 */   // v68: 응축기·분배기는 컬럼 오른쪽 옆(분배기는 분배 팔 바로 위라 환류는 내려가기만), 응축기 꼭대기 = 컬럼 꼭대기   // 분배기가 컬럼 꼭대기보다 위: 환류는 내려가기만 한다
+  const gapV = 0.38 * Math.max(t, 2 * RCM.r, 2 * RCF.r), xMn0 = Rj + gapV + RCM.r + 0.3 * t,   /* v110: 값 상자 여백 */ stepG = 0, rC = 0.11 * t, xC = Math.max(xMn0, xCol + rCol + 1.2 * t),   /* v81: 세 용기 틈 = 0.38 × 큰 지름, 1차 응축기·분배기는 본류 위 */ sSpl = 0.12 * t, ySpl = yDish,   /* v90: 분배기 = 환류 노즐 높이(환류 관이 꺾이지 않게) */ yC1 = yDish + 0.07 * t + sSpl / 2 + 0.24 * t,   /* v110: 응축기 아래 관을 늘려 응축액 온도 상자 자리 */ yC0 = yC1 + 0.34 * Hs, colTop = packY1 + 0.36 * t, yPipe = yC0 + 0.2 * t;   /* v102: 응축기는 컬럼 꼭대기보다 위(바닥 → 분배기 → 환류 노즐 내리막), 증기관은 꼭대기에서 위로 */   // v68: 응축기·분배기는 컬럼 오른쪽 옆(분배기는 분배 팔 바로 위라 환류는 내려가기만), 응축기 꼭대기 = 컬럼 꼭대기   // 분배기가 컬럼 꼭대기보다 위: 환류는 내려가기만 한다
   const xSpl = xC, xRf = xCol + rCol + 0.2 * t, yRf = yDish;   // v61: 환류 노즐은 분배 팔 높이로 옆에서 들어온다
   // 받는 탱크: 분배기 아래 티에서 조금 내려온 높이(탱크 꼭대기 근처)에 떠 있다. 본류(왼쪽) 크고 낮게, 초류(오른쪽) 작게
-  const yValve = yDish - dCol + 0.07 * t - 0.95 * t,   /* v90: 유출 티·회수 탱크는 제자리 */ rRM = RCM.r, hdM = RCM.hd, rRF = RCF.r, hdF = RCF.hd, xMn = xMn0, xF = xMn0 + RCM.r + gapV + RCF.r;   // v81: 같은 틈
+  const yValve = yDish - dCol + 0.07 * t - 0.95 * t,   /* v90: 유출 티·회수 탱크는 제자리 */ rRM = RCM.r, hdM = RCM.hd, rRF = RCF.r, hdF = RCF.hd, xMn = xMn0, xF = xMn0 + RCM.r + gapV + RCF.r + 0.15 * t;   // v81: 같은 틈
   const yRvM = 0.1 * t + hdM, yRvF = 0.1 * t + hdF,   /* v93: 초류 탱크도 같은 바닥선 */ HrM = Math.max(0.6 * rRM, Math.min(RCM.Hb, yValve - 0.3 * t - yRvM - hdM)), HrF = Math.max(0.6 * rRF, Math.min(RCF.Hb, yValve - 0.3 * t - yRvF - hdF)), yTopM = yRvM + HrM, yTopF = yRvF + HrF;   // v49: 둘 다 바닥에 다리로 선다(yRv·yTop = 몸통 아래·위 끝)   // 본류 탱크는 정제기와 같은 바닥선, 초류 탱크는 띄운다
   // 2차 응축기(가로): 분배기 오른쪽, 같은 높이. 오른쪽 끝 바닥에서 응축액이 초류 탱크로, 오른쪽 끝 위에서 진공펌프로
-  const r2 = 0.065 * t, x20 = Math.max(xSpl + 0.55 * t, xF + 0.5 * RCF.r + 0.08 * t - 0.72 * t), x21 = x20 + 0.72 * t, y2c = ySpl, x2o = x21 - 0.08 * t, yL2 = yTopF + 0.866 * hdF, yJ = yValve - 0.15 * t;   /* v82: L2가 F 가지관에 붙는 높이 */   // v60: 2차 응축기 출구가 초류 탱크 오른쪽 노즐 바로 위
+  const r2 = 0.065 * t, x20 = Math.max(xSpl + 1.0 * t, xF + 0.5 * RCF.r + 0.08 * t - 0.72 * t), x21 = x20 + 0.72 * t, y2c = ySpl, x2o = x21 - 0.08 * t, yL2 = yTopF + 0.866 * hdF, yJ = yValve - 0.15 * t;   /* v82: L2가 F 가지관에 붙는 높이 */   // v60: 2차 응축기 출구가 초류 탱크 오른쪽 노즐 바로 위
   const yV2 = yC1 + Math.min(0.1 * t, 0.3 * (yC0 - yC1)), xK2 = x20 + 0.08 * t;   // v93: 1차 응축기 옆 노즐(미응축 증기 출구) 높이 · 2차 응축기 위 입구 자리
-  const sPump = 0.13 * t, yPumpLine = y2c + r2 + 0.14 * t, xPump = x21 + 0.6 * t, yPump = y2c, yJin = Math.max(0.1 * t, hh);
+  const sPump = 0.13 * t, yPumpLine = y2c + r2 + 0.14 * t, xPump = x21 + 0.85 * t, yPump = y2c, yJin = Math.max(0.1 * t, hh);
   return { p, R, w, Vtip, Vref, V, S, surfY, hh, Hs, ht, topY, yTop, wallH: Hs, impX: 0, entryX: 0, axisX: () => 0, hHead: hh,
     pipe: { yV2, xK2, colHphys, xN, yNz, yDish, rCol, xCol, colBase, packY0, packY1, colTop, yV, yRet, xB, rC, xC, yC0, yC1, yPipe, xSpl, ySpl, sSpl, xRf, yRf, rRM, HrM, rRF, HrF, hdM, hdF, yRvM, yRvF, yTopM, yTopF, xF, xMn, yValve, r2, x20, x21, y2c, x2o, yL2, yJ, xPump, yPump, yPumpLine, sPump, Rj, yJin } };
 }
@@ -3730,8 +3730,8 @@ function buildTank(m) {
     hmiTag("TI 자켓", "℃", () => PR && PR.TjEff != null ? f(PR.TjEff, 1) : CUR ? f(CUR.Tj, 1) : null, V3(-q.Rj - 0.01 * t, Math.max(q.yJin + 0.3 * t, 0.5 * Math.min(p.Hj > 0 ? p.Hj : Hs, Hs))), t, "L");   /* v100: 자켓 바로 옆 */
     hmiTag("ZI 스팀 밸브 개도", "%", () => CUR ? (VLV.J ? f(CUR.jOpen * 100, 1) : "0.0") : null, V3(-q.Rj - 0.22 * t, q.yJin - 0.07 * t), t, "B");   /* v100: 스팀 밸브 바로 아래 개도 */
     hmiTag("TI-H075 탑 온도", "℃", () => PR && f(PR.Thead, 1), V3(q.xCol - q.rCol - 0.04 * t, q.colTop - 0.12 * t), t, "L");
-    hmiTag("PI 탱크 압력", "mmHg", () => PR && f(PR.Pstill, 2), V3(q.xPump + 0.66 * q.sPump, q.yPump + q.sPump * 0.9), t, "T");
-    hmiTag("TIC-H071D 응축액 출구", "℃", () => PR && TBOT() != null && ((PR.condKg || 0) > 0.05 || (PR.mC1 || 0) > 0.01 || (PR.mHeldC || 0) > 0.01) ? f(TBOT(), 1) : null, V3(q.xC - q.rC - 0.02 * t, q.yC1 + 0.03 * t), t, "L");   /* v107: 넘침 관을 가리지 않게 */   // v82: 출구 라인 온도(사이트 글라스 옆)
+    hmiTag("PI 탱크 압력", "mmHg", () => PR && f(PR.Pstill, 2), V3(q.xPump, q.yPump - q.sPump * 0.7), t, "B");   /* v110: 펌프 아래(위는 배관) */
+    hmiTag("TIC-H071D 응축액 출구", "℃", () => PR && TBOT() != null && ((PR.condKg || 0) > 0.05 || (PR.mC1 || 0) > 0.01 || (PR.mHeldC || 0) > 0.01) ? f(TBOT(), 1) : null, V3(q.xC + 0.03 * t, (q.yC1 + q.ySpl + q.sSpl / 2) / 2), t, "R");   /* v110: 응축기 아래 응축액 관 옆 */   // v82: 출구 라인 온도(사이트 글라스 옆)
     hmiTag("FI 환류", "kg/h", () => PR && f(refluxNow(), 1), V3((q.xCol + q.rCol + q.xSpl - q.sSpl / 2) / 2, q.ySpl - 0.04 * t), t, "B");   /* v100: 환류 관 바로 아래 */   // v90: 환류 조절 밸브 아래
     hmiTag("FI 유출", "kg/h", () => PR && f(PR.Dkg, 1), V3(q.xSpl + 0.03 * t, q.ySpl - q.sSpl / 2 - 0.42 * t), t, "R");   /* v100: 유출 관 옆 */
     hmiTag("WI 초류 무게", "kg", () => PR && f(PR.ves.fore.A + PR.ves.fore.B, 1), V3(q.xF + q.rRF + 0.08 * t, (q.yRvF + q.yTopF) / 2), t, "R");
@@ -6313,7 +6313,7 @@ function vGauge(e, k) {
   g.style.left = Math.max(4, x) + "px"; g.style.top = Math.max(4, y) + "px";
 }
 const DCS = { box: null, els: [], at: 0 };
-const DCS_SHORT = { "TI 탱크 내부": "탱크", "WI 정제기 무게": "정제기", "TI 자켓": "자켓", "ZI 스팀 밸브 개도": "스팀 개도", "TI-H075 탑 온도": "탑", "PI 탱크 압력": "압력", "TIC-H071D 응축액 출구": "출구", "FI 환류": "환류", "FI 유출": "유출", "WI 초류 무게": "초류", "WI 본류 무게": "본류", "TI 컬럼 하부(계산)": "컬럼 하부", "TI 컬럼 중간(계산)": "컬럼 중간", "FI 증발(계산)": "증발" }, DCS_SKIP = { "SI 교반": 1, "냉각수 유량(가정)": 1 };   // v101: 짧은 이름 · 설정값은 뺌
+const DCS_SHORT = { "TI 탱크 내부": "탱크", "WI 정제기 무게": "정제기", "TI 자켓": "자켓", "ZI 스팀 밸브 개도": "스팀 개도", "TI-H075 탑 온도": "탑", "PI 탱크 압력": "압력", "TIC-H071D 응축액 출구": "응축액", "FI 환류": "환류", "FI 유출": "유출", "WI 초류 무게": "초류", "WI 본류 무게": "본류", "TI 컬럼 하부(계산)": "컬럼 하부", "TI 컬럼 중간(계산)": "컬럼 중간", "FI 증발(계산)": "증발" }, DCS_SKIP = { "SI 교반": 1, "냉각수 유량(가정)": 1 };   // v101: 짧은 이름 · 설정값은 뺌
 function dcsLabels(on, now) {
   if (!DCS.box) { DCS.box = document.createElement("div"); DCS.box.className = "dcs-box"; canvas.parentElement.appendChild(DCS.box); }
   if (DCS.box.hidden === on) DCS.box.hidden = !on; if (!on || now - DCS.at < 120) return; DCS.at = now;
@@ -6323,20 +6323,34 @@ function dcsLabels(on, now) {
     let v = null; try { v = T.fn(); } catch (e) { v = null; } const val = (v == null || v === "" || v === false ? "–" : v) + (T.unit === "℃" || T.unit === "%" ? "" : " ") + T.unit;
     if (el.dataset.n !== T.title) { el.dataset.n = T.title; el.firstChild.textContent = DCS_SHORT[T.title] || T.title; el.children[2].textContent = ""; el.classList.toggle("calc", /계산/.test(T.title));   /* v105: 꼬리표 대신 색·밑줄 */ el.title = T.title + (/계산/.test(T.title) ? " — 계기가 없는 계산값" : /스팀 밸브 개도|FI 환류/.test(T.title) ? " — 누르면 조절" : ""); el.classList.toggle("act", /스팀 밸브 개도|FI 환류/.test(T.title)); } if (el.children[1].textContent !== val) el.children[1].textContent = val;
     if (!relay) return; const w = el.offsetWidth || 80, h = el.offsetHeight || 30, al = T.al || "R";
-    its.push({ el, w, h, al, x: al === "L" ? a.x - w - 3 : al === "R" ? a.x + 3 : a.x - w / 2, y: al === "T" ? a.y - h - 3 : al === "B" ? a.y + 3 : a.y - h / 2 }); });
+    its.push({ el, w, h, al, ax: a.x, ay: a.y, x: al === "L" ? a.x - w - 3 : al === "R" ? a.x + 3 : a.x - w / 2, y: al === "T" ? a.y - h - 3 : al === "B" ? a.y + 3 : a.y - h / 2 }); });
   for (let i = HMI_TAGS.length; i < DCS.els.length; i++) DCS.els[i].hidden = true;
   if (!relay) return; DCS.ck = ck; DCS.lay = now;
-  { const cr = canvas.getBoundingClientRect(), bl = []; for (const sl of ["#opPanel", "#lblModeBox", "#sliceLegend"]) { const e = document.querySelector(sl); if (!e || e.hidden) continue; const r = e.getBoundingClientRect(); if (r.width > 0 && r.left - cr.left > W * 0.5) bl.push([r.left - cr.left, r.top - cr.top, r.bottom - cr.top]); }
-    for (const it of its) for (const k of bl) if (it.x + it.w > k[0] - 4 && it.y < k[2] && it.y + it.h > k[1]) it.x = k[0] - it.w - 6; }   /* v102: 오른쪽 패널을 피한다 */
-  { const q = M.pipe, R0 = M.R, Rj = q.Rj || R0, cr = canvas.getBoundingClientRect(), obs = [];   /* v103: 설비 몸통을 피한다 */
-    const pr = (x0, x1, y0, y1, z) => { let a = 1e9, bb = -1e9, c0 = 1e9, d0 = -1e9; for (const x of [x0, x1]) for (const y of [y0, y1]) for (const zz of [-z, z]) { _d3v.set(x, y, zz); tankGroup.localToWorld(_d3v); _d3v.project(camera); const px = (_d3v.x + 1) / 2 * W, py = (1 - _d3v.y) / 2 * H; a = Math.min(a, px); bb = Math.max(bb, px); c0 = Math.min(c0, py); d0 = Math.max(d0, py); } obs.push([a, c0, bb, d0]); };
+  const bot = calloutLimits(W, H, canvas.getBoundingClientRect()).L.bot;
+  { /* v110: 배관·밸브·설비·패널·다른 값 상자를 피해 빈 자리를 고른다(배관은 화면에 비친 선, 3 px 간격 점으로 센다) */
+    const cr = canvas.getBoundingClientRect(), q = M.pipe, Rj = q.Rj || M.R, box = [], seg = [], put = [], v = new THREE.Vector3(), pj = (o, x, y, z) => { v.set(x, y, z); o.localToWorld(v); v.project(camera); return [(v.x + 1) / 2 * W, (1 - v.y) / 2 * H, v.z < 1]; };
+    for (const sl of ["#opPanel", "#lblModeBox", "#sliceLegend", "#batchSheet"]) { const e = document.querySelector(sl); if (!e || e.hidden) continue; const r = e.getBoundingClientRect(); if (r.width > 0) box.push([r.left - cr.left, r.top - cr.top, r.right - cr.left, r.bottom - cr.top, 30]); }
+    { const hud = document.getElementById("hud"); if (hud) for (const e of hud.children) { const r = e.getBoundingClientRect(); if (r.width > 0) box.push([r.left - cr.left, r.top - cr.top, r.right - cr.left, r.bottom - cr.top, 30]); } }
+    const pr = (x0, x1, y0, y1, z) => { let a = 1e9, bb = -1e9, c0 = 1e9, d0 = -1e9; for (const x of [x0, x1]) for (const y of [y0, y1]) for (const zz of [-z, z]) { const u = pj(tankGroup, x, y, zz); a = Math.min(a, u[0]); bb = Math.max(bb, u[0]); c0 = Math.min(c0, u[1]); d0 = Math.max(d0, u[1]); } box.push([a, c0, bb, d0, 1]); };
     pr(-Rj, Rj, 0, M.topY, Rj); pr(q.xCol - q.rCol * 1.1, q.xCol + q.rCol * 1.1, q.colBase, q.colTop, q.rCol); pr(q.xC - q.rC * 1.2, q.xC + q.rC * 1.2, q.yC1, q.yC0, q.rC);
     pr(q.xMn - q.rRM, q.xMn + q.rRM, q.yRvM - q.hdM, q.yTopM + q.hdM, q.rRM); pr(q.xF - q.rRF, q.xF + q.rRF, q.yRvF - q.hdF, q.yTopF + q.hdF, q.rRF); pr(q.x20, q.x21, q.y2c - q.r2, q.y2c + q.r2, q.r2);
-    { const hud = document.getElementById("hud"); if (hud) for (const e of hud.children) { const r = e.getBoundingClientRect(); if (r.width > 0) obs.push([r.left - cr.left, r.top - cr.top, r.right - cr.left, r.bottom - cr.top]); } }
-    for (let pass = 0; pass < 2; pass++) for (const it of its) for (const o of obs) { if (it.x < o[2] + 3 && it.x + it.w > o[0] - 3 && it.y < o[3] + 2 && it.y + it.h > o[1] - 2) { const L = o[0] - it.w - 5, Rr = o[2] + 5; it.x = it.al === "R" ? Rr : it.al === "L" ? L : (Math.abs(L - it.x) < Math.abs(Rr - it.x) ? L : Rr); } } }
-  its.sort((p, q) => p.y - q.y);
-  for (let i = 0; i < its.length; i++) { const B = its[i]; B.x = Math.max(2, Math.min(W - B.w - 2, B.x)); for (let j = 0; j < i; j++) { const A = its[j]; if (B.x < A.x + A.w + 2 && A.x < B.x + B.w + 2 && B.y < A.y + A.h + 2 && B.y + B.h > A.y - 2) B.y = A.y + A.h + 2; } }
-  const bot = calloutLimits(W, H, canvas.getBoundingClientRect()).L.bot;   /* 아래 밸브 막대·안내 줄에 겹치면 숨김 */
+    pr(q.xPump - q.sPump, q.xPump + q.sPump, q.yPump - q.sPump * 0.6, q.yPump + q.sPump * 0.6, q.sPump * 0.6);
+    for (const hb of VALVE_HIT) { const r0 = hb.geometry.parameters.radius * 0.45, c = pj(hb, 0, 0, 0), e = pj(hb, r0, 0, 0), rr = Math.max(5, Math.hypot(e[0] - c[0], e[1] - c[1])); box.push([c[0] - rr, c[1] - rr, c[0] + rr, c[1] + rr, 3]); }
+    for (const k in PIPES) for (const o of PIPES[k]) { if (!o.isMesh || !o.visible || o.geometry.type !== "CylinderGeometry") continue; const gp = o.geometry.parameters, a = pj(o, 0, -gp.height / 2, 0), c = pj(o, 0, gp.height / 2, 0), m0 = pj(o, 0, 0, 0), e = pj(o, gp.radiusTop, 0, 0); if (!a[2] || !c[2]) continue; seg.push([a[0], a[1], c[0], c[1], Math.max(2, Math.hypot(e[0] - m0[0], e[1] - m0[1])) + 3]); }
+    const ov = (x, y, w, h, r) => Math.max(0, Math.min(x + w, r[2]) - Math.max(x, r[0])) * Math.max(0, Math.min(y + h, r[3]) - Math.max(y, r[1]));
+    const cost = (it, x, y, g, sd) => { const w = it.w, h = it.h; if (x < 2 || y < 2 || x + w > W - 2 || y + h > bot) return 1e9; let c = g * 3 + (sd === it.al ? 0 : sd[0] === it.al ? 12 : 25);
+      for (const r of box) { const o = ov(x, y, w, h, r); if (o > 0) c += o * r[4]; }
+      for (const r of put) { const o = ov(x - 2, y - 2, w + 4, h + 4, r); if (o > 0) c += o * 40; }
+      for (const sg of seg) { const dx = sg[2] - sg[0], dy = sg[3] - sg[1], L = Math.hypot(dx, dy), n = Math.max(1, Math.ceil(L / 3)), p = sg[4]; if (Math.max(sg[0], sg[2]) < x - p || Math.min(sg[0], sg[2]) > x + w + p || Math.max(sg[1], sg[3]) < y - p || Math.min(sg[1], sg[3]) > y + h + p) continue;
+        for (let k = 0; k <= n; k++) { const px = sg[0] + dx * k / n, py = sg[1] + dy * k / n; if (px > x - p && px < x + w + p && py > y - p && py < y + h + p) c += 60; } }
+      return c; };
+    for (const it of its) { let best = null; const w = it.w, h = it.h, ax = it.ax, ay = it.ay;
+      const tryAt = (sd, x, y, g) => { const c = cost(it, x, y, g, sd); if (!best || c < best[0]) best = [c, x, y]; };
+      for (const g of [4, 10, 18, 28, 40, 54]) { tryAt("R", ax + g, ay - h / 2, g); tryAt("L", ax - w - g, ay - h / 2, g); tryAt("T", ax - w / 2, ay - h - g, g); tryAt("B", ax - w / 2, ay + g, g); }
+      for (const g of [6, 16, 30, 44]) { tryAt("RT", ax + g, ay - h - g * 0.5, g * 1.2); tryAt("RB", ax + g, ay + g * 0.5, g * 1.2); tryAt("LT", ax - w - g, ay - h - g * 0.5, g * 1.2); tryAt("LB", ax - w - g, ay + g * 0.5, g * 1.2); tryAt("TR", ax - w * 0.15, ay - h - g, g * 1.1); tryAt("TL", ax - w * 0.85, ay - h - g, g * 1.1); tryAt("BR", ax - w * 0.15, ay + g, g * 1.1); tryAt("BL", ax - w * 0.85, ay + g, g * 1.1); }
+      it.x = best[1]; it.y = best[2]; it.cost = best[0]; put.push([it.x, it.y, it.x + w, it.y + h]); }
+    if (window.__dt) window.__dt.dcsCost = its.map((it) => (it.el.dataset.n || "") + ":" + Math.round(it.cost)); }
+   /* 아래 밸브 막대·안내 줄에 겹치면 숨김 */
   for (const it of its) { const hide = it.y + it.h > bot; if (it.el.hidden !== hide) it.el.hidden = hide; if (!hide) it.el.style.transform = `translate(${it.x.toFixed(0)}px,${it.y.toFixed(0)}px)`; }
 }
 // v100: 배치 시트 — 투입량 · 초류 컷 · 본류 컷을 쓰고 스타트(레시피 운전으로 처음부터)
