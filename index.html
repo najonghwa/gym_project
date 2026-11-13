@@ -837,7 +837,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v105 · 11-13 09:57</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v106 · 11-13 11:42</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -4155,7 +4155,7 @@ function lumpSlice(on) {
   const Tj = PR.TjEff != null ? PR.TjEff : p.Tj, heat = VLV.J && p.jOpen > 0 && !PR.stopped ? Math.max(0, Tj - PR.Tmean) : 0, A = k * heat, a = Math.max(0, Math.min(1, A / 0.3));   // A = 단면 온도 편차(K)
   LSL.A = A; LSL.a = a; LSL.w = w; LSL.on = true; LSL.h = Math.max(0.02, PR.h || p.H); const W = LPAT.on.W, H = LPAT.on.H, ctx = LSL.cv.getContext("2d"), img = ctx.createImageData(W, H), d = img.data, c0 = new THREE.Color();
   for (let r = 0; r < H; r++) for (let cc = 0; cc < W; cc++) { const z = H - 1 - r, v1 = LPAT.on.d[z][cc], v0 = LPAT.off.d[z][cc], o = (r * W + cc) * 4;
-    if (v1 == null || v0 == null) { d[o + 3] = 0; continue; } const v = v0 + (v1 - v0) * w, vv = Math.sign(v) * Math.sqrt(Math.abs(v)); divColor(0.5 + 0.5 * a * vv, c0); d[o] = c0.r * 255; d[o + 1] = c0.g * 255; d[o + 2] = c0.b * 255; d[o + 3] = 225; }
+    if (v1 == null || v0 == null) { d[o + 3] = 0; continue; } const v = v0 + (v1 - v0) * w, vv = Math.sign(v) * Math.sqrt(Math.abs(v)); divColor(0.5 + 0.5 * a * vv, c0); c0.lerp(tempColor(PR.Tmean, _absC), 0.45); d[o] = c0.r * 255; d[o + 1] = c0.g * 255; d[o + 2] = c0.b * 255; d[o + 3] = 225; }
   ctx.putImageData(img, 0, 0); LSL.tex.needsUpdate = true;
   const h = Math.max(0.02, PR.h || p.H), R = M.R, sx = W * R / LPAT.on.Rl;   // 격자 칸 크기 = R / Rl, 세로는 지금 액 높이에 맞춤
   me.scale.set(sx, h, 1); me.position.set((LPAT.on.W / 2 - 0.5 - LPAT.on.cx0) * R / LPAT.on.Rl, h / 2, 0.001); me.visible = true;
@@ -4164,15 +4164,15 @@ window.__lsl = () => ({ on: LSL.on, vis: !!(LSL.mesh && LSL.mesh.visible), A: LS
 function lumpColor(x, y, z, out) {   // v105: 단면과 같은 모양(축대칭으로 돌림)
   const P0 = LPAT.on, W = P0.W, H = P0.H, rr = Math.min(0.999, Math.hypot(x, z) / M.R), c = Math.round(P0.cx0 + rr * P0.Rl), zi = Math.max(0, Math.min(H - 1, Math.floor(y / LSL.h * H)));
   let v1 = P0.d[zi][Math.min(W - 1, c)], v0 = LPAT.off.d[zi][Math.min(W - 1, c)]; if (v1 == null || v0 == null) { v1 = 0; v0 = 0; }
-  const v = v0 + (v1 - v0) * LSL.w; return divColor(0.5 + 0.5 * LSL.a * Math.sign(v) * Math.sqrt(Math.abs(v)), out); }
+  const v = v0 + (v1 - v0) * LSL.w; divColor(0.5 + 0.5 * LSL.a * Math.sign(v) * Math.sqrt(Math.abs(v)), out); return out.lerp(tempColor(PR ? PR.Tmean : tLo, _absC), 0.45); }
 function lumpTint(on) {   // v100: 탱크 단순 계산은 탱크 안이 한 온도(완전 혼합) — 액 전체를 그 온도 색으로(단면과 같은 눈금)
   const m = mats.liquid; if (!m) return; if (!m.userData.c0) m.userData.c0 = m.color.clone();
   if (on && PR && Number.isFinite(PR.Tmean)) { tempColor(PR.Tmean, sc); m.color.copy(sc); const lg = $("sliceLegend"); lg.hidden = true; if (false) { $("sliceTitle").textContent = `탱크 온도 ${PR.Tmean.toFixed(1)}℃ (단순 계산: 탱크 안 한 온도)`; $("sliceTitle").title = "탱크 단순 계산(저사양)은 탱크 안을 완전 혼합으로 보고 온도를 하나만 구한다. 그래서 액 전체를 그 온도 색으로 칠한다. 위치마다 다른 온도는 격자 계산(CFD)일 때 단면으로 나온다";
     $("sliceBar").style.background = "linear-gradient(90deg,#1d3fb8,#1fa4c9,#5fd38a,#f2d544,#f06a2a)"; $("sliceEnds").innerHTML = [Math.round(tLo) + "℃", "", Math.round(tHi) + "℃"].map((x) => `<span>${x}</span>`).join(""); } }   /* v101: 범례 없음(값은 DCS 상자에) */
   else if (!m.color.equals(m.userData.c0)) m.color.copy(m.userData.c0);
 }
-const FDEV = { s: 1, mx: 0, at: 0 };   // v105: 탱크 안 온도 편차 크기(매 단면마다 갱신)
-function devColor(T, out) { const Tm = PR ? PR.Tmean : T, d = T - Tm; FDEV.mx = Math.max(FDEV.mx, Math.abs(d)); const v = Math.max(-1, Math.min(1, d / FDEV.s)); return divColor(0.5 + 0.5 * Math.sign(v) * Math.sqrt(Math.abs(v)), out); }
+const FDEV = { s: 1, mx: 0, at: 0 }, _absC = new THREE.Color();   // v105: 탱크 안 온도 편차 크기(매 단면마다 갱신)
+function devColor(T, out) { const Tm = PR ? PR.Tmean : T, d = T - Tm; FDEV.mx = Math.max(FDEV.mx, Math.abs(d)); const v = Math.max(-1, Math.min(1, d / FDEV.s)); divColor(0.5 + 0.5 * Math.sign(v) * Math.sqrt(Math.abs(v)), out); return out.lerp(tempColor(T, _absC), 0.45); }
 function buildSlice() {
   { const now = performance.now(); if (now - FDEV.at > 250) { FDEV.at = now; if (FDEV.mx > 0) FDEV.s = Math.max(0.3, 0.7 * FDEV.s + 0.3 * FDEV.mx); FDEV.mx = 0; } }
   const v = $("view").value, mode = v === "speed" ? "spd" : v, at = $("sliceAt").value, lg = $("sliceLegend");
@@ -5572,7 +5572,7 @@ $("tSurface").addEventListener("change", (e) => { if (surface) surface.visible =
 $("tVapor").addEventListener("change", (e) => { vapor.visible = vaporLines.visible = e.target.checked; });
 let paused = false;
 $("btnPause").addEventListener("click", () => { paused = !paused; $("btnPause").textContent = paused ? "재생" : "일시정지"; solver.pause(paused); });
-$("btnRestart").addEventListener("click", () => { OP.hold = {};   /* v86 */ if (REPLAY != null) tlLive(); TL.length = 0; TL_DT = 10; tlLastT = -1e9; tlSync(); if (paused) { paused = false; $("btnPause").textContent = "일시정지"; solver.pause(false); } lastSimKey = ""; PR = null; rebuild(); });
+$("btnRestart").addEventListener("click", () => { CARRY = null;   /* v106: 기다리던 이어붙이기 사본 버림 */ OP.hold = {};   /* v86 */ if (REPLAY != null) tlLive(); TL.length = 0; TL_DT = 10; tlLastT = -1e9; tlSync(); if (paused) { paused = false; $("btnPause").textContent = "일시정지"; solver.pause(false); } lastSimKey = ""; PR = null; rebuild(); });
 if (matchMedia("(prefers-reduced-motion: reduce)").matches) $("speed").value = "0.25";
 
 function applyTheme() {
