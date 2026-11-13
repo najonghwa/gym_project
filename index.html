@@ -826,13 +826,18 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
 .ckey i{display:inline-block;width:70px;height:7px;border-radius:2px;background:linear-gradient(90deg,#1d3fb8,#1fa4c9,#5fd38a,#f2d544,#f06a2a)}
 .ckey .ck-w{color:#f0a24a}
 
+/* v105 */
+.dcs-tag.calc b{color:#7cc8ff;text-decoration:underline dotted 1px;text-underline-offset:2px}
+.dcs-tag s{display:none}
+#sliceLegend{display:none!important}
+
 </style>
 
 <div class="app" id="app">
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v104 · 11-12 23:29</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v105 · 11-13 09:57</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -2916,7 +2921,7 @@ window.__flood = () => ({ carryKg: PR ? PR.carryKg || 0 : 0, colFull: !!(PR && P
 // v103: 정제기 액 몸통 — 가장자리(벽 쪽) = Tw, 가운데 = Tm. 화면 각도로 섞는다(옆에서 보면 벽 쪽 층이 가장자리에 보인다)
 const LIQB = { mesh: null };
 function liqBody() {
-  const on = !!(M && PR && solver.kind === "LUMP" && STYLE !== "iso" && $("view").value === "temp" && $("sliceAt").value !== "off");
+  const on = false;   /* v105: 정제기 액 통째 칠하기 없음 — 저사양 단면(lumpSlice)으로 */
   if (!LIQB.mesh) { const mat = new THREE.ShaderMaterial({ uniforms: { cB: { value: new THREE.Color() }, cW: { value: new THREE.Color() }, op: { value: 0.42 }, w: { value: 0.32 } }, transparent: true, depthWrite: false, side: THREE.DoubleSide,
       vertexShader: "varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }",
       fragmentShader: "uniform vec3 cB; uniform vec3 cW; uniform float op; uniform float w; varying vec3 vN; varying vec3 vV; void main(){ float f = 1.0 - abs(dot(normalize(vN), normalize(vV))); float k = smoothstep(1.0 - w, 1.0, f); gl_FragColor = vec4(mix(cB, cW, k), op); }" });
@@ -2993,7 +2998,7 @@ function fxUpdate(dtReal) {
   }
   // 5 열안정성: 한계 온도를 넘은 액이 있으면 탱크 액 높이만큼 붉게 빛난다
   { const over = p.Tlim != null && PR.TmaxL != null && PR.TmaxL > p.Tlim ? Math.max(0.15, PR.hotFrac || 0) : 0, ys = M.surfY(0, 0);
-    FX.hotGlow.visible = over > 0 && ys > 0.01; if (FX.hotGlow.visible) { FX.hotGlow.scale.y = ys; FX.hotGlow.position.set(0, ys / 2, 0); FX.hotGlow.material.opacity = (0.16 + 0.22 * over) * (0.6 + 0.4 * blink); } }
+    FX.hotGlow.visible = false && over > 0 && ys > 0.01;   /* v105 */ if (FX.hotGlow.visible) { FX.hotGlow.scale.y = ys; FX.hotGlow.position.set(0, ys / 2, 0); FX.hotGlow.material.opacity = (0.16 + 0.22 * over) * (0.6 + 0.4 * blink); } }
   // 14 열손실 (단열 얇을수록, 액이 뜨거울수록)
   { const thin = Math.max(0, 1 - p.tIns / 25), hot = Math.max(0, Math.min(1, (PR.Tmean - p.Tamb) / 60)); FX.loss.material.opacity = 0.12 * thin * hot; FX.loss.visible = FX.loss.material.opacity > 0.005; }
   // 9 과냉 환류: 응축기에서 식은 만큼 환류 관 색이 차가운 파랑 쪽으로
@@ -3715,19 +3720,19 @@ function buildTank(m) {
     hmiTag("TI 탱크 내부", "℃", () => PR && f(PR.Tmean, 1), V3(-q.Rj - 0.06 * t, Math.max(0.6 * t, 0.92 * Hs) - 0.2 * t), t, "L");
     hmiTag("WI 정제기 무게", "kg", () => PR && f(PR.m, 1), V3(-q.Rj - 0.06 * t, Math.max(0.6 * t, 0.92 * Hs) - 0.4 * t), t, "L");   // RTDB 태그에 맞춤: 정제기·초류·본류는 무게(kg)
     hmiTag("SI 교반", "rpm", () => CUR ? f(CUR.N * 60, 0) : null, V3(-q.Rj - 0.06 * t, Math.max(0.6 * t, 0.92 * Hs)), t, "L");
-    hmiTag("TI 자켓", "℃", () => PR && PR.TjEff != null ? f(PR.TjEff, 0) : CUR ? f(CUR.Tj, 0) : null, V3(-q.Rj - 0.01 * t, Math.max(q.yJin + 0.3 * t, 0.5 * Math.min(p.Hj > 0 ? p.Hj : Hs, Hs))), t, "L");   /* v100: 자켓 바로 옆 */
-    hmiTag("ZI 스팀 밸브 개도", "%", () => CUR ? (VLV.J ? f(CUR.jOpen * 100, CUR.jOpen < 0.1 ? 1 : 0) : "0") : null, V3(-q.Rj - 0.22 * t, q.yJin - 0.07 * t), t, "B");   /* v100: 스팀 밸브 바로 아래 개도 */
+    hmiTag("TI 자켓", "℃", () => PR && PR.TjEff != null ? f(PR.TjEff, 1) : CUR ? f(CUR.Tj, 1) : null, V3(-q.Rj - 0.01 * t, Math.max(q.yJin + 0.3 * t, 0.5 * Math.min(p.Hj > 0 ? p.Hj : Hs, Hs))), t, "L");   /* v100: 자켓 바로 옆 */
+    hmiTag("ZI 스팀 밸브 개도", "%", () => CUR ? (VLV.J ? f(CUR.jOpen * 100, 1) : "0.0") : null, V3(-q.Rj - 0.22 * t, q.yJin - 0.07 * t), t, "B");   /* v100: 스팀 밸브 바로 아래 개도 */
     hmiTag("TI-H075 탑 온도", "℃", () => PR && f(PR.Thead, 1), V3(q.xCol - q.rCol - 0.04 * t, q.colTop - 0.12 * t), t, "L");
-    hmiTag("PI 탱크 압력", "mmHg", () => PR && f(PR.Pstill, dP()), V3(q.xPump + 0.66 * q.sPump, q.yPump + q.sPump * 0.9), t, "T");
+    hmiTag("PI 탱크 압력", "mmHg", () => PR && f(PR.Pstill, 2), V3(q.xPump + 0.66 * q.sPump, q.yPump + q.sPump * 0.9), t, "T");
     hmiTag("TIC-H071D 응축액 출구", "℃", () => PR && TBOT() != null && ((PR.condKg || 0) > 0.05 || (PR.mC1 || 0) > 0.01 || (PR.mHeldC || 0) > 0.01) ? f(TBOT(), 1) : null, V3(q.xSpl + q.sSpl * 0.8, q.yC1 - 0.02 * t), t, "R");   // v82: 출구 라인 온도(사이트 글라스 옆)
-    hmiTag("FI 환류", "kg/h", () => PR && f(refluxNow(), 0), V3((q.xCol + q.rCol + q.xSpl - q.sSpl / 2) / 2, q.ySpl - 0.04 * t), t, "B");   /* v100: 환류 관 바로 아래 */   // v90: 환류 조절 밸브 아래
-    hmiTag("FI 유출", "kg/h", () => PR && f(PR.Dkg, 0), V3(q.xSpl + 0.03 * t, q.ySpl - q.sSpl / 2 - 0.42 * t), t, "R");   /* v100: 유출 관 옆 */
+    hmiTag("FI 환류", "kg/h", () => PR && f(refluxNow(), 1), V3((q.xCol + q.rCol + q.xSpl - q.sSpl / 2) / 2, q.ySpl - 0.04 * t), t, "B");   /* v100: 환류 관 바로 아래 */   // v90: 환류 조절 밸브 아래
+    hmiTag("FI 유출", "kg/h", () => PR && f(PR.Dkg, 1), V3(q.xSpl + 0.03 * t, q.ySpl - q.sSpl / 2 - 0.42 * t), t, "R");   /* v100: 유출 관 옆 */
     hmiTag("WI 초류 무게", "kg", () => PR && f(PR.ves.fore.A + PR.ves.fore.B, 1), V3(q.xF + q.rRF + 0.08 * t, (q.yRvF + q.yTopF) / 2), t, "R");
     hmiTag("WI 본류 무게", "kg", () => PR && f(PR.ves.main.A + PR.ves.main.B, 1), V3(q.xMn, q.yRvM - q.hdM - 0.06 * t), t, "B");
     hmiTag("냉각수 유량(가정)", "kg/h", () => CUR ? f(CUR.mcw, 0) : null, V3(q.xC - q.rC * 2.6, q.yC0 - 0.1 * t), t, "L");
     hmiTag("TI 컬럼 하부(계산)", "℃", () => PR && PR.Tsec && PR.Tsec.length ? f(PR.Tsec[0], 1) : null, V3(q.xCol - q.rCol - 0.1 * t, q.packY0 + 0.08 * t), t, "L");   // v100: 계기 없음 — 계산값이라 '계산'
     hmiTag("TI 컬럼 중간(계산)", "℃", () => PR && PR.Tsec && PR.Tsec.length ? f(PR.Tsec[Math.floor(PR.Tsec.length / 2)], 1) : null, V3(q.xCol - q.rCol - 0.1 * t, (q.packY0 + q.packY1) / 2), t, "L");
-    hmiTag("FI 증발(계산)", "kg/h", () => PR && f(PR.vdot, 1), V3(q.xCol + q.rCol * 0.7, (q.colBase + q.yNz) / 2), t, "R");
+    hmiTag("FI 증발(계산)", "kg/h", () => PR && f(PR.vdot, 1), V3(q.xCol - q.rCol * 0.7, (q.colBase + q.yNz) / 2), t, "L");   /* v105: 목관 왼쪽(오른쪽은 본류 관과 겹침) */
     updateHmiTags(0, true); }
   tankGroup.traverse((o) => { if (o.isMesh && (o.material === mats.steel || o.material === mats.motor || o.material === mats.tube)) { o.castShadow = true; o.receiveShadow = true; } });
   addEdges(tankGroup); addHulls(tankGroup);
@@ -3864,7 +3869,7 @@ function writeParticles(m) {
   for (let i = 0; i < NPA; i++) {
     const x = P3[i * 3], z = P3[i * 3 + 2], y = Math.min(P3[i * 3 + 1], m.surfY(x, z) - 0.006 * m.p.T);   // v81: 액면 위로 나오지 않게
     const vx = V3[i * 3], vy = V3[i * 3 + 1], vz = V3[i * 3 + 2];
-    if (mode === "temp") tempColor(tempAt(x, y, z), cHead);
+    if (mode === "temp") { if (LSL.on) lumpColor(x, y, z, cHead); else devColor(tempAt(x, y, z), cHead); }   /* v105 */
     else if (mode === "uz") divColor(0.5 + 0.5 * vy / Math.max(1e-3, 0.25 * m.Vref), cHead);
     else if (mode === "boil") divColor(1 + (tempAt(x, y, z) - tbDepth(Math.max(0, m.surfY(x, z) - y))) / 10, cHead);
     else speedColor(Math.hypot(vx, vy, vz) / m.Vref, cHead);
@@ -4130,23 +4135,49 @@ function updateJacketColor() {
   if (!jacketMat || !CUR) return;
   const hot = (PR && PR.stopped) || !VLV.J ? 0 : Math.min(1, Math.max(0, ((PR && PR.TjEff != null ? PR.TjEff : CUR.Tj) - 20) / 160));
   const base = STYLE === "steel" ? 0xd6dbe0 : STYLE === "toon" ? 0xeab676 : STYLE === "hmi" ? 0xc9d1d8 : STYLE === "draw" ? 0xffffff : 0x8a949c;
-  jacketMat.color.setHex(base).lerp(new THREE.Color(0xe8552a), STYLE === "draw" ? hot * 0.6 : hot); JRIM.color.setHex(isDark() ? 0x9aa6b1 : 0x5b6672).lerp(new THREE.Color(0xff6a2a), hot);
-  if (jacketMat.emissive) jacketMat.emissive.setHex(0xff5a1a).multiplyScalar((STYLE === "steel" ? 0.3 : 0.45) * hot);
+  jacketMat.color.setHex(base).lerp(new THREE.Color(0xe8552a), (STYLE === "draw" ? 0.6 : 1) * 0.35 * hot);   /* v105: 자켓 주황 옅게(온도는 DCS 값) */ JRIM.color.setHex(isDark() ? 0x9aa6b1 : 0x5b6672).lerp(new THREE.Color(0xff6a2a), hot);
+  if (jacketMat.emissive) jacketMat.emissive.setHex(0xff5a1a).multiplyScalar((STYLE === "steel" ? 0.3 : 0.45) * 0.3 * hot);
 }
 
 // ---------- 단면 ----------
 let sliceMesh = null, sliceCanvas = null, sliceTex = null, sliceKey = "";
 const SLICE = { boil: { title: "단면: 비등 가능 영역 (해당 깊이 끓는점까지 남은 온도차)" }, temp: { title: "단면: 온도" }, spd: { title: "단면: 속도", max: 0.5 }, uz: { title: "단면: 상하 흐름", max: 0.25 } };
 const sc = new THREE.Color();
+
+// v105: 저사양 정제기 단면 온도 — CFD(격자 20, CpHf)에서 뽑은 세로 단면 온도 모양을 지금 조건으로 키운다
+const LPAT = {"on":{"W":20,"H":21,"cx0":9.5,"Rl":9,"d":[[null,null,null,null,null,null,0.677,0.754,0.782,0.73,0.716,0.775,0.745,0.65,null,null,null,null,null,null],[null,null,null,0.49,0.459,0.436,0.375,0.403,0.426,0.412,0.411,0.422,0.394,0.355,0.419,0.464,0.499,null,null,null],[null,null,0.395,0.206,0.094,0.061,0.047,0.092,0.153,0.227,0.224,0.181,0.133,0.061,0.064,0.089,0.218,0.4,null,null],[null,null,0.251,0.01,-0.128,-0.225,-0.301,-0.285,-0.189,-0.153,-0.154,-0.234,-0.307,-0.282,-0.205,-0.122,0.016,0.252,null,null],[null,null,0.223,-0.007,-0.155,-0.296,-0.458,-0.553,-0.655,-0.42,-0.419,-0.679,-0.576,-0.446,-0.292,-0.166,-0.009,0.215,null,null],[null,null,0.263,0.064,-0.093,-0.289,-0.492,-0.627,-0.714,-0.761,-0.761,-0.713,-0.624,-0.489,-0.303,-0.119,0.049,0.257,null,null],[null,null,0.335,0.117,-0.099,-0.317,-0.484,-0.617,-0.71,-0.752,-0.749,-0.696,-0.606,-0.478,-0.31,-0.097,0.119,0.338,null,null],[null,null,0.392,0.133,-0.105,-0.295,-0.435,-0.561,-0.655,-0.699,-0.693,-0.641,-0.559,-0.435,-0.281,-0.087,0.153,0.426,null,null],[null,null,0.437,0.164,-0.052,-0.223,-0.373,-0.502,-0.599,-0.651,-0.638,-0.576,-0.492,-0.383,-0.24,-0.057,0.186,0.475,null,null],[null,null,0.473,0.207,-0.006,-0.188,-0.332,-0.449,-0.543,-0.596,-0.584,-0.517,-0.432,-0.335,-0.208,-0.029,0.198,0.489,null,null],[null,null,0.489,0.212,0.011,-0.149,-0.292,-0.402,-0.483,-0.531,-0.517,-0.456,-0.373,-0.279,-0.167,-0.017,0.204,0.51,null,null],[null,null,0.493,0.209,0.018,-0.125,-0.243,-0.348,-0.43,-0.474,-0.46,-0.402,-0.318,-0.216,-0.11,0.032,0.245,0.562,null,null],[null,null,0.546,0.265,0.069,-0.077,-0.195,-0.295,-0.379,-0.425,-0.408,-0.348,-0.264,-0.156,-0.027,0.123,0.332,0.633,null,null],[null,null,0.641,0.361,0.161,-0.003,-0.128,-0.233,-0.326,-0.38,-0.365,-0.301,-0.206,-0.097,0.036,0.21,0.434,0.73,null,null],[null,null,0.73,0.433,0.218,0.066,-0.062,-0.172,-0.275,-0.34,-0.332,-0.265,-0.161,-0.043,0.086,0.248,0.482,0.79,null,null],[null,null,0.787,0.476,0.255,0.111,-0.013,-0.128,-0.236,-0.309,-0.309,-0.245,-0.144,-0.023,0.109,0.265,0.515,0.841,null,null],[null,null,0.804,0.482,0.268,0.116,-0.017,-0.119,-0.211,-0.279,-0.287,-0.231,-0.147,-0.04,0.094,0.265,0.51,0.845,null,null],[null,null,0.812,0.47,0.249,0.095,-0.031,-0.127,-0.205,-0.262,-0.27,-0.225,-0.153,-0.054,0.081,0.248,0.487,0.841,null,null],[null,null,0.843,0.515,0.294,0.125,-0.015,-0.113,-0.188,-0.24,-0.243,-0.197,-0.124,-0.02,0.131,0.315,0.551,0.893,null,null],[null,null,0.924,0.607,0.386,0.196,0.032,-0.088,-0.167,-0.217,-0.22,-0.169,-0.083,0.043,0.212,0.416,0.655,0.97,null,null],[null,null,0.97,0.666,0.414,0.212,0.047,-0.073,-0.155,-0.205,-0.206,-0.16,-0.073,0.055,0.227,0.45,0.706,1.0,null,null]],"dT":0.64,"Tw_minus_Tm_note":"CFD t=4061 s, Tm 83.6, Tj 94.3, rpm 80"},"off":{"W":20,"H":21,"cx0":9.5,"Rl":9,"d":[[null,null,null,null,null,null,0.38,0.415,0.454,0.473,0.471,0.456,0.423,0.384,null,null,null,null,null,null],[null,null,null,0.284,0.255,0.211,0.193,0.236,0.287,0.314,0.311,0.293,0.247,0.205,0.21,0.246,0.275,null,null,null],[null,null,0.224,0.13,0.051,0.007,0.029,0.088,0.184,0.223,0.225,0.194,0.133,0.039,0.005,0.04,0.117,0.218,null,null],[null,null,0.145,0.012,-0.077,-0.11,-0.103,-0.078,-0.995,-0.062,-0.104,-0.996,-1.0,-0.108,-0.107,-0.076,0.005,0.137,null,null],[null,null,0.103,-0.036,-0.128,-0.164,-0.175,-0.185,-0.205,-0.171,-0.214,-0.209,-0.2,-0.175,-0.157,-0.12,-0.037,0.104,null,null],[null,null,0.08,-0.064,-0.141,-0.17,-0.182,-0.191,-0.197,-0.199,-0.198,-0.198,-0.193,-0.182,-0.168,-0.135,-0.052,0.091,null,null],[null,null,0.042,-0.085,-0.141,-0.156,-0.163,-0.168,-0.171,-0.17,-0.171,-0.172,-0.17,-0.162,-0.155,-0.139,-0.076,0.065,null,null],[null,null,0.01,-0.094,-0.125,-0.131,-0.134,-0.139,-0.141,-0.141,-0.14,-0.142,-0.139,-0.134,-0.131,-0.127,-0.089,0.032,null,null],[null,null,0.003,-0.077,-0.098,-0.104,-0.107,-0.112,-0.116,-0.117,-0.116,-0.114,-0.11,-0.108,-0.108,-0.105,-0.078,0.023,null,null],[null,null,0.022,-0.047,-0.068,-0.078,-0.084,-0.09,-0.097,-0.1,-0.099,-0.095,-0.089,-0.087,-0.085,-0.078,-0.056,0.031,null,null],[null,null,0.051,-0.013,-0.04,-0.053,-0.062,-0.073,-0.083,-0.088,-0.087,-0.081,-0.072,-0.067,-0.061,-0.047,-0.025,0.056,null,null],[null,null,0.089,0.024,-0.01,-0.027,-0.043,-0.06,-0.073,-0.079,-0.078,-0.07,-0.057,-0.045,-0.035,-0.017,0.015,0.091,null,null],[null,null,0.123,0.052,0.014,-0.007,-0.028,-0.048,-0.065,-0.072,-0.071,-0.062,-0.043,-0.025,-0.008,0.013,0.05,0.128,null,null],[null,null,0.15,0.075,0.035,0.01,-0.015,-0.038,-0.058,-0.066,-0.064,-0.054,-0.033,-0.008,0.014,0.04,0.086,0.164,null,null],[null,null,0.175,0.101,0.058,0.024,-0.005,-0.03,-0.052,-0.06,-0.057,-0.048,-0.027,0.003,0.033,0.067,0.118,0.198,null,null],[null,null,0.198,0.12,0.072,0.03,-0.003,-0.025,-0.047,-0.055,-0.052,-0.043,-0.025,0.004,0.044,0.088,0.143,0.226,null,null],[null,null,0.216,0.132,0.078,0.031,0.001,-0.019,-0.042,-0.05,-0.047,-0.037,-0.019,0.005,0.048,0.103,0.161,0.248,null,null],[null,null,0.228,0.142,0.086,0.038,0.008,-0.013,-0.036,-0.047,-0.043,-0.03,-0.011,0.013,0.048,0.107,0.174,0.262,null,null],[null,null,0.241,0.165,0.108,0.058,0.022,-0.003,-0.03,-0.045,-0.041,-0.024,-0.001,0.027,0.064,0.116,0.182,0.267,null,null],[null,null,0.227,0.166,0.12,0.073,0.034,0.004,-0.025,-0.043,-0.039,-0.021,0.006,0.038,0.078,0.121,0.171,0.236,null,null],[null,null,0.112,0.103,0.088,0.066,0.037,0.008,-0.021,-0.041,-0.038,-0.018,0.01,0.04,0.069,0.091,0.105,0.112,null,null]],"dT":10.89,"Tw_minus_Tm_note":"CFD t=5262 s, Tm 95.0, Tj 130.0, rpm 0"}};
+const LSL = { mesh: null, cv: null, tex: null, at: 0 };
+function lumpSlice(on) {
+  if (!LSL.mesh) { const W = LPAT.on.W, H = LPAT.on.H; LSL.cv = document.createElement("canvas"); LSL.cv.width = W; LSL.cv.height = H; LSL.tex = new THREE.CanvasTexture(LSL.cv); LSL.tex.magFilter = THREE.LinearFilter; LSL.tex.minFilter = THREE.LinearFilter;
+    LSL.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: LSL.tex, transparent: true, opacity: 0.92, side: THREE.DoubleSide, depthWrite: false })); LSL.mesh.renderOrder = 5;   /* 액면(4) 뒤에 그려 색이 묽어지지 않게 */ LSL.mesh.visible = false; world.add(LSL.mesh); }
+  const me = LSL.mesh; if (!on || !PR || !M) { me.visible = false; LSL.on = false; return; }
+  const p = CUR, rpm = (p.N || 0) * 60, w = Math.max(0, Math.min(1, rpm / 80)), k = 0.31 + (0.06 - 0.31) * w;   // CFD 비율: 편차 ÷ (Tj − Tm)
+  const Tj = PR.TjEff != null ? PR.TjEff : p.Tj, heat = VLV.J && p.jOpen > 0 && !PR.stopped ? Math.max(0, Tj - PR.Tmean) : 0, A = k * heat, a = Math.max(0, Math.min(1, A / 0.3));   // A = 단면 온도 편차(K)
+  LSL.A = A; LSL.a = a; LSL.w = w; LSL.on = true; LSL.h = Math.max(0.02, PR.h || p.H); const W = LPAT.on.W, H = LPAT.on.H, ctx = LSL.cv.getContext("2d"), img = ctx.createImageData(W, H), d = img.data, c0 = new THREE.Color();
+  for (let r = 0; r < H; r++) for (let cc = 0; cc < W; cc++) { const z = H - 1 - r, v1 = LPAT.on.d[z][cc], v0 = LPAT.off.d[z][cc], o = (r * W + cc) * 4;
+    if (v1 == null || v0 == null) { d[o + 3] = 0; continue; } const v = v0 + (v1 - v0) * w, vv = Math.sign(v) * Math.sqrt(Math.abs(v)); divColor(0.5 + 0.5 * a * vv, c0); d[o] = c0.r * 255; d[o + 1] = c0.g * 255; d[o + 2] = c0.b * 255; d[o + 3] = 225; }
+  ctx.putImageData(img, 0, 0); LSL.tex.needsUpdate = true;
+  const h = Math.max(0.02, PR.h || p.H), R = M.R, sx = W * R / LPAT.on.Rl;   // 격자 칸 크기 = R / Rl, 세로는 지금 액 높이에 맞춤
+  me.scale.set(sx, h, 1); me.position.set((LPAT.on.W / 2 - 0.5 - LPAT.on.cx0) * R / LPAT.on.Rl, h / 2, 0.001); me.visible = true;
+}
+window.__lsl = () => ({ on: LSL.on, vis: !!(LSL.mesh && LSL.mesh.visible), A: LSL.A, a: LSL.a, w: LSL.w, sc: LSL.mesh ? [LSL.mesh.scale.x, LSL.mesh.scale.y] : null, pos: LSL.mesh ? [LSL.mesh.position.x, LSL.mesh.position.y] : null, inWorld: !!(LSL.mesh && LSL.mesh.parent) });
+function lumpColor(x, y, z, out) {   // v105: 단면과 같은 모양(축대칭으로 돌림)
+  const P0 = LPAT.on, W = P0.W, H = P0.H, rr = Math.min(0.999, Math.hypot(x, z) / M.R), c = Math.round(P0.cx0 + rr * P0.Rl), zi = Math.max(0, Math.min(H - 1, Math.floor(y / LSL.h * H)));
+  let v1 = P0.d[zi][Math.min(W - 1, c)], v0 = LPAT.off.d[zi][Math.min(W - 1, c)]; if (v1 == null || v0 == null) { v1 = 0; v0 = 0; }
+  const v = v0 + (v1 - v0) * LSL.w; return divColor(0.5 + 0.5 * LSL.a * Math.sign(v) * Math.sqrt(Math.abs(v)), out); }
 function lumpTint(on) {   // v100: 탱크 단순 계산은 탱크 안이 한 온도(완전 혼합) — 액 전체를 그 온도 색으로(단면과 같은 눈금)
   const m = mats.liquid; if (!m) return; if (!m.userData.c0) m.userData.c0 = m.color.clone();
   if (on && PR && Number.isFinite(PR.Tmean)) { tempColor(PR.Tmean, sc); m.color.copy(sc); const lg = $("sliceLegend"); lg.hidden = true; if (false) { $("sliceTitle").textContent = `탱크 온도 ${PR.Tmean.toFixed(1)}℃ (단순 계산: 탱크 안 한 온도)`; $("sliceTitle").title = "탱크 단순 계산(저사양)은 탱크 안을 완전 혼합으로 보고 온도를 하나만 구한다. 그래서 액 전체를 그 온도 색으로 칠한다. 위치마다 다른 온도는 격자 계산(CFD)일 때 단면으로 나온다";
     $("sliceBar").style.background = "linear-gradient(90deg,#1d3fb8,#1fa4c9,#5fd38a,#f2d544,#f06a2a)"; $("sliceEnds").innerHTML = [Math.round(tLo) + "℃", "", Math.round(tHi) + "℃"].map((x) => `<span>${x}</span>`).join(""); } }   /* v101: 범례 없음(값은 DCS 상자에) */
   else if (!m.color.equals(m.userData.c0)) m.color.copy(m.userData.c0);
 }
+const FDEV = { s: 1, mx: 0, at: 0 };   // v105: 탱크 안 온도 편차 크기(매 단면마다 갱신)
+function devColor(T, out) { const Tm = PR ? PR.Tmean : T, d = T - Tm; FDEV.mx = Math.max(FDEV.mx, Math.abs(d)); const v = Math.max(-1, Math.min(1, d / FDEV.s)); return divColor(0.5 + 0.5 * Math.sign(v) * Math.sqrt(Math.abs(v)), out); }
 function buildSlice() {
+  { const now = performance.now(); if (now - FDEV.at > 250) { FDEV.at = now; if (FDEV.mx > 0) FDEV.s = Math.max(0.3, 0.7 * FDEV.s + 0.3 * FDEV.mx); FDEV.mx = 0; } }
   const v = $("view").value, mode = v === "speed" ? "spd" : v, at = $("sliceAt").value, lg = $("sliceLegend");
-  if (at === "off" || !F || !F.U || !M || solver.kind === "LUMP") { if (sliceMesh) sliceMesh.visible = false; lg.hidden = true; lumpTint(at !== "off" && solver.kind === "LUMP" && mode === "temp"); return; }
+  if (at === "off" || !F || !F.U || !M || solver.kind === "LUMP") { if (sliceMesh) sliceMesh.visible = false; lg.hidden = true; lumpTint(false); lumpSlice(at !== "off" && !!M && solver.kind === "LUMP" && mode === "temp"); return; }
+  lumpSlice(false);
   lumpTint(false);   /* v80: 가벼운 계산은 탱크 안 표시 없음 */
   const { Nx, Ny, Nz, dx, cx0, cy0 } = F, NXY = Nx * Ny, cfg = SLICE[mode], R = M.R, p = M.p;
   const horiz = at !== "v", W = Nx, H = horiz ? Ny : Nz;
@@ -4174,7 +4205,7 @@ function buildSlice() {
     if (!interior) { d[o + 3] = 0; continue; }
     if (F.mask[i] !== 0) { d[o + 3] = 0; hole[r * W + c] = 1; holes.push(r * W + c); continue; }
     let alpha = 235;
-    if (mode === "temp") tempColor(F.T ? F.T[i] : tLo, sc);
+    if (mode === "temp") devColor(F.T ? F.T[i] : tLo, sc);   /* v105: 평균 대비 */
     else if (mode === "boil") { const zr = horiz ? kz : zc; divColor(1 + ((F.T ? F.T[i] : tLo) - tbDepth(Math.max(0, (zTop - zr - 1) * dx))) / 10, sc); }
     else if (mode === "spd") speedColor(Math.hypot(F.U[3 * i], F.U[3 * i + 1], F.U[3 * i + 2]) / LAT_TIP, sc);
     else divColor(0.5 + 0.5 * F.U[3 * i + 2] / LAT_TIP / cfg.max, sc);
@@ -5837,7 +5868,7 @@ function opRender(force) {
   const fm = PR ? PR.ves.fore.A + PR.ves.fore.B : 0, mm = PR ? PR.ves.main.A + PR.ves.main.B : 0, D = PR ? PR.Dkg || 0 : 0, L = PR ? PR.Rkg || 0 : 0;   /* v65: 운전 패널 환류비 = 실제 환류 / 유출 */
   const R = D > 0.05 ? L / D : null, mv = Math.round((p.jOpen || 0) * 100), cs = cutState();
   let h = `<div class="op-h"><button type="button" class="op-fold" data-op="fold" aria-expanded="${OP_OPEN}">운전 패널 ${OP_OPEN ? "▾" : "▸"}</button>
-    <div class="op-mode" role="group" aria-label="운전 모드"><button type="button" data-op="rcp" class="${OP.recipe ? "on" : ""}">레시피</button><button type="button" data-op="auto" class="${m ? "" : "on"}">환류비</button><button type="button" data-op="man" class="${m && !OP.free && !OP.recipe ? "on" : ""}">수동</button><button type="button" data-op="free" class="${OP.free ? "on" : ""}">자유</button></div></div>`;
+    <div class="op-mode" role="group" aria-label="운전 모드"><button type="button" data-op="rcp" class="${OP.recipe ? "on" : ""}">레시피</button><button type="button" data-op="auto" class="${m ? "" : "on"}" hidden>환류비</button><button type="button" data-op="man" class="${m && !OP.free && !OP.recipe ? "on" : ""}">수동</button><button type="button" data-op="free" class="${OP.free ? "on" : ""}" hidden>자유</button></div></div>`;
   if (OP_OPEN) {
     const dis = m ? "" : " disabled";
     if (OP.free) h += freePanel(p);
@@ -6249,7 +6280,7 @@ function dcsLabels(on, now) {
   while (DCS.els.length < HMI_TAGS.length) { const el = document.createElement("div"); el.className = "dcs-tag"; el.innerHTML = "<i></i><b></b><s></s>"; el.addEventListener("click", (ev) => { if (/스팀 밸브 개도/.test(el.dataset.n || "")) vGauge(ev, "J"); else if (el.dataset.n === "FI 환류") vGauge(ev, "R"); }); DCS.box.appendChild(el); DCS.els.push(el); }
   HMI_TAGS.forEach((T, i) => { const el = DCS.els[i]; if (!T.s || DCS_SKIP[T.title]) { el.hidden = true; return; } const a = d3Proj(T.s, W, H); if (!a.ok) { el.hidden = true; return; } el.hidden = false;
     let v = null; try { v = T.fn(); } catch (e) { v = null; } const val = (v == null || v === "" || v === false ? "–" : v) + (T.unit === "℃" || T.unit === "%" ? "" : " ") + T.unit;
-    if (el.dataset.n !== T.title) { el.dataset.n = T.title; el.firstChild.textContent = DCS_SHORT[T.title] || T.title; el.children[2].textContent = /계산/.test(T.title) ? "계산" : ""; el.title = T.title + (/계산/.test(T.title) ? " — 계기가 없는 계산값" : /스팀 밸브 개도|FI 환류/.test(T.title) ? " — 누르면 조절" : ""); el.classList.toggle("act", /스팀 밸브 개도|FI 환류/.test(T.title)); } if (el.children[1].textContent !== val) el.children[1].textContent = val;
+    if (el.dataset.n !== T.title) { el.dataset.n = T.title; el.firstChild.textContent = DCS_SHORT[T.title] || T.title; el.children[2].textContent = ""; el.classList.toggle("calc", /계산/.test(T.title));   /* v105: 꼬리표 대신 색·밑줄 */ el.title = T.title + (/계산/.test(T.title) ? " — 계기가 없는 계산값" : /스팀 밸브 개도|FI 환류/.test(T.title) ? " — 누르면 조절" : ""); el.classList.toggle("act", /스팀 밸브 개도|FI 환류/.test(T.title)); } if (el.children[1].textContent !== val) el.children[1].textContent = val;
     const w = el.offsetWidth || 80, h = el.offsetHeight || 30, al = T.al || "R";
     its.push({ el, w, h, al, x: al === "L" ? a.x - w - 3 : al === "R" ? a.x + 3 : a.x - w / 2, y: al === "T" ? a.y - h - 3 : al === "B" ? a.y + 3 : a.y - h / 2 }); });
   for (let i = HMI_TAGS.length; i < DCS.els.length; i++) DCS.els[i].hidden = true;
@@ -6576,7 +6607,7 @@ function isoSliceImage() {   // buildSlice 의 세로 단면과 같은 색(보�
     if (!(zc >= 1 && zc < zTop && Math.abs(c - cx0) < rWallAt(zc) - 1.2)) { d[o + 3] = 0; continue; }
     // 고체 칸, 그리고 축 자리(격자에서 고체로 표시되지 않아 처음 온도에 머문 두 칸)는 이웃 색으로 메운다
     if (F.mask[i] !== 0 || Math.abs(c - cx0) < 1 || (Math.abs(c - cx0) < hubC && Math.abs(zc - 0.5 - impZ) < 3.5)) { d[o + 3] = 0; holes.push(r * Nx + c); continue; }
-    if (mode === "temp") tempColor(F.T ? F.T[i] : tLo, sc);
+    if (mode === "temp") devColor(F.T ? F.T[i] : tLo, sc);   /* v105: 평균 대비 */
     else if (mode === "boil") divColor(1 + ((F.T ? F.T[i] : tLo) - tbDepth(Math.max(0, (zTop - zc - 1) * dx))) / 10, sc);
     else if (mode === "spd") speedColor(Math.hypot(F.U[3 * i], F.U[3 * i + 1], F.U[3 * i + 2]) / LAT_TIP, sc);
     else divColor(0.5 + 0.5 * F.U[3 * i + 2] / LAT_TIP / cfg.max, sc);
