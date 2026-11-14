@@ -1,0 +1,1 @@
+eval: "OK tD main cut=main D=152.0 m2=1.5 탱크 증가=150.8 kg/h 차=0.8%"

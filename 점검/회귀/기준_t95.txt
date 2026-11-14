@@ -1,0 +1,1 @@
+eval: "t=73.8 open=0.7 Tj=110 TjEff=110.0 Qcap=65 Q=23.4 vdot=246 Tm=80.5 Th=72.4 steam=38"
