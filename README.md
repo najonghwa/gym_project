@@ -36,4 +36,4 @@ https://github.com/najonghwa/gym_project/archive/refs/heads/distill-sim.zip
 - `점검/점검.py`: 시뮬레이터를 실제 브라우저로 돌려 요구마다 숫자로 판정한다. `python 점검/점검.py --tag 이름`
 - `점검/회귀/회귀.py`: 계산을 바꾼 뒤 직전 배포판과 결과를 나란히 본다. `python 점검/회귀/회귀.py`
 - 필요한 것: Python 3, Node.js(Claude Code를 쓰면 이미 있음), 크롬 또는 엣지.
-- 요구 목록(`점검/요구목록.md`)과 계산 근거 문서(`적용_공식_정리.md`)는 공개 저장소라 따로 받는다.
+- 요구 목록(`점검/요구목록.md`)과 계산 근거 문서(`적용_공식_정리.md`)도 이 저장소에 있다. 판마다 함께 갱신된다.
