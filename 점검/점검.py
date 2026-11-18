@@ -12,6 +12,7 @@
 import json, os, re, subprocess, sys, time, argparse, pathlib, math
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import 점검_공식 as X   # v117: 공식 검산·이상 상황 반응 시험
+import 점검_합침 as Y   # v125: 사내망 v117~v124 합침 확인
 
 HERE = pathlib.Path(__file__).resolve().parent
 def _drive():   # 브라우저를 움직이는 도구: 같은 폴더 도구/drive.mjs(사내망용 사본, MIT) → 개발 PC의 anatomy 스킬
@@ -62,8 +63,8 @@ JS_TEXT = r"""(()=>{
   const spd=['spdD2','spdD15','spdCur','spdU15','spdU2'].map(i=>{const e=document.getElementById(i);return e?e.textContent.trim():null;});
   const dr=document.getElementById('drawer');let rows=0,kinded=0,estNoTip=0;
   if(dr)dr.querySelectorAll('.row > label[for]').forEach(lb=>{const inp=document.getElementById(lb.htmlFor);if(!inp)return;rows++;if(lb.dataset.kind)kinded++;if(lb.dataset.kind==='est'&&!(lb.dataset.tip||'').trim())estNoTip++;});
-  const D=window.__dt;const vBefore=!!D.VLV.V;try{D.setValve('V',false);}catch(e){}const vAfter=!!D.VLV.V;const Cb=(document.getElementById('C')||{}).value;const alarmBtn=/알림\s*\d+\s*개/.test(txt);
-  return JSON.stringify({vBefore,vAfter,Cb,alarmBtn,words,badHit,dup,ver,spd,rows,kinded,estNoTip,P:(document.getElementById('P')||{}).value,style:D.STYLE,solver:D.solverKind,mat:(D.CUR&&D.CUR.A&&D.CUR.A.name)||null,len:txt.length});
+  const D=window.__dt;const vBefore=!!D.VLV.V;try{D.setValve('V',false);}catch(e){}const vAfter=!!D.VLV.V;const Cb=(document.getElementById('C')||{}).value,agType=(document.getElementById('type')||{}).value;const alarmBtn=/알림\s*\d+\s*개/.test(txt);
+  return JSON.stringify({vBefore,vAfter,Cb,agType,alarmBtn,words,badHit,dup,ver,spd,rows,kinded,estNoTip,P:(document.getElementById('P')||{}).value,style:D.STYLE,solver:D.solverKind,mat:(D.CUR&&D.CUR.A&&D.CUR.A.name)||null,len:txt.length});
 })()"""
 
 # 점 표본: 두 번 재서 움직인 방향과 색을 본다. 허용 = 증기관 꺾여 내려가는 관(7)·1차 응축기(종류 2)·2차/펌프 쪽 길
@@ -103,10 +104,10 @@ JS_DCS = r"""(()=>{
   const pairs=[];for(let i=0;i<B.length;i++)for(let j=i+1;j<B.length;j++){const o=ov(B[i],B[j]);if(o>1)pairs.push(B[i].n+' / '+B[j].n+' '+o.toFixed(0)+'px²');}
   const pipe=B.filter(b=>b.hits&&b.hits.length).map(b=>b.n+': '+b.hits.join('; '));const touch=B.filter(b=>!(b.hits&&b.hits.length)&&b.cost>=60).map(b=>b.n+':'+Math.round(b.cost));
   const far=B.filter(b=>{const cx=Math.max(b.x,Math.min(b.ax,b.x+b.w)),cy=Math.max(b.y,Math.min(b.ay,b.y+b.h));return Math.hypot(cx-b.ax,cy-b.ay)>60;}).map(b=>b.n);
-  const dist=B.find(b=>b.n==='FI 유출');const distRight=dist?dist.x>=dist.ax-1:null;
+  const dist=B.find(b=>b.n==='FICH072 유출');const distRight=dist?dist.x>=dist.ax-1:null;
   const gaps=[];document.querySelectorAll('.dcs-tag').forEach(el=>{if(el.offsetParent===null)return;const i=el.children[0],b=el.children[1];if(!i||!b||!b.textContent.trim())return;const g=b.getBoundingClientRect().left-i.getBoundingClientRect().right;gaps.push([el.dataset.n,+g.toFixed(1)]);});
   const bigGap=gaps.filter(g=>g[1]>6);
-  const hb=B.find(b=>/TIC-H071D/.test(b.n));
+  const hb=B.find(b=>/TICH071D/.test(b.n));
   return JSON.stringify({n:B.length,pairs,pipe,touch,far,distRight,bigGap,hbName:hb?(document.querySelector('.dcs-tag[data-n="'+hb.n+'"]')||{children:[{textContent:'?'}]}).children[0].textContent:null,boxes:B.map(b=>[b.n,Math.round(b.x),Math.round(b.y)])});
 })()"""
 
@@ -148,8 +149,8 @@ JS_RTOGGLE = r"""(async()=>{const D=window.__dt,F=D.FILL;const smp=[];const rec=
 JS_POOL = r"""(()=>{const D=window.__dt,P=D.PR;return JSON.stringify({hC1:+(P.hC1||0).toFixed(4),c1h:D.C1H!=null?+D.C1H.toFixed(4):null,Tbot:P.Tbot!=null?+P.Tbot.toFixed(2):null,T1out:P.T1out!=null?+P.T1out.toFixed(2):null,n2:+((((P.fr&&P.fr.n2)||0)+((P.fr&&P.fr.lost)||0))*P.vdot).toFixed(2),ov:+(P.ovKg||0).toFixed(2),R:+(P.Rkg||0).toFixed(1),WR:+(P.WR||0).toFixed(1),t:+(P.t/3600).toFixed(3),DR:document.getElementById('DpipeR').value})})()"""
 SET_DR = lambda v: ["eval", "(()=>{const e=document.getElementById('DpipeR');e.value='" + v + "';e.dispatchEvent(new Event('change',{bubbles:true}));return e.value})()"]
 
-def scen(name, actions, width=1440, height=1000, theme=None):
-    return {"name": name, "actions": actions, "width": width, "height": height, "theme": theme}
+def scen(name, actions, width=1440, height=1000, theme=None, q=""):
+    return {"name": name, "actions": actions, "width": width, "height": height, "theme": theme, "q": q}
 
 def tag(t, js):  # eval 결과에 이름을 붙인다
     return ["eval", f"(async()=>{{const r=await ({js});return JSON.stringify({{tag:{json.dumps(t)},v:JSON.parse(r)}})}})()"]
@@ -175,15 +176,17 @@ def build_scenarios():
     S.append(scen("스팀 과다", hot))
     S.append(scen("수동 끓기 순서", BOOT + [["eval", SET_MANUAL], ["wait", 1500]] + jump(1.03) + [tag("order", JS_ORDER.replace("__SPAN__", "540")), ["shot", str(SHOTS / "수동끓기_컬럼.png"), "#stage", 2, [250, 60, 260, 480]]]))
     S.append(scen("1차 응축기 넘침", BOOT + [["eval", "window.__dt.opSetMode('free');1"], ["wait", 1500]] + jump(2.3) + [["wait", 3000], ["eval", "window.__dt.setValve('R',false);window.__dt.setValve('P',false);1"], ["until", "(window.__dt.PR.ovKg||0)>5", 240000], ["wait", 6000], tag("ov", JS_OV), ["shot", str(SHOTS / "넘침_2차응축기.png"), "#stage", 2, [500, 40, 300, 260]]]))
-    S.append(scen("환류 관 2 mm 고임", BOOT + [["eval", "window.__dt.opSetMode('free');1"], ["wait", 1500]] + jump(2.3) + [["wait", 3000], tag("pool0", JS_POOL), SET_DR("2"), ["until", "(window.__dt.PR.hC1||0)>0.01", 240000], ["wait", 20000], tag("pool6", JS_POOL), ["shot", str(SHOTS / "환류관2mm_응축기.png"), "#stage", 2, [380, 30, 260, 260]], SET_DR("15.8"), ["wait", 40000], tag("poolBack", JS_POOL)]))
+    S.append(scen("환류 관 2 mm 고임", BOOT + [["eval", "window.__dt.opSetMode('free');1"], ["wait", 1500]] + jump(2.3) + [["wait", 3000], tag("pool0", JS_POOL), SET_DR("2"), ["until", "(window.__dt.PR.hC1||0)>0.01", 240000], ["wait", 20000], tag("pool6", JS_POOL), ["shot", str(SHOTS / "환류관2mm_응축기.png"), "#stage", 2, [380, 30, 260, 260]], SET_DR("17.5"), ["wait", 40000], tag("poolBack", JS_POOL)]))
     S.append(scen("수동 끓기 빨리 감기", BOOT + [["eval", SET_MANUAL], ["wait", 1500]] + jump(1.4) + [tag("tb_jump", JS_TB_HIST)]))
     S.append(scen("수동 끓기 실시간 ×120", BOOT + [["eval", SET_MANUAL], ["wait", 1500]] + jump(1.0) + [["eval", "(()=>{const e=document.getElementById('accel');e.value='120';e.dispatchEvent(new Event('change',{bubbles:true}));return e.value})()"], tag("tb_live", JS_TB_LIVE.replace("__SPAN__", "900"))]))
     S += X.scenarios(scen, tag, BOOT, jump, SHOTS)
+    S += Y.scenarios(scen, tag, BOOT, jump, SHOTS)
     return S
 
 def run(sc, url):
     f = HERE / ("_act_" + re.sub(r"\W", "_", sc["name"]) + ".json")
     f.write_text(json.dumps(sc["actions"], ensure_ascii=False), encoding="utf-8")
+    if sc.get("q"): url = url + ("&" if "?" in url else "?") + sc["q"]
     cmd = ["node", DRIVE, url, "--actions", str(f), "--width", str(sc["width"]), "--height", str(sc["height"])]
     if sc["theme"]: cmd += ["--theme", sc["theme"]]
     t0 = time.time()
@@ -203,7 +206,8 @@ def run(sc, url):
 ALLOW = set("""kg h mmHg torr rpm mm kW W bar barg kPa Pa wt mol min s m K CpHf TDMAHf Cp Hf CpH HfCl DMA FIC TIC FI PI TI WI ZI PCV FCV CV TT FT LT PT
 H T P F M R D L A B C S V J U N Q x y z D2 RD T2 L2 EQV GPU CPU DCS MSDS HMI VDI CFD PID ID OD JIS SUS STS NPS HTML Antoine Raoult NRTL Wilson Watson
 Fenske Underwood Gilliland Ergun Darcy Nusselt Prandtl Reynolds Re Pr Nu Ma Fr Kn Tate Nagata Souders Brown Chapman Enskog Harkins TTL v n ms fps
-cP cp CP UA LMTD NTU dP dT ON OFF OK Kp Ti""".split())   # Kp·Ti = PI 조절 기호(식의 문자처럼 씀)
+cP cp CP UA LMTD NTU dP dT ON OFF OK Kp Ti
+TICH TIH WIH PICH SICAH FICH TCV XVH XV Brine PIMS LP LC NBRS LBRS BEM BEU GA MV""".split())   # Kp·Ti = PI 조절 기호(식의 문자처럼 씀)
 def judge(out):
     R = []
     def add(id_, name, ok, val, crit):
@@ -221,7 +225,7 @@ def judge(out):
         add("G1", "첫 화면 0.1 torr", t["P"] == "0.1", f"P={t['P']}", "0.1")
         add("C31", "첫 화면 3D(HMI)", t["style"] == "hmi", t["style"], "hmi")
         add("E14", "증기 밸브 없음(닫기 조작 무시)", t.get("vAfter") is True, f"닫기 전 {t.get('vBefore')} → 뒤 {t.get('vAfter')}", "열림 유지")
-        add("E15", "교반기 바닥 간격 기본 150 mm", str(t.get("Cb")) == "150", t.get("Cb"), "150")
+        add("E15", "교반기 = 2-세미 앵커, 바닥 간격 90 mm(CpHf 조건 · GA-071 그림 비례)", str(t.get("Cb")) == "90" and t.get("agType") == "anchor", f"{t.get('agType')} · {t.get('Cb')} mm", "anchor · 90")
         add("C3", "'알림 n개' 단추 없음", t.get("alarmBtn") is False, "없음" if not t.get("alarmBtn") else "있음", "없음")
     o = g("끓기 시작", "onset")
     if o:
@@ -252,7 +256,7 @@ def judge(out):
                 add("C27", "이름–값 사이 빈칸 > 6 px", not d["bigGap"], d["bigGap"] or "0개", "0개")
                 add("A4", "응축액 온도 이름 '하부'", d["hbName"] == "하부", d["hbName"], "하부")
                 names = [b[0] for b in d["boxes"]]
-                need = ["TI 탱크 내부", "TI-H075 탑 온도", "TIC-H071D 응축액 출구"]
+                need = ["TICH071 탱크 내부", "TIH075 탑 온도", "TICH071D 응축액 출구"]
                 add("C29", "기본 값 상자: 내부·탑·하부 온도 있음, '끓는점' 없음", all(n in names for n in need) and not any("끓는점" in n for n in names), f"{len(names)}개 · 빠진 것 {[n for n in need if n not in names] or '없음'}", "3개 있음 · 끓는점 0")
                 if d2: add("C28", "카메라 고정 5초 동안 상자 위치 변화", d["boxes"] == d2["boxes"], "같음" if d["boxes"] == d2["boxes"] else "달라짐", "0 px")
         s2 = g(sn, "state_reflux")
@@ -294,7 +298,7 @@ def judge(out):
         if p6.get("c1h") is not None:
             add("D16", "1차 응축기 그린 액면 높이 = 계산 고임 높이", abs(p6["c1h"] - p6["hC1"]) <= max(0.003, 0.1 * p6["hC1"]), f"그림 {p6['c1h']} · 계산 {p6['hC1']} m", "± 10 %")
     if pb and p6:
-        add("E8", "환류 관을 15.8 mm로 되돌리면 고임이 빠짐", pb["hC1"] < p6["hC1"], f"{p6['hC1']} → {pb['hC1']} m", "줄어듦")
+        add("E8", "환류 관을 17.5 mm로 되돌리면 고임이 빠짐", pb["hC1"] < p6["hC1"], f"{p6['hC1']} → {pb['hC1']} m", "줄어듦")
     od = g("수동 끓기 순서", "order")
     if od:
         add("D1", "끓기 시작: 목관 액 점이 증기 점보다 먼저 생김", od["tV"] is not None and (od["tL"] is None or od["tL"] >= od["tV"]), f"증기 점 {round(od['tV'], 1) if od['tV'] is not None else None}분 → 액 점 {round(od['tL'], 1) if od['tL'] is not None else None}분", "증기 먼저")
@@ -317,6 +321,7 @@ def judge(out):
         bad = [c for c in r["console"] if "error" in c.lower() and "clean" not in c.lower()]
         add("F6", f"콘솔 오류 — {sn}", not bad, bad[:2] or "깨끗", "0건")
     X.judge(g, add)
+    Y.judge(g, add)
     return R
 
 def static_checks():
@@ -377,6 +382,7 @@ def main():
         print("▶", sc["name"], flush=True); out[sc["name"]] = run(sc, a.url); print("  ", out[sc["name"]]["sec"], "s", list(out[sc["name"]]["res"].keys()), flush=True)
     R = judge(out)
     S, ver = static_checks(); R += S
+    R += Y.static(SIM_HTML)
     if a.reg: R += regress_checks(a.reg)
     npass = sum(r["ok"] is True for r in R); nfail = sum(r["ok"] is False for r in R); nref = sum(r["ok"] is None for r in R)
     md = [f"# 자동 점검 결과 {ver or ''} {a.tag}".rstrip(), "", f"통과 {npass} · 실패 {nfail} · 판정 {npass + nfail}항목(참고 {nref}줄 따로)  ({time.strftime('%Y-%m-%d %H:%M')})", "", "| 결과 | ID | 항목 | 잰 값 | 기준 |", "|---|---|---|---|---|"]

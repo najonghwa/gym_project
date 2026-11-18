@@ -43,7 +43,7 @@ Tw1:r(P.Tw1out,2),Tw2:r(P.Tw2out,2),cap1:r(P.cap1,1),Qc:r(P.Qc,1),Pset:p.P,tIns:
 boil:P.Tmean>=P.Tbub-0.3,on:Object.keys(D.AB.on),stopped:!!P.stopped})})()"""
 
 # 이상 상황: (열쇠, 이름, 건 뒤 본 시각[h])
-AB_CASES = [("c1hot", "1차 브라인 온도 상승", 0.5), ("c1cold", "1차 브라인 과냉", 0.5), ("c2hot", "2차 브라인 온도 상승", 0.5), ("cwlow", "브라인 유량 부족", 0.5),
+AB_CASES = [("c1hot", "1차 N-Brine 온도 상승", 0.5), ("c1cold", "1차 N-Brine 과냉", 0.5), ("c2hot", "2차 L-Brine 온도 상승", 0.5), ("cwlow", "냉매 유량 부족", 0.5),
             ("steam", "스팀 개도 과다", 0.5), ("rhigh", "환류 과다", 0.5), ("rlow", "환류 부족", 0.5), ("leak", "진공 리크 증가", 0.5), ("pump", "진공 배기 능력 저하", 0.5), ("pstop", "진공 펌프 정지", 0.5),
             ("cold", "외기 한파", 0.5), ("bare", "단열 손상", 0.5)]
 
@@ -99,13 +99,13 @@ def judge(g, add):
         add("I13", "스팀 입열 − 열손실 − 증발 = 액을 데우는 몫(작아야)", abs(bal) < 0.25 * s["Q"], f"{bal:.0f} W (입열 {s['Q']:.0f} W의 {bal / s['Q'] * 100:.0f} %)", "입열의 25 % 안")
     u = g("공식 검산", "ui117")
     if u:
-        need = ["PI 정제기 쪽 압력", "PI 펌프 쪽 압력", "TI 1차 브라인 입구", "TI 2차 브라인 입구"]; miss = [n for n in need if n not in u["tags"]]
-        add("J1", "값 상자: 정제기 쪽·펌프 쪽 압력, 1차·2차 브라인 입구 온도", not miss, "모두 있음" if not miss else "없음: " + ", ".join(miss), "네 개 모두")
+        need = ["PICH071 탱크 압력", "PI 펌프 쪽 압력", "TICH364 N-Brine 입구", "TIH353 L-Brine 입구"]; miss = [n for n in need if n not in u["tags"]]
+        add("J1", "값 상자: 정제기 쪽(PICH071)·펌프 쪽 압력, N-Brine(TICH364)·L-Brine(TIH353) 입구 온도", not miss, "모두 있음" if not miss else "없음: " + ", ".join(miss), "네 개 모두")
         add("J2", "입력칸 구분에 '추정'(데이터로도 정하기 힘든 값)과 거르기 버튼", u["kinds"]["hard"] >= 5 and u["kinds"]["est"] >= 10 and u["hasF"], f"추정 {u['kinds']['hard']}칸 · 가정 {u['kinds']['est']}칸 · 측정 {u['kinds']['meas']}칸 · 버튼 {'있음' if u['hasF'] else '없음'}", "추정 ≥ 5 · 가정 ≥ 10 · 버튼")
         add("J3", "식 안에 든 물성·상수 목록(입력칸 없는 값)", u["kc"] >= 8 and u["kch"] >= 5, f"{u['kc']}줄(추정 {u['kch']})", "≥ 8줄 · 추정 ≥ 5")
         add("J4", "이상 상황 목록", u["n"] == len(AB_CASES), f"{u['n']}가지", f"{len(AB_CASES)}가지")
         add("J5", "이상 상황 창이 3D 화면 안", bool(u["inside"]), "안" if u["inside"] else "밖으로 나감", "안")
-        add("J6", "상황을 걸면 입력칸·계산값이 같이 바뀜(1차 브라인 95 ℃)", u["t1"] == "95" and abs(u["cur1"] - 95) < 1e-6 and "1개" in u["lab1"], f"입력 {u['t1']} · 계산 {u['cur1']} · 버튼 '{u['lab1']}'", "95 · 95 · 1개 적용 중")
+        add("J6", "상황을 걸면 입력칸·계산값이 같이 바뀜(N-Brine 95 ℃)", u["t1"] == "95" and abs(u["cur1"] - 95) < 1e-6 and "1개" in u["lab1"], f"입력 {u['t1']} · 계산 {u['cur1']} · 버튼 '{u['lab1']}'", "95 · 95 · 1개 적용 중")
         add("J7", "같은 값을 바꾸는 상황은 하나만", u["t2"] == "5" and u["on2"] == ["c1cold"], f"입력 {u['t2']} · 켜진 상황 {u['on2']}", "5 · 과냉만")
         add("J8", "모두 되돌리기 → 처음 값", u["t3"] == u["t0"] and abs(u["cur3"] - float(u["t0"])) < 1e-6 and u["lab3"] == "상황 고르기", f"입력 {u['t3']}(처음 {u['t0']}) · 계산 {u['cur3']} · 버튼 '{u['lab3']}'", "처음 값 · '상황 고르기'")
         add("J9", "운전 기록에 건 것·되돌린 것이 남음", sum("이상 상황" in t for t in u["ops"]) >= 3, " / ".join(u["ops"][-3:]), "3줄 이상")
@@ -131,13 +131,13 @@ def _c1cold(a, b, c):
             f"응축액 출구 {a['Tbot']} → {b['Tbot']} ℃ · 과냉 몫 cp·ΔT/λ {a['subR']} → {b['subR']} · 증발 {f2(a['V'])} → {f2(b['V'])} kg/h", "출구 < 15 ℃ · 과냉 몫 1.5배 넘게 · 증발 ±20 %")
 def _c2hot(a, b, c):
     return (b["c1"] > 0.99 and (b["lost"] or 0) < 0.01 and abs(b["V"] / a["V"] - 1) < 0.15 and abs(b["Pcond"] / a["Pcond"] - 1) < 0.2,
-            f"1차 응축 {f2(b['c1'])} · 진공펌프로 {b['lost']} kg/h · 증발 {f2(a['V'])} → {f2(b['V'])} · 압력 {a['Pcond']:.3f} → {b['Pcond']:.3f}", "1차가 다 응축하는 동안은 영향 거의 없음(펌프로 < 0.01 kg/h, 증발·압력 ±15~20 %)")
+            f"1차 응축 {f2(b['c1'])} · 진공펌프로 {b['lost']:.5f} kg/h · 증발 {f2(a['V'])} → {f2(b['V'])} · 압력 {a['Pcond']:.3f} → {b['Pcond']:.3f}", "1차가 다 응축하는 동안은 영향 거의 없음(펌프로 < 0.01 kg/h, 증발·압력 ±15~20 %)")
 def _cwlow(a, b, c):
     Cw = b["mcw"] / 3600 * 4186; cap = (1 - math.exp(-b["UA1"] / Cw)) * Cw * max(0, b["Tsat"] - b["Tcw"]); load = b["Qc"] / b["c1"] if b["c1"] else None
     c1i = min(1, cap / load) if load else None
     return (abs(b["cap1"] / cap - 1) < 0.03 and c1i is not None and abs(b["c1"] - c1i) < 0.03 and b["c1"] < 0.9 and b["n2"] > 0.3 and b["Tw1"] > a["Tw1"] + 10,
-            f"1차 능력 {b['cap1']:.0f} W(따로 계산 {cap:.0f}) · 응축 비율 {f2(b['c1'])}(따로 {f2(c1i)}) · 2차로 {f2(b['n2'])} kg/h · 브라인 출구 {a['Tw1']} → {b['Tw1']} ℃",
-            "능력 = ε·C·(T포화 − T브라인) ±3 % · 응축 비율 = 능력/부하 ±0.03 · 2차로 넘어감 · 브라인 출구 +10 ℃")
+            f"1차 능력 {b['cap1']:.0f} W(따로 계산 {cap:.0f}) · 응축 비율 {f2(b['c1'])}(따로 {f2(c1i)}) · 2차로 {f2(b['n2'])} kg/h · 냉매 출구 {a['Tw1']} → {b['Tw1']} ℃",
+            "능력 = ε·C·(T포화 − T냉매) ±3 % · 응축 비율 = 능력/부하 ±0.03 · 2차로 넘어감 · 냉매 출구 +10 ℃")
 def _steam(a, b, c):
     return (b["MV"] == 70 and b["V"] > 1.5 * a["V"] and b["Pstill"] > 1.5 * a["Pstill"] and b["Tpot"] > a["Tpot"] + 5 and b["D"] > 2 * a["D"] and b["flood"] > a["flood"] and c["MV"] < b["MV"] - 5,
             f"증발 {f2(a['V'])} → {f2(b['V'])} kg/h · 정제기 압력 {a['Pstill']:.2f} → {b['Pstill']:.2f} torr · 내부 {a['Tpot']:.1f} → {b['Tpot']:.1f} ℃ · 유출 {f2(a['D'])} → {f2(b['D'])} · 범람 비 {a['flood']} → {b['flood']} · 되돌린 뒤 개도 {b['MV']} → {c['MV']} %",
@@ -150,9 +150,13 @@ def _rlow(a, b, c):
             f"환류 {f2(a['R'])} → {f2(b['R'])} kg/h · 유출 {f2(a['D'])} → {f2(b['D'])} kg/h · 유출의 가벼운 성분 {a['xD']} → {b['xD']} mol%", "환류 40 % 밑 · 유출 1.2배 넘게 · 가벼운 성분 농축 줄어듦")
 def _leak(a, b, c):
     ka = (a["Pcond"] - a["Pset"]) / a["leak"]; kb = (b["Pcond"] - b["Pset"]) / b["leak"]
-    return (b["Pcond"] > 5 * a["Pcond"] and abs(kb / ka - 1) < 0.35 and b["V"] < 0.2 * a["V"] and b["Tpot"] > a["Tpot"] and c["Pcond"] < 1.5 * a["Pcond"] and c["V"] > 0.5 * a["V"],
-            f"펌프 쪽 압력 {a['Pcond']:.3f} → {b['Pcond']:.3f} torr((P − 설정)/리크 = {ka:.3f} → {kb:.3f} min) · 증발 {f2(a['V'])} → {f2(b['V'])} kg/h · 내부 {a['Tpot']:.1f} → {b['Tpot']:.1f} ℃ · 되돌린 뒤 증발 {f2(c['V'])}",
-            "압력 5배 넘게, 오른 양은 리크에 비례(±35 %) · 끓음 멈춤 · 되돌리면 다시 끓음")
+    dt = b["t_h"] - a["t_h"]; lost = a["m"] - b["m"]; usual = a["D"] * dt      # 그동안 정제기에서 빠진 양 · 평소 유출이면 빠졌을 양
+    tsat = lambda P: 4597 / (11.87 - math.log10(P)) - 273.15                    # CpHf 증기압식의 역(따로 계산). 증기압식을 바꾸면 여기도 바꾼다
+    if b["V"] > 0.05: state = b["Pstill"] > b["Ptop"] > b["Pcond"] and abs(b["Tpot"] - tsat(b["Pstill"])) < 0.3   # 다시 끓고 있으면: 압력은 정제기 > 꼭대기 > 펌프 쪽, 액 온도 = 그 압력의 끓는점
+    else: state = b["Tpot"] < b["Tbub"]                                           # 아직 멈춰 있으면: 액 온도 < 끓는점
+    return (b["Pcond"] > 5 * a["Pcond"] and abs(kb / ka - 1) < 0.35 and lost < 0.2 * usual and b["Tpot"] > a["Tpot"] and state and c["Pcond"] < 1.5 * a["Pcond"] and c["V"] > 0.5 * a["V"],
+            f"펌프 쪽 압력 {a['Pcond']:.3f} → {b['Pcond']:.3f} torr((P − 설정)/리크 = {ka:.3f} → {kb:.3f} min) · 30분 동안 정제기에서 빠진 양 {lost:.2f} kg(평소 유출이면 {usual:.2f}) · 내부 {a['Tpot']:.1f} → {b['Tpot']:.1f} ℃(정제기 압력 {b['Pstill']:.2f} torr의 끓는점 {tsat(b['Pstill']):.1f}) · 30분 뒤 증발 {f2(b['V'])} kg/h · 되돌린 뒤 증발 {f2(c['V'])}",
+            "압력 5배 넘게, 오른 양은 리크에 비례(±35 %) · 30분 동안 빠진 양이 평소 유출의 20 % 밑 · 액이 새 끓는점까지 데워진 뒤에만 다시 끓음(±0.3 ℃) · 되돌리면 다시 끓음")
 def _pump(a, b, c):
     ka = a["Pcond"] - a["Pset"]; kb = b["Pcond"] - b["Pset"]; ri = 1 / 0.03   # 유효 배기 속도가 3 %면 리크가 올리는 압력은 1/0.03배
     return (b["Pcond"] > 3 * a["Pcond"] and abs(kb / ka / ri - 1) < 0.35 and abs(b["V"] / a["V"] - 1) < 0.15 and b["Ptop"] > b["Pcond"],

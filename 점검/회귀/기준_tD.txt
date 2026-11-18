@@ -3,10 +3,10 @@ eval: 1
 eval: "mode=ratio"
 eval: 1
 eval: 1
-eval: "snap fore t=25.23"
-eval: "OK tD fore cut=fore D=152.6 m2=0.0 탱크 증가=151.7 kg/h 차=0.6%"
+eval: "snap fore t=25.08"
+eval: "OK tD fore cut=fore D=152.5 m2=0.0 탱크 증가=151.7 kg/h 차=0.6%"
 eval: 1
 eval: 1
-eval: "snap main t=48.73"
+eval: "snap main t=48.20"
 eval: "OK tD main cut=main D=151.8 m2=0.0 탱크 증가=150.7 kg/h 차=0.7%"
 console: clean
