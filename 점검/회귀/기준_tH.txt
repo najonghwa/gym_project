@@ -1,1 +1,21 @@
+eval: 1
+eval: 1
+eval: 1
+eval: "H0 t=79.5m st=3 F=true MV=0.9 V=7.5 R=4.0 D=1.67 cond=5.9 hold={} chip="
+eval: "click vF"
+eval: "H1 t=94.5m st=3 F=false MV=0.8 V=6.8 R=6.2 D=0.00 cond=6.4 hold={\"F\":true} chip="
+eval: "OK tH-a 초류 닫음 유지 F=false D=0.00 R=6.2 응축액=6.4"
+eval: "click vF"
+eval: "H2 t=109.6m st=3 F=true MV=0.9 V=7.5 R=4.0 D=1.75 cond=6.0 hold={\"F\":true} chip="
+eval: "OK tH-b 초류 다시 엶 F=true D=1.75"
+eval: 1
+eval: 1
+eval: "H3 t=31.6m st=2 F=false MV=1.2 V=10.6 R=10.0 D=0.00 cond=10.3 hold={} chip="
+eval: 1
+eval: "MV 30"
+eval: "H4 t=41.6m st=2 F=false MV=30.0 V=296.7 R=296.1 D=0.00 cond=295.8 hold={\"J\":true} chip="
+eval: "OK tH-c 스팀 30 % 유지 MV=30.0 V 10.6→296.7"
+eval: "click steamAuto"
+eval: "H5 t=51.6m st=2 F=false MV=11.0 V=108.9 R=108.6 D=0.00 cond=108.0 hold={} chip="
 eval: "OK tH-d 스팀 자동 복귀 MV=11.0"
+console: clean

@@ -1,1 +1,6 @@
-eval: "OK tR 단계 1→2→3→4 시각 0.00h 0.95h 2.19h 2.90h 끝=레시피 본류 목표 3 kg 도달 · 배치 끝"
+eval: 1
+eval: 1
+eval: 1
+eval: 1
+eval: "OK tR 단계 1→2→3→4 시각 0.00h 0.96h 2.27h 2.54h 끝=레시피 본류 목표 3 kg 도달 · 배치 끝"
+console: clean

@@ -10,6 +10,8 @@
 결과:  점검결과_<이름>.md(표), 점검결과_<이름>.json, shots/ 캡처
 """
 import json, os, re, subprocess, sys, time, argparse, pathlib, math
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import 점검_공식 as X   # v117: 공식 검산·이상 상황 반응 시험
 
 HERE = pathlib.Path(__file__).resolve().parent
 def _drive():   # 브라우저를 움직이는 도구: 같은 폴더 도구/drive.mjs(사내망용 사본, MIT) → 개발 PC의 anatomy 스킬
@@ -176,6 +178,7 @@ def build_scenarios():
     S.append(scen("환류 관 2 mm 고임", BOOT + [["eval", "window.__dt.opSetMode('free');1"], ["wait", 1500]] + jump(2.3) + [["wait", 3000], tag("pool0", JS_POOL), SET_DR("2"), ["until", "(window.__dt.PR.hC1||0)>0.01", 240000], ["wait", 20000], tag("pool6", JS_POOL), ["shot", str(SHOTS / "환류관2mm_응축기.png"), "#stage", 2, [380, 30, 260, 260]], SET_DR("15.8"), ["wait", 40000], tag("poolBack", JS_POOL)]))
     S.append(scen("수동 끓기 빨리 감기", BOOT + [["eval", SET_MANUAL], ["wait", 1500]] + jump(1.4) + [tag("tb_jump", JS_TB_HIST)]))
     S.append(scen("수동 끓기 실시간 ×120", BOOT + [["eval", SET_MANUAL], ["wait", 1500]] + jump(1.0) + [["eval", "(()=>{const e=document.getElementById('accel');e.value='120';e.dispatchEvent(new Event('change',{bubbles:true}));return e.value})()"], tag("tb_live", JS_TB_LIVE.replace("__SPAN__", "900"))]))
+    S += X.scenarios(scen, tag, BOOT, jump, SHOTS)
     return S
 
 def run(sc, url):
@@ -313,6 +316,7 @@ def judge(out):
     for sn, r in out.items():
         bad = [c for c in r["console"] if "error" in c.lower() and "clean" not in c.lower()]
         add("F6", f"콘솔 오류 — {sn}", not bad, bad[:2] or "깨끗", "0건")
+    X.judge(g, add)
     return R
 
 def static_checks():
