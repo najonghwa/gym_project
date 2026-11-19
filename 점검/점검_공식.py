@@ -99,7 +99,7 @@ def judge(g, add):
         add("I13", "스팀 입열 − 열손실 − 증발 = 액을 데우는 몫(작아야)", abs(bal) < 0.25 * s["Q"], f"{bal:.0f} W (입열 {s['Q']:.0f} W의 {bal / s['Q'] * 100:.0f} %)", "입열의 25 % 안")
     u = g("공식 검산", "ui117")
     if u:
-        need = ["PICH071 탱크 압력", "PI 펌프 쪽 압력", "TICH364 N-Brine 입구", "TIH353 L-Brine 입구"]; miss = [n for n in need if n not in u["tags"]]
+        need = ["PICH071 탱크 압력", "PIH093 펌프 쪽 압력", "TICH364 N-Brine 입구", "TIH353 L-Brine 입구"]; miss = [n for n in need if n not in u["tags"]]
         add("J1", "값 상자: 정제기 쪽(PICH071)·펌프 쪽 압력, N-Brine(TICH364)·L-Brine(TIH353) 입구 온도", not miss, "모두 있음" if not miss else "없음: " + ", ".join(miss), "네 개 모두")
         add("J2", "입력칸 구분에 '추정'(데이터로도 정하기 힘든 값)과 거르기 버튼", u["kinds"]["hard"] >= 5 and u["kinds"]["est"] >= 10 and u["hasF"], f"추정 {u['kinds']['hard']}칸 · 가정 {u['kinds']['est']}칸 · 측정 {u['kinds']['meas']}칸 · 버튼 {'있음' if u['hasF'] else '없음'}", "추정 ≥ 5 · 가정 ≥ 10 · 버튼")
         add("J3", "식 안에 든 물성·상수 목록(입력칸 없는 값)", u["kc"] >= 8 and u["kch"] >= 5, f"{u['kc']}줄(추정 {u['kch']})", "≥ 8줄 · 추정 ≥ 5")
