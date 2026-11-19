@@ -219,17 +219,17 @@ def fig_n6(nd, D):
     ex, ys, xf = 660, 200, 790
     o.append(f'<path class="eq eqfill" d="M{ex - 60} 40v70a18 18 0 0 0 18 18h84a18 18 0 0 0 18 -18v-70"/>' + text(ex, 84, "E-H071", "t") + text(ex, 101, "1차 응축기 하부", "ts"))
     o.append('<rect class="eq eqfill" x="370" y="60" width="70" height="170" rx="5"/>' + text(405, 150, "C-H071", "t") + text(405, 167, "컬럼", "ts"))
-    cond = [(ex, 128), (ex, ys)]; refl = [(ex, ys), (580, ys), (580, 340), (500, 340), (500, 130), (440, 130)]; dist = [(ex, ys), (ex, 460)]
+    cond = [(ex, 128), (ex, ys)]; refl = [(ex, ys), (560, ys), (560, 340), (500, 340), (500, 130), (440, 130)]; dist = [(ex, ys), (ex, 460)]   # v126: 티 → 계기 구간(FCV-H073 · 유량계) → U자
     tomain = [(ex, 460), (ex, 540)]; tofore = [(ex, 460), (xf, 460), (xf, 540)]
     o.append(pipe(cond, "liq", 4) + flow(cond, "liq") + pipe(refl, "liq", 3.4) + flow(refl, "liq") + pipe(dist, "liq", 3.4) + flow(dist, "liq"))
     o.append(pipe(tomain, "liq", 3.4) + flow(tomain, "liq") + pipe(tofore, "liq", 3.4))
     o.append(text(ex + 14, 152, "응축액", "ts", "start") + text(ex + 14, 168, f"{N(P30['Rkg'] + P30['Dkg'], 1)} kg/h", "tnum", "start"))
-    o.append(valve(540, 340, True, "open", s=10) + text(540, 364, "FCV-H073", "tk") + tagdb(540, 383, "FICH073", "middle") + text(540, 407, f"환류 {N(P30['Rkg'])} kg/h", "tnum"))
+    o.append(valve(610, ys, True, "open", s=10) + text(610, ys + 24, "FCV-H073", "tk") + tagdb(610, ys + 43, "FICH073", "middle") + text(610, ys + 67, f"환류 {N(P30['Rkg'])} kg/h", "tnum"))   # v126: 계기는 티 다음 구간(현장)
     o.append(valve(ex, 290, False, "open", s=10) + text(ex + 16, 286, "FCV-H072", "tk", "start") + tagdb(ex + 16, 305, "FICH072", "start") + text(ex + 16, 329, f"유출 {N(P30['Dkg'])} kg/h", "tnum", "start"))
     o.append(valve(ex, 505, False, "open", s=9) + text(ex - 14, 509, "XV-H077", "tk", "end") + valve(xf, 505, False, "closed", s=9) + text(xf - 14, 509, "XV-H074", "tk", "end"))
     o.append(text(ex, 560, "T-H073 본류", "t") + tagdb(ex, 580, "WIH073", "middle") + text(xf, 560, "T-H072 초류", "t") + tagdb(xf, 580, "WIH072", "middle"))
-    o.append(_am(nd, 2, 478, 246, "end") + text(478, 286, "U자 하단은", "ts", "end") + text(478, 302, "컬럼 환류 노즐보다", "ts", "end") + text(478, 318, "300 mm 이상 낮음(P&ID)", "ts", "end"))
-    o.append(_am(nd, 1, 452, 92) + _am(nd, 3, ex + 16, 224))
+    o.append(text(478, 286, "U자 하단은", "ts", "end") + text(478, 302, "컬럼 환류 노즐보다", "ts", "end") + text(478, 318, "600 mm 낮음(현장)", "ts", "end"))
+    o.append(_am(nd, 1, 452, 92) + _am(nd, 2, ex + 16, 224))   # v126: U자 액봉 길이는 현장 치수라 가정 표시에서 뺐다
     # 스팀 조절: 잰 응축량 → 조절(PI) → 스팀 밸브
     o.append(pipe([(540, 416), (540, 520), (440, 520)], "sig") + arrowhead(440, 520, 180, "n", 6) + text(548, 462, "응축량 측정값", "ts", "start") + text(548, 478, "(환류 + 유출)", "ts", "start"))
     o.append(panel("pi", 366, 503, 68, 34, text(400, 525, "PI 제어", "tn")) + _am(nd, 0, 366, 470))

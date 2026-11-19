@@ -61,7 +61,7 @@ def plant(fid, level=0.57, main=0.0, fore=0.0, flows=("steam", "vap", "reflux", 
     o.append(vessel(fx, fy0, g["fw"], g["fh"], g["fhd"], level=(fy0 + g["fhd"] + g["fh"] + g["fhd"] * 0.6) - (g["fh"] + g["fhd"] * 0.6) * fore if fore > 0 else None))
     o.append(cond_h(e2x, e2cy, e2w, e2h)); o.append(pump(px, py, pr))
     # --- 밸브
-    o.append(valve(92, 560, True, V["TCV"], vid="TCV") + valve((g["xU1"] + g["xRf"]) / 2, g["yU"], True, V["FCV73"], vid="FCV73") + valve(e1x, 346, False, V["FCV72"], vid="FCV72")
+    o.append(valve(92, 560, True, V["TCV"], vid="TCV") + valve((e1x + g["xU1"]) / 2, ysp, True, V["FCV73"], vid="FCV73") + valve(e1x, 346, False, V["FCV72"], vid="FCV72")
              + valve(mx, 446, False, V["XV77"], vid="XV77") + valve((e1x + fx) / 2, yT, True, V["XV74"], vid="XV74") + valve(px - 75, 120, True, V["PCV"], vid="PCV"))
     if tags:
         o.append(text(vx - 22, vy0 - 44, "T-H071 정제기", "t", "end"))
@@ -71,7 +71,7 @@ def plant(fid, level=0.57, main=0.0, fore=0.0, flows=("steam", "vap", "reflux", 
         o.append(text(px, py + pr + 18, "VP-H093", "t") + text(px, py + pr + 34, "진공펌프", "ts"))
         o.append(text(mx, 664, "T-H073 본류 탱크", "t") + text(fx, 664, "T-H072 초류 탱크", "t"))
         o.append(text(36, 548, "LP 스팀", "ts", "start") + text(92, 582, "TCV-H071", "tk") + text(e1x - e1w / 2 - 17, 252, "N-Brine", "ts", "middle") + text(e2x + 46, e2cy + e2h / 2 + 38, "L-Brine", "ts"))
-        o.append(text((g["xU1"] + g["xRf"]) / 2, g["yU"] + 21, "FCV-H073", "tk") + text(e1x + 14, 350, "FCV-H072", "tk", "start") + text(mx - 13, 450, "XV-H077", "tk", "end") + text((e1x + fx) / 2, yT - 12, "XV-H074", "tk") + text(px - 75, 106, "PCV-H093", "tk"))
+        o.append(text((e1x + g["xU1"]) / 2, ysp + 21, "FCV-H073", "tk") + text(e1x + 14, 350, "FCV-H072", "tk", "start") + text(mx - 13, 450, "XV-H077", "tk", "end") + text((e1x + fx) / 2, yT - 12, "XV-H074", "tk") + text(px - 75, 106, "PCV-H093", "tk"))
     return "".join(o)
 
 # 그림 위 표식 자리(전체 구조 화면의 번호와 공식 이름 목록)

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """정제 공정 계산 흐름 학습 페이지
 
-실행:  python 흐름학습.py [점검 결과 이름]        예: python 흐름학습.py v125_최종
+실행:  python 흐름학습.py [점검 결과 이름]        예: python 흐름학습.py v126_최종
 - 정제기의 액이 가열 → 증발 → 컬럼 → 증기 배관 → 응축 → 분배 → 진공 · 회수로 가는 순서대로, 단계마다 공식을 적용해 값을 구한다.
-- 수치는 직접 입력하지 않는다. 값.json(시뮬레이터 v125, 본류 회수 중 30 h)과 점검 기록에서 읽어 계산한다(만들기.py와 같은 값).
+- 수치는 직접 입력하지 않는다. 값.json(시뮬레이터 v126, 본류 회수 중 30 h)과 점검 기록에서 읽어 계산한다(만들기.py와 같은 값).
 - 내는 것: ../정제_계산_흐름_학습.html(파일 하나로 열림)
 """
 import math, pathlib, sys
@@ -34,7 +34,7 @@ sub = R * cp * (Tsat - T1) / lam; subTop = X["subTop"] * R
 Nst = C["Hpack"] / C["HETP"]; wet = P["wetF"]
 LD = 30 * C["nElb"] + 20 * C["nTeeR"]
 Cw = C["mcw"] / 3600 * 4186; eps = 1 - math.exp(-C["UA1"] / Cw)
-seal = math.pi / 4 * 0.0175 ** 2 * 1.2 * MIX["rho"]
+seal = math.pi / 4 * 0.0175 ** 2 * 1.5 * MIX["rho"]   # U자 아래 0.6 + 수평 0.3 + 위 0.6 m(현장, 사용자 2026-11-19)
 assert abs(ms - P["steamKgh"]) < 0.01 and abs(Qkw * 1000 - P["Q"]) < 2 and abs(W - P["vdot"]) < 0.05 and abs(Tb - P["Tbub"]) < 0.05 and abs(sub - P["subR"] * R) < 0.01, "다시 계산한 값이 기록과 다르다"
 # PIMS 화면 시점(초류, 정제기 371.9 kg)의 스팀 열수지
 qS = PIMS["FI"] * lamS / 3600; qP = (PIMS["R"] + PIMS["D"]) * lam / 3600
@@ -167,7 +167,7 @@ S5 = stage(5, "응축 · 1차 응축기", tag(5) + " · 세로 BEM", "증기가 
 S6 = stage(6, "분배 · 환류와 유출", tag(6), "응축액은 U자 액봉을 거쳐 환류(컬럼으로)와 유출(회수 탱크로)로 나뉜다. 스팀은 응축량이 두 설정값의 합에 맞도록 조절된다.",
     step(17, "U자 액봉", LAW["seal"], "", "m_{액봉} = (π/4)·d^{2}·L·ρ",
          "U자 구간이 액으로 채워져야 증기가 역류하지 않고 환류 · 유출이 흐르기 시작한다.",
-         f"(π/4) × 0.0175² m² × 1.2 m × {N(MIX['rho'], 0)} kg/m³ = {seal:.2f} kg(15A, 길이 약 1.2 m 가정)", f"입력값 {C['holdC']:.2f} kg", "→ 18단계")
+         f"(π/4) × 0.0175² m² × 1.5 m × {N(MIX['rho'], 0)} kg/m³ = {seal:.2f} kg(15A, U자 0.6 + 0.3 + 0.6 m, 현장)", f"입력값 {C['holdC']:.2f} kg", "→ 18단계")
     + step(18, "환류 · 유출 분배", LAW["split"], "", "R = min(R_{설정}, W_{응축}),  D = W_{응축} − R",
          "환류를 설정값만큼 먼저 확보하고 나머지는 유출로 보낸다.",
          f"응축액 {R + Dd:.2f} kg/h = 환류 {R:.2f} + 유출 {Dd:.2f}", f"환류 {R:.1f} kg/h(약 {T1:.0f} ℃) → 컬럼 상부(8단계) · 유출 {Dd:.1f} kg/h → 본류 탱크(22단계)")
@@ -284,7 +284,7 @@ def page():
             '<span><b>표시</b> 노란 상자 = 가정, 초록 상자 = 현장 값과 비교, 회색 상자 = 핵심 개념</span></div></header>')
     fig = (f'<figure><div class="scroll">{fig_flow()}</div><figcaption>번호는 아래 단계 묶음과 같다. 번호를 누르면 해당 설명으로 이동한다. '
            '1차 응축기(E-H071)는 세로 BEM형(고정 관판 · 직관), 2차 응축기(E-H072)는 가로 BEU형(U자관)이다.</figcaption></figure>')
-    foot = '<p class="foot">구간별 그림 · 가정과 추정 · DB 데이터 활용은 발표자료(정제_시뮬레이터_발표자료.html)에 있다. 수치 출처: 값.json(시뮬레이터 v125)과 점검 기록(점검결과_v125_최종.json).</p>'
+    foot = '<p class="foot">구간별 그림 · 가정과 추정 · DB 데이터 활용은 발표자료(정제_시뮬레이터_발표자료.html)에 있다. 수치 출처: 값.json(시뮬레이터 v126에서 뽑은 시점 값)과 점검 기록(점검결과_' + NS['tag'] + '.json).</p>'
     body = hero + TOC + fig + S1 + S2 + S3 + S4 + S5 + S6 + S7 + S8 + LOOPS + quiz() + TABLE + foot
     return ('<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
             '<title>정제 계산 흐름 학습</title>\n' + 틀.FONTS + '\n<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}' + 틀.CSS + CSS2 + "</style>\n</head>\n<body>\n"
