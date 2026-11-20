@@ -1466,8 +1466,8 @@
   {
    "id": "F1",
    "name": "깃허브 distill-sim 판 = 빌드 판",
-   "ok": false,
-   "val": "깃 v126 / 빌드 v127",
+   "ok": true,
+   "val": "깃 v127 / 빌드 v127",
    "crit": "같음"
   },
   {
