@@ -11,7 +11,7 @@ import io, json, math, pathlib, sys, html
 
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE.parent / "점검"))
-import 그림 as G, 내용, 장면, 틀, 순서
+import 그림 as G, 내용, 장면, 틀, 순서, 용도
 from 그림 import esc, eq_html
 from 내용 import N
 
@@ -51,18 +51,24 @@ EXTRA = dict(Re=Re_ag, hAg=hAg, U=U_, rpm=C["N"] * 60, torr_cm=torr_cm, dT_1cm=t
 assert abs(EXTRA["vpass"] - P30["Qc"] / P30["lam"] * 3600) < 0.02, "꼭대기를 넘는 증기: 증발 − 컬럼 안 응축 = 응축 부하 ÷ 증발열이어야 한다"
 assert abs(C["hold"] * EXTRA["Vpack_L"] / 1000 * mix["rho"] - P30["mHold"]) < 0.01, "충전층 홀드업 = 6 % × 충전층 부피 × 밀도"
 D = dict(snap=VAL["snap"], end=END, extra=EXTRA, ab=AB, chk=CHK["R"])
-NODES = 내용.build(D)
+_rec = HERE / "시연_기록.json"; REC = json.loads(_rec.read_text(encoding="utf-8")) if _rec.exists() else None      # 시연_캡처.py가 남긴 기록(용도의 적용 예 · 시연 순서)
+NODES = 용도.attach(D, 내용.build(D), REC)          # 공식마다 use = 용도(계산 · 운전 · 적용 예) · 식의 요지를 붙인다
 
 # ---------------------------------------------------------------- 조각
 BD = {"est": ("b-est", "가정"), "hard": ("b-hard", "추정"), "db": ("b-db", "DB"), "dwg": ("b-dwg", "도면")}
 def bdg(k): c, t = BD[k]; return f'<span class="bdg {c}">{t}</span>'
 
 def fcard(i, f):
-    eqs = [f["eq"]] if isinstance(f["eq"], str) else f["eq"]
+    """공식 카드: 산출값 → 용도(계산 · 운전 · 적용 예) → 식의 요지 → 계산값. 시뮬레이터의 계산식과 말로 쓴 식은 접어 둔다(그림의 말풍선에 같은 식이 있다)."""
+    eqs = [f["eq"]] if isinstance(f["eq"], str) else f["eq"]; u = f["use"]
+    use = (f'<span class="u"><i>계산</i><span>{esc(u["calc"])}</span></span><span class="u"><i>운전</i><span>{esc(u["plant"])}</span></span>'
+           + (f'<span class="u ex"><i>적용 예</i><span>{esc(u["ex"])}</span></span>' if u.get("ex") else ""))
     return (f'<div class="fcard" data-f="{f["k"]}"><div class="fh"><span class="n">{i}</span><b>{esc(f["name"])}</b><span class="law">{esc(f.get("law", ""))}</span><span class="cls">{esc(f["cls"])}</span>' + "".join(bdg(b) for b in f.get("badges", ())) + "</div>"
-            + "".join(f'<div class="eqline">{eq_html(e)}</div>' for e in eqs)
-            + f'<div class="words">{esc(f["words"])}</div><div class="gets"><b>산출값</b>{esc(f["gets"])}</div>'
-            + (f'<div class="val"><b>계산값</b>{esc(f["val"])}</div>' if f.get("val") else "") + f'<div class="why">{esc(f["why"])}</div></div>')
+            + f'<div class="gets"><b>산출값</b>{esc(f["gets"])}</div><div class="why"><b>용도</b>{use}</div>'
+            + f'<div class="simp"><b>식의 요지</b>{eq_html(u["simple"])}' + (f'<span class="rd">{esc(u["read"])}</span>' if u.get("read") else "") + "</div>"
+            + (f'<div class="val"><b>계산값</b>{esc(f["val"])}</div>' if f.get("val") else "")
+            + (f'<div class="note"><b>비고</b>{esc(u["note"])}</div>' if u.get("note") else "")
+            + '<details class="eqs"><summary>계산식 보기</summary>' + "".join(f'<div class="eqline">{eq_html(e)}</div>' for e in eqs) + f'<div class="words">{esc(f["words"])}</div></details></div>')
 
 def node_scene(nd):
     fig = 장면.FIGS[nd["n"]](nd, D)
@@ -71,8 +77,8 @@ def node_scene(nd):
     dl = "".join(f'<li><span class="tg">{esc(d["tags"])}</span><span>{eq_html(d["eq"])}</span><span class="g">{esc(d["gets"])}</span></li>' for d in nd["db"])
     return (f'<section class="scene" id="{nd["id"]}" data-tab="nd" hidden><div class="sh"><span class="num">{nd["n"]}</span><h2>{esc(nd["name"])}</h2><span class="verb">{esc(nd["verb"])}</span><span class="tag">{esc(nd["tag"])}</span></div>'
             f'<p class="q">{esc(nd["q"])}</p><figure><div class="scroll">{fig}</div>{KEY2}<figcaption>{esc(nd["say"])}</figcaption></figure>'
-            f'<div class="cols"><div class="blk"><h3>적용 공식과 용도 <small>번호는 그림과 동일</small></h3>{cards}</div>'
-            f'<div class="blk"><h3>가정 · 추정 사항 <small>기호는 그림의 표식과 동일</small></h3><ul class="alist">{al}</ul></div>'
+            f'<div class="blk"><h3>적용 공식과 용도 <small>번호는 그림과 동일 · 산출값 → 용도 → 식의 요지 → 계산값 순</small></h3><div class="fgrid">{cards}</div><p class="small">적용 예는 레시피 운전 10 h(초류 구간)에 입력 하나를 바꾸고 30분 뒤에 읽은 이상 상황 시험 기록이다.' + (f' \'시연 ①\'만 예외로, 승온 구간에서 교반을 멈추고 {round(REC["t"]["s1b"])}초 뒤에 읽은 시연 순서의 기록이다.' if nd["n"] == 1 and REC else "") + '</p></div>'
+            f'<div class="grid2"><div class="blk"><h3>가정 · 추정 사항 <small>기호는 그림의 표식과 동일</small></h3><ul class="alist">{al}</ul></div>'
             f'<div class="blk"><h3>DB 데이터 확보 시 개선 사항 {bdg("db")}</h3><ul class="dlist">{dl}</ul></div></div></section>')
 
 KEY = ('<div class="key"><span><i class="k-heat"></i>스팀 · 열</span><span><i class="k-vap"></i>증기</span><span><i class="k-liq"></i>액</span><span><i class="k-brine"></i>냉매</span><span><i class="k-vac"></i>진공 · 공기</span>'
@@ -130,7 +136,7 @@ try:
 except ModuleNotFoundError:
     pass
 # 요약 2장 · 발표 순서 · 시연 순서(전체 구성이 첫 장면으로 남도록 뒤에 둔다)
-REC = json.loads((HERE / "시연_기록.json").read_text(encoding="utf-8"))
+assert REC is not None, "시연_기록.json이 없다 — python 시연_캡처.py를 먼저 돌릴 것"
 assert REC["ver"] == VER, f'시연 기록의 판({REC["ver"]})이 발표자료의 판({VER})과 다르다 — python 시연_캡처.py를 다시 돌릴 것'
 _sc, TRACKS = 순서.build(D, NODES, REC, VER); PARTS += _sc
 SCRIPT_DATA += "window.TRACKS=" + json.dumps(TRACKS, ensure_ascii=False) + ";\n"

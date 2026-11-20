@@ -29,7 +29,10 @@ out.nodes=q('.scene[data-tab=nd]').map(s=>{const cards=q('.fcard',s),cos=q('.co'
   am:q('.am',s).map(a=>a.getAttribute('data-a')+':'+tx(a.querySelector('text')).slice(0,2)),
   al:q('.alist li',s).map(l=>tx(l.querySelector('.lt'))+':'+tx(l.querySelector('.bdg'))),alFull:q('.alist li',s).filter(l=>tx(l.querySelector('.y')).length>5&&tx(l.querySelector('.e')).length>5).length,
   dl:q('.dlist li',s).length,dlFull:q('.dlist li',s).filter(l=>tx(l.querySelector('.tg')).length>2&&l.querySelector('.eqn')&&tx(l.querySelector('.g')).length>5).length,
-  tgd:q('rect.tgd',s).length,badgeCo:q('.co .bd',s).length,badgeCard:q('.fcard .bdg',s).length}});
+  tgd:q('rect.tgd',s).length,badgeCo:q('.co .bd',s).length,badgeCard:q('.fcard .bdg',s).length,
+  useFull:cards.filter(c=>{const u=q('.why .u',c);return u.length>=2&&tx(u[0].querySelector('i'))==='계산'&&tx(u[1].querySelector('i'))==='운전'&&u.every(x=>tx(x.querySelector('span')).length>12)}).length,
+  simp:cards.filter(c=>tx(c.querySelector('.simp .eqn')).length>5).length,ex:q('.why .ex',s).length,folded:cards.filter(c=>{const d=c.querySelector('details.eqs');return d&&!d.open&&d.querySelector('.eqline')&&d.querySelector('.words')}).length,
+  order:cards.filter(c=>{const k=[...c.children].map(e=>e.className.split(' ')[0]);return k.indexOf('gets')<k.indexOf('why')&&k.indexOf('why')<k.indexOf('simp')&&k.indexOf('simp')<k.indexOf('val')}).length}});
 const ov=document.getElementById('ov');out.ov={pins:q('#fig-ov .pin').length,lds:q('#fig-ov path.ld').length,names:q('#fig-ov text.nl').length,ncards:q('.ncard',ov).length,gloss:q('table tr',ov).length,chain:q('.chain li',ov).length};
 const ab=document.getElementById('ab'),AB=window.AB_DATA||{cases:{}};const cs=Object.values(AB.cases);
 out.ab={svg:!!document.querySelector('#ab figure svg#fig-ab'),btns:q('.ablist button',ab).length,steps:q('.step',ab).length,cases:cs.length,
@@ -187,6 +190,23 @@ flat = plain.replace(" ", ""); misss = [w for w in wants if w.replace(" ", "") n
 item("P10-7", "요약 화면 2: 배치 결과 막대 2(시간 4칸 · 물질 4칸) · 현장값 비교 4줄 · 지표 4(공식 · 가정 · 추정 수가 본문과 같음) · 구간 표 8줄 · 추정 목록 = 추정 수, 숫자가 기록과 같음",
      S["rs"]["bars"] == 2 and S["rs"]["segs"] == 8 and S["rs"]["rows"] == 4 and S["pl"]["stats"][:3] == [str(nfor_), str(nest_), str(nhard_)] and len(S["pl"]["stats"]) == 4 and S["pl"]["rows"] == 8 and S["pl"]["lists"][0] == nhard_ and S["subs"] == 4 and not misss,
      f"지표 {' · '.join(S['pl']['stats'])} · 추정 목록 {S['pl']['lists'][0]} · 숫자 글 {len(wants) - len(misss)} / {len(wants)}" + (" · 없음: " + ", ".join(misss) if misss else ""))
+
+# ---------------------------------------------------------------- 공식 카드의 용도 · 식의 요지(P11) — 사용자 2026-11-20
+nex = sum(n["ex"] for n in ND)
+item("P11-1", "공식 카드마다 산출값 → 용도(계산 · 운전 두 줄) → 식의 요지 → 계산값 순, 계산식 · 말로 쓴 식은 접어 둠", sum(n["useFull"] for n in ND) == ncard and sum(n["simp"] for n in ND) == ncard and sum(n["folded"] for n in ND) == ncard and sum(n["order"] for n in ND) == ncard,
+     f"용도 두 줄 {sum(n['useFull'] for n in ND)} · 식의 요지 {sum(n['simp'] for n in ND)} · 접은 계산식 {sum(n['folded'] for n in ND)} · 순서 {sum(n['order'] for n in ND)} / {ncard}")
+def _ab(k):
+    nm = [n for n in CHK["raw"] if n.startswith("이상 상황") and f"ab_{k}_0" in CHK["raw"][n]["res"]][0]; r = CHK["raw"][nm]["res"]; return r[f"ab_{k}_0"], r[f"ab_{k}_1"]
+a, b = _ab("bare"); wantu = [f"열손실이 {a['Qloss']:.0f} → {b['Qloss']:.0f} W"]
+a, b = _ab("steam"); wantu += [f"증발량이 {a['V']:.1f} → {b['V']:.1f} kg/h", f"범람률이 {a['flood'] * 100:.0f} → {b['flood'] * 100:.0f} %"]
+a, b = _ab("leak"); wantu += [f"펌프 측 압력이 {a['Ppump']:.2f} → {b['Ppump']:.2f} torr", f"끓는점이 {a['Tbub']:.1f} → {b['Tbub']:.1f} ℃"]
+a, b = _ab("c1cold"); wantu += [f"{a['subR']:.2f} → {b['subR']:.2f} kg"]
+a, b = _ab("rlow"); wantu += [f"{a['xD']:.2f} → {b['xD']:.2f} mol%"]
+a, b = _ab("cwlow"); wantu += [f"처리 가능 열량이 {b['cap1']:.0f} W"]
+a, b = _ab("pstop"); wantu += [f"펌프 측 압력이 {a['Ppump']:.2f} → {b['Ppump']:.2f} torr가 되어 비등이 멈춘다"]
+a, b = _ab("c1hot"); wantu += [f"개도를 {a['MV']:.1f} → {b['MV']:.1f} %로 높인다"]
+missu = [w for w in wantu if w not in plain]
+item("P11-2", "적용 예 12개 이상, 그 숫자가 이상 상황 기록과 같음(기록에서 따로 만든 글 조각이 화면에 있음)", nex >= 12 and not missu, f"적용 예 {nex}개 · 숫자 글 {len(wantu) - len(missu)} / {len(wantu)}" + (" · 없음: " + ", ".join(missu) if missu else ""))
 
 # ---------------------------------------------------------------- 겹침 · 좁은 화면 · 오류
 nd_, bad_d, figs_d, oth_d = overlap_run(None); nl_, bad_l, figs_l, oth_l = overlap_run("light")

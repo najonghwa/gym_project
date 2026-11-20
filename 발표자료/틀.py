@@ -155,6 +155,18 @@ svg { width:100%; height:auto; display:block }
 # --mk · --mk-ink: 시뮬레이터 화면 그림 위의 번호 색. 그림이 늘 어두우므로 밝은 · 어두운 화면에서 같은 색을 쓴다
 CSS_GUIDE = r"""
 :root { --mk:#ffd23f; --mk-ink:#17202b }
+/* 공식 카드: 산출값 → 용도 → 식의 요지 → 계산값. 계산식은 접어 둔다 */
+.fgrid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px 14px; align-items:start } @media (max-width:900px) { .fgrid { grid-template-columns:1fr } }
+.fgrid .fcard, .fgrid .fcard:first-of-type { border:1px solid var(--line); border-radius:10px; padding:10px 12px; gap:6px; min-width:0 }
+.fgrid .fcard.on { margin:0; padding:10px 12px; border-color:var(--acc) }
+.fcard > div:not(.fh) > b, .fcard summary { font-weight:600; color:var(--sub); font-size:12px; margin-right:6px; font-family:var(--f-body) }
+.fcard .why { display:grid; gap:3px; font-size:13.5px; color:var(--ink); border-left:3px solid var(--acc); padding-left:9px }
+.why .u { display:grid; grid-template-columns:44px minmax(0, 1fr); gap:6px } .why .u i { font-style:normal; font-size:11.5px; font-weight:700; color:var(--acc); padding-top:2px }
+.why .ex, .why .ex i { color:var(--sub) }
+.simp { font-size:13.5px } .simp .eqn { font-size:15.5px; margin-right:8px } .simp .eqn sup, .simp .eqn sub { white-space:nowrap } .simp .rd { display:block; color:var(--sub); font-size:12.5px }
+.fcard .note { font-size:12.5px; color:var(--sub) }
+details.eqs { font-size:13px } details.eqs summary { cursor:pointer; display:inline-block; list-style:none; border:1px solid var(--line); border-radius:999px; padding:0 9px; margin:0 } details.eqs summary::-webkit-details-marker { display:none }
+details.eqs summary::before { content:"+ " } details.eqs[open] summary::before { content:"− " } details.eqs[open] summary { margin-bottom:4px } details.eqs summary:hover { border-color:var(--ink); color:var(--ink) }
 /* 발표 순서 · 요약 · 시연 */
 body::before { content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); background:var(--bg); z-index:10 }
 .tabs button.gdtab { border-color:var(--acc); color:var(--acc) } .tabs button.gdtab[aria-selected="true"] { background:var(--acc); color:var(--panel) }
