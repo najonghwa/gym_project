@@ -138,6 +138,13 @@ return JSON.stringify({holes,rd,col,yD,yP,on3,more,t:D.PR.t/3600});})()"""
 # v128(2026-11-20): 환류 U자 액봉 — 환류 밸브를 닫아도 U자 세 토막은 찬 채, 다시 열면 흐름 표시가 돌아온다(S3)
 JS_US = r"""(()=>{const D=window.__dt,f=D.FILL.R,u=D.uSealSpan(f),P=D.PR;return JSON.stringify({seal:P.sealM||0,holdC:D.CUR.holdC,mHeldC:P.mHeldC||0,head:f.head,tail:f.tail,L:f.Ltot,us:u,want:!!f.want,held:!!f.held,Rkg:P.Rkg||0,R:!!D.VLV.R,t:P.t/3600})})()"""
 
+# v129(2026-11-20): 정제기 열 퍼짐 — 구획 계산(평균과의 온도 차) · '열 퍼짐 강조' 스위치(T1~T4). 가벼운 계산(LUMP)에서만 돈다
+JS_ZH = r"""(()=>{const D=window.__dt,Z=D.ZH,I=Z.info||{},P=D.PR,th=Z.th,NR=Z.NR,NZ=Z.NZ;let sv=0,st=0;if(th){for(let k=0;k<NZ;k++)for(let i=0;i<NR;i++){const v=((i+1)*(i+1)-i*i);sv+=v;st+=v*th[k*NR+i];}}
+const b=document.getElementById('heatEm'),n=document.getElementById('heatNote'),s=window.__stir?window.__stir():null,u=D.LVOL&&D.LVOL.u,Tj=P.TjEff!=null?P.TjEff:D.CUR.Tj,fin=(x)=>Number.isFinite(x)?x:null;
+return JSON.stringify({on:!!Z.on,kind:D.solverKind,t:P.t/3600,rpm:D.CUR.N*60,Tm:P.Tmean,Tj,th95:fin(I.th95),max:fin(I.max),wall:fin(I.wall),center:fin(I.center),top:fin(I.top),bot:fin(I.bot),mean:sv?st/sv:null,dW:Z.dW||0,S:0.31*Math.max(0,Tj-P.Tmean),turn:fin(I.turn),Qin:fin(I.Qin),
+ emph:!!Z.emph,pressed:b?b.getAttribute('aria-pressed'):null,note:n&&!n.hidden?n.textContent:null,zEm:u?u.zEm.value:null,zOn:u?u.zOn.value:null,hot:s?s.hot:null,nStir:s?s.n:null})})()"""
+JS_RPM = lambda v: "(()=>{const e=document.getElementById('rpm');e.value='%d';e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));return 1})()" % v
+
 def jumpS(h):   # 배치가 먼저 끝나면(가열 정지) 거기서 멈춘다
     return [["eval", f"window.__dt.startJump('at',{h});1"],
             ["until", f"(()=>{{const D=window.__dt,P=D.PR;return !!(P&&!D.TURBO&&(P.t>={h}*3600-120||P.stopped))}})()", 1500000], ["wait", 1500]]
@@ -154,6 +161,9 @@ def scenarios(scen, tag, BOOT, jump, SHOTS):
          scen("v126 후류 규칙", rec + [["eval", "(()=>{const e=document.getElementById('rcpTailKg');e.value='40';return e.value})()"]] + jumpS(90) + [tag("end40", JS_END)]),
          scen("v128 U자 액봉", BOOT + [["eval", "window.__dt.opSetMode('free');1"], ["wait", 1500]] + jump(2.3) + [["wait", 4000], tag("us0", JS_US), ["eval", "window.__dt.setValve('R',false);1"], ["wait", 6000], tag("us1", JS_US),
                                     ["shot", str(SHOTS / "v128_U자_환류닫음.png"), "#stage", 3, [480, 110, 190, 130]], ["eval", "window.__dt.setValve('R',true);1"], ["wait", 5000], tag("us2", JS_US)]),
+         scen("v129 열 퍼짐", rec + jump(1.3) + [["wait", 3000], tag("z0", JS_ZH), ["eval", "document.getElementById('heatEm').click();1"], ["wait", 6000], tag("z1", JS_ZH), ["shot", str(SHOTS / "v129_강조_교반중.png"), "#stage", 3, [380, 300, 170, 230]],
+                                   ["eval", "document.getElementById('heatEm').click();1"], ["wait", 1500], tag("z2", JS_ZH), ["eval", JS_RPM(0)], ["wait", 25000], tag("z3", JS_ZH), ["shot", str(SHOTS / "v129_교반_정지.png"), "#stage", 3, [380, 300, 170, 230]],
+                                   ["eval", JS_RPM(80)], ["wait", 3000], tag("z4", JS_ZH)]),
          scen("v126 화면", rec + [tag("geo", JS_GEO)] + jump(1.25) + [tag("v6a", JS_V6A), ["wait", 1500], ["shot", str(SHOTS / "v126_예열_3D.png")]] + jump(6) + [["wait", 3000], tag("v6b", JS_V6B), tag("v7", JS_V7)])]
     return S
 
@@ -336,6 +346,24 @@ def judge(g, add):
             (f"부하 {ld:.2f} % = 응축 열 {m['Qv1'] / 1000:.2f} kW ÷ 응축 능력 {m['cap1'] / 1000:.1f} kW · 도면 '{m.get('ldTxt')}' · 3D 값 상자 {'있음' if has3 else '없음'} · 지금 2차로 가는 몫 {(1 - m['c1']) * 100:.3f} %" if ld is not None else "값 없음"), "값 = 응축 열 ÷ 능력 · 두 화면에 있음")
         add("S6", "도면: 정제기 액 색 = 온도 색(3D와 같은 눈금) · U자 액봉에 찬 액 표시", bool(m.get("liqC")) and m["sealOn"] == (m["holdC"] > 0 and m["sealM"] >= m["holdC"] * 0.999) and m["sealOn"],
             f"액 색 {m.get('liqC')}({m['Tm']:.1f} ℃) · U자 표시 {m['sealOn']}(실 루프 {m['sealM']:.2f} / {m['holdC']:.2f} kg)", "색 있음 · U자 표시 켜짐")
+    z = [g("v129 열 퍼짐", "z%d" % i) for i in range(5)]
+    if all(z):
+        z0, z1, z2, z3, z4 = z
+        if not z0["on"]:
+            add("T1", "정제기 열 퍼짐 구획 계산(가벼운 계산에서만 — 이 PC는 격자 계산이라 건너뜀)", None, f"계산 방식 {z0['kind']}", "-")
+        else:
+            add("T1", "열 퍼짐 구획 계산: 교반 중(80 rpm) 승온에서는 평균과의 차이가 0.5 ℃ 밑(고르게 섞임) · 부피 평균 0 · 혼합 시간 식 값 5~60 s", z0["max"] is not None and z0["max"] < 0.5 and abs(z0["mean"]) < 1e-3 and z0["th95"] is not None and 5 < z0["th95"] < 60,
+                f"{z0['t']:.2f} h · {z0['rpm']:.0f} rpm · 최대 편차 {z0['max']:.3f} ℃(벽 쪽 {z0['wall']:+.3f} · 가운데 {z0['center']:+.3f}) · 부피 평균 {z0['mean']:.1e} · 혼합 시간 {z0['th95']:.1f} s · 벽 막 온도 차 {z0['dW']:.1f} ℃", "< 0.5 ℃ · 평균 0 · 5~60 s")
+            tb = (z3["top"] or 0) - (z3["bot"] or 0); ratio = tb / z3["S"] if z3["S"] > 0 else None
+            add("T2", "교반을 멈추면(0 rpm) 위쪽이 뜨겁고 가운데는 평균보다 차다 — 크기가 옛 격자 계산의 비율(0.31 × (자켓 − 액))과 같은 자릿수. 사용자 11-20 '교반 안 돌리고 하면 벽만 빨개지고 대류가 잘 안 되는 거'",
+                z3["rpm"] < 1 and tb > 3 and (z3["center"] or 0) < 0 and ratio is not None and 0.3 <= ratio <= 3 and z3["dW"] > 15,
+                f"멈춘 뒤 공정 {(z3['t'] - z2['t']) * 60:.0f}분 · 위 {z3['top']:+.1f} · 아래 {z3['bot']:+.1f} · 가운데 {z3['center']:+.1f} ℃ · 위 − 아래 {tb:.1f} ℃ = 옛 비율 값 {z3['S']:.1f} ℃의 {ratio:.2f}배 · 벽 막 온도 차 {z3['dW']:.1f} ℃ · 자연대류 한 바퀴 {(z3['turn'] or 0) / 60:.0f}분" if ratio is not None else "값 없음", "위 − 아래 > 3 ℃ · 가운데 < 0 · 0.3~3배")
+            add("T3", "교반을 다시 켜면 혼합 시간의 몇 배(공정 시간) 안에 차이가 풀린다. 사용자 11-20 '교반 돌면서 점차적으로 다른 곳으로 색이 퍼지게'", z4["rpm"] > 70 and z4["max"] is not None and z4["max"] < 0.1 * z3["max"],
+                f"켠 뒤 공정 {(z4['t'] - z3['t']) * 3600:.0f} s(혼합 시간 {z4['th95']:.0f} s) · 최대 편차 {z3['max']:.2f} → {z4['max']:.3f} ℃", "10 % 밑으로")
+            okOff = z0["pressed"] == "false" and z0["zEm"] == 0 and z0["note"] is None and z2["pressed"] == "false" and z2["zEm"] == 0 and (z2["hot"] or 0) == 0
+            okOn = z1["pressed"] == "true" and z1["zEm"] == 1 and bool(z1["note"]) and "로그 눈금" in (z1["note"] or "") and (z1["hot"] or 0) >= 3
+            add("T4", "'열 퍼짐 강조' 스위치: 기본 꺼짐(실제 온도 색만). 켜면 평균보다 뜨거운 곳을 붉게 덧칠 + 벽을 지난 흐름 줄기가 붉어짐 + 무엇을 뜻하는지 글이 밸브 줄에 나옴. 끄면 되돌아감", okOff and okOn,
+                f"처음 {z0['pressed']} · 켠 뒤 덧칠 {z1['zEm']} · 붉은 줄기 {z1['hot']}/{z1['nStir']}개 · 글 '{(z1['note'] or '')[:60]}' · 끈 뒤 덧칠 {z2['zEm']} · 붉은 줄기 {z2['hot']}개", "기본 꺼짐 · 켜면 덧칠 · 줄기 3개 넘게 · 글 · 끄면 0")
     u0, u1, u2 = g("v128 U자 액봉", "us0"), g("v128 U자 액봉", "us1"), g("v128 U자 액봉", "us2")
     if u0 and u1 and u2:
         us = u1.get("us") or {}; okHold = bool(us) and abs(u1["head"] - us["s1"]) < 1e-3 and abs(u1["tail"] - us["s0"]) < 1e-3 and u1["held"] and not u1["want"] and not u1["R"]

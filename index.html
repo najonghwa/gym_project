@@ -855,7 +855,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v128 · 11-20 11:15</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v129 · 11-20 12:21</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -1318,6 +1318,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
 .pid2 .p2-ring.hot{fill-opacity:.5;stroke-width:5}
 .pid2 .p2-thin{fill:none;stroke:var(--ink);stroke-width:6;stroke-opacity:.7}
 .pid2 .p2-seal{fill:none;stroke:#4aa8ff;stroke-width:9;stroke-linejoin:round;stroke-linecap:round;opacity:0}.pid2 .p2-seal.on{opacity:.5}
+.heatnote{font-size:11px;color:var(--muted);white-space:nowrap;align-self:center;margin-left:2px}
 .pid2 .p2-hole{fill:var(--view);stroke:var(--ink);stroke-width:4;stroke-opacity:.8}
 .pid2 .p2-sheet{stroke:var(--ink);stroke-width:8}
 .pid2 .p2-tube{fill:none;stroke:var(--muted);stroke-width:4}
@@ -1369,6 +1370,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
         <button type="button" data-v="P" aria-pressed="true">유출</button>
         <button type="button" data-v="F" aria-pressed="true">초류 탱크</button>
         <button type="button" data-v="M" aria-pressed="false">본류 탱크</button>
+        <button type="button" id="heatEm" aria-pressed="false" title="정제기 액에서 평균보다 뜨거운 곳을 붉게 덧칠한다(로그 눈금: +0.1 ℃부터 보이고 +10 ℃에서 가장 진함). 자켓 벽을 지난 흐름 줄기는 붉어졌다가 혼합 시간의 1/3 동안 옅어진다 — 벽에서 받은 열이 교반 흐름을 타고 퍼지는 모습(표시용). 끄면 실제 온도 색만 보인다. 가벼운 계산에서만">열 퍼짐 강조</button><span id="heatNote" class="heatnote" hidden></span>
         <button type="button" data-v="EQV" aria-pressed="true" class="adv" title="받는 탱크 균압 밸브(초류·본류 탱크 → 2차 응축기 입구). 닫으면 탱크 압력이 따로 놀아 유출관 가스 록이 생길 수 있다">균압</button>
         <button type="button" data-v="C1" aria-pressed="true" class="adv" title="1차 응축기(E-H071) N-Brine 공급(이상 상황: 끊기면 응축 못 한 증기가 2차로)">1차 N-Brine</button>
         <button type="button" data-v="C2" aria-pressed="true" class="adv" title="2차 응축기(E-H072) L-Brine 공급(이상 상황: 끊기면 2차로 온 증기가 진공펌프로)">2차 L-Brine</button>
@@ -3517,7 +3519,7 @@ function buildTank(m) {
         if (j < K - 1) { const v = (i * K + j) * 2; idx.push(v, v + 1, v + 2, v + 1, v + 3, v + 2); } }
       const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pos, 3)); g.setAttribute("color", new THREE.BufferAttribute(col, 4)); g.setIndex(idx);
       const mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide })); mesh.frustumCulled = false; mesh.renderOrder = 4; mesh.visible = false; mesh.userData.ov = true; tankGroup.add(mesh);
-      VES.stir = { mesh, parts, pos, K, on: false, len: 0, om: 0, wp: 0 }; }
+      VES.stir = { mesh, parts, pos, K, on: false, len: 0, om: 0, wp: 0, c0: [c.r, c.g, c.b] }; }
     { const sw = new THREE.Group(), sm = new THREE.LineBasicMaterial({ color: 0xe6f6ff, transparent: true, opacity: 0.16, depthWrite: false }); sw.visible = false; tankGroup.add(sw); VES.swirl = sw;   // v83: 액 속 옅은 소용돌이 줄(점 아님)
       for (let k = 0; k < 3; k++) { const pts = []; for (let a0 = 0; a0 < 3; a0++) { const st = a0 * 2.094 + k * 0.7; for (let i = 0; i < 18; i++) { const th0 = st + i * 0.07, th1 = th0 + 0.07, r0 = R * (0.42 + 0.4 * i / 18), r1 = R * (0.42 + 0.4 * (i + 1) / 18); pts.push(r0 * Math.cos(th0), 0, r0 * Math.sin(th0), r1 * Math.cos(th1), 0, r1 * Math.sin(th1)); } }
         const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3)); const ln = new THREE.LineSegments(g, sm); ln.userData.k = k; ln.renderOrder = 4; sw.add(ln); } } }
@@ -4233,11 +4235,16 @@ function stirStep(dt) {   // v91: 교반 흐름 줄기 — 선회(임펠러 따�
       const th = Pt.th - O * j * tau, x = r * Math.cos(th), z = r * Math.sin(th); if (Pt.surf) y = M.surfY(x, z) + 0.004 * t; else y = Math.min(y, M.surfY(x, z) - 0.012 * t);
       (_stP[j] || (_stP[j] = new THREE.Vector3())).set(x, y, z); }
     sumL += _stP[0].distanceTo(_stP[K - 1]);
+    { /* v129 열 퍼짐 강조: 자켓 벽 가까이(반지름 0.84 R 밖 · 자켓 높이 안)를 지나는 줄기는 붉어지고, 벽을 떠나면 혼합 시간 ÷ 3 동안 옅어진다. 붉은 정도 = 벽 막 온도 차의 로그 눈금(eW). 화면 시간 기준(줄기 움직임과 같은 시계) — 표시 규칙 */
+      const E = ZH.on && ZH.emph ? ZH.eW || 0 : 0; let hN = Pt.h || 0;
+      if (E > 0 && !Pt.surf) { const hd = _stP[0]; if (Math.hypot(hd.x, hd.z) > 0.84 * R && hd.y <= (ZH.Hj || 0) + 1e-6) hN += (1 - hN) * (1 - Math.exp(-dt / 0.25)); else if (ZH.tauD < Infinity) hN *= Math.exp(-dt / ZH.tauD); } else hN = 0;
+      Pt.h = hN; const m = Math.round(E * hN * 50) / 50; if (m !== Pt.hm) { Pt.hm = m; const c0 = st.c0, cl = st.mesh.geometry.attributes.color, ca = cl.array, cr = c0[0] + (0.96 - c0[0]) * m, cg = c0[1] + (0.2 - c0[1]) * m, cb = c0[2] + (0.14 - c0[2]) * m;
+        for (let j = 0; j < K; j++) for (let s2 = 0; s2 < 2; s2++) { const o = ((i * K + j) * 2 + s2) * 4; ca[o] = cr; ca[o + 1] = cg; ca[o + 2] = cb; } cl.needsUpdate = true; } }
     for (let j = 0; j < K; j++) { const a = _stP[Math.max(0, j - 1)], c = _stP[Math.min(K - 1, j + 1)], q = _stP[j]; _stT.subVectors(a, c); _stS.subVectors(_stC, q).cross(_stT); const l = _stS.length(), wd = l > 1e-9 ? hw * (1 - 0.6 * j / (K - 1)) / l : 0, o = (i * K + j) * 6;
       pos[o] = q.x + _stS.x * wd; pos[o + 1] = q.y + _stS.y * wd; pos[o + 2] = q.z + _stS.z * wd; pos[o + 3] = q.x - _stS.x * wd; pos[o + 4] = q.y - _stS.y * wd; pos[o + 5] = q.z - _stS.z * wd; } }
   st.mesh.geometry.attributes.position.needsUpdate = true; st.len = sumL / st.parts.length / t; st.om = Oc; st.wp = wp; st.rc = rc; st.Re = NVs.Re;
 }
-window.__stir = () => { const st = VES.stir; return st ? { on: st.on, n: st.parts.length, len: st.len, om: st.om, wp: st.wp, rc: st.rc, Re: st.Re, dip: M ? M.surfY(M.R * 0.98, 0) - M.surfY(0, 0) : 0, th: st.parts[st.parts.length - 1].th, phi: st.parts[0].phi } : null; };
+window.__stir = () => { const st = VES.stir; return st ? { hot: st.parts.filter((x) => (x.hm || 0) > 0.2).length,   /* v129: 붉게 칠한 흐름 줄기 수 */ on: st.on, n: st.parts.length, len: st.len, om: st.om, wp: st.wp, rc: st.rc, Re: st.Re, dip: M ? M.surfY(M.R * 0.98, 0) - M.surfY(0, 0) : 0, th: st.parts[st.parts.length - 1].th, phi: st.parts[0].phi } : null; };
 window.__drip = () => { const o = {}; for (const k of ["colStream", "foreStream", "mainStream"]) { const st = VES[k], u = st && st.userData; o[k] = u ? { on: !!u.on, drip: !!u.drip, hz: +(u.dripHz || 0).toFixed(2), np: u.dripN || 1, w: +st.scale.x.toFixed(2), vis: !!st.visible } : null; } o.n = FXP.filter((x) => x.kind === "drip").length; return o; };
 function jetW(kgh, Hf, baseR) {   // v95: 자유 낙하 줄기 굵기 배율 — 연속식 r = √(Q/(π·v)), v = (v0 + √(v0² + 2gH))/2, v0 0.3 m/s(가정). 화면에 보이게 최소 0.55배
   const rho = PR && PR.mix ? PR.mix.rho : 800, vb = Math.sqrt(0.09 + 2 * 9.81 * Math.max(0.02, Hf)), r = Math.sqrt(Math.max(0, kgh) / 3600 / rho / (Math.PI * (0.3 + vb) / 2)); return Math.max(0.55, Math.min(1.6, r / baseR)); }
@@ -4283,16 +4290,84 @@ const LPAT = {"on":{"W":20,"H":21,"cx0":9.5,"Rl":9,"d":[[null,null,null,null,nul
 const LSL = { mesh: null, cv: null, tex: null, at: 0 };
 
 // v108: 저사양 정제기 액 온도 — 평면 대신 입체(액 부피를 따라 광선을 몇 번 찍어 쌓는다). 식은 위 머리말
+// ===== v129: 정제기 열 퍼짐(구획 계산) — 가벼운 계산의 액 온도 입체에 쓰는 표시용 계산 =====
+// 가벼운 계산(탱크 완전 혼합)은 액 온도가 하나뿐이다. 그림에 쓰는 '평균과의 온도 차' θ(r, z)를 축대칭 격자(반지름 12 × 높이 14칸)에서 따로 푼다.
+// 증발 · 압력 · 유량 계산에는 쓰지 않는다(평균 온도는 본 계산 값 그대로, θ의 부피 평균은 늘 0).
+//   ∂θ/∂t = ∇·(D∇θ) − u·∇θ + (열원 − 평균)      — 공정 시간으로 적분
+//  · 열원: 자켓 벽(옆면 · 바닥 경판 넓이 비로 나눔)으로 들어온 열 Q(본 계산 값). 열 뺌: 액면에서 Q − m·cp·dT평균/dt(증발 · 손실로 빠지는 몫)
+//  · 교반 섞임 D = 3 / (θ95·λ1): 가장 느린 모드가 혼합 시간 θ95 동안 95 % 풀리게. λ1 = min((π/h)², (3.83/R)²)
+//      θ95 = 5.2·T^1.5·H^0.5 / (Po^⅓·N·D²)  (Grenville–Nienow 난류 혼합 시간. 동력수 Po는 날개 형식별 문헌 대표값 — 가정)
+//  · 자연대류(교반이 약할 때): 데워진 벽을 타고 오르는 경계층 유량 Q_nc(Eckert–Jackson 난류 경계층, 벽 − 액 온도 차 = (U/h_i)·(Tj − T))이
+//      꼭대기에서 안쪽으로 퍼지고 가운데로 내려온다. 교반 막 계수와 자연대류 막 계수의 세제곱 비(h_nc³/h_i³)만큼만 쓴다(본 계산의 U 식과 같은 섞음)
+//  · 아래 칸이 위 칸보다 뜨거우면 바로 섞는다(대류 조정 — 바닥에서 데워진 액 · 액면에서 식은 액)
+const ZH = { NR: 12, NZ: 14, NSUB: 240, th: null, wk: null, tex: null, data: null, t: null, Tm: null, dTm: 0, on: false, max: 0.05, emph: false, info: null };
+const ZH_PO = { pbt: 1.27, rushton: 5.0, prop: 0.35, anchor: 0.35 };   // 동력수(난류, 문헌 대표값 — 가정): 45° 경사 4날 · 러시턴 · 프로펠러 · 앵커
+function zhBlend(p, h) { const N = p.N || 0; if (!(N > 0) || !(p.D > 0)) return Infinity; return 5.2 * Math.pow(p.T, 1.5) * Math.sqrt(Math.max(0.05, h)) / (Math.cbrt(ZH_PO[p.type] || 1) * N * p.D * p.D); }
+function zhNatFlow(p, mix, dTw, L) {   // 세로 벽 난류 자연대류 경계층(Eckert–Jackson): u1 = 1.185·(ν/L)·Gr^½·(1 + 0.494·Pr^⅔)^(−½), δ = 0.565·L·Gr^(−0.1)·Pr^(−8/15)·(1 + 0.494·Pr^⅔)^0.1, 단위 폭 유량 0.1463·u1·δ → 둘레 π·T를 곱한다. 부피팽창계수 1e-3 /K(본 계산과 같은 가정)
+  if (!(dTw > 0.05) || !(L > 0.02) || !(p.kL > 0)) return 0;
+  const nu = mix.mu / mix.rho, Pr = mix.cp * mix.mu / p.kL, Gr = 9.81 * 1e-3 * dTw * L * L * L / (nu * nu), c = 1 + 0.494 * Math.pow(Pr, 2 / 3);
+  const u1 = 1.185 * (nu / L) * Math.sqrt(Gr) / Math.sqrt(c), dl = 0.565 * L * Math.pow(Gr, -0.1) * Math.pow(Pr, -8 / 15) * Math.pow(c, 0.1);
+  return 0.1463 * u1 * dl * Math.PI * p.T;
+}
+function zhReset() { if (ZH.th) ZH.th.fill(0); ZH.t = null; ZH.Tm = null; ZH.dTm = 0; ZH.max = 0.05; }
+function zhAt(rn, yn) {   // 격자에서 두 방향 선형 보간(입체 셰이더의 무늬 읽기와 같은 자리)
+  const th = ZH.th; if (!th || !ZH.on) return 0; const NR = ZH.NR, NZ = ZH.NZ;
+  const x = Math.max(0, Math.min(NR - 1, rn * NR - 0.5)), y = Math.max(0, Math.min(NZ - 1, yn * NZ - 0.5)), i0 = Math.floor(x), k0 = Math.floor(y), i1 = Math.min(NR - 1, i0 + 1), k1 = Math.min(NZ - 1, k0 + 1), fx = x - i0, fy = y - k0;
+  return (th[k0 * NR + i0] * (1 - fx) + th[k0 * NR + i1] * fx) * (1 - fy) + (th[k1 * NR + i0] * (1 - fx) + th[k1 * NR + i1] * fx) * fy;
+}
+function zhStep(dTw) {
+  if (!(PR && M && CUR && PR.mix && typeof solver !== "undefined" && solver && solver.kind === "LUMP")) { ZH.on = false; return; }
+  const p = CUR, mix = PR.mix, NR = ZH.NR, NZ = ZH.NZ, n = NR * NZ;
+  if (!ZH.th) { ZH.th = new Float32Array(n); ZH.wk = new Float32Array(n); }
+  const th = ZH.th, wk = ZH.wk, h = Math.max(0.05, PR.h || p.H), R = M.R, dr = R / NR, dz = h / NZ, t = PR.t;
+  let dtp = ZH.t == null ? 0 : t - ZH.t; if (!(dtp >= 0) || !Number.isFinite(dtp)) { th.fill(0); dtp = 0; ZH.Tm = null; ZH.dTm = 0; }   // '처음부터' · 시간 막대로 되돌아감
+  const Tm = PR.Tmean; if (ZH.Tm != null && dtp > 0) ZH.dTm += ((Tm - ZH.Tm) / dtp - ZH.dTm) * 0.3; ZH.t = t; ZH.Tm = Tm; ZH.on = true;
+  const heat = VLV.J && p.jOpen > 0 && !PR.stopped, Qin = heat ? Math.max(0, PR.Q || 0) : 0, rc = mix.rho * mix.cp, mass = mix.rho * liquidVolume(p, h), Qsurf = Math.max(0, Qin - mass * mix.cp * ZH.dTm);
+  const hh = Math.min(M.hh || 0, h), Hjw = Math.max(0, Math.min(p.Hj > 0 ? p.Hj : h, h)), Aside = 2 * Math.PI * R * Math.max(0, Hjw - hh), Abot = p.Hj > 0 ? headA(p) : 0, Aw = Math.max(1e-9, Aside + Abot), Acs = Math.PI * R * R;
+  const vol = new Float64Array(NR), aZ = new Float64Array(NR); for (let i = 0; i < NR; i++) { aZ[i] = Math.PI * dr * dr * ((i + 1) * (i + 1) - i * i); vol[i] = aZ[i] * dz; }
+  // 열원(K/s)
+  const src = wk; src.fill(0); let nk = 0; for (let k = 0; k < NZ; k++) { const zc = (k + 0.5) * dz; if (zc >= hh && zc <= Hjw) nk++; }
+  const qSide = nk ? Qin * Aside / Aw / nk : 0, qBot = Qin - qSide * nk;
+  for (let k = 0; k < NZ; k++) { const zc = (k + 0.5) * dz; if (nk && zc >= hh && zc <= Hjw) src[k * NR + NR - 1] += qSide / (rc * vol[NR - 1]); }
+  for (let i = 0; i < NR; i++) { src[i] += qBot * (aZ[i] / Acs) / (rc * vol[i]); src[(NZ - 1) * NR + i] -= Qsurf * (aZ[i] / Acs) / (rc * vol[i]); }
+  // 섞임
+  const th95 = zhBlend(p, h), lam1 = Math.min(Math.pow(Math.PI / h, 2), Math.pow(3.8317 / R, 2)), Dag = Number.isFinite(th95) ? 3 / (th95 * lam1) : 0, Dm = p.kL > 0 ? p.kL / rc : 1e-7, D = Dag + Dm;
+  const uc = p.Ucalc, share = uc && uc.hi > 0 ? Math.pow(uc.hNc / uc.hi, 3) : (p.N > 0 ? 0 : 1), Lw = Math.max(0, Hjw - hh), Qnc0 = heat ? zhNatFlow(p, mix, Math.max(0, dTw || 0), Lw) : 0, Qnc = Qnc0 * Math.max(0, Math.min(1, share));
+  const dtD = 0.2 / (D * (1 / (dr * dr) + 1 / (dz * dz))), dtA = Qnc > 0 ? 0.5 * vol[NR - 1] / Qnc : Infinity, dtS = Math.min(dtD, dtA);
+  const nsub = dtp > 0 ? Math.min(ZH.NSUB, Math.max(1, Math.ceil(dtp / dtS))) : 0, dts = nsub ? Math.min(dtS, dtp / nsub) : 0;
+  const g = new Float64Array(NR + 1), f = new Float64Array(NZ + 1); for (let i = 0; i < NR; i++) g[i] = Math.pow(i / (NR - 1), 2); g[NR] = 0; for (let k = 0; k < NZ; k++) f[k] = k / (NZ - 1); f[NZ] = 0;
+  const d = new Float64Array(n), Gr_ = new Float64Array(NR), Gz = new Float64Array(NR); for (let i = 0; i < NR; i++) { Gr_[i] = D * 2 * Math.PI * (i + 1) * dr * dz / dr; Gz[i] = D * aZ[i] / dz; }
+  for (let s = 0; s < nsub; s++) {
+    d.fill(0);
+    for (let k = 0; k < NZ; k++) for (let i = 0; i < NR; i++) {
+      const a = k * NR + i;
+      if (i < NR - 1) { const b = a + 1, q = Gr_[i] * (th[b] - th[a]); d[a] += q / vol[i]; d[b] -= q / vol[i + 1];                       // 반지름 방향 섞임
+        if (Qnc > 0) { const F = Qnc * g[i + 1] * (f[k + 1] - f[k]), q2 = F > 0 ? F * th[a] : F * th[b]; d[a] -= q2 / vol[i]; d[b] += q2 / vol[i + 1]; } }   // 자연대류 고리: 반지름 방향(풍상)
+      if (k < NZ - 1) { const b = a + NR, q = Gz[i] * (th[b] - th[a]); d[a] += q / vol[i]; d[b] -= q / vol[i];                           // 높이 방향 섞임
+        if (Qnc > 0) { const F = -Qnc * f[k + 1] * (g[i + 1] - g[i]), q2 = F > 0 ? F * th[a] : F * th[b]; d[a] -= q2 / vol[i]; d[b] += q2 / vol[i]; } }     // 자연대류 고리: 높이 방향(벽 칸은 위로, 안쪽은 아래로)
+    }
+    for (let j = 0; j < n; j++) th[j] += (d[j] + src[j]) * dts;
+    for (let pass = 0; pass < 3; pass++) for (let i = 0; i < NR; i++) for (let k = 0; k < NZ - 1; k++) { const a = k * NR + i, b = a + NR; if (th[a] > th[b] + 1e-7) { const m = (th[a] + th[b]) / 2; th[a] = m; th[b] = m; } }   // 대류 조정
+    let sv = 0, st = 0; for (let k = 0; k < NZ; k++) for (let i = 0; i < NR; i++) { sv += vol[i]; st += vol[i] * th[k * NR + i]; } const mean = st / sv; for (let j = 0; j < n; j++) th[j] -= mean;
+  }
+  // 요약 · 무늬
+  let mx = 0, wall = 0, nw = 0, top = 0, bot = 0; for (let j = 0; j < n; j++) { const v = Math.abs(th[j]); if (v > mx) mx = v; }
+  for (let k = 0; k < NZ; k++) { wall += th[k * NR + NR - 1]; nw++; } for (let i = 0; i < NR; i++) { top += th[(NZ - 1) * NR + i] * aZ[i] / Acs; bot += th[i] * aZ[i] / Acs; }
+  ZH.max = Math.max(0.05, mx); ZH.info = { th95, D, Dag, Qnc, Qnc0, share, Qin, Qsurf, nsub, dts, dtp, max: mx, wall: wall / nw, center: th[Math.floor(NZ / 2) * NR], top, bot, turn: Qnc > 0 ? liquidVolume(p, h) / Qnc : Infinity, h, dTw: dTw || 0 };
+  if (!ZH.tex) { ZH.data = new Uint8Array(n * 4); ZH.tex = new THREE.DataTexture(ZH.data, NR, NZ, THREE.RGBAFormat); ZH.tex.magFilter = THREE.LinearFilter; ZH.tex.minFilter = THREE.LinearFilter; ZH.tex.generateMipmaps = false; }
+  const dd = ZH.data; for (let j = 0; j < n; j++) { const v = Math.max(0, Math.min(255, Math.round(127.5 + 127.5 * th[j] / ZH.max))); dd[j * 4] = v; dd[j * 4 + 1] = v; dd[j * 4 + 2] = v; dd[j * 4 + 3] = 255; } ZH.tex.needsUpdate = true;
+}
 const LVOL = { mesh: null, u: null };
-function lumpField(rn, yn) { const L = LVOL; if (!L.on) return PR ? PR.Tmean : 25; const side = yn * L.hl <= L.Hj ? 1 : 0; return L.Tm + L.dW * (Math.exp(-(1 - rn) / L.dr) * side + 0.8 * Math.exp(-yn * L.hl / (L.dr * L.R))) + L.S * (yn - 0.5); }
+function lumpField(rn, yn) { const L = LVOL; if (!L.on) return PR ? PR.Tmean : 25; const side = yn * L.hl <= L.Hj ? 1 : 0; return L.Tm + L.dW * (Math.exp(-(1 - rn) / L.dr) * side + 0.8 * Math.exp(-yn * L.hl / (L.dr * L.R))) + (ZH.on ? zhAt(rn, yn) : L.S * (yn - 0.5)); }   /* v129: 층짐 식 대신 구획 계산 */
 function lumpVol(on) {
-  if (!LVOL.mesh) { const u = { uBase: { value: new THREE.Vector3() }, uScale: { value: new THREE.Vector3(1, 1, 1) }, Tm: { value: 25 }, dW: { value: 0 }, S: { value: 0 }, Hjn: { value: 1 }, dr: { value: 0.12 }, hR: { value: 1 }, hhn: { value: 0 }, tLo: { value: 20 }, tHi: { value: 130 }, uOp: { value: 0.9 } };
+  if (!LVOL.mesh) { const u = { uBase: { value: new THREE.Vector3() }, uScale: { value: new THREE.Vector3(1, 1, 1) }, Tm: { value: 25 }, dW: { value: 0 }, S: { value: 0 }, Hjn: { value: 1 }, dr: { value: 0.12 }, hR: { value: 1 }, hhn: { value: 0 }, tLo: { value: 20 }, tHi: { value: 130 }, uOp: { value: 0.9 }, zT: { value: null }, zMax: { value: 0.05 }, zOn: { value: 0 }, zEm: { value: 0 } };   /* v129: 구획 계산 */
     const mat = new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, side: THREE.BackSide,
       vertexShader: "varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
-      fragmentShader: `uniform vec3 uBase; uniform vec3 uScale; uniform float Tm, dW, S, Hjn, dr, hR, hhn, tLo, tHi, uOp; varying vec3 vW;
+      fragmentShader: `uniform vec3 uBase; uniform vec3 uScale; uniform float Tm, dW, S, Hjn, dr, hR, hhn, tLo, tHi, uOp, zMax, zOn, zEm; uniform sampler2D zT; varying vec3 vW;
         vec3 ramp(float t){ t = clamp(t, 0., 1.); vec3 c0 = vec3(.114,.247,.722), c1 = vec3(.122,.643,.788), c2 = vec3(.373,.827,.541), c3 = vec3(.949,.835,.267), c4 = vec3(.941,.416,.165);
           if (t < .25) return mix(c0, c1, t / .25); if (t < .5) return mix(c1, c2, (t - .25) / .25); if (t < .75) return mix(c2, c3, (t - .5) / .25); return mix(c3, c4, (t - .75) / .25); }
-        float field(float rn, float yn){ float side = 1. - smoothstep(Hjn - .02, Hjn + .02, yn); return Tm + dW * (exp(-(1. - rn) / dr) * side + .8 * exp(-yn * hR / dr)) + S * (yn - .5); }
+        float zdev(float rn, float yn){ return zMax * (2. * texture2D(zT, vec2(rn, yn)).r - 1.); }
+        float field(float rn, float yn){ float side = 1. - smoothstep(Hjn - .02, Hjn + .02, yn); return Tm + dW * (exp(-(1. - rn) / dr) * side + .8 * exp(-yn * hR / dr)) + mix(S * (yn - .5), zdev(rn, yn), zOn); }
         void main(){ vec3 ro = (cameraPosition - uBase) / uScale, rd = normalize((vW - cameraPosition) / uScale);
           float a = rd.x * rd.x + rd.z * rd.z, bq = 2. * (ro.x * rd.x + ro.z * rd.z), c = ro.x * ro.x + ro.z * ro.z - 1., di = bq * bq - 4. * a * c; if (di < 0. || a < 1e-6) discard;
           float sq = sqrt(di), t0 = (-bq - sq) / (2. * a), t1 = (-bq + sq) / (2. * a), ty0 = -ro.y / rd.y, ty1 = (1. - ro.y) / rd.y; if (ty0 > ty1) { float tm = ty0; ty0 = ty1; ty1 = tm; }
@@ -4300,15 +4375,21 @@ function lumpVol(on) {
           vec3 col = vec3(0.); float al = 0.; float dt = (tf - tn) / 24.;
           for (int i = 0; i < 24; i++) { vec3 p = ro + rd * (tn + (float(i) + .5) * dt); float rn = length(p.xz), yn = p.y;
             if (yn < hhn) { float q = (hhn - yn) / max(hhn, 1e-3); if (rn > sqrt(max(0., 1. - q * q))) continue; }
-            vec3 cc = ramp((field(rn, yn) - tLo) / max(1., tHi - tLo)); float a2 = .07; col += (1. - al) * a2 * cc; al += (1. - al) * a2; }
+            float Tf = field(rn, yn); vec3 cc = ramp((Tf - tLo) / max(1., tHi - tLo)); if (zEm > 0.) { float e = clamp(log(1. + max(Tf - Tm, 0.) / .05) / 5.3033, 0., 1.); cc = mix(cc, vec3(.93, .17, .13), .8 * e * zEm); }   /* v129 열 퍼짐 강조: 평균보다 뜨거운 정도(벽 막 + 구획 계산), 로그 눈금(+0.1 ℃부터 보이고 +10 ℃에서 가장 진함) */ float a2 = .07; col += (1. - al) * a2 * cc; al += (1. - al) * a2; }
           if (al < .002) discard; gl_FragColor = vec4(col / al, min(1., al * 1.6) * uOp); }` });
     LVOL.u = u; LVOL.mesh = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 48, 1, false), mat); LVOL.mesh.renderOrder = 3; LVOL.mesh.visible = false; world.add(LVOL.mesh); }
   const me = LVOL.mesh; LVOL.on = false; if (!on || !PR || !M) { me.visible = false; return; }
   const p = CUR, hl = Math.max(0.02, PR.h || p.H), R = M.R * 0.985, rpm = (p.N || 0) * 60, w = Math.max(0, Math.min(1, rpm / 80)), Tj = PR.TjEff != null ? PR.TjEff : p.Tj, heat = VLV.J && p.jOpen > 0 && !PR.stopped;
   const hi = p.Ucalc && p.Ucalc.hi > 0 ? p.Ucalc.hi : null, dW = heat && hi ? Math.max(0, Math.min(1, Ueff(p) / hi) * (Tj - PR.Tmean)) : 0, S = heat ? 0.31 * Math.max(0, Tj - PR.Tmean) * (1 - w) : 0;
   Object.assign(LVOL, { on: true, Tm: PR.Tmean, dW, S, dr: 0.12, hl, R, Hj: Math.min(p.Hj > 0 ? p.Hj : hl, hl) });
-  const u = LVOL.u; u.uBase.value.set(0, 0, 0); u.uScale.value.set(R, hl, R); u.Tm.value = PR.Tmean; u.dW.value = dW; u.S.value = S; u.Hjn.value = LVOL.Hj / hl; u.dr.value = 0.12; u.hR.value = hl / R; u.hhn.value = Math.min(1, (M.hh || 0) / hl); u.tLo.value = tLo; u.tHi.value = tHi;
+  zhStep(dW); ZH.dW = dW; ZH.eW = dW > 0 ? Math.min(1, Math.log(1 + dW / 0.05) / 5.3033) : 0; ZH.Hj = LVOL.Hj; ZH.tauD = ZH.info && Number.isFinite(ZH.info.th95) ? ZH.info.th95 / 3 : Infinity; heatNote();   /* v129: 평균과의 온도 차(구획 계산) — 벽 − 액 막 온도 차 dW로 자연대류 유량을 구한다. eW = 막 온도 차의 로그 눈금, tauD = 흐름 줄기의 붉은 기가 옅어지는 시간(혼합 시간 ÷ 3) */
+  const u = LVOL.u; u.uBase.value.set(0, 0, 0); u.uScale.value.set(R, hl, R); u.Tm.value = PR.Tmean; u.dW.value = dW; u.S.value = S; u.Hjn.value = LVOL.Hj / hl; u.dr.value = 0.12; u.hR.value = hl / R; u.hhn.value = Math.min(1, (M.hh || 0) / hl); u.tLo.value = tLo; u.tHi.value = tHi; u.zT.value = ZH.tex; u.zMax.value = ZH.max; u.zOn.value = ZH.on && ZH.tex ? 1 : 0; u.zEm.value = ZH.on && ZH.tex && ZH.emph ? 1 : 0;
   me.scale.set(R, hl, R); me.position.set(0, hl / 2, 0); me.visible = true;
+}
+function heatNote() {   /* v129: 열 퍼짐 강조 안내(밸브 줄) — 켰을 때만. 숫자는 구획 계산 값 */
+  const el = $("heatNote"), bt = $("heatEm"); if (!el || !bt) return; const I = ZH.info, on = !!(ZH.on && ZH.emph && I); bt.disabled = !ZH.on; el.hidden = !on; if (!on) return;
+  const mt = Number.isFinite(I.th95) ? `혼합 시간 ${I.th95 < 100 ? I.th95.toFixed(0) + "초" : (I.th95 / 60).toFixed(0) + "분"}` : `교반 정지 · 자연대류 한 바퀴 ${Number.isFinite(I.turn) ? (I.turn / 60).toFixed(0) + "분" : "–"}`;
+  const hot = Math.max(I.max, ZH.dW || 0), tx = `붉은 정도 = 평균과의 온도 차(로그 눈금 0.1~10 ℃) · 지금 벽 쪽 +${hot.toFixed(hot < 1 ? 2 : 1)} ℃ · ${mt}`; if (el.textContent !== tx) el.textContent = tx;
 }
 function lumpSlice(on) {
   lumpVol(on); if (LSL.mesh) LSL.mesh.visible = false; LSL.on = !!LVOL.on; return;   /* v108: 평면 단면 대신 입체 */
@@ -5806,6 +5887,8 @@ $("tParticles").addEventListener("change", (e) => { streaks.visible = heads.visi
 $("pdens").addEventListener("change", (e) => { NPA = Math.min(NP, parseInt(e.target.value, 10) || 1000); if (M) for (let i = 0; i < NPA; i++) spawn(i, M); });
 $("tSurface").addEventListener("change", (e) => { if (surface) surface.visible = e.target.checked; });
 $("tVapor").addEventListener("change", (e) => { vapor.visible = vaporLines.visible = e.target.checked; });
+{ const bt = $("heatEm"); if (bt) { const set = (v) => { ZH.emph = !!v; bt.setAttribute("aria-pressed", String(!!v)); }; try { set(store.get("dt.heatEm") === "1"); } catch (e) { set(false); }
+    bt.addEventListener("click", () => { set(!ZH.emph); try { store.set("dt.heatEm", ZH.emph ? "1" : "0"); } catch (e) {} lastSliceAt = 0; heatNote(); }); } }   /* v129: 열 퍼짐 강조 스위치(기본 꺼짐) */
 let paused = false;
 $("btnPause").addEventListener("click", () => { paused = !paused; $("btnPause").textContent = paused ? "재생" : "일시정지"; solver.pause(paused); });
 $("btnRestart").addEventListener("click", () => { CARRY = null;   /* v106: 기다리던 이어붙이기 사본 버림 */ OP.hold = {};   /* v86 */ if (REPLAY != null) tlLive(); TL.length = 0; TL_DT = 10; tlLastT = -1e9; tlSync(); if (paused) { paused = false; $("btnPause").textContent = "일시정지"; solver.pause(false); } lastSimKey = ""; PR = null; rebuild(); });
@@ -7624,7 +7707,7 @@ function isoC1Liq() {
 }
 { const _fb6 = isoFrameBody; isoFrameBody = function (now, dt) { _fb6(now, dt); if (!ISOL.c1at || now - ISOL.c1at > 250) { ISOL.c1at = now; isoC1Liq(); } }; }
 
-window.__dt = { get LOOK() { const a = renderer.getContextAttributes ? renderer.getContextAttributes() : null; return { sw: SW_GL, lq: LQ_SET, aa: !!(a && a.antialias), pr: renderer.getPixelRatio(), shadow: !!renderer.shadowMap.enabled }; }, get PID2() { return PID2; }, get SUBS() { return SUBS; }, get C1TUBES() { let tubes = 0, bends = 0, sheets = 0; if (M) { const q = M.pipe; tankGroup.traverse((o) => { if (!o.isMesh || !o.geometry) return; const dx = Math.abs(o.position.x - q.xC), y = o.position.y, gt = o.geometry.type; if (dx > q.rC * 1.05 || y < q.yC1 || y > q.yC0 || Math.abs(o.position.z) > q.rC * 1.05) return; if (o.material === BARMAT && gt === "CylinderGeometry") tubes++; if (gt === "TorusGeometry") bends++; if (o.material === mats.tube) sheets++; }); } return { tubes, bends, sheets }; }, fn: { steamLam, lineTop, backPressure, fChurchill, headA, bubbleP, bubbleT, hvapT, hMin }, ab: (k) => { const r = abToggle(k); abDraw(); return r; }, abClear: () => abClear(), get AB() { return AB; }, AB_LIST, get CAM() { return { theta: orbit.theta, phi: orbit.phi, dist: orbit.dist }; }, get C1H() { return VES.c1h; }, get VP() { return VP; }, get VPFR() { return VPFR; }, get STEPLOG() { return STEPLOG; }, get VSP() { return VSP; }, get FASTJ() { return FASTJ; }, vaporStats: () => window.__vaporStats(), get JRATE() { return JRATE; }, get ST() { return ST; }, isoFocus: (k) => isoFocus(k), isoFit: () => { if (ISO) { ISO.userView = false; isoFit(); } }, get ISOFLOW() { return ISOFLOW; }, get ISOT() { return window.__isoT; }, get STYLE() { return STYLE; }, get FLOW_R() { return FLOW_R; }, vpTravel: () => vpTravel(), pidOpen: (k) => pidOpen(k), perfApply: (m, r) => perfApply(m, r), get kCorr() { return PR && PR.kCorr; }, pbDtpMax: (v) => { PB_DTP_MAX = v; }, Ueff: (p) => Ueff(p), headDepth: (p) => headDepth(p), get PERFT() { return PERFT; }, get BENCH() { return BENCH; }, GPU_NAME, get solverKind() { return solver.kind; }, get F1D() { return F1D; }, cond1D: (...a) => cond1D(...a), flow1D: () => flow1D(CUR), OP, opSetMode: (m) => opSetMode(m), opRender: () => opRender(true), get FX() { return FX; }, get AGIT() { return AGIT; }, get LVOL() { return LVOL; }, c1Load, uSealSpan, get FXP() { return FXP; }, fxFocus: (k) => fxFocus(k), tlRewind: (i) => tlRewind(i), tlUndo: () => tlUndo(), fillSteady: () => fillSteady(), get TURBO() { return TURBO; }, startJump: (k, h) => startJump(k, h), jumpEst: () => jumpEst(), get PB_RATE() { return PB_RATE; }, get TL_DT() { return TL_DT; }, VLV, setValve, valveHit: valveHitTest, openSpec: (k, x, y) => openSpec(k, x, y), closeSpec: () => closeSpec(), get SPEC_HIT() { return SPEC_HIT; }, specAt: (e) => specAtPointer(e), get EQ() { return EQ; }, get VLE_NAME() { return VLE_NAME; }, GAM: (x, T) => GAM(x, T), get M() { return M; }, get F() { return F; }, get ST() { return ST; }, get PR() { return PR; }, get CUR() { return CUR; }, orbit, fitView: () => fitView(), placeCamera: () => placeCamera(), camera, canvas, get PIPES() { return PIPES; }, get FILL() { return FILL; }, get VALVE_PARTS() { return VALVE_PARTS; }, solver, get VP() { return VP; }, get simRate() { return simRate; }, get TL() { return TL; }, get REPLAY() { return REPLAY; }, tlShow, tlLive };
+window.__dt = { get LOOK() { const a = renderer.getContextAttributes ? renderer.getContextAttributes() : null; return { sw: SW_GL, lq: LQ_SET, aa: !!(a && a.antialias), pr: renderer.getPixelRatio(), shadow: !!renderer.shadowMap.enabled }; }, get PID2() { return PID2; }, get SUBS() { return SUBS; }, get C1TUBES() { let tubes = 0, bends = 0, sheets = 0; if (M) { const q = M.pipe; tankGroup.traverse((o) => { if (!o.isMesh || !o.geometry) return; const dx = Math.abs(o.position.x - q.xC), y = o.position.y, gt = o.geometry.type; if (dx > q.rC * 1.05 || y < q.yC1 || y > q.yC0 || Math.abs(o.position.z) > q.rC * 1.05) return; if (o.material === BARMAT && gt === "CylinderGeometry") tubes++; if (gt === "TorusGeometry") bends++; if (o.material === mats.tube) sheets++; }); } return { tubes, bends, sheets }; }, fn: { steamLam, lineTop, backPressure, fChurchill, headA, bubbleP, bubbleT, hvapT, hMin }, ab: (k) => { const r = abToggle(k); abDraw(); return r; }, abClear: () => abClear(), get AB() { return AB; }, AB_LIST, get CAM() { return { theta: orbit.theta, phi: orbit.phi, dist: orbit.dist }; }, get C1H() { return VES.c1h; }, get VP() { return VP; }, get VPFR() { return VPFR; }, get STEPLOG() { return STEPLOG; }, get VSP() { return VSP; }, get FASTJ() { return FASTJ; }, vaporStats: () => window.__vaporStats(), get JRATE() { return JRATE; }, get ST() { return ST; }, isoFocus: (k) => isoFocus(k), isoFit: () => { if (ISO) { ISO.userView = false; isoFit(); } }, get ISOFLOW() { return ISOFLOW; }, get ISOT() { return window.__isoT; }, get STYLE() { return STYLE; }, get FLOW_R() { return FLOW_R; }, vpTravel: () => vpTravel(), pidOpen: (k) => pidOpen(k), perfApply: (m, r) => perfApply(m, r), get kCorr() { return PR && PR.kCorr; }, pbDtpMax: (v) => { PB_DTP_MAX = v; }, Ueff: (p) => Ueff(p), headDepth: (p) => headDepth(p), get PERFT() { return PERFT; }, get BENCH() { return BENCH; }, GPU_NAME, get solverKind() { return solver.kind; }, get F1D() { return F1D; }, cond1D: (...a) => cond1D(...a), flow1D: () => flow1D(CUR), OP, opSetMode: (m) => opSetMode(m), opRender: () => opRender(true), get FX() { return FX; }, get AGIT() { return AGIT; }, get LVOL() { return LVOL; }, get ZH() { return ZH; }, zhReset, c1Load, uSealSpan, get FXP() { return FXP; }, fxFocus: (k) => fxFocus(k), tlRewind: (i) => tlRewind(i), tlUndo: () => tlUndo(), fillSteady: () => fillSteady(), get TURBO() { return TURBO; }, startJump: (k, h) => startJump(k, h), jumpEst: () => jumpEst(), get PB_RATE() { return PB_RATE; }, get TL_DT() { return TL_DT; }, VLV, setValve, valveHit: valveHitTest, openSpec: (k, x, y) => openSpec(k, x, y), closeSpec: () => closeSpec(), get SPEC_HIT() { return SPEC_HIT; }, specAt: (e) => specAtPointer(e), get EQ() { return EQ; }, get VLE_NAME() { return VLE_NAME; }, GAM: (x, T) => GAM(x, T), get M() { return M; }, get F() { return F; }, get ST() { return ST; }, get PR() { return PR; }, get CUR() { return CUR; }, orbit, fitView: () => fitView(), placeCamera: () => placeCamera(), camera, canvas, get PIPES() { return PIPES; }, get FILL() { return FILL; }, get VALVE_PARTS() { return VALVE_PARTS; }, solver, get VP() { return VP; }, get simRate() { return simRate; }, get TL() { return TL; }, get REPLAY() { return REPLAY; }, tlShow, tlLive };
 applyTheme();
 syncOutputs(); rebuild(); applyView();
 resize(); placeCamera();

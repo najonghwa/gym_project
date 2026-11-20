@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """발표자료 점검 — 요구 목록(요구목록_발표자료.md)의 항목을 만든 HTML에서 다시 세어 판정한다.
 
-실행:  python 점검_발표자료.py [점검 결과 이름]        예: python 점검_발표자료.py v128_최종
+실행:  python 점검_발표자료.py [점검 결과 이름]        예: python 점검_발표자료.py v129_최종
 - 만들기.py와 따로 돈다. 판정 기준은 이 파일에만 있다(만드는 쪽이 제 기준으로 통과시키지 못하게).
 - 브라우저(헤드리스 크롬)로 실제 그려진 화면에서 센다: 구조 · 겹침(어두운 · 밝은 화면) · 좁은 화면.
 - 내는 것: 점검결과_발표자료.md · 점검결과_발표자료.json
@@ -11,7 +11,7 @@ import json, pathlib, re, subprocess, sys, tempfile
 HERE = pathlib.Path(__file__).resolve().parent
 OUT = HERE.parent / "정제_시뮬레이터_발표자료.html"; ART = HERE / "발표자료_아티팩트.html"
 DRV = pathlib.Path.home() / ".claude" / "skills" / "anatomy" / "scripts" / "drive.mjs"
-tag = sys.argv[1] if len(sys.argv) > 1 else "v128_최종"
+tag = sys.argv[1] if len(sys.argv) > 1 else "v129_최종"
 OV = (HERE / "점검_겹침.js").read_text(encoding="utf-8").split("\n", 1)[1].strip()
 IDS = ["ov", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "ab", "db"]
 CASES = ["c1hot", "c1cold", "c2hot", "cwlow", "steam", "rhigh", "rlow", "leak", "pump", "pstop", "cold", "bare"]
