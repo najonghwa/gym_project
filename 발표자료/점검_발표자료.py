@@ -13,7 +13,8 @@ OUT = HERE.parent / "정제_시뮬레이터_발표자료.html"; ART = HERE / "�
 DRV = pathlib.Path.home() / ".claude" / "skills" / "anatomy" / "scripts" / "drive.mjs"
 tag = sys.argv[1] if len(sys.argv) > 1 else "v130_최종"
 OV = (HERE / "점검_겹침.js").read_text(encoding="utf-8").split("\n", 1)[1].strip()
-IDS = ["ov", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "ab", "db"]
+IDS = ["ov", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "ab", "db", "rs", "pl", "gd", "dm"]
+NFIG = 11 + 5 + 12      # 겹침을 보는 그림: 설비 그림 11(전체 1 · 구간 8 · 이상 상황 1 · DB 1) + 시연 화면 5 + 이상 상황 12가지
 CASES = ["c1hot", "c1cold", "c2hot", "cwlow", "steam", "rhigh", "rlow", "leak", "pump", "pstop", "cold", "bare"]
 
 STRUCT = r"""(()=>{const q=(s,r)=>[...(r||document).querySelectorAll(s)];const tx=e=>e?e.textContent.trim():'';const out={};
@@ -36,6 +37,14 @@ out.ab={svg:!!document.querySelector('#ab figure svg#fig-ab'),btns:q('.ablist bu
  pass:cs.filter(c=>/판정: 통과/.test(c.crit)).length,vb:q('#fig-ab [data-vb]').length,marks:q('#fig-ab [data-mark]').length,
  valveKeys:[...new Set(cs.flatMap(c=>Object.keys(c.valves)))],closed:cs.map(c=>Object.entries(c.valves).filter(e=>e[1]==='closed').map(e=>e[0]).join('+'))};
 const db=document.getElementById('db');const tb=q('table',db);out.db={rows:tb[0]?q('tr',tb[0]).length-1:0,tables:tb.length,tags:q('#fig-db rect.tgd').length,tagx:q('#fig-db rect.tgx').length};
+out.tracks=window.TRACKS||null;
+out.gd=q('#gd .track').map(t=>({key:t.getAttribute('data-track'),name:tx(t.querySelector('h3')),tot:tx(t.querySelector('.tot')),flow:tx(t.querySelector('.flow')).length,start:q('[data-start]',t).length,bar:q('.tbar i',t).length,
+ steps:q('.tsteps li',t).map(l=>({t:tx(l.querySelector('.hd b')),tm:tx(l.querySelector('.tt')),go:(l.querySelector('[data-go]')||{getAttribute:()=>null}).getAttribute('data-go'),msg:tx(l.querySelector('.sb p')).length,demo:!!l.querySelector('.kd')}))}));
+out.dm={tag:tx(document.querySelector('#dm .tag')),prep:q('#dm .blk li').length,steps:q('#dm .dstep').map(d=>({n:+d.getAttribute('data-demo'),t:tx(d.querySelector('h3')),ops:q('ol.ops li',d).length,see:q('.dcols ul li',d).length,
+ say:tx(q('.dcols > div',d)[2]).length,img:q('figure svg image',d).filter(i=>/^data:image\/webp;base64,/.test(i.getAttribute('href'))&&i.getAttribute('href').length>20000).length,marks:q('.mkc',d).length,rings:q('.mkr',d).length,t5:!!d.querySelector('.b-t5'),cap:tx(d.querySelector('figcaption')).length}))};
+out.rs={bars:q('#rs .sbar').length,segs:q('#rs .sbar i').length,rows:q('#rs table tr').length-1,legs:q('#rs .sleg span').map(tx)};
+out.pl={stats:q('#pl .stat').map(e=>tx(e.querySelector('b'))),rows:q('#pl table tr').length-1,lists:q('#pl ul.pl').map(u=>q('li',u).length)};
+out.subs=q('.subs button').length;out.pbar=!!document.getElementById('pbar')&&document.getElementById('pbar').hidden;
 out.heads=q('h2,h3').map(h=>[...h.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim());out.tabs=q('.tabs button').map(tx);out.navs=q('.nodes button').length;
 return JSON.stringify(out)})()"""
 SCROLL = "(()=>{const d=document.documentElement;return JSON.stringify({scroll:1,sw:d.scrollWidth,cw:d.clientWidth})})()"
@@ -54,6 +63,17 @@ def drive(actions, width, theme=None):
     return vals, other
 
 def go(i): return [["eval", f"(()=>{{location.hash='{i}';return 1}})()"], ["wait", 500]]
+
+GQ = ("(()=>{const v=[...document.querySelectorAll('.scene')].filter(s=>!s.hidden)[0];const pb=document.getElementById('pbar');const tx=i=>document.getElementById(i).textContent;"
+      "return JSON.stringify({gq:1,scene:v&&v.id,hidden:pb.hidden,tr:tx('pb-tr'),n:tx('pb-n'),t:tx('pb-t'),msg:tx('pb-msg'),tm:tx('pb-tm'),ck:tx('pb-ck'),pg:tx('pg'),"
+      "off:[...document.querySelectorAll('.dstep')].filter(e=>!e.classList.contains('off')).map(e=>+e.getAttribute('data-demo')),"
+      "top:(()=>{const e=document.querySelector('.dstep:not(.off)');return e&&v&&v.id==='dm'?Math.round(e.getBoundingClientRect().top-pb.getBoundingClientRect().bottom):null})()})})()")
+def guide_run(key, n):
+    """발표 순서를 시작해 끝 단계까지 → 키로 넘기며, 단계마다 보이는 장면과 표시줄을 읽는다. 마지막에 한 번 더 누르고(넘어가지 않아야 한다) ← 로 한 단계 돌아간 뒤 끝낸다."""
+    a = [["wait", 2000]] + go("gd") + [["click", f"[data-start={key}]"], ["wait", 500], ["eval", GQ]]
+    for _ in range(n - 1): a += [["key", "ArrowRight", "#pb-next"], ["wait", 450], ["eval", GQ]]
+    a += [["key", "ArrowRight", "#pb-next"], ["wait", 300], ["eval", GQ], ["key", "ArrowLeft", "#pb-next"], ["wait", 300], ["eval", GQ], ["click", "#pb-end"], ["wait", 300], ["eval", GQ]]
+    v, o = drive(a, 1440); return [d for d in v if d.get("gq")], o
 
 def overlap_run(theme):
     a = [["wait", 2500]]
@@ -97,7 +117,7 @@ item("P6-2", "목록마다 왜 · 영향", sum(n["alFull"] for n in ND) == sum(l
 item("P6-3", "가정 · 추정 배지가 말풍선과 카드에 똑같이", all(n["badgeCo"] == n["badgeCard"] for n in ND), f"말풍선 {sum(n['badgeCo'] for n in ND)} · 카드 {sum(n['badgeCard'] for n in ND)}")
 item("P7-1", "첫 장면 = 전체 구조: 번호 8 · 화살표 8 · 공식 이름 = 공식 수", S["scenes"][0] == "ov" and S["ov"]["pins"] == 8 and S["ov"]["lds"] == 8 and S["ov"]["names"] == ncard, f"번호 {S['ov']['pins']} · 화살표 {S['ov']['lds']} · 이름 {S['ov']['names']}")
 item("P7-2", "구간 카드 8 · 계산 순서 12", S["ov"]["ncards"] == 8 and S["ov"]["chain"] == 12, f"카드 {S['ov']['ncards']} · 순서 {S['ov']['chain']}")
-item("P8-1", "구간 장면 8 · 구간 줄 단추 8 · 탭 4", len(ND) == 8 and S["navs"] == 8 and len(S["tabs"]) == 4, f"장면 {len(ND)} · 단추 {S['navs']} · 탭 {' / '.join(S['tabs'])}")
+item("P8-1", "구간 장면 8 · 구간 줄 단추 8 · 탭은 처음 넷이 그대로(뒤에 요약 · 발표 순서)", len(ND) == 8 and S["navs"] == 8 and S["tabs"] == ["전체 구성", "구간별 공식", "이상 상황", "DB 데이터 활용", "요약", "발표 순서"], f"장면 {len(ND)} · 단추 {S['navs']} · 탭 {' / '.join(S['tabs'])}")
 A = S["ab"]
 item("P9-1", "이상 상황 탭: 2D 그림과 상황 12가지(단추 12)", A["svg"] and A["cases"] == 12 and A["btns"] == 12 and "이상 상황" in S["tabs"], f"상황 {A['cases']} · 단추 {A['btns']}")
 item("P9-2", "상황마다 바꾼 입력 · 보여 준 것 3줄 이상 · 까닭 · 판정 기준 · 되돌림 · 바뀐 값", A["full"] == 12, f"{A['full']} / 12")
@@ -120,16 +140,64 @@ for k, key, dec, unit in (("c1hot", "MV", 1, "%"), ("steam", "V", 2, "kg/h"), ("
 miss = [w for w in want if w not in plain and w not in src]
 item("S1", "그림·글의 숫자가 계산 기록과 같음(기록에서 따로 만든 글 조각이 화면에 있음)", not miss, f"{len(want) - len(miss)} / {len(want)}" + (" · 없음: " + ", ".join(miss) if miss else ""))
 
+# ---------------------------------------------------------------- 발표 순서(P10) — 사용자 2026-11-20
+mmss = lambda x: f"{int(x) // 60}:{int(x) % 60:02d}"
+TR = S["tracks"] or {}; GD = {t["key"]: t for t in S["gd"]}; t5 = TR.get("t5", {"steps": [], "slack": 0}); fu = TR.get("full", {"steps": [], "slack": 0})
+def tsum(T, kind=None): return sum(x["sec"] for x in T["steps"] if kind is None or x["kind"] == kind)
+ok_list = all(k in GD and GD[k]["start"] == 1 and GD[k]["flow"] > 10 and len(GD[k]["steps"]) == len(TR[k]["steps"]) and
+              all(a["t"] == b["t"] and a["go"] == b["go"] and a["tm"].startswith(mmss(b["sec"])) and a["msg"] > 30 and a["demo"] == (b["kind"] == "demo") for a, b in zip(GD[k]["steps"], TR[k]["steps"])) for k in ("t5", "full")) and len(S["gd"]) == 2
+item("P10-1", "발표 순서 화면: 순서 2종(5분 버전 · 자세한 버전), 단계마다 제목 · 배정 시간 · 띄울 화면 · 요지, 순서마다 흐름 한 줄과 시작 버튼", ok_list and S["scenes"][0] == "ov", f"5분 버전 {len(t5['steps'])}단계 · 자세한 버전 {len(fu['steps'])}단계")
+bad_go = [x["go"] for T in (t5, fu) for x in T["steps"] if x["go"] not in S["scenes"]]
+tot5 = tsum(t5) + t5["slack"]; demo5 = tsum(t5, "demo"); talk5 = tsum(t5, "talk")
+item("P10-2", "5분 버전: 시연을 포함해 5분 이내, 설명은 5분에서 시연 시간을 뺀 것보다 짧음", 0 < tot5 <= 300 and demo5 >= 60 and talk5 <= 300 - demo5 and GD.get("t5", {}).get("tot") == "총 " + mmss(tot5),
+     f"총 {mmss(tot5)} = 설명 {mmss(talk5)} + 시연 {mmss(demo5)} + 여유 {mmss(t5['slack'])}")
+gos = [x["go"] for x in fu["steps"]]; core = ["ov"] + [f"n{i}" for i in range(1, 9)] + ["ab", "db"]
+pos = [gos.index(c) if c in gos else -1 for c in core]
+item("P10-3", "자세한 버전: 전체 구성 → 구간 1~8 → 이상 상황 → DB 데이터 순서로 기존 화면을 모두 지나고 시연이 들어 있음, 띄울 화면이 모두 실제 화면", min(pos) >= 0 and pos == sorted(pos) and tsum(fu, "demo") > 0 and not bad_go and GD.get("full", {}).get("tot") == "총 " + mmss(tsum(fu) + fu["slack"]),
+     f"총 {mmss(tsum(fu) + fu['slack'])} · 설명 {mmss(tsum(fu, 'talk'))} · 시연 {mmss(tsum(fu, 'demo'))}" + (f" · 없는 화면 {bad_go}" if bad_go else ""))
+gbad = []; goth = []
+for key, T in (("t5", t5), ("full", fu)):
+    g, o = guide_run(key, len(T["steps"])); goth += o; n = len(T["steps"]); cum = 0
+    if len(g) != n + 3: gbad.append(f"{key}: 읽은 횟수 {len(g)}"); continue
+    for i, (st, x) in enumerate(zip(T["steps"], g[:n])):
+        cum += st["sec"]; tot = tsum(T) + T["slack"]
+        want_tm = f"배정 {mmss(st['sec'])} · 누적 {mmss(cum)} / {mmss(tot)}"
+        if x["hidden"] or x["scene"] != st["go"] or x["t"] != st["t"] or x["msg"] != st["msg"] or x["n"] != f"{i + 1} / {n}" or x["pg"] != f"{i + 1} / {n}" or x["tm"] != want_tm or not x["ck"].startswith("경과 "):
+            gbad.append(f"{key} {i + 1}단계: 화면 {x['scene']} · {x['n']} · {x['tm']}")
+        if st["kind"] == "demo" and (x["off"] != st["demo"] or x["top"] is None or not (0 <= x["top"] <= 40)): gbad.append(f"{key} {i + 1}단계 시연: 강조 {x['off']} · 표시줄 아래 {x['top']}px")
+    if g[n]["n"] != f"{n} / {n}" or g[n]["scene"] != T["steps"][-1]["go"]: gbad.append(f"{key}: 끝에서 더 넘어감")
+    if g[n + 1]["n"] != f"{n - 1} / {n}": gbad.append(f"{key}: ← 키로 돌아가지 않음")
+    if not g[n + 2]["hidden"] or g[n + 2]["scene"] != "gd": gbad.append(f"{key}: 끝내기 뒤 표시줄이 남음")
+item("P10-4", "진행 표시줄: 시작하면 → 키로 단계 순서대로 화면이 바뀌고 단계 · 요지 · 배정/누적 시간 · 경과 시간이 나옴, 시연 단계는 해당 번호만 강조, 끝내면 사라짐", not gbad and S["pbar"], f"5분 버전 {len(t5['steps'])}단계 · 자세한 버전 {len(fu['steps'])}단계 넘김" + (" · " + "; ".join(gbad[:3]) if gbad else ""))
+DM = S["dm"]["steps"]; in5 = sorted(next((x["demo"] for x in t5["steps"] if x["kind"] == "demo"), []))
+item("P10-5", "시연 순서: 단계 5, 단계마다 조작 · 화면 변화 2줄 이상 · 설명 요지 · 화면 그림, 2~5번 그림에 누르는 자리 번호, '5분 버전 포함' 표시 = 5분 버전의 시연 번호, 준비 5줄",
+     [d["n"] for d in DM] == [1, 2, 3, 4, 5] and all(d["ops"] >= 2 and d["see"] >= 2 and d["say"] > 40 and d["img"] == 1 and d["cap"] > 15 for d in DM) and all(d["marks"] >= 1 and d["marks"] == d["rings"] for d in DM[1:]) and sorted(d["n"] for d in DM if d["t5"]) == in5 and S["dm"]["prep"] == 5,
+     f"단계 {len(DM)} · 그림 {sum(d['img'] for d in DM)} · 번호 {sum(d['marks'] for d in DM)} · 5분 버전 {in5}")
+REC = json.loads((HERE / "시연_기록.json").read_text(encoding="utf-8")); Q = REC["s"]; f1 = lambda x: f"{x:.1f}"
+wantd = [f"자켓 온도는 {f1(Q['s1a']['Tj'])} → {f1(Q['s1b']['Tj'])} ℃", f"액 내부의 최대 온도 차는 {f1(Q['s1b']['zmax'])} ℃", f"{f1(REC['t']['st3'])}초 뒤 초류 회수", f"증발 {f1(Q['s2b']['V'])} kg/h · 환류 {f1(Q['s2b']['R'])} kg/h · 유출 {f1(Q['s2b']['D'])} kg/h",
+         f"환류 {f1(Q['s4a']['R'])} → {f1(Q['s4b']['R'])} kg/h, 유출 {f1(Q['s4a']['D'])} → {f1(Q['s4b']['D'])} kg/h", f"2차 응축량이 0 → {f1(Q['s4b']['m2'])} kg/h", f"스팀 개도는 {f1(Q['s4a']['MV'])} → {f1(Q['s4c']['MV'])} %",
+         f"환류 {f1(Q['s5a']['R'])} → {f1(Q['s5b']['R'])} kg/h, 유출 {f1(Q['s5a']['D'])} → {f1(Q['s5b']['D'])} kg/h", f"U자 액봉의 액은 {Q['s5b']['seal']:.2f} kg"]
+missd = [w for w in wantd if w not in plain]
+vdeck = re.search(r"v\d+", S["dm"]["tag"]); nbadrec = sum(1 for c in REC["check"] if not c["ok"])
+item("P10-6", "시연 기록: 기록한 시뮬레이터 판 = 발표자료의 판, 기록의 자체 확인 실패 0, 기록에서 따로 만든 숫자 글이 화면에 있음", REC["ver"] == (CHK.get("ver") or REC["ver"]) and bool(vdeck) and vdeck.group(0) == REC["ver"] and nbadrec == 0 and len(REC["check"]) >= 15 and not missd,
+     f"판 {REC['ver']} · 자체 확인 {len(REC['check'])}항목 실패 {nbadrec} · 숫자 글 {len(wantd) - len(missd)} / {len(wantd)}" + (" · 없음: " + ", ".join(missd) if missd else ""))
+nfor_ = sum(n["cards"] for n in ND); nal = [x for n in ND for x in n["al"]]; nest_ = sum(1 for x in nal if x.endswith("가정")); nhard_ = sum(1 for x in nal if x.endswith("추정"))
+wants = [f"소요 시간 {END['t']:.1f} h", f"초류 {END['fore']:.1f} kg", f"본류 {END['main']:.1f} kg", f"정제기 잔량 {END['m']:.1f} kg", f"환류 U자 액봉 {END['m0'] - END['m'] - END['fore'] - END['main']:.2f} kg"]
+flat = plain.replace(" ", ""); misss = [w for w in wants if w.replace(" ", "") not in flat]
+item("P10-7", "요약 화면 2: 배치 결과 막대 2(시간 4칸 · 물질 4칸) · 현장값 비교 4줄 · 지표 4(공식 · 가정 · 추정 수가 본문과 같음) · 구간 표 8줄 · 추정 목록 = 추정 수, 숫자가 기록과 같음",
+     S["rs"]["bars"] == 2 and S["rs"]["segs"] == 8 and S["rs"]["rows"] == 4 and S["pl"]["stats"][:3] == [str(nfor_), str(nest_), str(nhard_)] and len(S["pl"]["stats"]) == 4 and S["pl"]["rows"] == 8 and S["pl"]["lists"][0] == nhard_ and S["subs"] == 4 and not misss,
+     f"지표 {' · '.join(S['pl']['stats'])} · 추정 목록 {S['pl']['lists'][0]} · 숫자 글 {len(wants) - len(misss)} / {len(wants)}" + (" · 없음: " + ", ".join(misss) if misss else ""))
+
 # ---------------------------------------------------------------- 겹침 · 좁은 화면 · 오류
 nd_, bad_d, figs_d, oth_d = overlap_run(None); nl_, bad_l, figs_l, oth_l = overlap_run("light")
-item("S2", "겹침 · 그림 밖 · 상자 넘침 · 화살표 엇갈림 0(어두운 · 밝은 화면, 장면 11 + 상황 12)", nd_ == 0 and nl_ == 0 and figs_d == 23 and figs_l == 23, f"어두운 {nd_} · 밝은 {nl_} · 본 그림 {figs_d} + {figs_l}" + (" · " + "; ".join((bad_d + bad_l)[:4]) if nd_ + nl_ else ""))
+item("S2", "겹침 · 그림 밖 · 상자 넘침 · 화살표 엇갈림 0(어두운 · 밝은 화면, 설비 그림 11 + 시연 화면 5 + 상황 12)", nd_ == 0 and nl_ == 0 and figs_d == NFIG and figs_l == NFIG, f"어두운 {nd_} · 밝은 {nl_} · 본 그림 {figs_d} + {figs_l}" + (" · " + "; ".join((bad_d + bad_l)[:4]) if nd_ + nl_ else ""))
 sc = {}
 for w in (390, 768, 1440):
     a = [["wait", 2000]]
     for i in IDS: a += go(i) + [["eval", SCROLL]]
     v, o = drive(a, w); sc[w] = (max(d["sw"] - d["cw"] for d in v if d.get("scroll")), len(v), o)
-item("S3", "쪽 가로 스크롤 없음(390 · 768 · 1440 너비, 장면 11)", all(x[0] <= 0 and x[1] == 11 for x in sc.values()), " · ".join(f"{w}: 넘침 {x[0]}" for w, x in sc.items()))
-cons = [s for s in other + oth_d + oth_l + sum((x[2] for x in sc.values()), []) if not s.startswith("console: clean")]
+item("S3", "쪽 가로 스크롤 없음(390 · 768 · 1440 너비, 장면 15)", all(x[0] <= 0 and x[1] == len(IDS) for x in sc.values()), " · ".join(f"{w}: 넘침 {x[0]}" for w, x in sc.items()))
+cons = [s for s in other + oth_d + oth_l + goth + sum((x[2] for x in sc.values()), []) if not s.startswith("console: clean")]
 item("S4", "콘솔 오류 0", not cons, "; ".join(cons[:3]) or "없음")
 bad_h = [h for h in S["heads"] if re.search(r"(다|요|까|죠)[.?!]?$", h) and not h.endswith("순서")]
 item("S5", "제목(h2 · h3)이 명사형", not bad_h, f"제목 {len(S['heads'])}개" + (" · " + ", ".join(bad_h) if bad_h else ""))

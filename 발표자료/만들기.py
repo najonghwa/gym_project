@@ -3,6 +3,7 @@
 
 실행:  python 만들기.py [점검 결과 이름]        예: python 만들기.py v130_최종
 - 읽는 것: 값.json(시뮬레이터 v126에서 뽑은 계산 값, 다섯 시점) · ../점검/점검결과_<이름>.json(이상 상황 12가지 기록, 배치 끝 기록)
+           시연_기록.json · 시연_화면_1~5.webp(시연_캡처.py가 시뮬레이터를 직접 눌러 남긴 값과 화면 — 발표 순서의 '시연 순서'에 쓴다)
 - 내는 것: ../정제_시뮬레이터_발표자료.html(파일 하나로 열림) · 발표자료_아티팩트.html(앞머리 없는 조각)
 - 숫자는 손으로 옮겨 적지 않는다. 그림과 글의 값은 모두 위 두 기록에서 읽는다.
 """
@@ -10,7 +11,7 @@ import io, json, math, pathlib, sys, html
 
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE.parent / "점검"))
-import 그림 as G, 내용, 장면, 틀
+import 그림 as G, 내용, 장면, 틀, 순서
 from 그림 import esc, eq_html
 from 내용 import N
 
@@ -100,19 +101,27 @@ def overview():
 
 def page(parts, standalone):
     nodes_bar = '<div class="nodes" hidden>' + "".join(f'<button data-go="{n["id"]}"><i>{n["n"]}</i>{esc(n["name"])}</button>' for n in NODES) + "</div>"
+    # 요약 · 발표 순서 탭의 장면 줄, 발표 순서를 시작하면 나타나는 진행 표시줄(내용은 틀.JS가 window.TRACKS에서 채운다)
+    subs = ('<div class="subs" data-for="sm" hidden><button data-go="rs">계산 결과와 현장값 비교</button><button data-go="pl">한계와 개선 계획</button></div>'
+            '<div class="subs" data-for="gd" hidden><button data-go="gd">발표 순서</button><button data-go="dm">시연 순서</button></div>') if TRACKS else ""
+    pbar = ('<div class="pbar" id="pbar" hidden><div class="pb-l"><span class="pb-tr" id="pb-tr"></span><span class="pb-n" id="pb-n"></span></div>'
+            '<div class="pb-m"><b id="pb-t"></b><span id="pb-msg"></span><span class="pb-val" id="pb-val" hidden></span></div>'
+            '<div class="pb-r"><span class="pb-tm" id="pb-tm"></span><button class="pb-ck" id="pb-ck" title="누르면 경과 시간을 0:00부터 다시 잰다">경과 0:00</button>'
+            '<button id="pb-prev">이전</button><button id="pb-next">다음</button><button id="pb-end">끝내기</button></div><i class="pb-bar"><i id="pb-fill"></i></i></div>') if TRACKS else ""
     top = ('<header class="top"><div class="brand"><b>정제 시뮬레이터 적용 공식 해설</b><span>' + esc(VER) + ' · CpHf 2차 정제 · 수치는 시뮬레이터 계산값</span></div>'
-           '<nav class="tabs" role="tablist"><button role="tab" data-tab="ov">전체 구성</button><button role="tab" data-tab="nd">구간별 공식</button><button role="tab" data-tab="ab">이상 상황</button><button role="tab" data-tab="db">DB 데이터 활용</button></nav>'
+           '<nav class="tabs" role="tablist"><button role="tab" data-tab="ov">전체 구성</button><button role="tab" data-tab="nd">구간별 공식</button><button role="tab" data-tab="ab">이상 상황</button><button role="tab" data-tab="db">DB 데이터 활용</button>'
+           + ('<button role="tab" data-tab="sm">요약</button><button role="tab" data-tab="gd" class="gdtab">발표 순서</button>' if TRACKS else "") + '</nav>'
            '<div class="pager"><button id="prev" aria-label="이전 장면">←</button><span id="pg">1</span><button id="next" aria-label="다음 장면">→</button></div></header>')
     main = "".join(parts).replace('<figure><div class="scroll">', '<figure><div class="swipe">그림은 좌우로 스크롤</div><div class="scroll">')
-    body = f'<div class="app">{top}{nodes_bar}<main>{main}</main></div>'
-    head = '<title>정제 시뮬레이터 발표자료</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n' + 틀.FONTS + "\n<style>" + 틀.CSS + "</style>\n"
+    body = f'<div class="app">{top}{pbar}{nodes_bar}{subs}<main>{main}</main></div>'
+    head = '<title>정제 시뮬레이터 발표자료</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n' + 틀.FONTS + "\n<style>" + 틀.CSS + (틀.CSS_GUIDE if TRACKS else "") + "</style>\n"
     script = "<script>" + SCRIPT_DATA + 틀.JS + "</script>"
     if standalone:
         return ('<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
                 '<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>\n' + head + "</head>\n<body>\n" + body + "\n" + script + "\n</body>\n</html>\n")
     return head + body + "\n" + script + "\n"
 
-SCRIPT_DATA = ""
+SCRIPT_DATA = ""; TRACKS = None
 PARTS = [overview()] + [node_scene(n) for n in NODES]
 try:
     import 이상 as AB_MOD                      # 이상 상황 · DB 화면(따로 둔 파일)
@@ -120,6 +129,11 @@ try:
     SCRIPT_DATA = "window.AB_DATA=" + json.dumps(ab_data, ensure_ascii=False) + ";\n"
 except ModuleNotFoundError:
     pass
+# 요약 2장 · 발표 순서 · 시연 순서(전체 구성이 첫 장면으로 남도록 뒤에 둔다)
+REC = json.loads((HERE / "시연_기록.json").read_text(encoding="utf-8"))
+assert REC["ver"] == VER, f'시연 기록의 판({REC["ver"]})이 발표자료의 판({VER})과 다르다 — python 시연_캡처.py를 다시 돌릴 것'
+_sc, TRACKS = 순서.build(D, NODES, REC, VER); PARTS += _sc
+SCRIPT_DATA += "window.TRACKS=" + json.dumps(TRACKS, ensure_ascii=False) + ";\n"
 out1 = HERE.parent / "정제_시뮬레이터_발표자료.html"; out2 = HERE / "발표자료_아티팩트.html"
 out1.write_text(page(PARTS, True), encoding="utf-8", newline="\n"); out2.write_text(page(PARTS, False), encoding="utf-8", newline="\n")
 print("발표자료", out1.name, out1.stat().st_size, "바이트 · 장면", len(PARTS), "· 공식", sum(len(n["formulas"]) for n in NODES), "· 가정과 추정", sum(len(n["assume"]) for n in NODES), "· DB", sum(len(n["db"]) for n in NODES))

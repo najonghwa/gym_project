@@ -140,6 +140,10 @@ def _case(k, name, a, b, c, ok):
     return dict(name=name, cause="변경 입력: " + cause, what=what, why=why, crit=("<b>판정: " + ("통과" if ok else "실패") + "</b> · 기준: " + esc(CRIT_TXT[k])), undo=undo,
                 vals=_vals(a, b), flows=flows, valves=valves, mark=CASE_MARK[k][0], marklab=CASE_MARK[k][1], steps=STEPS[k])
 
+# 계산에 포함되지 않은 현상(이상 상황 화면과 '한계와 개선 계획' 화면이 같은 목록을 쓴다)
+NOT_MODELED = ["과냉으로 응축액이 고화되어 배관이 막히는 현상(어는점 자료 없음)", "고비점 잔류물이 비말에 실려 제품으로 넘어가는 양",
+               "냉매 유량 제어(TICH071D → 냉매 밸브)와 정제기 압력 제어(PICH071 → PCV-H093)의 보상 동작", "정제기 금속의 열용량, 교반 정지 시의 돌비"]
+
 def scene_ab(D, NODES, ABNAME):
     chk = D["chk"]; byid = {r["id"]: r for r in chk if r["id"].startswith("K-") and not r["id"].endswith("-u")}
     order = ["c1hot", "c1cold", "c2hot", "cwlow", "steam", "rhigh", "rlow", "leak", "pump", "pstop", "cold", "bare"]
@@ -164,7 +168,7 @@ def scene_ab(D, NODES, ABNAME):
              f'<div class="grid2"><div class="blk"><h3>시나리오 목록</h3><div class="tw"><table><tr><th></th><th>시나리오</th><th>변경 입력</th><th>검증</th></tr>{rows}</table></div></div>'
              '<div class="blk"><h3>검증 방법</h3><ul class="pl"><li>레시피 운전을 10 h(초류 회수 중)까지 진행한 뒤 값을 기록한다.</li><li>시나리오 하나를 적용하고 30분 후의 값을 기록한다. 이어서 해제하고 30분 후의 값을 다시 기록한다.</li>'
              '<li>판정 기준은 시뮬레이터 출력이 아니라 별도로 계산한 변화 방향과 크기다. 예: 열손실은 내외부 온도 차에 비례, 리크로 오르는 압력은 리크 속도에 비례, 응축 능력은 ε·C·ΔT.</li><li>시나리오마다 새 배치에서 시작해 이전 시나리오의 영향이 섞이지 않도록 했다.</li></ul>'
-             '<h3>계산에 포함되지 않은 현상</h3><ul class="pl"><li>과냉으로 응축액이 고화되어 배관이 막히는 현상(어는점 자료 없음)</li><li>고비점 잔류물이 비말에 실려 제품으로 넘어가는 양</li><li>냉매 유량 제어(TICH071D → 냉매 밸브)와 정제기 압력 제어(PICH071 → PCV-H093)의 보상 동작</li><li>정제기 금속의 열용량, 교반 정지 시의 돌비</li></ul></div></div></section>')
+             '<h3>계산에 포함되지 않은 현상</h3><ul class="pl">' + "".join(f"<li>{esc(x)}</li>" for x in NOT_MODELED) + '</ul></div></div></section>')
     return html_, dict(first="c1hot", cases=cases)
 
 # ---------------------------------------------------------------- DB 데이터 화면
@@ -190,6 +194,17 @@ def fig_db():
     for x, y, tag, desc, an, cls in T: o.append(_tg(x, y, tag, desc, an, cls))
     o.append("</svg>"); return "".join(o)
 
+def cmp_rows(D):
+    """계산값과 현장값 비교 표의 줄(항목 · 현장 · 계산 · 차이의 원인). 현장값은 PIMS 화면과 배치 트렌드 그래프에서 읽은 값이다."""
+    from 내용 import PIMS
+    E = D["end"]; P6 = D["snap"]["6"]["PR"]; C = D["snap"]["30"]["CUR"]
+    return [("내부 온도 TICH071", "초류 93.5 ℃(화면) · 99~100 ℃(그래프), 본류 100~101.5 ℃", f"초류 {N(E['Tfore'])} ℃, 본류 {N(E['Tmain'])} ℃", "증기압식의 상수 A"),
+            ("탑 온도 TIH075", "초류 76.8 · 82~84 ℃, 본류 84 → 87.6 ℃", f"초류 {N(E['ThFore'])} ℃, 본류 {N(E['ThMain'])} ℃", "온도계 설치 위치, 증기압식"),
+            ("환류 · 유출", "초류 3.79 · 1.46, 본류 3.82 · 5.93 kg/h(화면)", f"초류 {N(E['Rfore'], 2)} · {N(E['Dfore'], 2)}, 본류 {N(E['Rmain'], 2)} · {N(E['Dmain'], 2)} kg/h", "스팀 밸브 특성식, 제어 방식"),
+            ("스팀 밸브 개도 TICH071_MV", f"초류 {PIMS['MV']} %(화면) · 승온 50, 정제 25 내외(그래프)", f"승온 70 %(예시), 초류 {N(E['mvFore'])} %, 본류 {N(E['mvMain'])} %", "스팀 밸브 특성식"),
+            ("스팀 유량 FIH071", f"초류 {PIMS['FI']} kg/h(밸브 전단 · 개도 {PIMS['MV']} %, 화면)", f"초류 {N(P6['steamKgh'])} kg/h(개도 {N(P6['MVpct'])} %) · 특성식의 {PIMS['MV']:.0f} % 값은 {N(C['mSteamMax'] * C['valveR'] ** (PIMS['MV'] / 100 - 1))} kg/h", "스팀 밸브 특성식, 스팀 열량 중 액에 전달되는 비율"),
+            ("구간 소요 시간", "초류 9.0 h · 본류 72.7 h(그래프의 배치), 중앙값 24.5 h · 61.6 h", f"초류 {N(E['fore_h'])} h · 본류 {N(E['main_h'])} h", "유출량의 설정값 유지 여부")]
+
 def scene_db(D, NODES):
     from 내용 import PIMS
     E = D["end"]; P6 = D["snap"]["6"]["PR"]; C = D["snap"]["30"]["CUR"]; lamS = D["snap"]["30"]["fn"]["lamSteam"] / 1000.0; lam = D["snap"]["30"]["PR"]["lam"] / 1000.0
@@ -203,12 +218,7 @@ def scene_db(D, NODES):
     rows = "".join(f'<tr><td>{n["n"]} {esc(n["name"])}</td><td class="m">{esc(d["tags"])}</td><td>{eq_html(d["eq"])}</td><td>{esc(d["gets"])}</td></tr>' for n in NODES for d in n["db"])
     hard = "".join(f'<tr><td>{n["n"]} {esc(n["name"])}</td><td>{esc(a["what"])}</td><td>{esc(a["why"])}</td><td>{esc(a["effect"])}</td></tr>' for n in NODES for a in n["assume"] if a["kind"] == "hard")
     est = sum(1 for n in NODES for a in n["assume"] if a["kind"] == "est"); nh = sum(1 for n in NODES for a in n["assume"] if a["kind"] == "hard")
-    cmp_ = [("내부 온도 TICH071", "초류 93.5 ℃(화면) · 99~100 ℃(그래프), 본류 100~101.5 ℃", f"초류 {N(E['Tfore'])} ℃, 본류 {N(E['Tmain'])} ℃", "증기압식의 상수 A"),
-            ("탑 온도 TIH075", "초류 76.8 · 82~84 ℃, 본류 84 → 87.6 ℃", f"초류 {N(E['ThFore'])} ℃, 본류 {N(E['ThMain'])} ℃", "온도계 설치 위치, 증기압식"),
-            ("환류 · 유출", "초류 3.79 · 1.46, 본류 3.82 · 5.93 kg/h(화면)", f"초류 {N(E['Rfore'], 2)} · {N(E['Dfore'], 2)}, 본류 {N(E['Rmain'], 2)} · {N(E['Dmain'], 2)} kg/h", "스팀 밸브 특성식, 제어 방식"),
-            ("스팀 밸브 개도 TICH071_MV", f"초류 {PIMS['MV']} %(화면) · 승온 50, 정제 25 내외(그래프)", f"승온 70 %(예시), 초류 {N(E['mvFore'])} %, 본류 {N(E['mvMain'])} %", "스팀 밸브 특성식"),
-            ("스팀 유량 FIH071", f"초류 {PIMS['FI']} kg/h(밸브 전단 · 개도 {PIMS['MV']} %, 화면)", f"초류 {N(P6['steamKgh'])} kg/h(개도 {N(P6['MVpct'])} %) · 특성식의 {PIMS['MV']:.0f} % 값은 {N(C['mSteamMax'] * C['valveR'] ** (PIMS['MV'] / 100 - 1))} kg/h", "스팀 밸브 특성식, 스팀 열량 중 액에 전달되는 비율"),
-            ("구간 소요 시간", "초류 9.0 h · 본류 72.7 h(그래프의 배치), 중앙값 24.5 h · 61.6 h", f"초류 {N(E['fore_h'])} h · 본류 {N(E['main_h'])} h", "유출량의 설정값 유지 여부")]
+    cmp_ = cmp_rows(D)
     crow = "".join(f"<tr><td>{esc(a)}</td><td>{esc(b)}</td><td class=\"m\">{esc(c)}</td><td>{esc(d)}</td></tr>" for a, b, c, d in cmp_)
     return ('<section class="scene" id="db" data-tab="db" hidden><div class="sh"><h2>DB 데이터로 결정되는 항목</h2><span class="tag">PIMS 시계열 · 분석 데이터</span></div>'
             f'<p class="say">현재 입력값 가운데 {est}건은 가정, {nh}건은 추정이다. 가정 항목은 아래 계기의 시계열 데이터를 확보하면 공식에 대입해 정할 수 있다. 식은 그대로 두고 식의 상수만 현장값으로 바꾸는 작업이다.</p>'

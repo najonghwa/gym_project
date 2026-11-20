@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""발표자료 페이지 틀 — 스타일과 동작(탭 · 장면 넘기기 · 그림과 카드 잇기 · 이상 상황 고르기)."""
+"""발표자료 페이지 틀 — 스타일과 동작(탭 · 장면 넘기기 · 그림과 카드 잇기 · 이상 상황 고르기 · 발표 순서의 진행 표시줄)."""
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
          '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=STIX+Two+Text:ital,wght@0,500;1,500&display=swap">')
@@ -151,23 +151,115 @@ svg { width:100%; height:auto; display:block }
 .bar-f { fill:var(--est-soft); stroke:var(--est) } .bar-m { fill:var(--liq-soft); stroke:var(--liq) } .bar-t { fill:var(--soft); stroke:var(--sub) } .bar-h { fill:var(--panel); stroke:var(--line) }
 """
 
+# 발표 순서 · 요약 · 시연 화면의 스타일(만들기.py만 쓴다. 흐름학습.py가 같이 쓰는 CSS에는 넣지 않는다)
+# --mk · --mk-ink: 시뮬레이터 화면 그림 위의 번호 색. 그림이 늘 어두우므로 밝은 · 어두운 화면에서 같은 색을 쓴다
+CSS_GUIDE = r"""
+:root { --mk:#ffd23f; --mk-ink:#17202b }
+/* 발표 순서 · 요약 · 시연 */
+body::before { content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); background:var(--bg); z-index:10 }
+.tabs button.gdtab { border-color:var(--acc); color:var(--acc) } .tabs button.gdtab[aria-selected="true"] { background:var(--acc); color:var(--panel) }
+.subs { display:flex; flex-wrap:wrap; gap:6px }
+.subs button { border:1px solid var(--line); background:var(--panel); padding:4px 13px; border-radius:999px; cursor:pointer; font-size:13px; color:var(--sub) }
+.subs button[aria-current="true"] { border-color:var(--ink); color:var(--ink); font-weight:600 }
+.lnk { border:0; border-bottom:1px solid var(--acc); background:transparent; padding:0 1px; cursor:pointer; color:var(--acc); font-size:12.5px; font-weight:600; line-height:1.35 }
+.lnk:hover { color:var(--ink); border-color:var(--ink) }
+.btnc { display:inline-block; border:1px solid var(--line); background:var(--soft); border-radius:6px; padding:0 6px; font-size:.93em; font-weight:600; line-height:1.45; white-space:nowrap }
+.b-t5 { color:var(--acc); background:var(--acc-soft); border-color:var(--acc) }
+/* 진행 표시줄 */
+.pbar { position:sticky; top:env(safe-area-inset-top, 0px); z-index:6; background:var(--panel); border:1.5px solid var(--acc); border-radius:12px; padding:8px 12px 10px; display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; overflow:hidden }
+.pb-l { display:flex; align-items:center; gap:8px } .pb-tr { font-size:12.5px; font-weight:700; color:var(--panel); background:var(--acc); border-radius:999px; padding:1px 10px; white-space:nowrap }
+.pb-n { font:600 13px var(--f-mono); color:var(--sub); white-space:nowrap }
+.pb-m { flex:1 1 420px; min-width:0; display:grid; gap:1px } .pb-m b { font-size:15.5px } .pb-m span { font-size:13.5px; color:var(--ink) } .pb-m .pb-val { font:500 12.5px var(--f-mono); color:var(--acc) }
+.pb-r { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin-left:auto } .pb-tm { font:500 12px var(--f-mono); color:var(--sub); white-space:nowrap }
+.pb-r button { border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:3px 11px; cursor:pointer; font-size:13px; font-weight:600 }
+.pb-r button:hover { border-color:var(--ink) } .pb-r button:disabled { opacity:.4; cursor:default; border-color:var(--line) }
+.pb-r .pb-ck { font:600 13px var(--f-mono); color:var(--ok); border-color:var(--ok); background:var(--ok-soft) } .pb-r .pb-ck.late { color:var(--ng); border-color:var(--ng); background:var(--ng-soft) }
+.pbar.demo { border-style:dashed } .pb-bar { position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--soft); display:block } .pb-bar i { display:block; height:100%; background:var(--acc); width:0 }
+/* 발표 순서 */
+.tkey { display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--sub) } .tkey span { display:inline-flex; align-items:center; gap:6px } .tkey i { display:inline-block; width:22px; height:12px; border-radius:3px }
+.tk-talk { background:var(--vap-soft); border:1px solid var(--vap) } .tk-demo { background:var(--acc-soft); border:1px solid var(--acc) } .tk-slack { background:transparent; border:1px dashed var(--sub) }
+.tracks { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.2fr); gap:14px; align-items:start } @media (max-width:1040px) { .tracks { grid-template-columns:1fr } }
+.track { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; display:grid; gap:10px; min-width:0 }
+.trh { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px } .trh h3 { margin:0; font-size:18px } .trh .tot { font:600 13.5px var(--f-mono); color:var(--acc) } .trh .pt { font-size:12.5px; color:var(--sub) }
+.start { margin-left:auto; border:1px solid var(--acc); background:var(--acc); color:var(--panel); border-radius:8px; padding:5px 14px; font-weight:700; cursor:pointer; font-size:13.5px } .start:hover { background:var(--ink); border-color:var(--ink) }
+.flow { margin:0; font-size:13.5px; font-weight:600 } .flow span { font-size:11.5px; font-weight:700; color:var(--sub); border:1px solid var(--line); border-radius:999px; padding:0 8px; margin-right:8px }
+ol.gl li::marker { color:var(--acc) }
+.tbar { display:flex; gap:2px; height:24px } .tbar i { display:grid; place-items:center; min-width:13px; border-radius:4px; font:600 11px var(--f-mono); font-style:normal; color:var(--ink); overflow:hidden }
+.tsteps { list-style:none; margin:0; padding:0 } .tsteps li { display:grid; grid-template-columns:24px 50px minmax(0, 1fr); gap:10px; padding:9px 0; border-top:1px solid var(--line); align-items:start }
+.tsteps li:first-child { border-top:0; padding-top:2px } .tsteps .no { font:700 11.5px var(--f-mono); width:22px; height:22px; border-radius:50%; background:var(--ink); color:var(--panel); display:grid; place-items:center }
+.tsteps li.is-demo .no { background:var(--acc) } .tsteps .tt { font:600 13.5px var(--f-mono); display:grid; line-height:1.3 } .tsteps .tt small { font-weight:500; font-size:11px; color:var(--sub) }
+.tsteps .sb { display:grid; gap:3px; min-width:0 } .tsteps .hd { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 10px } .tsteps .hd b { font-size:14.5px }
+.tsteps .kd { font-size:11.5px; font-weight:700; color:var(--acc); border:1px solid var(--acc); border-radius:999px; padding:0 7px } .tsteps p { margin:0; font-size:13.5px } .tsteps .vl { font:500 12.5px var(--f-mono); color:var(--acc) }
+.tsteps .vl span { font:600 11.5px var(--f-body); color:var(--sub); margin-right:6px }
+/* 시연 순서 */
+.dsteps { display:grid; gap:14px } .dstep { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; display:grid; gap:10px; min-width:0 } .dstep.off { opacity:.36 }
+.dh { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px } .dh .num { font:700 14px var(--f-mono); width:28px; height:28px; border-radius:50%; background:var(--acc); color:var(--panel); display:grid; place-items:center }
+.dh h3 { margin:0; font-size:17px } .dh .tt { font:600 12.5px var(--f-mono); color:var(--sub) } .dh .where { font-size:12.5px; color:var(--sub); border:1px solid var(--line); border-radius:999px; padding:0 9px }
+.dcols { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1.1fr); gap:6px 18px } @media (max-width:980px) { .dcols { grid-template-columns:1fr } }
+.dcols h4 { margin:0 0 3px; font-size:13px; color:var(--sub) } .dcols h4 small { font-weight:500; font-size:11.5px } .dcols p { margin:0 0 4px; font-size:13.5px }
+ol.ops { margin:0; padding-left:21px } ol.ops li { margin:3px 0; font-size:13.5px } ol.ops li::marker { font:700 12.5px var(--f-mono); color:var(--acc) }
+.dstep figure { border-color:var(--line); padding:8px } svg.shot { border-radius:6px }
+.capt { fill:var(--ink); font:700 13.5px var(--f-body) }
+.mkr { fill:none; stroke:var(--mk); stroke-width:2 } .mkc { fill:var(--mk) } .mkt { fill:var(--mk-ink); font:700 12.5px var(--f-mono); text-anchor:middle }
+/* 요약 */
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:10px }
+.stat { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 14px; display:grid; gap:1px } .stat b { font:700 30px/1.15 var(--f-mono); letter-spacing:-.02em } .stat span { font-weight:700; font-size:14.5px } .stat small { font-size:12.5px; color:var(--sub) }
+.lb { margin:8px 0 5px; font-size:13px; color:var(--sub) } .lb b { color:var(--ink); font:700 15px var(--f-mono); margin-left:4px } .blk .p { margin:0 0 8px; font-size:13.5px }
+.sbar { display:flex; gap:2px; height:22px } .sbar i { display:block; min-width:3px; border-radius:3px }
+.sleg { display:flex; flex-wrap:wrap; gap:3px 14px; font-size:12.5px; color:var(--sub); margin:5px 0 6px } .sleg span { display:inline-flex; align-items:center; gap:5px } .sleg i { display:inline-block; width:11px; height:11px; border-radius:3px } .sleg b { color:var(--ink); font:600 12.5px var(--f-mono) }
+.sg-heat { background:var(--heat-soft); border:1px solid var(--heat) } .sg-vap { background:var(--vap-soft); border:1px solid var(--vap) } .sg-fore { background:var(--est-soft); border:1px solid var(--est) }
+.sg-main { background:var(--liq-soft); border:1px solid var(--liq) } .sg-rest { background:var(--soft); border:1px solid var(--sub) } .sg-seal { background:var(--acc-soft); border:1px solid var(--acc) }
+"""
+
 JS = r"""
 (function(){
-  var scenes=[].slice.call(document.querySelectorAll('.scene')), tabs=[].slice.call(document.querySelectorAll('.tabs button')), nb=[].slice.call(document.querySelectorAll('.nodes button'));
+  var scenes=[].slice.call(document.querySelectorAll('.scene')), tabs=[].slice.call(document.querySelectorAll('.tabs button')), nb=[].slice.call(document.querySelectorAll('.nodes button, .subs button'));
   var ids=scenes.map(function(s){return s.id}), cur=0;
+  var TR=window.TRACKS||null, G=null, pbar=document.getElementById('pbar'), tick=null;   /* 발표 순서(G = 진행 중인 순서와 단계) */
   function show(id, push){
     var i=ids.indexOf(id); if(i<0) i=0; cur=i;
     scenes.forEach(function(s,k){ s.hidden = k!==i });
     var tab=scenes[i].getAttribute('data-tab');
     tabs.forEach(function(b){ b.setAttribute('aria-selected', b.getAttribute('data-tab')===tab ? 'true' : 'false') });
     var nodes=document.querySelector('.nodes'); if(nodes) nodes.hidden = tab!=='nd';
+    [].forEach.call(document.querySelectorAll('.subs'), function(n){ n.hidden = n.getAttribute('data-for')!==tab });
     nb.forEach(function(b){ b.setAttribute('aria-current', b.getAttribute('data-go')===ids[i] ? 'true' : 'false') });
-    var pg=document.getElementById('pg'); if(pg) pg.textContent=(i+1)+' / '+ids.length;
+    var pg=document.getElementById('pg'); if(pg) pg.textContent = G ? (G.i+1)+' / '+TR[G.k].steps.length : (i+1)+' / '+ids.length;
     if(push!==false){ try{ if(location.hash!=='#'+ids[i]) history.replaceState(null,'','#'+ids[i]) }catch(e){ try{ location.hash=ids[i] }catch(e2){} } }
     try{ window.scrollTo(0,0) }catch(e){}
   }
-  function go(d){ show(ids[Math.max(0, Math.min(ids.length-1, cur+d))]) }
+  function go(d){ if(G){ gGo(G.i+d); return } show(ids[Math.max(0, Math.min(ids.length-1, cur+d))]) }
+  /* 발표 순서: 고른 순서의 단계대로 장면을 넘기고, 위에 진행 표시줄(단계 · 요지 · 배정 시간 · 경과 시간)을 둔다 */
+  function mmss(s){ s=Math.max(0, Math.round(s)); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2) }
+  function gid(i){ return document.getElementById(i) }
+  function gTotal(T){ var a=T.slack||0; T.steps.forEach(function(s){ a+=s.sec }); return a }
+  function gCum(){ var T=TR[G.k], c=0; for(var k=0;k<=G.i;k++) c+=T.steps[k].sec; return c }
+  function gClock(){ if(!G) return; var el=(Date.now()-G.t0)/1000, c=gid('pb-ck'); c.textContent='경과 '+mmss(el); c.classList.toggle('late', el>gCum()) }
+  function gRender(){
+    var T=TR[G.k], s=T.steps[G.i], cum=gCum(), tot=gTotal(T);
+    gid('pb-tr').textContent=T.name; gid('pb-n').textContent=(G.i+1)+' / '+T.steps.length; gid('pb-t').textContent=s.t; gid('pb-msg').textContent=s.msg;
+    var v=gid('pb-val'); v.textContent=s.val ? '대표 계산값 · '+s.val : ''; v.hidden=!s.val;
+    gid('pb-tm').textContent='배정 '+mmss(s.sec)+' · 누적 '+mmss(cum)+' / '+mmss(tot);
+    gid('pb-fill').style.width=(cum/tot*100).toFixed(1)+'%';
+    gid('pb-prev').disabled = G.i===0; gid('pb-next').disabled = G.i===T.steps.length-1;
+    pbar.classList.toggle('demo', s.kind==='demo'); pbar.hidden=false;
+    var pg=gid('pg'); if(pg) pg.textContent=(G.i+1)+' / '+T.steps.length; gClock();
+  }
+  function demoMark(list){ [].forEach.call(document.querySelectorAll('.dstep'), function(e){ e.classList.toggle('off', !!list && list.indexOf(+e.getAttribute('data-demo'))<0) }) }
+  function gGo(i){
+    var T=TR[G.k]; G.i=Math.max(0, Math.min(T.steps.length-1, i)); var s=T.steps[G.i];
+    show(s.go); if(s.ab) pickAb(s.ab); demoMark(s.demo||null); gRender();
+    var e = s.at ? document.querySelector(s.at) : (s.demo ? document.querySelector('.dstep[data-demo="'+s.demo[0]+'"]') : null);
+    if(e){ e=e.closest('figure')||e; try{ window.scrollTo(0, Math.max(0, e.getBoundingClientRect().top + (window.pageYOffset||0) - pbar.offsetHeight - 10)) }catch(x){} }   /* 표시줄 바로 아래에 맞춘다 */
+  }
+  function gStart(k){ if(!TR||!TR[k]||!pbar) return; G={k:k, i:0, t0:Date.now()}; if(tick) clearInterval(tick); tick=setInterval(gClock, 1000); gGo(0) }
+  function gEnd(){ G=null; if(tick){ clearInterval(tick); tick=null } if(pbar) pbar.hidden=true; demoMark(null); show('gd') }
+  if(pbar){
+    gid('pb-prev').addEventListener('click', function(){ if(G) gGo(G.i-1) }); gid('pb-next').addEventListener('click', function(){ if(G) gGo(G.i+1) });
+    gid('pb-end').addEventListener('click', gEnd); gid('pb-ck').addEventListener('click', function(){ if(G){ G.t0=Date.now(); gClock() } });
+  }
   document.addEventListener('click', function(ev){
+    var st=ev.target.closest('[data-start]'); if(st){ gStart(st.getAttribute('data-start')); return }
     var t=ev.target.closest('[data-go]'); if(t){ show(t.getAttribute('data-go')); return }
     var tb=ev.target.closest('.tabs button'); if(tb){ var want=tb.getAttribute('data-tab'); var s=scenes.filter(function(x){return x.getAttribute('data-tab')===want})[0]; if(s) show(s.id); return }
   });
