@@ -855,7 +855,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v126 · 11-19 18:05</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v127 · 11-20 10:02</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -1317,6 +1317,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
 .pid2 .p2-ring{fill:none;stroke:var(--muted);stroke-width:4}
 .pid2 .p2-ring.hot{fill-opacity:.5;stroke-width:5}
 .pid2 .p2-thin{fill:none;stroke:var(--ink);stroke-width:6;stroke-opacity:.7}
+.pid2 .p2-hole{fill:var(--view);stroke:var(--ink);stroke-width:4;stroke-opacity:.8}
 .pid2 .p2-sheet{stroke:var(--ink);stroke-width:8}
 .pid2 .p2-tube{fill:none;stroke:var(--muted);stroke-width:4}
 .pid2 .p2-brine{fill:none;stroke:var(--muted);stroke-width:10;stroke-opacity:.6}
@@ -2631,7 +2632,7 @@ const NPS = [["½″ (15A)", 21.3, [1.65, 2.11, 2.77]], ["¾″ (20A)", 26.7, [1
 const SCH = ["5S", "10S", "40S"];   // ASME B36.19M 두께(mm)
 const SPEC = {
   tank: { title: "정제기 (탱크·자켓·교반기)", src: "P&ID T-H071: 700 ID × 800 H, 0.40 m³, 동체 SUS316L·자켓 SUS304, 보온 100. 가열 LP 스팀 25A → FT/FI-H071 → TCV-H071(FC, TIC-H071로 조절) → 자켓 → 스팀 트랩 ST-H071 → LC. 온도계 TE-H071은 동체 아래쪽(액 속). 교반기 A-H071: 2-세미 앵커, 최대 159 rpm, 0.4 kW(인버터). 증기 출구 100A 노즐 → 80A-CCH-H0701(트레이싱 100 ℃) → C-H071", ids: ["T", "bottom", "Hs", "Hj", "wallMat", "tw", "Umode", "U", "type", "D", "C", "rpm", "tIns", "kIns"], note: () => (PR && PR.hMinNote ? PR.hMinNote + ". " : "") + ($("fillMode").value === "H" ? `투입량을 액 높이(${$("H").value} mm)로 입력했다: 높이가 고정이라 내경을 바꾸면 무게가 바뀐다${PR ? ` (지금 ${PR.m0.toFixed(0)} kg)` : ""}. 무게를 그대로 두려면 설정에서 투입량 단위를 kg으로 바꾼다.` : "투입량을 kg·L로 입력해 내경을 바꿔도 무게는 그대로다(액 높이가 바뀐다).") },
-  col: { title: "충전 컬럼", src: "P&ID C-H071: 150 ID × 1,500 H, 충전층 300 mm, 전기 트레이싱 + 보온 200. 컬럼 조립도 H-VP-ME-C-H081-001(태그 칸 C-H071): 1인치 폴 링 충전 300(받침판 50 위), 동체 150A SCH20S 플랜지면 사이 1,150, 충전층 위 빈 공간 약 800. 환류는 맨 위 단의 15A 노즐(N3) → 안쪽 관으로 컬럼 가운데 한 점에 떨어진다(분배기 없음). 맨 위 단과 동체 사이에 메시 한 장. 증기는 아래 N1(80A)로 들어와 위 N2(80A)로 나가고, 내려오는 액도 N1로 정제기에 돌아간다(바닥 드레인 없음). 현장(사용자 2026-11-19): 정제기 노즐에서 컬럼까지 목관 약 1,000 mm", ids: ["Dcol", "Hpack", "packFill", "pack", "HETP", "dp", "hold", "packRho", "packA", "tCol"] },
+  col: { title: "충전 컬럼", src: "P&ID C-H071: 150 ID × 1,500 H, 충전층 300 mm, 전기 트레이싱 + 보온 200. 컬럼 조립도 H-VP-ME-C-H081-001(태그 칸 C-H071): 1인치 폴 링 충전 300(받침판 50 위), 동체 150A SCH20S 플랜지면 사이 1,150, 충전층 위 빈 공간 약 800. 환류는 맨 위 단의 15A 노즐(N3)로 들어와 안쪽 관의 작은 구멍 약 4개로 충전층 위에 떨어진다(현장, 사용자 2026-11-20. 전에는 조립도 판독으로 '가운데 한 점, 분배기 없음'이라 적었다). 맨 위 단과 동체 사이에 메시 한 장. 증기는 아래 N1(80A)로 들어와 위 N2(80A)로 나가고, 내려오는 액도 N1로 정제기에 돌아간다(바닥 드레인 없음). 현장(사용자 2026-11-19): 정제기 노즐에서 컬럼까지 목관 약 1,000 mm", ids: ["Dcol", "Hpack", "packFill", "pack", "HETP", "dp", "hold", "packRho", "packA", "tCol"] },
   "pipe:V": { title: "증기 배관 (탑정 → 1차 응축기)", src: "P&ID 80A-CCH-H0709-Y1L2-IE100(전기 트레이싱 + 보온 100 mm), 탑 온도계 TE/TI-H075가 이 관에 있다. 스케줄은 배관 등급 Y1L2 사양, 직관 길이·엘보는 현장(사용자 2026-11-19): 탑정에서 위로 약 3 m → 엘보 → 오른쪽 1.2 m → 엘보 → 아래 약 0.5 m → E-H071 위 노즐, 직관 약 4.7 m · 엘보 2(그림은 줄여 그림)", ids: ["Dpipe", "Lpipe", "nElb", "nTee", "nTeeR", "nVg", "nVgl"], pipe: true,
     note: () => { const w = PR && Number.isFinite(PR.Wmax) ? ` · 현재 응축기 압력에서 이 배관의 최대 증기 유량 ${PR.Wmax < 10 ? PR.Wmax.toFixed(1) : PR.Wmax.toFixed(0)} kg/h (음속 한계)` : ""; return ($("pipenote") ? $("pipenote").textContent : "") + w; } },
   "pipe:J": { title: "스팀 공급 (헤더 → 컨트롤 밸브 → 자켓)", src: "자켓 입구 스팀 압력계(PI)·유틸리티 스팀 등급, 컨트롤 밸브 사양서(Cv 또는 Max flow)", ids: ["heatMode", "Psteam", "Tj", "mSteamMax", "valveChar", "valveR"], cv: true },
@@ -2647,6 +2648,7 @@ const SPEC = {
   "pipe:T2": { title: "1차 → 2차 응축기 (미응축 증기)", src: "무게 수지 차이로 역산한다", ids: ["f2"] },
 };
 const SPEC_ALIAS = { "pipe:FL": "fore", "pipe:S": "pump", "pipe:W1": "C1", "pipe:W2": "C2", "pipe:F": "fore", "pipe:M": "main" };
+const RD_HOLES = [-0.6, -0.2, 0.2, 0.6];   /* v127: 환류 분배 구멍 4개(현장 약 4개, 사용자 2026-11-20). 자리는 컬럼 반지름에 대한 비 — 그림 배치(현장 구멍 간격은 모른다) */
 const PIPE_NAME = { V: "증기 배관", J: "스팀 공급 관", C: "응축액 관", R: "환류 관", RD: "환류 분배", P: "유출 관", F: "초류 가지관", M: "본류 가지관", T2: "2차 응축기로 가는 관", EQ: "회수 탱크 균압 라인", FL: "초류 탱크 입구 관 (초류 + 2차 응축액)", L2: "2차 응축액 관 (→ 초류 가지관 F 밸브 뒤크)", S: "진공 라인", W1: "1차 N-Brine 관", W2: "2차 L-Brine 관" };
 function gravW(Dmm, dh, L) { const rho = PR && PR.mix ? PR.mix.rho : 750, D = Math.max(0.002, (Dmm || 25) / 1000), A = Math.PI * D * D / 4; return rho * A * Math.sqrt(2 * 9.81 * Math.max(0, dh) / (1 / 0.36 + 0.03 * L / D)) * 3600; }   // v82: 중력 배출 한계 kg/h (v71 식과 같음)
 function drainNote(k) { const g = { C: ["DpipeC", 0.3, 1.0], R: ["DpipeR", 0.5, 1.5], P: ["DpipeP", 1.0, 2.0] }[k], Dmm = parseFloat($(g[0]).value) || 25, W = gravW(Dmm, g[1], g[2]), rho = PR && PR.mix ? PR.mix.rho : 750, now = !PR ? null : k === "R" ? PR.Rkg || 0 : k === "P" ? PR.Dkg || 0 : PR.condKg || 0;
@@ -2988,8 +2990,8 @@ function fxBuild(q, R, Hs, ht, t, m) {
 // ---------- 점 입자 (방울·기포·흐름 점·배기·분출) ----------
 const FXN = 900, fxPos = new Float32Array(FXN * 3), fxCol = new Float32Array(FXN * 3), FXP = [];
 const fxGeo = new THREE.BufferGeometry(); fxGeo.setAttribute("position", new THREE.BufferAttribute(fxPos, 3)); fxGeo.setAttribute("color", new THREE.BufferAttribute(fxCol, 3));
-const DOT_TEX = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"), gr = g.createRadialGradient(32, 32, 0, 32, 32, 31); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.7, "rgba(255,255,255,1)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.beginPath(); g.arc(32, 32, 31, 0, Math.PI * 2); g.fill(); const tx = new THREE.CanvasTexture(c); tx.minFilter = THREE.LinearFilter; tx.generateMipmaps = false; return tx; })();   /* v126: 점 무늬 = 원(사각 점 → 둥근 점) */
-const fxPtsMat = new THREE.PointsMaterial({ size: 3.6, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.95, depthWrite: false, map: DOT_TEX, alphaTest: 0.25 });   /* v126: 둥근 점 · 2.4 → 3.6 px */
+const DOT_TEX = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"), gr = g.createRadialGradient(32, 32, 0, 32, 32, 31); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.5, "rgba(255,255,255,1)"); gr.addColorStop(1, "rgba(255,255,255,0)");   /* v127: 가장자리를 부드럽게(작은 점도 원으로 보이게) */ g.fillStyle = gr; g.beginPath(); g.arc(32, 32, 31, 0, Math.PI * 2); g.fill(); const tx = new THREE.CanvasTexture(c); tx.minFilter = THREE.LinearFilter; tx.generateMipmaps = false; return tx; })();   /* v126: 점 무늬 = 원(사각 점 → 둥근 점) */
+const fxPtsMat = new THREE.PointsMaterial({ size: 5, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.95, depthWrite: false, map: DOT_TEX, alphaTest: 0.02 });   /* v127: 3.6 → 5 px · 가장자리 부드럽게 */   /* v126: 둥근 점 · 2.4 → 3.6 px */
 const fxPts = new THREE.Points(fxGeo, fxPtsMat); fxPts.frustumCulled = false; fxPts.renderOrder = 10; world.add(fxPts);
 const fxAcc = {};
 const BUBN = 400, bubPos = new Float32Array(BUBN * 3), bubGeo = new THREE.BufferGeometry(); bubGeo.setAttribute("position", new THREE.BufferAttribute(bubPos, 3));
@@ -3062,7 +3064,7 @@ function fxUpdate(dtReal) {
       for (let k = 0; k < rings.count; k++) { const c0 = cs[Math.min(K - 1, Math.floor(fr[k] * K))]; rings.setColorAt(k, c0); for (let s = 0; s < 4; s++) tongs.setColorAt(k * 4 + s, c0); }
       if (rings.instanceColor) rings.instanceColor.needsUpdate = true; if (tongs.instanceColor) tongs.instanceColor.needsUpdate = true; } } }
   // 환류 줄기(RD): 범람이면 가늘어지고, 젖음이 모자라면 줄기 수가 준다
-  { const thin = Math.max(0.25, 1 - 0.75 * fl), nOn = Infinity;   /* v126: 분배기 노즐 두 곳 모두 흐른다(전: 젖음 비율로 줄기 수를 줄여 한 곳만 보였다 — 노즐이 막히는 현상은 계산에 없다) */
+  { const thin = Math.max(0.25, 1 - 0.75 * fl), nOn = Infinity;   /* v127: 구멍 4개 모두 · v126: 분배기 노즐 두 곳 모두 흐른다(전: 젖음 비율로 줄기 수를 줄여 한 곳만 보였다 — 노즐이 막히는 현상은 계산에 없다) */
     const segs = FILL.RD ? FILL.RD.segs : []; segs.forEach((s, i) => { if (s.ov) { s.ov.scale.x = s.ov.scale.z = thin; if (i >= nOn) s.ov.visible = false; } if (s.oe && i >= nOn) s.oe.visible = false; });
     (PIPES.RD || []).forEach((o, j) => { if (o.geometry && o.geometry.type === "CylinderGeometry") { o.scale.x = o.scale.z = thin; } }); }
   // 3 초킹·고속
@@ -3686,17 +3688,14 @@ function buildTank(m) {
       VES.packRings = [rings, tongs]; VES.packFrac = frac; VES.packGrey = ringGrey;   /* v93 · v101 */ rings.count = k; tongs.count = k * 4; rings.instanceMatrix.needsUpdate = true; tongs.instanceMatrix.needsUpdate = true; tankGroup.add(rings); tankGroup.add(tongs);
     }
   }   /* v89: 가운데 액 재분배기 그림 없앰 */
-  { // v82: 환류 분사 노즐 2개 — 옆 노즐로 들어온 관이 충전층 위에서 짧은 가로 헤더로 갈라져, 아래를 향한 노즐 둘이 나란히 원뿔 모양으로 뿌린다(RD가 흐를 때만)
-    const y = q.yDish, dx = q.rCol * 0.42, hd = opaque(new THREE.Mesh(new THREE.CylinderGeometry(rp * 0.5, rp * 0.5, 2 * dx, 12), mats.steel)); hd.position.set(q.xCol, y, 0); hd.rotation.z = Math.PI / 2; tankGroup.add(hd);
-    const H = Math.max(0.01 * t, y - 0.04 * t - q.packY1 - 0.012 * t); VES.spray = [];
-    for (const sx of [-1, 1]) { const x = q.xCol + sx * dx, el = opaque(new THREE.Mesh(new THREE.SphereGeometry(rp * 0.6, 12, 8), mats.steel)); el.position.set(x, y, 0); tankGroup.add(el);
-      const nz = opaque(new THREE.Mesh(new THREE.CylinderGeometry(rp * 0.6, rp * 0.3, 0.035 * t, 12), mats.steel)); nz.position.set(x, y - 0.02 * t, 0); tankGroup.add(nz);
-      const cm = Object.assign(mats.stream.clone(), { opacity: 0.3, depthWrite: false, side: THREE.DoubleSide }); cm.map = null;
-      const cone = new THREE.Mesh(new THREE.CylinderGeometry(rp * 0.25, q.rCol * 0.46, H, 24, 1, true), cm); cone.position.set(x, y - 0.04 * t - H / 2, 0); cone.visible = false; cone.renderOrder = 6; tankGroup.add(cone); VES.spray.push(cone); }
+  { // v127: 환류 분배 = 작은 구멍 4개(현장, 사용자 2026-11-20). 옆 노즐로 들어온 관이 충전층 위 가로 헤더가 되고, 헤더 아래 작은 구멍 4개에서 액이 가는 줄기로 떨어진다(RD가 흐를 때만).
+    // 전(v82)에는 분사 노즐 2개 + 원뿔 분사. 작은 구멍은 액이 중력으로 흘러 줄기를 이루므로 원뿔은 그리지 않는다
+    const y = q.yDish, hx = q.rCol * 0.8, hd = opaque(new THREE.Mesh(new THREE.CylinderGeometry(rp * 0.5, rp * 0.5, 2 * hx, 12), mats.steel)); hd.position.set(q.xCol, y, 0); hd.rotation.z = Math.PI / 2; tankGroup.add(hd);
+    VES.spray = [];
     const hg = opaque(new THREE.Mesh(new THREE.CylinderGeometry(q.rCol * 0.96, q.rCol * 0.96, 0.01 * t, 32), mats.tube)); hg.position.set(q.xCol, q.packY1 + 0.006 * t, 0); tankGroup.add(hg); }   // 충전층 위 누름 격자
   { const fm = new THREE.Mesh(new THREE.CylinderGeometry(q.rCol * 0.86, q.rCol * 0.86, 1, 32, 1, true), Object.assign(mats.stream.clone(), { opacity: 0.25, side: THREE.DoubleSide, depthWrite: false })); fm.position.set(q.xCol, q.packY0, 0); fm.scale.y = 0.0001; fm.visible = false; fm.renderOrder = 6; tankGroup.add(fm); VES.colFilm = fm; }   // v49: 충전층을 타고 내려가는 액막(방울 대신)
   // 환류 내림관: 꼭대기 옆 입구 → 분배기 접시. 접시 구멍 3개에서 충전층 위로 떨어지는 줄기(환류가 흐를 때만 보인다, 키 RD)
-  for (const sx of [-1, 1]) pipeSeg(V3(q.xCol + sx * q.rCol * 0.42, q.yDish - 0.04 * t, 0), V3(q.xCol + sx * q.rCol * 0.42, q.packY1 + 0.012 * t, 0), rp * 0.16, mats.stream, tankGroup, "RD");   // v82: 노즐 두 개의 가운데 줄기(채움 앞머리 = 분사가 충전물에 닿음)   // v61: 팔 끝 구멍에서 충전층 위로(RD가 흐를 때만)
+  for (const f of RD_HOLES) pipeSeg(V3(q.xCol + f * q.rCol, q.yDish - rp * 0.5, 0), V3(q.xCol + f * q.rCol, q.packY1 + 0.012 * t, 0), rp * 0.13, mats.stream, tankGroup, "RD");   /* v127: 구멍 4개의 줄기(헤더 아랫면 → 충전물 위, 채움 앞머리 = 줄기가 충전물에 닿음) */   // v82: 노즐 두 개의 가운데 줄기(채움 앞머리 = 분사가 충전물에 닿음)   // v61: 팔 끝 구멍에서 충전층 위로(RD가 흐를 때만)
   // ----- 탱크 노즐(컬럼 발치) -----
   const yNz = q.yNz;
   { const nz = opaque(new THREE.Mesh(new THREE.CylinderGeometry(rp * 1.6, rp * 1.6, 0.03 * t, 24), mats.steel)); nz.position.set(q.xN, yNz, 0); tankGroup.add(nz); }
@@ -3991,7 +3990,7 @@ function writeParticles(m) {
 const MAXV = 3200, MAXD = 6000, VP = [];   /* v111 */   /* v102: 환류 액 점이 이어서 흐르므로 상한을 늘림 */   // v80: MAXD = 증기 점 그리기 배열(입자 + 증기관 보조 점)
 const vapGeo = new THREE.BufferGeometry(), vapPos = new Float32Array(MAXD * 3), vapCol = new Float32Array(MAXD * 3);
 vapGeo.setAttribute("position", new THREE.BufferAttribute(vapPos, 3)); vapGeo.setAttribute("color", new THREE.BufferAttribute(vapCol, 3));
-const vapMat = new THREE.PointsMaterial({ size: 3.4, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false, map: DOT_TEX, alphaTest: 0.25 });   /* v126: 둥근 점 */
+const vapMat = new THREE.PointsMaterial({ size: 5, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false, map: DOT_TEX, alphaTest: 0.02 });   /* v127: 3.4 → 5 px · 가장자리 부드럽게(사용자 '아직 네모') */   /* v126: 둥근 점 */
 window.__vap = () => { const n = vapGeo.drawRange.count, o = []; for (let i = 0; i < Math.min(n, 4000); i++) o.push([vapPos[i * 3], vapPos[i * 3 + 1], vapPos[i * 3 + 2]]); return { n, vis: vapor.visible, op: vapMat.opacity, dt: vapMat.depthTest, o }; }; window.__world = world;   // v80 시험용
 const vapor = new THREE.Points(vapGeo, vapMat); vapor.frustumCulled = false; vapor.renderOrder = 8; world.add(vapor);
 // 증기 꼬리: 흐르는 방향으로 짧은 선을 달아 흐름이 보이게 한다
@@ -4002,7 +4001,7 @@ const vaporLines = new THREE.LineSegments(vlGeo, vlMat); vaporLines.frustumCulle
 // v92: 응축 방울(1차 응축기에서 떨어지는 액) — 증기 점과 따로, 덧칠 방식의 또렷한 파랑
 const DROP_COL = new THREE.Color(0.02, 0.2, 0.85), dpGeo = new THREE.BufferGeometry(), dpPos = new Float32Array(MAXV * 3), dlGeo = new THREE.BufferGeometry(), dlPos = new Float32Array(MAXV * 6);
 dpGeo.setAttribute("position", new THREE.BufferAttribute(dpPos, 3)); dlGeo.setAttribute("position", new THREE.BufferAttribute(dlPos, 3)); dpGeo.setDrawRange(0, 0); dlGeo.setDrawRange(0, 0);
-const dpMat = new THREE.PointsMaterial({ size: 3.4, sizeAttenuation: false, color: DROP_COL, transparent: true, opacity: 0.95, depthWrite: false, map: DOT_TEX, alphaTest: 0.25 }), dlMat = new THREE.LineBasicMaterial({ color: DROP_COL, transparent: true, opacity: 0.7, depthWrite: false });
+const dpMat = new THREE.PointsMaterial({ size: 5, sizeAttenuation: false, color: DROP_COL, transparent: true, opacity: 0.95, depthWrite: false, map: DOT_TEX, alphaTest: 0.02 })   /* v127: 3.4 → 5 px */, dlMat = new THREE.LineBasicMaterial({ color: DROP_COL, transparent: true, opacity: 0.7, depthWrite: false });
 const dropPts = new THREE.Points(dpGeo, dpMat), dropLines = new THREE.LineSegments(dlGeo, dlMat); dropPts.frustumCulled = dropLines.frustumCulled = false; dropPts.renderOrder = dropLines.renderOrder = 8; world.add(dropPts); world.add(dropLines);
 window.__drops = () => ({ n: dpGeo.drawRange.count, vis: dropPts.visible, size: dpMat.size, col: dpMat.color.getHexString(), blend: dpMat.blending === THREE.NormalBlending ? "normal" : "other" });
 let spawnAcc = 0;
@@ -7097,6 +7096,8 @@ function pid2Build() {
   PID2.dyn.vc = [0, 1].map(() => dflow("VC", "vap", 14)); PID2.vcY = null;   /* v126: 컬럼 안 증기(바닥 → 예열 전선) */
   PID2.dyn.col = el("rect", { x: X(cx0), y: Y(q.colTop), width: (q.rCol * 2000).toFixed(1), height: ((q.colTop - q.colBase) * 1000).toFixed(1), rx: 30, class: "p2-vessel" });
   el("path", { d: L([[cx0 + 0.02, q.yDish], [cx1 - 0.02, q.yDish]]), class: "p2-thin" });
+  PID2.dyn.rd = RD_HOLES.map((f) => { const x = q.xCol + f * q.rCol, fl = dflow("RD", "liq", 9); fl.setAttribute("d", L([[x, q.yDish - 0.012], [x, q.packY1 + 0.004]])); return fl; });   /* v127: 구멍마다 떨어지는 환류(3D와 같은 판정 RD) */
+  for (const f of RD_HOLES) el("circle", { cx: X(q.xCol + f * q.rCol), cy: Y(q.yDish), r: 7, class: "p2-hole" });   /* v127: 헤더의 작은 구멍 4개 */
   label(cx0 - 0.06, (q.colTop + q.colBase) / 2 + 0.05, "C-H071", "p2-eq", "end"); label(cx0 - 0.06, (q.colTop + q.colBase) / 2 - 0.05, "충전 컬럼", "p2-eq2", "end");
   // ---- 증기관 80A → E-H071 ----
   pipe("V", [[q.xCol, q.colTop], [q.xCol, q.yPipe], [q.xC, q.yPipe], [q.xC, q.yC0 + 0.03]], 26, "vap");

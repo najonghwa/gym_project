@@ -119,6 +119,16 @@ const pj=(D.PIPES.J||[]).filter(o=>o.geometry&&o.geometry.type==='CylinderGeomet
 const q=D.M.pipe;let lo=Infinity,hi=-Infinity;for(const o of (D.VALVE_PARTS.M?D.VALVE_PARTS.M.parts:[])){const bb=new THREE.Box3().setFromObject(o);lo=Math.min(lo,bb.min.y);hi=Math.max(hi,bb.max.y);}
 return JSON.stringify({vis,flow,n:segs.length,valves:out,pipeJ:pj.length?+Math.max(...pj).toFixed(5):null,t:D.PR.t/3600,mv:{lo,hi,tankTop:q.yTopM+q.hdM,tee:q.yValve}})})()"""
 
+# v127(2026-11-20): 도면의 환류 분배 구멍 4개와 구멍마다 떨어지는 액 점(Q1)
+JS_V7 = r"""(async()=>{const D=window.__dt,zz=(ms)=>new Promise(r=>setTimeout(r,ms)),b=document.getElementById('btn3d');
+if(/도면/.test(b.textContent))b.click();await zz(2500);
+const Q=D.PID2,G=Q.geo,q=G.q,X=G.X,Y=G.Y;
+const holes=[...Q.svg.querySelectorAll('.p2-hole')].map(c=>[+c.getAttribute('cx'),+c.getAttribute('cy'),+c.getAttribute('r')]);
+const rd=Q.flows.filter(f=>f.k==='RD').map(f=>{const m=(f.el.getAttribute('d')||'').match(/M([\d.]+) ([\d.]+)L([\d.]+) ([\d.]+)/);return {on:!!f.on,cls:f.el.getAttribute('class'),seg:m?m.slice(1).map(Number):null};});
+const col=[Number(X(q.xCol-q.rCol)),Number(X(q.xCol+q.rCol))],yD=Number(Y(q.yDish)),yP=Number(Y(q.packY1)),on3=!!(D.ISOFLOW&&D.ISOFLOW.on&&D.ISOFLOW.on.RD);
+if(/3D/.test(b.textContent))b.click();await zz(1500);
+return JSON.stringify({holes,rd,col,yD,yP,on3,t:D.PR.t/3600});})()"""
+
 def jumpS(h):   # 배치가 먼저 끝나면(가열 정지) 거기서 멈춘다
     return [["eval", f"window.__dt.startJump('at',{h});1"],
             ["until", f"(()=>{{const D=window.__dt,P=D.PR;return !!(P&&!D.TURBO&&(P.t>={h}*3600-120||P.stopped))}})()", 1500000], ["wait", 1500]]
@@ -133,7 +143,7 @@ def scenarios(scen, tag, BOOT, jump, SHOTS):
          scen("합침 운전 패널", rec + jump(4) + [["wait", 2000], ["eval", "(()=>{const f=document.querySelector('.op-fold');if(f)f.click();return f?1:0})()"], ["wait", 2500], tag("op", JS_OP), ["shot", str(SHOTS / "합침_운전패널_4h.png")]]),
          scen("합침 배치 끝", rec + jumpS(90) + [tag("end", JS_END)]),
          scen("v126 후류 규칙", rec + [["eval", "(()=>{const e=document.getElementById('rcpTailKg');e.value='40';return e.value})()"]] + jumpS(90) + [tag("end40", JS_END)]),
-         scen("v126 화면", rec + [tag("geo", JS_GEO)] + jump(1.25) + [tag("v6a", JS_V6A), ["wait", 1500], ["shot", str(SHOTS / "v126_예열_3D.png")]] + jump(6) + [["wait", 3000], tag("v6b", JS_V6B)])]
+         scen("v126 화면", rec + [tag("geo", JS_GEO)] + jump(1.25) + [tag("v6a", JS_V6A), ["wait", 1500], ["shot", str(SHOTS / "v126_예열_3D.png")]] + jump(6) + [["wait", 3000], tag("v6b", JS_V6B), tag("v7", JS_V7)])]
     return S
 
 # ---------- 따로 계산 ----------
@@ -267,13 +277,20 @@ def judge(g, add):
             f"3D 점 {v['ptsMap']}/{v['pts']}개 원 무늬 · 도면 점선 '{v['dash']}' · 끝 '{v['cap']}'", "모두 · 0, 간격 · round")
     v = g("v126 화면", "v6b")
     if v:
-        add("P3", "환류 분배기 노즐 두 곳 모두에서 줄기(환류가 흐를 때)", v["flow"] and v["n"] == 2 and all(v["vis"]), f"환류 흐름 {v['flow']} · 줄기 {sum(v['vis'])}/{v['n']}개 보임", "2/2")
+        add("P3", "환류 분배 구멍 4개 모두에서 줄기(환류가 흐를 때, 3D). v127: 현장 작은 구멍 약 4개(사용자 11-20)", v["flow"] and v["n"] == 4 and all(v["vis"]), f"환류 흐름 {v['flow']} · 줄기 {sum(v['vis'])}/{v['n']}개 보임", "4/4")
         vs = v["valves"]; bad = [k for k, x in vs.items() if x["mats"] != 1]; noHead = [k for k, x in vs.items() if x["head"] < 1]
         add("P6", "밸브 머리(조절 밸브 덮개 · 액추에이터)까지 상태 색 한 가지(열림 초록 · 닫힘 빨강)", vs and not bad and not noHead,
             f"밸브 {len(vs)}개 · 부품 색이 둘 이상 {bad or '없음'} · 머리 없음 {noHead or '없음'} · 부품 수 " + ", ".join(f"{k} {x['n']}" for k, x in vs.items()), "모두 한 색 · 머리 있음")
         j = vs.get("J") or {}
         add("P7", "스팀 밸브 가운데로 관이 비치지 않음: 밸브 목 반지름 ≥ 관 반지름 × 1.1", j.get("fr") is not None and v["pipeJ"] and j["fr"] >= 1.1 * v["pipeJ"],
             f"목 {j.get('fr')} m · 스팀 관 {v['pipeJ']} m(비 {j['fr'] / v['pipeJ']:.2f})" if j.get("fr") and v["pipeJ"] else f"목 {j.get('fr')} · 관 {v['pipeJ']}", "≥ 1.1")
+    v = g("v126 화면", "v7")
+    if v:
+        H, F = v["holes"], v["rd"]; xs = sorted(h[0] for h in H)
+        inCol = all(v["col"][0] < h[0] < v["col"][1] and abs(h[1] - v["yD"]) < 0.6 for h in H)
+        under = all(f["seg"] and any(abs(f["seg"][0] - x) < 0.6 for x in xs) and abs(f["seg"][2] - f["seg"][0]) < 0.6 and v["yD"] < f["seg"][1] < f["seg"][3] <= v["yP"] + 1 for f in F)
+        add("Q1", "도면: 분배 헤더의 작은 구멍 4개(컬럼 안, 헤더 높이) · 구멍마다 떨어지는 액 점 4줄(헤더 아래 → 충전층 위, 환류가 흐를 때 켜짐 — 3D와 같은 판정)", len(H) == 4 and inCol and len(F) == 4 and under and v["on3"] and all(f["on"] for f in F),
+            f"구멍 {len(H)}개(x {', '.join(f'{x:.0f}' for x in xs)} · 컬럼 {v['col'][0]:.0f}~{v['col'][1]:.0f}) · 액 점 {sum(f['on'] for f in F)}/{len(F)}줄 켜짐 · 구멍 아래 {'예' if under else '아니오'} · 3D 판정 {v['on3']}", "4개 · 4/4줄 · 예")
     e = g("v126 화면", "geo")
     if e:
         add("P12", "정제기 몸통 직관부 = P&ID 800 mm(위 접선 = 아래 경판 + 800, 0.40 m³와 맞음)", abs(e["Hs"] - e["hh"] - 0.8) < 1e-6 and abs(e["topY"] - e["Hs"] - 0.175) < 1e-6,
@@ -301,5 +318,8 @@ def static(html_path):
     a1 = 'anc ? 2 : S.p.type === "pbt" ? 4 : 3' in h; a2 = 'p.type === "anchor" ? 3 : 2' in h and "S.type === 3 ? 2 : 3" in h
     R.append({"id": "M15", "name": "격자 계산(작업자·GPU)의 앵커 날개 = 수직 날개 2개", "ok": a1 and a2, "val": f"작업자 {'있음' if a1 else '없음'} · GPU {'있음' if a2 else '없음'}", "crit": "둘 다 있음"})
     body = re.sub("<script[ >].*?</script>", "", h, flags=re.S); cw = len(re.findall("냉각수", re.sub("/[*].*?[*]/", "", body, flags=re.S)))   # 스크립트(계산 코드·도면 자료)와 스타일 주석을 뺀 화면 글
+    a = "안쪽 관의 작은 구멍 약 4개로 충전층 위에 떨어진다(현장, 사용자 2026-11-20" in h; old = "컬럼 가운데 한 점에 떨어진다(분배기 없음)" in h
+    R.append({"id": "Q2", "name": "설비 설명(컬럼): 환류는 작은 구멍 약 4개로 떨어진다(현장, 사용자 11-20) — 조립도 판독 '가운데 한 점(분배기 없음)'은 남지 않음", "ok": a and not old,
+              "val": f"현장 문장 {'있음' if a else '없음'} · 옛 문장 {'남음' if old else '없음'}", "crit": "있음 · 없음"})
     R.append({"id": "M3", "name": "화면 글에 '냉각수' 없음(1차 = N-Brine, 2차 = L-Brine)", "ok": cw == 0 and "N-Brine" in body and "L-Brine" in body, "val": f"'냉각수' {cw}곳 · N-Brine {body.count('N-Brine')}곳 · L-Brine {body.count('L-Brine')}곳", "crit": "0곳"})
     return R

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """정제 시뮬레이터 발표자료 만들기
 
-실행:  python 만들기.py [점검 결과 이름]        예: python 만들기.py v126_최종
+실행:  python 만들기.py [점검 결과 이름]        예: python 만들기.py v127_최종
 - 읽는 것: 값.json(시뮬레이터 v126에서 뽑은 계산 값, 다섯 시점) · ../점검/점검결과_<이름>.json(이상 상황 12가지 기록, 배치 끝 기록)
 - 내는 것: ../정제_시뮬레이터_발표자료.html(파일 하나로 열림) · 발표자료_아티팩트.html(앞머리 없는 조각)
 - 숫자는 손으로 옮겨 적지 않는다. 그림과 글의 값은 모두 위 두 기록에서 읽는다.
@@ -14,12 +14,12 @@ import 그림 as G, 내용, 장면, 틀
 from 그림 import esc, eq_html
 from 내용 import N
 
-tag = sys.argv[1] if len(sys.argv) > 1 else "v126_최종"
+tag = sys.argv[1] if len(sys.argv) > 1 else "v127_최종"
 _ck = HERE.parent / "점검" / f"점검결과_{tag}.json"
 if not _ck.exists(): _ck = HERE / f"점검결과_{tag}.json"      # 깃 저장소(distill-sim)에서는 발표자료/ 안의 사본을 읽는다(점검/점검결과*는 저장소에 올리지 않는다)
 CHK = json.loads(_ck.read_text(encoding="utf-8"))
 VAL = json.loads((HERE / "값.json").read_text(encoding="utf-8"))
-RAW = CHK["raw"]; VER = CHK.get("ver") or "v126"
+RAW = CHK["raw"]; VER = CHK.get("ver") or "v127"
 
 # ---------------------------------------------------------------- 값 모으기
 S30 = VAL["snap"]["30"]; P30 = S30["PR"]; C = S30["CUR"]
