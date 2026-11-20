@@ -136,7 +136,12 @@ if(/3D/.test(b.textContent))b.click();await zz(1500);
 return JSON.stringify({holes,rd,col,yD,yP,on3,more,t:D.PR.t/3600});})()"""
 
 # v128(2026-11-20): 환류 U자 액봉 — 환류 밸브를 닫아도 U자 세 토막은 찬 채, 다시 열면 흐름 표시가 돌아온다(S3)
-JS_US = r"""(()=>{const D=window.__dt,f=D.FILL.R,u=D.uSealSpan(f),P=D.PR;return JSON.stringify({seal:P.sealM||0,holdC:D.CUR.holdC,mHeldC:P.mHeldC||0,head:f.head,tail:f.tail,L:f.Ltot,us:u,want:!!f.want,held:!!f.held,Rkg:P.Rkg||0,R:!!D.VLV.R,t:P.t/3600})})()"""
+JS_US = r"""(()=>{const D=window.__dt,f=D.FILL.R,u=D.uSealSpan(f),P=D.PR,rd=D.FILL.RD,pk=(k)=>{const x=D.FILL[k];return x?{head:x.head,tail:x.tail,L:x.Ltot,sV:x.sV==null?null:x.sV,held:!!x.held,out:!!x.out,dr:x.dr?{t:x.dr.t,hk:x.dr.hk}:null,vis:x.segs.filter(s=>s.ov.visible).length,n:x.segs.length,glass:!!(D.PIPES[k]&&D.PIPES[k][0]&&D.PIPES[k][0].material.transparent)}:null};
+return JSON.stringify({seal:P.sealM||0,holdC:D.CUR.holdC,mHeldC:P.mHeldC||0,head:f.head,tail:f.tail,L:f.Ltot,us:u,want:!!f.want,held:!!f.held,out:!!f.out,Rkg:P.Rkg||0,Dkg:P.Dkg||0,R:!!D.VLV.R,t:P.t/3600,pR:pk('R'),pM:pk('M'),pP:pk('P'),rd:rd?{head:rd.head,tail:rd.tail,vis:rd.segs.filter(s=>s.ov.visible).length}:null,VLV:Object.assign({},D.VLV)})})()"""
+JS_2DFADE = r"""(async()=>{const D=window.__dt,zz=(ms)=>new Promise(r=>setTimeout(r,ms)),b=document.getElementById('btn3d');if(/도면/.test(b.textContent))b.click();await zz(2500);
+const Q=D.PID2,fr=Q.flows.find(f=>f.k==='R'),on0=!!fr.on;D.setValve('R',false);await zz(350);const o1=parseFloat(fr.el.style.strokeDashoffset),a1=parseFloat(getComputedStyle(fr.el).opacity),on1=!!fr.on;await zz(300);const o2=parseFloat(fr.el.style.strokeDashoffset),a2=parseFloat(getComputedStyle(fr.el).opacity);
+await zz(1200);const a3=parseFloat(getComputedStyle(fr.el).opacity),o3=parseFloat(fr.el.style.strokeDashoffset);await zz(300);const o4=parseFloat(fr.el.style.strokeDashoffset);D.setValve('R',true);if(/3D/.test(b.textContent))b.click();await zz(1200);
+return JSON.stringify({on0,on1,o1,o2,o3,o4,a1,a2,a3})})()"""
 
 # v129(2026-11-20): 정제기 열 퍼짐 — 구획 계산(평균과의 온도 차) · '열 퍼짐 강조' 스위치(T1~T4). 가벼운 계산(LUMP)에서만 돈다
 JS_ZH = r"""(()=>{const D=window.__dt,Z=D.ZH,I=Z.info||{},P=D.PR,th=Z.th,NR=Z.NR,NZ=Z.NZ;let sv=0,st=0;if(th){for(let k=0;k<NZ;k++)for(let i=0;i<NR;i++){const v=((i+1)*(i+1)-i*i);sv+=v;st+=v*th[k*NR+i];}}
@@ -159,10 +164,13 @@ def scenarios(scen, tag, BOOT, jump, SHOTS):
          scen("합침 운전 패널", rec + jump(4) + [["wait", 2000], ["eval", "(()=>{const f=document.querySelector('.op-fold');if(f)f.click();return f?1:0})()"], ["wait", 2500], tag("op", JS_OP), ["shot", str(SHOTS / "합침_운전패널_4h.png")]]),
          scen("합침 배치 끝", rec + jumpS(90) + [tag("end", JS_END)]),
          scen("v126 후류 규칙", rec + [["eval", "(()=>{const e=document.getElementById('rcpTailKg');e.value='40';return e.value})()"]] + jumpS(90) + [tag("end40", JS_END)]),
-         scen("v128 U자 액봉", BOOT + [["eval", "window.__dt.opSetMode('free');1"], ["wait", 1500]] + jump(2.3) + [["wait", 4000], tag("us0", JS_US), ["eval", "window.__dt.setValve('R',false);1"], ["wait", 6000], tag("us1", JS_US),
-                                    ["shot", str(SHOTS / "v128_U자_환류닫음.png"), "#stage", 3, [480, 110, 190, 130]], ["eval", "window.__dt.setValve('R',true);1"], ["wait", 5000], tag("us2", JS_US)]),
-         scen("v129 열 퍼짐", rec + jump(1.3) + [["wait", 3000], tag("z0", JS_ZH), ["eval", "document.getElementById('heatEm').click();1"], ["wait", 6000], tag("z1", JS_ZH), ["shot", str(SHOTS / "v129_강조_교반중.png"), "#stage", 3, [380, 300, 170, 230]],
-                                   ["eval", "document.getElementById('heatEm').click();1"], ["wait", 1500], tag("z2", JS_ZH), ["eval", JS_RPM(0)], ["wait", 25000], tag("z3", JS_ZH), ["shot", str(SHOTS / "v129_교반_정지.png"), "#stage", 3, [380, 300, 170, 230]],
+         scen("v128 U자 액봉", BOOT + [["eval", "window.__dt.opSetMode('free');1"], ["wait", 1500]] + jump(2.3) + [["wait", 4000], tag("us0", JS_US), ["eval", "window.__dt.setValve('R',false);1"], ["wait", 350], tag("usA", JS_US), ["wait", 6000], tag("us1", JS_US),
+                                    ["shot", str(SHOTS / "v128_U자_환류닫음.png"), "#stage", 3, [480, 110, 190, 130]], ["eval", "window.__dt.setValve('R',true);1"], ["wait", 5000], tag("us2", JS_US),
+                                    ["eval", "window.__dt.setValve('P',true);window.__dt.setValve('M',true);window.__dt.setValve('F',false);1"], ["wait", 9000], tag("mv0", JS_US), ["eval", "window.__dt.setValve('M',false);1"], ["wait", 350], tag("mvA", JS_US), ["wait", 6000], tag("mv1", JS_US),
+                                    ["shot", str(SHOTS / "v130_본류밸브_닫음.png"), "#stage", 3, [560, 300, 200, 130]], ["eval", "window.__dt.setValve('M',true);1"], ["wait", 6000], ["eval", "window.__dt.setValve('P',false);1"], ["wait", 7000], tag("pv1", JS_US),
+                                    ["eval", "window.__dt.setValve('P',true);1"], ["wait", 3000], tag("fade", JS_2DFADE)]),
+         scen("v129 열 퍼짐", rec + jump(1.3) + [["wait", 3000], tag("z0", JS_ZH), ["shot", str(SHOTS / "v129_강조_교반중.png"), "#stage", 3, [380, 300, 170, 230]], ["eval", "document.getElementById('heatEm').click();1"], ["wait", 1500], tag("z1", JS_ZH),
+                                   ["eval", "document.getElementById('heatEm').click();1"], ["wait", 6000], tag("z2", JS_ZH), ["eval", JS_RPM(0)], ["wait", 25000], tag("z3", JS_ZH), ["shot", str(SHOTS / "v129_교반_정지.png"), "#stage", 3, [380, 300, 170, 230]],
                                    ["eval", JS_RPM(80)], ["wait", 3000], tag("z4", JS_ZH)]),
          scen("v126 화면", rec + [tag("geo", JS_GEO)] + jump(1.25) + [tag("v6a", JS_V6A), ["wait", 1500], ["shot", str(SHOTS / "v126_예열_3D.png")]] + jump(6) + [["wait", 3000], tag("v6b", JS_V6B), tag("v7", JS_V7)])]
     return S
@@ -360,16 +368,38 @@ def judge(g, add):
                 f"멈춘 뒤 공정 {(z3['t'] - z2['t']) * 60:.0f}분 · 위 {z3['top']:+.1f} · 아래 {z3['bot']:+.1f} · 가운데 {z3['center']:+.1f} ℃ · 위 − 아래 {tb:.1f} ℃ = 옛 비율 값 {z3['S']:.1f} ℃의 {ratio:.2f}배 · 벽 막 온도 차 {z3['dW']:.1f} ℃ · 자연대류 한 바퀴 {(z3['turn'] or 0) / 60:.0f}분" if ratio is not None else "값 없음", "위 − 아래 > 3 ℃ · 가운데 < 0 · 0.3~3배")
             add("T3", "교반을 다시 켜면 혼합 시간의 몇 배(공정 시간) 안에 차이가 풀린다. 사용자 11-20 '교반 돌면서 점차적으로 다른 곳으로 색이 퍼지게'", z4["rpm"] > 70 and z4["max"] is not None and z4["max"] < 0.1 * z3["max"],
                 f"켠 뒤 공정 {(z4['t'] - z3['t']) * 3600:.0f} s(혼합 시간 {z4['th95']:.0f} s) · 최대 편차 {z3['max']:.2f} → {z4['max']:.3f} ℃", "10 % 밑으로")
-            okOff = z0["pressed"] == "false" and z0["zEm"] == 0 and z0["note"] is None and z2["pressed"] == "false" and z2["zEm"] == 0 and (z2["hot"] or 0) == 0
-            okOn = z1["pressed"] == "true" and z1["zEm"] == 1 and bool(z1["note"]) and "로그 눈금" in (z1["note"] or "") and (z1["hot"] or 0) >= 3
-            add("T4", "'열 퍼짐 강조' 스위치: 기본 꺼짐(실제 온도 색만). 켜면 평균보다 뜨거운 곳을 붉게 덧칠 + 벽을 지난 흐름 줄기가 붉어짐 + 무엇을 뜻하는지 글이 밸브 줄에 나옴. 끄면 되돌아감", okOff and okOn,
-                f"처음 {z0['pressed']} · 켠 뒤 덧칠 {z1['zEm']} · 붉은 줄기 {z1['hot']}/{z1['nStir']}개 · 글 '{(z1['note'] or '')[:60]}' · 끈 뒤 덧칠 {z2['zEm']} · 붉은 줄기 {z2['hot']}개", "기본 꺼짐 · 켜면 덧칠 · 줄기 3개 넘게 · 글 · 끄면 0")
-    u0, u1, u2 = g("v128 U자 액봉", "us0"), g("v128 U자 액봉", "us1"), g("v128 U자 액봉", "us2")
+            okOn0 = z0["pressed"] == "true" and z0["zEm"] == 1 and bool(z0["note"]) and "로그 눈금" in (z0["note"] or "") and (z0["hot"] or 0) >= 3
+            okOff = z1["pressed"] == "false" and z1["zEm"] == 0 and z1["note"] is None and (z1["hot"] or 0) == 0
+            okOn = z2["pressed"] == "true" and z2["zEm"] == 1 and (z2["hot"] or 0) >= 3
+            add("T4", "'열 퍼짐 강조' 스위치: 기본 켜짐(v130, 사용자 '기본 켜짐으로') — 평균보다 뜨거운 곳을 붉게 덧칠 + 벽을 지난 흐름 줄기가 붉어짐 + 무엇을 뜻하는지 글이 밸브 줄에 나옴. 끄면 실제 온도 색만, 다시 켜면 돌아옴", okOn0 and okOff and okOn,
+                f"처음 {z0['pressed']} · 덧칠 {z0['zEm']} · 붉은 줄기 {z0['hot']}/{z0['nStir']}개 · 글 '{(z0['note'] or '')[:60]}' · 끈 뒤 덧칠 {z1['zEm']} · 붉은 줄기 {z1['hot']}개 · 다시 켠 뒤 붉은 줄기 {z2['hot']}개", "기본 켜짐 · 덧칠 · 줄기 3개 넘게 · 글 · 끄면 0")
+    u0, u1, u2, uA = g("v128 U자 액봉", "us0"), g("v128 U자 액봉", "us1"), g("v128 U자 액봉", "us2"), g("v128 U자 액봉", "usA")
     if u0 and u1 and u2:
-        us = u1.get("us") or {}; okHold = bool(us) and abs(u1["head"] - us["s1"]) < 1e-3 and abs(u1["tail"] - us["s0"]) < 1e-3 and u1["held"] and not u1["want"] and not u1["R"]
-        add("S3", "환류 U자 액봉: 환류 밸브를 닫아도 U자 세 토막(내려감 · 바닥 · 올라감)은 찬 채로, 실 루프 무게 유지, 다시 열면 흐름 표시가 돌아옴. 사용자 11-20 '정제 밸브를 닫으면 U관에 액이 차 있나? 이런 것도 구현되어 있나?'",
+        us = u1.get("us") or {}; okHold = bool(us) and abs(u1["head"] - us["s1"]) < 1e-3 and u1["tail"] < 1e-6 and u1["held"] and not u1["want"] and not u1["R"]
+        add("S3", "환류 U자 액봉: 환류 밸브를 닫아도 U자와 그 앞 구간(넘침 높이와 같은 높이)은 찬 채로, 컬럼 쪽 끝 토막만 빈다. 실 루프 무게 유지, 다시 열면 흐름 표시가 돌아옴. 사용자 11-20 '정제 밸브를 닫으면 U관에 액이 차 있나? 이런 것도 구현되어 있나?'",
             okHold and abs(u1["seal"] - u1["holdC"]) < 1e-6 and u1["mHeldC"] >= u1["seal"] - 1e-6 and u2["want"] and not u2["held"] and abs(u2["head"] - u2["L"]) < 1e-3 and u2["tail"] < 1e-6,
-            f"닫기 전 환류 {u0['Rkg']:.1f} kg/h · 닫은 뒤 찬 구간 {u1['tail']:.3f}~{u1['head']:.3f} m(U자 {us.get('s0', 0):.3f}~{us.get('s1', 0):.3f} m, 관 전체 {u1['L']:.3f} m) · 실 루프 {u1['seal']:.2f} kg · 다시 연 뒤 {u2['tail']:.3f}~{u2['head']:.3f} m · 갇힘 표시 {u2['held']}", "U자 구간만 참 · 0.55 kg 유지 · 다시 흐름")
+            f"닫기 전 환류 {u0['Rkg']:.1f} kg/h · 닫은 뒤 찬 구간 {u1['tail']:.3f}~{u1['head']:.3f} m(U자 끝 {us.get('s1', 0):.3f} m, 관 전체 {u1['L']:.3f} m) · 실 루프 {u1['seal']:.2f} kg · 다시 연 뒤 {u2['tail']:.3f}~{u2['head']:.3f} m · 갇힘 표시 {u2['held']}", "U자 끝까지 참 · 0.55 kg 유지 · 다시 흐름")
+    if u0 and u1 and uA and uA.get("pR"):
+        a, b1 = uA["pR"], u1["pR"]; rdA, rd1 = uA.get("rd") or {}, u1.get("rd") or {}
+        okNow = a["glass"] and a["vis"] >= 4 and (uA["out"] or (a["dr"] and a["dr"]["t"] < a["head"] - 1e-6)) and (rdA.get("vis") or 0) >= 1
+        okEnd = b1["glass"] and b1["vis"] >= 4 and not u1["out"] and (rd1.get("vis") or 0) == 0
+        add("U1", "환류 밸브를 닫아도 관 속 액이 갑자기 사라지지 않음(3D): 바탕 관은 유리로 남고, 닫은 직후에는 컬럼 쪽 끝 토막이 아직 흘러 나가며 분배 구멍 줄기가 이어지고, 몇 초 뒤 끝 토막 · 줄기만 빈다. 사용자 11-20 '리플럭스 밸브 잠그면 밸브랑 컬럼 사이 배관 흐르던 액은 갑자기 사라지는'",
+            bool(okNow and okEnd),
+            f"닫고 0.35 s: 유리 {a['glass']} · 보이는 토막 {a['vis']}/{a['n']} · 흘러 나가는 중 {uA['out']} · 분배 줄기 {rdA.get('vis')}개 → 6 s 뒤: 유리 {b1['glass']} · 보이는 토막 {b1['vis']}/{b1['n']} · 분배 줄기 {rd1.get('vis')}개", "직후에는 이어짐 · 뒤에는 U자와 앞 구간만")
+    m0, m1, p1 = g("v128 U자 액봉", "mv0"), g("v128 U자 액봉", "mv1"), g("v128 U자 액봉", "pv1")
+    if m0 and m1 and m0.get("pM"):
+        a, b1, pp = m0["pM"], m1["pM"], m1["pP"]
+        add("U2", "본류 밸브(XV-H077)를 닫으면 밸브 위의 액은 남고 아래는 탱크로 빠진다. 받는 탱크 밸브가 모두 닫히면 유출 관의 액은 갈 곳이 없어 그대로 남는다(3D)",
+            m0["Dkg"] > 1 and abs(a["head"] - a["L"]) < 1e-3 and a["sV"] is not None and abs(b1["head"] - b1["sV"]) < 1e-3 and b1["tail"] < 1e-6 and b1["held"] and b1["glass"] and abs(pp["head"] - pp["L"]) < 1e-3 and pp["held"],
+            f"닫기 전 유출 {m0['Dkg']:.1f} kg/h · 본류 가지 {a['head']:.3f}/{a['L']:.3f} m → 닫은 뒤 0~{b1['head']:.3f} m(밸브 자리 {b1['sV']:.3f} m) · 유출 관 {pp['head']:.3f}/{pp['L']:.3f} m 남음", "밸브 위만 남음 · 유출 관은 전부 남음")
+    if p1 and p1.get("pP"):
+        pp, mm = p1["pP"], p1["pM"]
+        add("U3", "유출 밸브(FCV-H072)를 닫으면 밸브 위의 액은 남고 아래는 열린 본류 탱크로 흘러 내려가 빈다(3D)", pp["sV"] is not None and abs(pp["head"] - pp["sV"]) < 1e-3 and pp["tail"] < 1e-6 and pp["held"] and mm["head"] < 1e-6 and not p1["VLV"]["P"] and p1["VLV"]["M"],
+            f"유출 관 0~{pp['head']:.3f} m(밸브 자리 {pp['sV']:.3f} m, 관 전체 {pp['L']:.3f} m) · 본류 가지 {mm['head']:.3f} m", "밸브 위만 남음 · 아래 0")
+    fd = g("v128 U자 액봉", "fade")
+    if fd:
+        add("U4", "도면: 흐름이 멈춘 점은 바로 꺼지지 않고 1초 동안 흘러가며 옅어진다", fd["on0"] and not fd["on1"] and abs(fd["o2"] - fd["o1"]) > 1 and 0.02 < fd["a2"] < 0.98 and fd["a3"] < 0.05 and abs(fd["o4"] - fd["o3"]) < 1e-9,
+            f"멈춘 뒤 0.35 s 불투명도 {fd['a1']:.2f} → 0.65 s {fd['a2']:.2f} → 1.85 s {fd['a3']:.2f} · 그동안 점 이동 {abs(fd['o2'] - fd['o1']):.0f} · 다 옅어진 뒤 이동 {abs(fd['o4'] - fd['o3']):.0f}", "옅어지는 동안 이동 · 끝나면 멈춤")
     en = g("합침 배치 끝", "end")
     if en:
         res = en["m0"] - en["fore"] - en["main"] - en["m"]
