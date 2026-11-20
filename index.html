@@ -855,7 +855,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v127 · 11-20 10:02</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v128 · 11-20 11:15</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -1317,6 +1317,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
 .pid2 .p2-ring{fill:none;stroke:var(--muted);stroke-width:4}
 .pid2 .p2-ring.hot{fill-opacity:.5;stroke-width:5}
 .pid2 .p2-thin{fill:none;stroke:var(--ink);stroke-width:6;stroke-opacity:.7}
+.pid2 .p2-seal{fill:none;stroke:#4aa8ff;stroke-width:9;stroke-linejoin:round;stroke-linecap:round;opacity:0}.pid2 .p2-seal.on{opacity:.5}
 .pid2 .p2-hole{fill:var(--view);stroke:var(--ink);stroke-width:4;stroke-opacity:.8}
 .pid2 .p2-sheet{stroke:var(--ink);stroke-width:8}
 .pid2 .p2-tube{fill:none;stroke:var(--muted);stroke-width:4}
@@ -2506,23 +2507,23 @@ function buildModel(p, Smeasured) {
   // 배치(t = 탱크 내경): 탱크 → 꼭대기 노즐에서 증기 관이 올라가 옆에 따로 선 컬럼 타워 하부로 들어간다. 컬럼 꼭대기 → 위의 가로형 1차 응축기 → 분배기 → 환류는 컬럼 꼭대기로,
   // 제품은 아래 받는 탱크 둘로. 분배기 오른쪽으로 2차 응축기(세로) → 초류 탱크, 그 위로 진공펌프(바닥). 컬럼 바닥에 모인 액은 별도 관으로 탱크로 되돌아온다
   const t = p.T, xN = 0.62 * R, rCol = Math.min(0.3 * t, Math.max(0.08 * t, (p.Dcol || 0.2) / 2)), Rj = R + 0.045 * t;
-  const yNz = Hs + ht * Math.sqrt(1 - 0.62 * 0.62) + 0.01 * t, xCol = xN, dCol = 0.29 * t + 0.34 * (Hs - hh),   /* v126: 그림 눈금은 직관부(전과 같은 값) */   /* v102: 컬럼 꼭대기는 그대로 두고 충전층 위 빈 공간을 0.36 T만 남긴 만큼 */   /* v99: 충전물 위 빈 공간을 줄인 만큼 목관을 늘린다(컬럼 꼭대기·응축기는 제자리) */ colBase = Math.max(yNz + 0.12 * t, yTop + 0.27 * t) + dCol, packY0 = colBase + 0.06 * t, packY1 = packY0 + p.Hpack, colHphys = 0.24 * t + p.Hpack / Math.max(0.2, p.packFill || 1);   // v68: 그림은 낮게(목관은 모터 꼭대기 yTop + 0.23T 위 0.04T), 계산의 컬럼 높이는 예전 식   // 컬럼은 탱크 노즐 위에 수직으로 선다(컬럼 액은 바로 탱크로 떨어진다). 충전 비율만큼만 채우고 위는 비운다
-  const yV = colBase, yRet = Hs, xB = xCol, yDish = packY1 + 0.16 * t;   /* v82: 분사 원뿔이 보이게 */   // v68: 분배 팔은 충전층 바로 위   // yV·yRet·xB는 옛 옆 배관 자리(지금은 안 씀). yDish = 환류 분배기 접시 높이
+  const yNz = Hs + ht * Math.sqrt(1 - 0.62 * 0.62) + 0.01 * t, xCol = xN, dCol = 0.29 * t + 0.34 * (Hs - hh),   /* v126: 그림 눈금은 직관부(전과 같은 값) */   /* v102: 컬럼 꼭대기는 그대로 두고 충전층 위 빈 공간을 0.36 T만 남긴 만큼 */   /* v99: 충전물 위 빈 공간을 줄인 만큼 목관을 늘린다(컬럼 꼭대기·응축기는 제자리) */ colBase0 = Math.max(yNz + 0.12 * t, yTop + 0.27 * t) + dCol,   /* v128: v127까지의 컬럼 바닥 — 충전층 윗면 · 분배 헤더 · 꼭대기 · 응축기 자리의 기준으로만 쓴다 */ colBase = Math.max(yNz + 0.12 * t, yTop + 0.27 * t) + 0.17 * t,   /* v128: 컬럼을 아래로 늘려 크게, 목관은 짧게(사용자 '컬럼이 너무 작게 · 사이 배관이 너무 긴데'). 그림 배치 — 계산의 컬럼 높이(colHphys)는 그대로 */ packY0 = colBase + 0.06 * t, packY1 = p.Hpack > 0 ? colBase0 + 0.06 * t + p.Hpack : packY0,   /* v128: 그림의 충전층 = 컬럼 바닥 받침판 ~ v127의 충전층 윗면(실제 높이 p.Hpack보다 길게 — 사용자 '패킹 있는 구간 · 단을 나누기에 너무 짧음 · 이미지만 수정, 실제 사이즈는 계산에'). 계산은 p.Hpack */ packHdraw = packY1 - packY0, colHphys = 0.24 * t + p.Hpack / Math.max(0.2, p.packFill || 1);   // v68: 그림은 낮게(목관은 모터 꼭대기 yTop + 0.23T 위 0.04T), 계산의 컬럼 높이는 예전 식   // 컬럼은 탱크 노즐 위에 수직으로 선다(컬럼 액은 바로 탱크로 떨어진다). 충전 비율만큼만 채우고 위는 비운다
+  const yV = colBase, yRet = Hs, xB = xCol, yDish = colBase0 + 0.06 * t + p.Hpack + 0.16 * t;   /* v128: 분배 헤더는 v127 높이 그대로 */   /* v82: 분사 원뿔이 보이게 */   // v68: 분배 팔은 충전층 바로 위   // yV·yRet·xB는 옛 옆 배관 자리(지금은 안 씀). yDish = 환류 분배기 접시 높이
   // 1차 응축기(세로): 컬럼 꼭대기 오른쪽. 증기 관이 컬럼 꼭대기에서 위로 → 오른쪽 → 응축기 꼭대기로 들어가고 바닥에서 응축액이 분배기로
   // v49: 회수 탱크 = 2:1 타원 경판 + 몸통(H/D 1.2). 지름은 용량(L, 0이면 본류 = 처음 액 부피, 초류 = 40 %)에서: V = π·D³·(1.2/4 + 1/12)
   const rcv = (capL, Vdef) => { const Vc = Math.max(1e-3, capL > 0 ? capL / 1000 : Vdef), D = Math.max(0.25 * t, Math.min(1.4 * t, Math.cbrt(Vc / (Math.PI * (1.2 / 4 + 1 / 12))))); return { r: D / 2, hd: D / 4, Hb: 1.2 * D }; };
   const V0d = liquidVolume(p, p.H0), RCM = rcv(p.capM, V0d), RCF = rcv(p.capF, 0.4 * V0d);
-  const gapV = 0.38 * Math.max(t, 2 * RCM.r, 2 * RCF.r), xMn0 = Rj + gapV + RCM.r + 0.3 * t,   /* v110: 값 상자 여백 */ stepG = 0, rC = 0.11 * t, xC = Math.max(xMn0, xCol + rCol + 1.2 * t),   /* v81: 세 용기 틈 = 0.38 × 큰 지름, 1차 응축기·분배기는 본류 위 */ sSpl = 0.12 * t, ySpl = yDish,   /* v90: 분배기 = 환류 노즐 높이(환류 관이 꺾이지 않게) */ yC1 = yDish + 0.07 * t + sSpl / 2 + 0.24 * t,   /* v110: 응축기 아래 관을 늘려 응축액 온도 상자 자리 */ yC0 = yC1 + 0.34 * (Hs - hh), colTop = packY1 + 0.36 * t, yPipe = yC0 + 0.2 * t;   /* v102: 응축기는 컬럼 꼭대기보다 위(바닥 → 분배기 → 환류 노즐 내리막), 증기관은 꼭대기에서 위로 */   // v68: 응축기·분배기는 컬럼 오른쪽 옆(분배기는 분배 팔 바로 위라 환류는 내려가기만), 응축기 꼭대기 = 컬럼 꼭대기   // 분배기가 컬럼 꼭대기보다 위: 환류는 내려가기만 한다
+  const gapV = 0.38 * Math.max(t, 2 * RCM.r, 2 * RCF.r), xMn0 = Rj + gapV + RCM.r + 0.3 * t,   /* v110: 값 상자 여백 */ stepG = 0, rC = 0.11 * t, xC = Math.max(xMn0, xCol + rCol + 1.2 * t),   /* v81: 세 용기 틈 = 0.38 × 큰 지름, 1차 응축기·분배기는 본류 위 */ sSpl = 0.12 * t, ySpl = yDish,   /* v90: 분배기 = 환류 노즐 높이(환류 관이 꺾이지 않게) */ yC1 = yDish + 0.07 * t + sSpl / 2 + 0.24 * t,   /* v110: 응축기 아래 관을 늘려 응축액 온도 상자 자리 */ yC0 = yC1 + 0.34 * (Hs - hh), colTop = colBase0 + 0.06 * t + p.Hpack + 0.36 * t, yPipe = yC0 + 0.2 * t;   /* v102: 응축기는 컬럼 꼭대기보다 위(바닥 → 분배기 → 환류 노즐 내리막), 증기관은 꼭대기에서 위로 */   // v68: 응축기·분배기는 컬럼 오른쪽 옆(분배기는 분배 팔 바로 위라 환류는 내려가기만), 응축기 꼭대기 = 컬럼 꼭대기   // 분배기가 컬럼 꼭대기보다 위: 환류는 내려가기만 한다
   const xSpl = xC, xRf = xCol + rCol + 0.2 * t, yRf = yDish, yU = yDish - 0.3, xU1 = xRf + (xSpl - sSpl / 2 - xRf) * 3 / 11;   /* v126: 티 → 계기 구간(FCV-H073 · 유량계) : U자 바닥 = 0.8 : 0.3(현장 비, 사용자). 깊이 · 전체 크기는 그림 비율 */   /* 사내망 v123: 환류 U자 액봉 바닥 = 노즐 - 300 mm(P&ID MIN. 300) */   // v61: 환류 노즐은 분배 팔 높이로 옆에서 들어온다
   // 받는 탱크: 분배기 아래 티에서 조금 내려온 높이(탱크 꼭대기 근처)에 떠 있다. 본류(왼쪽) 크고 낮게, 초류(오른쪽) 작게
-  const yValve = yDish - dCol + 0.07 * t - 0.95 * t - hh,   /* v126: 정제기 높이를 바로잡은 만큼(hh) 위로 간 배치에서도 유출 티 · 회수 탱크는 v125 자리 그대로 */   /* v90: 유출 티·회수 탱크는 제자리 */ rRM = RCM.r, hdM = RCM.hd, rRF = RCF.r, hdF = RCF.hd, xMn = xMn0, xF = xMn0 + RCM.r + gapV + RCF.r + 0.15 * t;   // v81: 같은 틈
-  const yRvM = 0.1 * t + hdM, yRvF = 0.1 * t + hdF,   /* v93: 초류 탱크도 같은 바닥선 */ HrM = Math.max(0.6 * rRM, Math.min(RCM.Hb, yValve - 0.3 * t - yRvM - hdM)), HrF = Math.max(0.6 * rRF, Math.min(RCF.Hb, yValve - 0.3 * t - yRvF - hdF)), yTopM = yRvM + HrM, yTopF = yRvF + HrF;   // v49: 둘 다 바닥에 다리로 선다(yRv·yTop = 몸통 아래·위 끝)   // 본류 탱크는 정제기와 같은 바닥선, 초류 탱크는 띄운다
+  const yValve = yDish - dCol + 0.07 * t - 0.95 * t - hh + 0.2 * t,   /* v128: 유출 티를 0.2 T 올려 본류 탱크 위 XV-H077 자리를 넓힌다(사용자 '밸브가 너무 탱크 상부랑 붙어 있는데'). 회수 탱크는 제자리 */   /* v126: 정제기 높이를 바로잡은 만큼(hh) 위로 간 배치에서도 유출 티 · 회수 탱크는 v125 자리 그대로 */   /* v90: 유출 티·회수 탱크는 제자리 */ rRM = RCM.r, hdM = RCM.hd, rRF = RCF.r, hdF = RCF.hd, xMn = xMn0, xF = xMn0 + RCM.r + gapV + RCF.r + 0.15 * t;   // v81: 같은 틈
+  const yRvM = 0.1 * t + hdM, yRvF = 0.1 * t + hdF,   /* v93: 초류 탱크도 같은 바닥선 */ HrM = Math.max(0.6 * rRM, Math.min(RCM.Hb, yValve - 0.5 * t - yRvM - hdM)), HrF = Math.max(0.6 * rRF, Math.min(RCF.Hb, yValve - 0.5 * t - yRvF - hdF)), yTopM = yRvM + HrM, yTopF = yRvF + HrF;   // v49: 둘 다 바닥에 다리로 선다(yRv·yTop = 몸통 아래·위 끝)   // 본류 탱크는 정제기와 같은 바닥선, 초류 탱크는 띄운다
   // 2차 응축기(가로): 분배기 오른쪽, 같은 높이. 오른쪽 끝 바닥에서 응축액이 초류 탱크로, 오른쪽 끝 위에서 진공펌프로
   const r2 = 0.065 * t, x20 = Math.max(xSpl + 1.35 * t,   /* v113: 유출·환류 상자 자리(관에 붙지 않게) */ xF + 0.5 * RCF.r + 0.08 * t - 0.72 * t), x21 = x20 + 0.72 * t, y2c = ySpl, x2o = x21 - 0.08 * t, yL2 = yTopF + 0.866 * hdF, yJ = yValve - 0.15 * t;   /* v82: L2가 F 가지관에 붙는 높이 */   // v60: 2차 응축기 출구가 초류 탱크 오른쪽 노즐 바로 위
   const yV2 = yC1 + Math.min(0.1 * t, 0.3 * (yC0 - yC1)), xK2 = x20 + 0.08 * t;   // v93: 1차 응축기 옆 노즐(미응축 증기 출구) 높이 · 2차 응축기 위 입구 자리
   const sPump = 0.13 * t, yPumpLine = y2c + r2 + 0.14 * t, xPump = x21 + 0.85 * t, yPump = y2c, yJin = Math.max(0.1 * t, hh);
   return { p, R, w, Vtip, Vref, V, S, surfY, hh, Hs, ht, topY, yTop, wallH: Hs, impX: 0, entryX: 0, axisX: () => 0, hHead: hh,
-    pipe: { yV2, xK2, colHphys, xN, yNz, yDish, rCol, xCol, colBase, packY0, packY1, colTop, yV, yRet, xB, rC, xC, yC0, yC1, yPipe, xSpl, ySpl, sSpl, xRf, yRf, yU, xU1, rRM, HrM, rRF, HrF, hdM, hdF, yRvM, yRvF, yTopM, yTopF, xF, xMn, yValve, r2, x20, x21, y2c, x2o, yL2, yJ, xPump, yPump, yPumpLine, sPump, Rj, yJin } };
+    pipe: { packHdraw, yV2, xK2, colHphys, xN, yNz, yDish, rCol, xCol, colBase, packY0, packY1, colTop, yV, yRet, xB, rC, xC, yC0, yC1, yPipe, xSpl, ySpl, sSpl, xRf, yRf, yU, xU1, rRM, HrM, rRF, HrF, hdM, hdF, yRvM, yRvF, yTopM, yTopF, xF, xMn, yValve, r2, x20, x21, y2c, x2o, yL2, yJ, xPump, yPump, yPumpLine, sPump, Rj, yJin } };
 }
 
 // ---------- 계산 필드 샘플링 (three 좌표: x, y↑, z ↔ 격자 x, z↑, y) ----------
@@ -2583,6 +2584,7 @@ const HMI = () => STYLE === "hmi";
 const HMI_GRAD = (() => { const d = new Uint8Array([205, 250]); const tx = new THREE.DataTexture(d, 2, 1, THREE.LuminanceFormat); tx.minFilter = tx.magFilter = THREE.NearestFilter; tx.needsUpdate = true; return tx; })();
 // HMI 계기 태그 상자(설비 옆에 붙는 실시간 값)
 const HMI_TAGS = []; let hmiTagAt = 0;
+function c1Load() { return PR && PR.cap1 > 0 && PR.Qv1 != null && !PR.stopped ? 100 * PR.Qv1 / PR.cap1 : null; }   /* v128: 1차 응축기 부하율(%) = 올라온 증기의 응축 열 ÷ 응축 능력. 100 %를 넘으면 넘는 몫이 2차 응축기로 */
 function hmiTag(title, unit, fn, pos, t, al) {
   const c = document.createElement("canvas"); c.width = 256; c.height = 96; const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false })); s.renderOrder = 10;
@@ -3058,7 +3060,7 @@ function fxUpdate(dtReal) {
       FX.secT = { at: now2, a: bubbleT([1, 0, 0], [p.A, p.B, p.Cs], Pt), b: bubbleT([0, 1, 0], [p.A, p.B, p.Cs], Ps) }; }
     let lo = FX.secT.a, span = Math.max(1, FX.secT.b - FX.secT.a);
     { let tmin = Infinity, tmax = -Infinity; for (const T of PR.Tsec) if (T > p.Tamb + 2) { tmin = Math.min(tmin, T); tmax = Math.max(tmax, T); } if (tmax > tmin - 1e-9 && tmin < Infinity) { const mid = (tmin + tmax) / 2; span = Math.max(6, tmax - tmin); lo = mid - span / 2; } }   // v63: 3D는 컬럼 실제 위아래 온도 사이(최소 6 K) 눈금 — 아래 빨강 → 위 파랑
-    for (let i = 0; i < FX.sec.length; i++) { const T = PR.Tsec[i]; rampColor((T - lo) / span, _fxc); FX.sec[i].material.color.copy(_fxc); tempColor(T, _fxc); FX.sec[i].material.color.copy(_fxc); FX.sec[i].material.opacity = p.Hpack > 0 && (T > p.Tamb + 2) ? 0.95 : 0;   /* v103: 정제기와 같은 눈금 */   /* v63: 0.28 → 0.36 */ FX.sec[i].visible = FX.sec[i].material.opacity > 0; }
+    for (let i = 0; i < FX.sec.length; i++) { const T = PR.Tsec[i]; rampColor((T - lo) / span, _fxc); FX.sec[i].material.color.copy(_fxc); heatColor(secHeat(i, p), _fxc); FX.sec[i].material.color.copy(_fxc);   /* v128: 충전물과 같은 예열 정도 색(전: 정제기 온도 눈금이라 막 데워진 구간이 파랑 — 사용자 '아직 컬럼이 파란색') */ FX.sec[i].material.opacity = p.Hpack > 0 && (T > p.Tamb + 2) ? 0.95 : 0;   /* v103: 정제기와 같은 눈금 */   /* v63: 0.28 → 0.36 */ FX.sec[i].visible = FX.sec[i].material.opacity > 0; }
     { const RG = VES.packRings, fr = VES.packFrac, K = PR.Tsec.length; if (RG && fr && K && now2 - (FX.ringAt || 0) > 400) { FX.ringAt = now2;   /* v101: 충전물 고리 = 그 높이 구간 온도 색(띠와 같은 눈금), 차가운 구간은 회색 */
       const cs = PR.Tsec.map((T, i) => p.Hpack > 0 && T > p.Tamb + 2 ? heatColor(secHeat(i, p), new THREE.Color()) : VES.packGrey), [rings, tongs] = RG;   /* v126: 예열 정도 색(전: 온도 눈금 — 막 데워진 구간이 파랑) */
       for (let k = 0; k < rings.count; k++) { const c0 = cs[Math.min(K - 1, Math.floor(fr[k] * K))]; rings.setColorAt(k, c0); for (let s = 0; s < 4; s++) tongs.setColorAt(k * 4 + s, c0); }
@@ -3411,6 +3413,9 @@ function pipeSeg(a, b, r, mat, g, key) {
 const _fa = new THREE.Vector3(), _fd = new THREE.Vector3(), _fn = new THREE.Matrix3();
 let FILL_PT = null, FLOW_R = 1;   // v42: 지난 프레임의 공정 시각, 지금 실제 1초에 흐르는 공정 초(관 채움·액 빠짐을 공정 시간에 맞추는 데 쓴다)
 const FILL_VP = { liq: 0.3, vap: 2, str: 0.6 };   // v42: 공정 시간 기준 앞머리 속도 m/s — 응축액 관은 중력으로 0.3 m/s쯤, 증기는 관을 수 m/s로 밀고 나간다
+function uSealSpan(f) {   /* v128: 환류 관에서 U자(첫 토막보다 낮은 토막들)의 시작 · 끝 길이. 실 루프가 찼을 때만 */
+  if (!PR || !CUR || !(CUR.holdC > 0) || (PR.sealM || 0) < CUR.holdC * 0.999 || !f.segs.length) return null; const y0 = f.segs[0].a.y; let s0 = Infinity, s1 = -Infinity;
+  for (const sg of f.segs) { if (Math.min(sg.a.y, sg.a.y + sg.d.y * sg.L) < y0 - 1e-4) { s0 = Math.min(s0, sg.s0); s1 = Math.max(s1, sg.s0 + sg.L); } } return s1 > s0 ? { s0, s1 } : null; }
 function stepFill(dt) {
   let changed = false; tankGroup.updateMatrixWorld(true); _fn.getNormalMatrix(tankGroup.matrixWorld);
   const kAcc = CUR ? Math.min(3, Math.max(1, Math.sqrt(CUR.accel / 10))) : 1, T = CUR ? CUR.T : 0.7;   // 배속이 높으면 관도 조금 빨리 찬다 (10배 이하 1배, 100배 이상 3배)
@@ -3424,8 +3429,9 @@ function stepFill(dt) {
       const slug = 0.18 * T, cyc = f.Ltot + slug + 0.6 * T; if (!f.ph && f.head > 0) f.ph = f.head;
       f.ph = (f.ph || 0) + vv * dt; f.pf = (f.pf || 0) + Math.min(vP * dP, f.Ltot * dt / tauP);   /* v81 */ if (f.ph >= f.Ltot || f.pf >= f.Ltot) f.reached = true;   // v42: 토막 그림은 화면 속도, '끝에 닿음'은 공정 시간으로도
       f.head = Math.min(f.Ltot, Math.max(f.head, f.ph, f.pf)); f.tail = 0; }   // v52: 졸졸 흐를 때도 토막(애벌레) 대신 이어진 줄기
-    else if (f.want) { f.tail = 0; f.head = Math.min(f.Ltot, f.head + adv); if ((k === "C" || k === "R") && STYLE !== "iso" && VF.holdFrac != null && VF.holdFrac < 0.999) { const Lc = FILL.C ? FILL.C.Ltot : 0, Lr = FILL.R ? FILL.R.Ltot : 0, fl = VF.holdFrac * (Lc + Lr); f.head = Math.min(f.head, k === "C" ? Math.min(Lc, fl) : Math.max(0, fl - Lc)); }   /* v86: 고인 양만큼 */ if (k === "V" && STYLE !== "iso" && VF.lenV > 0 && !(typeof TURBO !== "undefined" && TURBO) && $("tVapor").checked && dt > 0) f.head = Math.min(f.head, f.Ltot * Math.min(1, VF.headLenV / VF.lenV + 1e-3)); f.ph = 0; f.pf = 0; f.reached = false; }   // v81: 증기관은 점 앞머리까지만 찬다
-    else { f.ph = 0; f.pf = 0; f.reached = false; f.held = k === "P" && f.head > 0 && ((ISOFLOW && ISOFLOW.closed && ISOFLOW.closed[k]) || (VLV.P && cutState() === "none"));   /* v109: 닫힌 받는 탱크 밸브 앞에 고인 액 */   /* v86: 밸브가 관 끝에 있는 유출 관만 갇힌 액(초류·본류·환류 가지는 밸브가 앞이라 빠진다) */ if (f.head > 0 && !f.held) { f.tail = Math.min(f.head, f.tail + adv); if (f.tail >= f.head - eps) f.head = f.tail = 0; } }   // v81: 밸브가 닫혀 갇힌 액은 그대로(빛 띠 없는 파랑)
+    else if (f.want) { f.held = false;   /* v128: 다시 흐르면 '갇힌 액' 표시를 푼다(전: 유출 관도 한 번 갇힌 뒤에는 빛 띠가 안 돌아왔다) */ f.tail = 0; f.head = Math.min(f.Ltot, f.head + adv); if ((k === "C" || k === "R") && STYLE !== "iso" && VF.holdFrac != null && VF.holdFrac < 0.999) { const Lc = FILL.C ? FILL.C.Ltot : 0, Lr = FILL.R ? FILL.R.Ltot : 0, fl = VF.holdFrac * (Lc + Lr); f.head = Math.min(f.head, k === "C" ? Math.min(Lc, fl) : Math.max(0, fl - Lc)); }   /* v86: 고인 양만큼 */ if (k === "V" && STYLE !== "iso" && VF.lenV > 0 && !(typeof TURBO !== "undefined" && TURBO) && $("tVapor").checked && dt > 0) f.head = Math.min(f.head, f.Ltot * Math.min(1, VF.headLenV / VF.lenV + 1e-3)); f.ph = 0; f.pf = 0; f.reached = false; }   // v81: 증기관은 점 앞머리까지만 찬다
+    else { f.ph = 0; f.pf = 0; f.reached = false; const us = k === "R" && STYLE !== "iso" ? uSealSpan(f) : null; if (us) { f.head = Math.max(us.s1, f.head - adv); f.tail = Math.min(us.s0, f.tail + adv); }   /* v128: 환류 U자 액봉 — 흐름이 멈춰도 내려감 · 바닥 · 올라감 세 토막은 찬 채로(사용자 'U관에 액이 차 있나?'). 앞 구간(티 ~ U자)과 컬럼 쪽 끝은 빠진다 */
+      f.held = !!us || (k === "P" && f.head > 0 && ((ISOFLOW && ISOFLOW.closed && ISOFLOW.closed[k]) || (VLV.P && cutState() === "none")));   /* v109: 닫힌 받는 탱크 밸브 앞에 고인 액 */   /* v86: 밸브가 관 끝에 있는 유출 관만 갇힌 액(초류·본류·환류 가지는 밸브가 앞이라 빠진다) */ if (f.head > 0 && !f.held) { f.tail = Math.min(f.head, f.tail + adv); if (f.tail >= f.head - eps) f.head = f.tail = 0; } }   // v81: 밸브가 닫혀 갇힌 액은 그대로(빛 띠 없는 파랑)
     if (f.want && f.trickle && (k === "C" || k === "R") && STYLE !== "iso" && VF.holdFrac != null && VF.holdFrac < 0.999) { const Lc = FILL.C ? FILL.C.Ltot : 0, Lr = FILL.R ? FILL.R.Ltot : 0, fl = VF.holdFrac * (Lc + Lr), cap = k === "C" ? Math.min(Lc, fl) : Math.max(0, fl - Lc); if (f.head > cap) f.head = cap; if (cap < f.Ltot - eps) { f.reached = false; f.ph = Math.min(f.ph || 0, cap); f.pf = Math.min(f.pf || 0, cap); } }   /* v86: 졸졸 흐름도 고인 양만큼 */
     const full = f.want && f.trickle ? !!f.reached : f.head >= f.Ltot - eps; if (full !== f.full) { f.full = full; changed = true; }
     for (const s of f.segs) {
@@ -3821,6 +3827,7 @@ function buildTank(m) {
     hmiTag("WIH072 초류 무게", "kg", () => PR && f(PR.ves.fore.A + PR.ves.fore.B, 1), V3(q.xF + q.rRF + 0.08 * t, (q.yRvF + q.yTopF) / 2), t, "R");
     hmiTag("WIH073 본류 무게", "kg", () => PR && f(PR.ves.main.A + PR.ves.main.B, 1), V3(q.xMn, q.yRvM - q.hdM - 0.06 * t), t, "B");
     hmiTag("냉매 유량(가정)", "kg/h", () => CUR ? f(CUR.mcw, 0) : null, V3(q.xC - q.rC * 2.6, q.yC0 - 0.1 * t), t, "L");
+    hmiTag("E-H071 응축 부하(계산)", "%", () => { const v = c1Load(); return v == null ? null : f(v, v < 10 ? 1 : 0); }, V3(q.xC + q.rC * 1.25, q.yC0 - 0.06 * t), t, "R");   /* v128: 능력 대비 부하(사용자 '케파 대비 %') */
     hmiTag("TI 컬럼 하부(계산)", "℃", () => PR && PR.Tsec && PR.Tsec.length ? f(PR.Tsec[0], 1) : null, V3(q.xCol - q.rCol - 0.1 * t, q.packY0 + 0.08 * t), t, "L");   // v100: 계기 없음 — 계산값이라 '계산'
     hmiTag("TI 컬럼 중간(계산)", "℃", () => PR && PR.Tsec && PR.Tsec.length ? f(PR.Tsec[Math.floor(PR.Tsec.length / 2)], 1) : null, V3(q.xCol - q.rCol - 0.1 * t, (q.packY0 + q.packY1) / 2), t, "L");
     hmiTag("FI 증발(계산)", "kg/h", () => PR && f(PR.vdot, 1), V3(q.xCol - q.rCol * 0.7, (q.colBase + q.yNz) / 2), t, "L");   /* v105: 목관 왼쪽(오른쪽은 본류 관과 겹침) */
@@ -3861,7 +3868,14 @@ function buildAgitator(m) {
   g.add(impeller); agitator.add(g);
   agitator.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
   addEdges(agitator); addHulls(agitator);
+  { /* v128: 액 속 부품(축 · 날개)은 액 온도 입체보다 뒤에 그려 가려지지 않게, HMI · 만화풍은 짙은 색(노란 액 위에서도 보이게 — 사용자 '교반기가 거의 안 보이네') */
+    if (AGIT.mat) AGIT.mat.dispose(); if (AGIT.hull) AGIT.hull.dispose();
+    const am = mats.steel.clone(); am.transparent = true; am.opacity = 1; am.depthWrite = true; if (STYLE === "hmi" || STYLE === "toon") am.color.setHex(AGIT.color);
+    const hm = hullMat ? hullMat.clone() : null; if (hm) { hm.transparent = true; hm.depthWrite = true; }
+    AGIT.mat = am; AGIT.hull = hm; AGIT.n = 0; const wet = new Set(); wet.add(shaft.geometry); impeller.traverse((o) => { if (o.isMesh && o.material === mats.steel) wet.add(o.geometry); });
+    agitator.traverse((o) => { if (!o.isMesh || !wet.has(o.geometry)) return; if (o.material === mats.steel) { o.material = am; o.renderOrder = 3.5; AGIT.n++; } else if (hm && o.material === hullMat) { o.material = hm; o.renderOrder = 3.4; } }); }
 }
+const AGIT = { mat: null, hull: null, n: 0, color: 0x262f3a };   /* v128: 교반기 축 · 날개 재질(액 온도 입체 뒤에 그린다) */
 let surface = null, surfaceWire = null;
 const NR = 36, NT = 96;
 function buildSurface(m) {
@@ -4770,7 +4784,7 @@ function condenserState(p, nvInst) {
   const c2t = VLV.C2 ? (Qr > 0 ? Math.min(1, cap2 / Qr) : 1) : 0, Tw2 = Tc2 + Qr * c2t / Cw, s2 = VLV.C2 ? (c2t < 0.9999 ? 0 : slipOf(Tw2, nIn1 * (1 - c1))) : 1;
   const c2 = Math.min(c2t, 1 - s2);
   PR.slip1 = s1; PR.slip2 = s2; PR.Tw2out = VLV.C2 ? Tw2 : null; PR.nAir = nAir;
-  PR.c1 = c1; PR.c2 = c2; PR.Qc = Q1; PR.Qc2 = Qr * c2; PR.cap1 = VLV.C1 ? cap1 : 0; PR.cap2 = VLV.C2 ? cap2 : 0; PR.T1out = T1out; PR.Tw1out = VLV.C1 ? Tw1 : null; PR.lam = lam;
+  PR.Qv1 = Q;   /* v128: 1차 응축기로 온 증기의 응축 열(부하율 = Qv1 ÷ cap1) */ PR.c1 = c1; PR.c2 = c2; PR.Qc = Q1; PR.Qc2 = Qr * c2; PR.cap1 = VLV.C1 ? cap1 : 0; PR.cap2 = VLV.C2 ? cap2 : 0; PR.T1out = T1out; PR.Tw1out = VLV.C1 ? Tw1 : null; PR.lam = lam;
   // 필요 전열 면적 A = Q/(U·LMTD): 응축 쪽은 Tsat 일정, 냉각수는 Tcw → Tw1. 설치 면적(UA/U)과 견준다 (진공 응축은 U가 10~100까지 떨어진다)
   { const d1 = Tsat - p.Tcw, d2 = Tsat - Tw1, lmtd = d1 > 0 && d2 > 0 && Math.abs(d1 - d2) > 1e-6 ? (d1 - d2) / Math.log(d1 / d2) : Math.max(0, d1);
     PR.lmtd1 = lmtd; PR.Areq1 = lmtd > 0 ? Q1 / (p.Uc * lmtd) : 0; PR.Ainst1 = p.UA1 / p.Uc; }
@@ -5083,7 +5097,7 @@ function processStep(p) {
     if ((!VLV.V || !VLV.S) && flows.nSeal > 0) { const Vh = PR.Vhead || 0.1, nMax = Math.max(20, 0.15 * PR.Pstill) * 133.322 * Vh / (R_GAS * (PR.Tbub + 273.15));   // v43: 쌓이는 속도 제한
       if (flows.nSeal > nMax) { const ex = flows.nSeal - nMax, E = ex * L; flows.nSeal = nMax; nv -= ex; vm = nv * Mv / 1000; PR.Elat -= E; PR.Ercd += E; PR.Tadd = (PR.Tadd || 0) + E / (PR.m * PR.mix.cp); dExUse -= E; } }
     { const condL = Math.max(0, flows.nL - flows.nBack - (flows.nSub || 0)), avail = (flows.nD + condL) * Mv / 1000, seal = Math.max(0, p.holdC || 0);   // v86: 응축액은 생기는 즉시 흐른다(관 벽·바닥에 묻는 동적 홀드업 τ 25 s) · 실 루프만 먼저 찬다
-      if ((PR.sealM || 0) < seal - 1e-9 && avail > 0) { const d = Math.min(seal - (PR.sealM || 0), avail), fac = 1 - d / avail; PR.sealM = (PR.sealM || 0) + d; PR.mHeldC = (PR.mHeldC || 0) + d; flows.nD *= fac; flows.nL = flows.nBack + (flows.nSub || 0) + condL * fac; flows.nHeldC = d / Mv * 1000; }
+      if ((PR.sealM || 0) < seal - 1e-9 && avail > 0 && VLV.R) {   /* v128: U자는 FCV-H073 뒤 — 환류 밸브가 닫혀 있으면 차지 않는다 */ const d = Math.min(seal - (PR.sealM || 0), avail), fac = 1 - d / avail; PR.sealM = (PR.sealM || 0) + d; PR.mHeldC = (PR.mHeldC || 0) + d; flows.nD *= fac; flows.nL = flows.nBack + (flows.nSub || 0) + condL * fac; flows.nHeldC = d / Mv * 1000; }
       else { const tau = 25, M0 = Math.max(0, (PR.mHeldC || 0) - (PR.sealM || 0)), k = Math.exp(-dtp / tau), M1 = M0 * k + avail * (tau / Math.max(1e-6, dtp)) * (1 - k), out = Math.max(0, M0 + avail - M1);
         const pass = avail > 1e-12 ? Math.min(out, avail) : 0, extra = out - pass;
         if (avail > 1e-12) { const fac = pass / avail; flows.nD *= fac; flows.nL = flows.nBack + (flows.nSub || 0) + condL * fac; flows.nHeldC = Math.max(0, avail - pass) / Mv * 1000; PR.mHeldC = (PR.sealM || 0) + M1; }
@@ -5180,9 +5194,9 @@ function processStep(p) {
     updateMix(p);
     if (zTopOf(PR.h) !== F.zTop) levelChanged(p);
     if (PR.h < hMin(p)) { PR.stopped = true; PR.why = "액위 하한(임펠러 바로 위) 도달 · 가열 정지"; { const R4 = PR.rcp, tk = rv("rcpTailKg", 0); if (R4 && R4.st === 4 && tk > 0) { const fo = PR.ves.fore.A + PR.ves.fore.B, mn = PR.ves.main.A + PR.ves.main.B; PR.why += ` · 본류 ${fmt(mn, 1)} kg(후류 ${tk} kg 기준 목표 ${fmt(PR.m0 - fo - tk, 1)} kg) · 정제기 ${fmt(PR.m, 1)} kg`; } }   /* v126: 후류 목표 전에 액위 하한에 닿으면 얼마 남았는지 */ updateJacketColor(); }
-    if (PR.stopped && !PR.drained) { PR.drained = true; const back = (PR.mHeld || 0) + (PR.mHeldC || 0) + (PR.mC1 || 0);   // v45: 가열이 멈추면 컬럼·응축기에 고인 액은 정제기로 흘러내린다
-      if (back > 0.05) { const MWy = PR.y[0] * p.A.MW + PR.y[1] * p.B.MW, xd = Math.max(0, Math.min(1, PR.xD || PR.y[0])), MWd = xd * p.A.MW + (1 - xd) * p.B.MW, nH = (PR.mHeld || 0) * 1000 / MWy, nC = ((PR.mHeldC || 0) + (PR.mC1 || 0)) * 1000 / MWd;
-        PR.nA += nH * PR.y[0] + nC * xd; PR.nB += nH * PR.y[1] + nC * (1 - xd); PR.mHeld = 0; PR.Ehold = 0; PR.mHeldC = 0; PR.mC1 = 0; PR.hC1 = 0; PR.c1Wet = 0; PR.why += ` (컬럼·응축기 홀드업 ${back.toFixed(1)} kg은 정제기로 흘러내렸다)`; updateMix(p); } }
+    if (PR.stopped && !PR.drained) { PR.drained = true; const sealK = Math.min(PR.sealM || 0, PR.mHeldC || 0),   /* v128: U자 액봉에 든 액은 흘러내리지 않는다 */ back = (PR.mHeld || 0) + (PR.mHeldC || 0) - sealK + (PR.mC1 || 0);   // v45: 가열이 멈추면 컬럼·응축기에 고인 액은 정제기로 흘러내린다
+      if (back > 0.05) { const MWy = PR.y[0] * p.A.MW + PR.y[1] * p.B.MW, xd = Math.max(0, Math.min(1, PR.xD || PR.y[0])), MWd = xd * p.A.MW + (1 - xd) * p.B.MW, nH = (PR.mHeld || 0) * 1000 / MWy, nC = ((PR.mHeldC || 0) - sealK + (PR.mC1 || 0)) * 1000 / MWd;
+        PR.nA += nH * PR.y[0] + nC * xd; PR.nB += nH * PR.y[1] + nC * (1 - xd); PR.mHeld = 0; PR.Ehold = 0; PR.mHeldC = sealK; PR.mC1 = 0; PR.hC1 = 0; PR.c1Wet = 0; PR.why += ` (컬럼·응축기 홀드업 ${back.toFixed(1)} kg은 정제기로 흘러내렸다${sealK > 0.005 ? ` · 환류 U자 액봉 ${sealK.toFixed(2)} kg은 관에 남는다` : ""})`; updateMix(p); } }
     { const stall = (PR.Dm || 0) > 0.5 && p.Tj <= PR.Tbub + 1.5 && (PR.vdot || 0) < 2 && VLV.J && p.jOpen > 0;   // v43: 끓는점이 스팀 온도에 닿아 증발이 멈춘 채 계속되면
       PR.stallT = stall ? (PR.stallT || 0) + dtp : 0;
       if ((!OP.manual || OP.recipe) && !PR.stopped && PR.stallT >= 900) { PR.stopped = true; PR.why = `끓는점(${PR.Tbub.toFixed(1)}℃)이 스팀 온도(${p.Tj.toFixed(1)}℃)에 도달해 15분간 증발이 멈춰 배치를 종료했다(스팀 온도·압력을 올리면 더 회수할 수 있다)`; updateJacketColor(); } }
@@ -6512,7 +6526,7 @@ function vGauge(e, k) {
   g.style.left = Math.max(4, x) + "px"; g.style.top = Math.max(4, y) + "px";
 }
 const DCS = { box: null, els: [], at: 0 };
-const DCS_SHORT = { "TICH071 탱크 내부": "탱크", "WIH071 정제기 무게": "정제기", "TIH074 자켓": "자켓", "TICH071 스팀 밸브 개도": "스팀 개도", "TIH075 탑 온도": "탑", "PICH071 탱크 압력": "압력", "PIH093 펌프 쪽 압력": "펌프 압력", "FIH071 스팀 유량": "스팀 유량", "TICH364 N-Brine 입구": "N-Brine", "TIH353 L-Brine 입구": "L-Brine", "TICH071D 응축액 출구": "하부", "FICH073 환류": "환류", "FICH072 유출": "유출", "WIH072 초류 무게": "초류", "WIH073 본류 무게": "본류", "TI 컬럼 하부(계산)": "컬럼 하부", "TI 컬럼 중간(계산)": "컬럼 중간", "FI 증발(계산)": "증발" }, DCS_SKIP = { "SICAH071 교반": 1, "냉매 유량(가정)": 1 };   // v101: 짧은 이름 · 설정값은 뺌
+const DCS_SHORT = { "TICH071 탱크 내부": "탱크", "WIH071 정제기 무게": "정제기", "TIH074 자켓": "자켓", "TICH071 스팀 밸브 개도": "스팀 개도", "TIH075 탑 온도": "탑", "PICH071 탱크 압력": "압력", "PIH093 펌프 쪽 압력": "펌프 압력", "FIH071 스팀 유량": "스팀 유량", "TICH364 N-Brine 입구": "N-Brine", "TIH353 L-Brine 입구": "L-Brine", "TICH071D 응축액 출구": "하부", "FICH073 환류": "환류", "FICH072 유출": "유출", "WIH072 초류 무게": "초류", "WIH073 본류 무게": "본류", "E-H071 응축 부하(계산)": "1차 부하", "TI 컬럼 하부(계산)": "컬럼 하부", "TI 컬럼 중간(계산)": "컬럼 중간", "FI 증발(계산)": "증발" }, DCS_SKIP = { "SICAH071 교반": 1, "냉매 유량(가정)": 1 };   // v101: 짧은 이름 · 설정값은 뺌
 function dcsLabels(on, now) {
   if (!DCS.box) { DCS.box = document.createElement("div"); DCS.box.className = "dcs-box"; canvas.parentElement.appendChild(DCS.box); }
   if (DCS.box.hidden === on) DCS.box.hidden = !on; if (!on || now - DCS.at < 120) return; DCS.at = now;
@@ -6668,7 +6682,7 @@ function tipVal(key) {
     case "R": case "pipe:R": case "fic:R": return refluxTxt();
     case "P": case "F": case "M": case "pipe:P": case "fic:P": return `유출 ${f0(PR.Dkg)} kg/h`;
     case "S": case "pump": case "pipe:S": return `탱크 압력 ${f1(PR.Pstill)} mmHg`;
-    case "C1": return `고인 액 ${((PR.mHeldC || 0) + (PR.mC1 || 0)).toFixed(2)} kg · 액위 ${f0((PR.hC1 || 0) * 1000)} mm · 출구 온도 ${f1(TBOT())}℃ · N-Brine ${f0(CUR.mcw)} kg/h`;   // v86
+    case "C1": { const ld = c1Load(); return `고인 액 ${((PR.mHeldC || 0) + (PR.mC1 || 0)).toFixed(2)} kg · 액위 ${f0((PR.hC1 || 0) * 1000)} mm · 출구 온도 ${f1(TBOT())}℃ · N-Brine ${f0(CUR.mcw)} kg/h` + (ld != null ? ` · 부하 ${ld.toFixed(ld < 10 ? 1 : 0)} %(응축 능력 ${(PR.cap1 / 1000).toFixed(1)} kW 중 ${((PR.Qv1 || 0) / 1000).toFixed(2)} kW) · 2차로 ${(100 * (1 - (PR.c1 != null ? PR.c1 : 1))).toFixed(1)} %` : ""); }   /* v128 */   // v86
     case "pipe:EQ": return "탱크 압력을 2차 응축기 입구와 같게 유지";   // v82
     case "tank": return `${f1(PR.Tmean)}℃ · ${f1(PR.m)} kg · 교반 ${f0(CUR.N * 60)} rpm`;
     case "col": return `탑 ${f1(PR.Thead)}℃ · ${refluxTxt()}`;
@@ -7065,7 +7079,7 @@ function pid2Build() {
   const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); (parent || g0).appendChild(e); return e; };
   PID2.root.innerHTML = ""; const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", `0 0 ${W.toFixed(0)} ${H.toFixed(0)}`); svg.setAttribute("preserveAspectRatio", "xMidYMid meet"); svg.setAttribute("class", "pid2-svg");
   PID2.root.appendChild(svg);
-  const g0 = el("g", {}, svg); PID2.svg = svg; PID2.flows = []; PID2.valves = {}; PID2.vals = {}; PID2.dyn = {}; PID2.lbl = {}; PID2.h = null; PID2.ffore = null; PID2.fmain = null; PID2.valAt = 0;   /* 다시 그리면 액면·값도 새로 */
+  const g0 = el("g", {}, svg); PID2.svg = svg; PID2.flows = []; PID2.valves = {}; PID2.vals = {}; PID2.dyn = {}; PID2.lbl = {}; PID2.h = null; PID2.ffore = null; PID2.fmain = null; PID2.valAt = 0; PID2.liqC = null;   /* 다시 그리면 액면·값도 새로 */
   const pipe = (key, pts, w, kind) => { el("path", { d: L(pts), class: "p2-pipe", "stroke-width": w }); if (key) { const f = el("path", { d: L(pts), class: "p2-flow " + kind, "stroke-width": Math.max(10, w * 0.62) }); PID2.flows.push({ k: key, el: f, kind, on: null }); } };   /* v126: 둥근 점 지름 */
   const dflow = (key, kind, sw) => { const f = el("path", { d: "", class: "p2-flow " + kind, "stroke-width": sw }); PID2.flows.push({ k: key, el: f, kind, on: null }); return f; };   /* v126: 모양이 바뀌는 흐름(정제기 안 · 컬럼 안 증기) */
   const label = (x, y, text, cls, anchor) => { const e = el("text", { x: X(x), y: Y(y), class: cls || "p2-lbl", "text-anchor": anchor || "middle" }); e.textContent = text; return e; };
@@ -7081,19 +7095,19 @@ function pid2Build() {
   PID2.dyn.tankLiq = el("path", { d: "", class: "p2-liq" });
   const Hj = Math.min(Math.max(p.Hj || 0, hh), topY), jk = el("path", { d: `M${X(-Rj)} ${Y(Hj)}L${X(-Rj)} ${Y(hh)}A${(Rj * 1000).toFixed(1)} ${((hh + 0.035) * 1000).toFixed(1)} 0 0 0 ${X(Rj)} ${Y(hh)}L${X(Rj)} ${Y(Hj)}`, class: "p2-jacket" });
   PID2.dyn.jacket = jk;
-  el("path", { d: shell, class: "p2-vessel" }); PID2.dyn.vs = [0, 1, 2].map(() => dflow("VS", "vap", 14)); PID2.vsH = null;   /* v126: 액면 → 목관 증기 */ label(-R - 0.06, topY + 0.02, "T-H071", "p2-eq", "end"); label(-R - 0.06, topY - 0.09, "정제기", "p2-eq2", "end");
+  el("path", { d: shell, class: "p2-vessel" }); PID2.dyn.vs = [0, 1, 2, 3, 4].map(() => dflow("VS", "vap", 14)); PID2.dyn.ls = dflow("LS", "liq", 9); PID2.vsH = null;   /* v128: 증기는 액면 전체에서(전: 오른쪽 3줄), 목관에서 떨어지는 액 */   /* v126: 액면 → 목관 증기 */ label(-R - 0.06, topY + 0.02, "T-H071", "p2-eq", "end"); label(-R - 0.06, topY - 0.09, "정제기", "p2-eq2", "end");
   // 교반기: 축·모터·2-세미 앵커(돌아가는 모습은 막대 길이로)
   const yMot = topY + ht + 0.06; el("rect", { x: X(-0.07), y: Y(yMot + 0.2), width: 140, height: 200, rx: 14, class: "p2-motor" }); el("path", { d: L([[0, yMot], [0, p.C]]), class: "p2-shaft" });
   PID2.dyn.anchor = el("path", { d: "", class: "p2-anchor" });
   // 목관 80A
   const yNeck = topY + ht * Math.sqrt(Math.max(0, 1 - (q.xN / R) ** 2));
-  pipe("VN", [[q.xCol, yNeck], [q.xCol, q.colBase]], 26, "vap");   /* v126: 목관은 끓으면 바로(예열 중에도 증기는 올라가 컬럼에서 응축한다) */
+  pipe("", [[q.xCol, yNeck], [q.xCol, q.colBase]], 26, "vap"); dflow("VN", "vap", 12).setAttribute("d", L([[q.xCol - 0.006, yNeck], [q.xCol - 0.006, q.colBase]])); dflow("LN", "liq", 8).setAttribute("d", L([[q.xCol + 0.007, q.colBase], [q.xCol + 0.007, yNeck]]));   /* v128: 목관 안 — 올라가는 증기와 내려오는 액(컬럼에서 응축한 몫 + 환류) */   /* v126: 목관은 끓으면 바로(예열 중에도 증기는 올라가 컬럼에서 응축한다) */
   // ---- 컬럼 C-H071 ----
   const cx0 = q.xCol - q.rCol, cx1 = q.xCol + q.rCol; PID2.dyn.colIn = el("rect", { x: X(cx0), y: Y(q.colTop), width: (q.rCol * 2000).toFixed(1), height: ((q.colTop - q.colBase) * 1000).toFixed(1), class: "p2-colin" });
   el("rect", { x: X(cx0), y: Y(q.packY1), width: (q.rCol * 2000).toFixed(1), height: ((q.packY1 - q.packY0) * 1000).toFixed(1), class: "p2-pack" });
   PID2.rings = []; PID2.ringRows = COL_K * 2; PID2.ringAt = 0;   /* v126: 충전물 = 구간 2줄씩, 데워진 구간은 그 온도 색(3D와 같은 눈금) */
   for (let i = 0, nr = PID2.ringRows; i < nr; i++) { const yy = q.packY0 + (q.packY1 - q.packY0) * (i + 0.5) / nr; for (let j = 0; j < 4; j++) PID2.rings.push({ row: i, c: null, el: el("circle", { cx: X(cx0 + q.rCol * 2 * (j + (i % 2 ? 0.75 : 0.25)) / 4), cy: Y(yy), r: 9, class: "p2-ring" }) }); }
-  PID2.dyn.vc = [0, 1].map(() => dflow("VC", "vap", 14)); PID2.vcY = null;   /* v126: 컬럼 안 증기(바닥 → 예열 전선) */
+  PID2.dyn.vc = [0, 1].map(() => dflow("VC", "vap", 14)); PID2.vcY = null; PID2.dyn.lc = [0, 1].map(() => dflow("LC", "liq", 9)); PID2.lcY = null;   /* v128: 컬럼 안 내려오는 액(벽 쪽 2줄) */   /* v126: 컬럼 안 증기(바닥 → 예열 전선) */
   PID2.dyn.col = el("rect", { x: X(cx0), y: Y(q.colTop), width: (q.rCol * 2000).toFixed(1), height: ((q.colTop - q.colBase) * 1000).toFixed(1), rx: 30, class: "p2-vessel" });
   el("path", { d: L([[cx0 + 0.02, q.yDish], [cx1 - 0.02, q.yDish]]), class: "p2-thin" });
   PID2.dyn.rd = RD_HOLES.map((f) => { const x = q.xCol + f * q.rCol, fl = dflow("RD", "liq", 9); fl.setAttribute("d", L([[x, q.yDish - 0.012], [x, q.packY1 + 0.004]])); return fl; });   /* v127: 구멍마다 떨어지는 환류(3D와 같은 판정 RD) */
@@ -7106,6 +7120,7 @@ function pid2Build() {
   el("path", { d: `M${X(ex0)} ${Y(q.yC1)}A${(q.rC * 1000).toFixed(1)} 40 0 0 0 ${X(ex1)} ${Y(q.yC1)}L${X(ex1)} ${Y(q.yC0)}A${(q.rC * 1000).toFixed(1)} 40 0 0 0 ${X(ex0)} ${Y(q.yC0)}Z`, class: "p2-vessel" });
   for (const yy of [q.yC0 - 0.01, q.yC1 + 0.01]) el("path", { d: L([[ex0, yy], [ex1, yy]]), class: "p2-sheet" });
   for (let i = 1; i < 6; i++) { const xx = ex0 + (ex1 - ex0) * i / 6; el("path", { d: L([[xx, q.yC0 - 0.01], [xx, q.yC1 + 0.01]]), class: "p2-tube" }); }
+  dflow("CE", "liq", 9).setAttribute("d", L([[q.xC, q.yC0 - 0.03], [q.xC, q.yC1 + 0.02]]));   /* v128: 관 안에서 응축해 내려오는 액(응축액이 나올 때) */
   el("path", { d: L([[ex0, q.yC1 + 0.05], [ex0 - 0.16, q.yC1 + 0.05]]), class: "p2-brine" }); el("path", { d: L([[ex0, q.yC0 - 0.05], [ex0 - 0.16, q.yC0 - 0.05]]), class: "p2-brine" });
   valve("C1", ex0 - 0.1, q.yC0 - 0.05, true); PID2.lbl.Tcw = label(ex0 - 0.2, q.yC0 - 0.05 + 0.04, "N-Brine", "p2-small", "end");
   label(ex1 + 0.05, q.yC0 - 0.02, "E-H071", "p2-eq", "start"); label(ex1 + 0.05, q.yC0 - 0.11, "1차 응축기", "p2-eq2", "start");
@@ -7115,6 +7130,7 @@ function pid2Build() {
   // 환류 U자 액봉(P&ID MIN 300 mm) → C-H071 꼭대기 노즐
   const xU1 = q.xU1 != null ? q.xU1 : q.xSpl - 0.1, yU = q.yU != null ? q.yU : q.ySpl - 0.3;
   pipe("R", [[q.xSpl, q.ySpl], [xU1, q.ySpl], [xU1, yU], [q.xRf, yU], [q.xRf, q.yRf], [cx1, q.yRf]], 14, "liq");
+  PID2.dyn.useal = el("path", { d: L([[xU1, q.ySpl], [xU1, yU], [q.xRf, yU], [q.xRf, q.yRf]]), class: "p2-seal" }); PID2.sealOn = null;   /* v128: U자 액봉에 찬 액(실 루프가 찼을 때 — 흐르지 않아도 남는다) */
   valve("R", (q.xSpl + xU1) / 2, q.ySpl, true); label((q.xSpl + xU1) / 2, q.ySpl - 0.09, "FCV-H073", "p2-small");   /* v126: 계기는 티 다음 구간 */
   // 유출: 분기 → FCV-H072 → 티 → XV-H077 본류 / XV-H074 초류
   pipe("P", [[q.xSpl, q.ySpl], [q.xSpl, q.yValve]], 14, "liq"); valve("P", q.xSpl, q.ySpl - 0.18, false); label(q.xSpl + 0.07, q.ySpl - 0.18, "FCV-H072", "p2-small", "start");
@@ -7143,22 +7159,26 @@ function pid2Build() {
   // 계기 값 상자(PIMS 태그)
   box("PICH071", Rj + 0.04, hh + 0.68, "PICH071 정제기 압력", "R"); box("WIH071", Rj + 0.04, hh + 0.5, "WIH071 정제기 무게", "R"); box("TICH071", Rj + 0.04, hh + 0.32, "TICH071 정제기 온도", "R"); box("TIH074", Rj + 0.04, hh + 0.14, "TIH074 자켓 온도", "R");
   box("jOpen", -Rj - 0.33, yS - 0.17, "TCV-H071 개도", "C"); box("FIH071", -Rj - 0.5, yS + 0.2, "FIH071 스팀 유량", "C");   /* v126 */ box("TIH075", cx0 - 0.06, q.colTop + 0.2, "TIH075 탑", "L"); box("vdot", q.xCol + 0.08, yNeck + 0.22, "증발(계산)", "R");
-  box("TICH071D", q.xSpl + 0.07, q.ySpl + 0.16, "TICH071D 하부", "R"); box("FICH073", (q.xSpl + xU1) / 2, q.ySpl - 0.2, "FICH073 환류", "C"); box("FICH072", q.xSpl + 0.07, q.ySpl - 0.36, "FICH072 유출", "R");
+  box("TICH071D", q.xSpl + 0.07, q.ySpl + 0.16, "TICH071D 하부", "R"); box("C1load", ex1 + 0.4, q.yC0 + 0.02, "E-H071 부하(계산)", "R");   /* v128 */ box("FICH073", (q.xSpl + xU1) / 2, q.ySpl - 0.2, "FICH073 환류", "C"); box("FICH072", q.xSpl + 0.07, q.ySpl - 0.36, "FICH072 유출", "R");
   box("WIH073", q.xMn, q.yRvM + 0.12, "WIH073 본류", "C"); box("WIH072", q.xF, q.yRvF + 0.1, "WIH072 초류", "C");
   { const xL = q.xF + q.rRF + 0.16; [["vap", "증기"], ["liq", "응축액"], ["steam", "스팀"], ["air", "비응축 가스(리크 공기)"]].forEach(([k, txt], i) => { const y = 0.44 - i * 0.09; el("circle", { cx: X(xL), cy: Y(y), r: 13, class: "p2-key " + k }); label(xL + 0.035, y - 0.014, txt, "p2-small", "start"); }); }   /* v126: 점 색 범례 */
   PID2.M = M; PID2.geo = { X, Y, R, hh, ht, topY, Rj, q, p, yNeck };
   { const key = W.toFixed(0) + "x" + H.toFixed(0); PID2.full = [0, 0, +W.toFixed(0), +H.toFixed(0)]; if (!PID2.view || PID2.viewKey !== key) { PID2.view = PID2.full.slice(); PID2.viewKey = key; }   /* v125: 액면이 바뀌어 다시 그려도 보던 자리는 그대로 */
     svg.setAttribute("viewBox", PID2.view.map((n) => n.toFixed(1)).join(" ")); }
 }
+const _p2t = new THREE.Color();
 function pid2Frame(now) {
   if (!PID2.root || PID2.root.hidden) return;
   if (now - (PID2.fitAt || 0) > 400) { PID2.fitAt = now; pid2Fit(); }
   if (PID2.M !== M) pid2Build(); if (!PID2.svg || !PR) return;
   const dt = Math.min(0.2, (PID2.lastT ? (now - PID2.lastT) / 1000 : 0)); PID2.lastT = now; if (!paused) PID2.clock += dt;
   const G = PID2.geo, { X, Y, R, hh, q, p } = G, FV = ISOFLOW || { on: {}, closed: {} }, on = FV.on || {};
+  if (PID2.dyn.useal) { const on = !!(CUR && CUR.holdC > 0 && (PR.sealM || 0) >= CUR.holdC * 0.999); if (on !== PID2.sealOn) { PID2.sealOn = on; PID2.dyn.useal.classList.toggle("on", on); } }   /* v128 */
   // 흐름 점선
   const boil = !!(!PR.stopped && PR.vdot > 1), yF = PR.vpTop ? q.colTop : q.colBase + Math.max(0, Math.min(1, VF.vis || 0)) * (q.colTop - q.colBase);   /* v126: 컬럼 안 증기 앞머리 = 예열 전선(구간 온도로 계산) */
-  const on2 = Object.assign({}, on, { VS: boil, VN: boil && VLV.V, VC: boil && VLV.V && yF > q.colBase + 0.01 });
+  const liqBack = boil && (!!on.RD || ((PR.fr && PR.fr.back) || 0) > 0.02), yL = on.RD ? q.packY1 : Math.min(yF, q.packY1);   /* v128: 내려오는 액 = 3D 목관 줄기와 같은 판정(환류가 분배 헤더에 닿음 또는 컬럼 응축 몫 > 2 %). 환류 전에는 예열 전선 아래에서만 생긴다 */
+  const on2 = Object.assign({}, on, { VS: boil, VN: boil && VLV.V, VC: boil && VLV.V && yF > q.colBase + 0.01, LC: liqBack && yL > q.colBase + 0.02, LN: liqBack, LS: liqBack, CE: !!on.C });
+  if (PID2.dyn.lc && Math.abs(yL - (PID2.lcY ?? -1)) > 0.002) { PID2.lcY = yL; PID2.dyn.lc.forEach((e, i) => { const x = q.xCol + (i ? 0.8 : -0.8) * q.rCol; e.setAttribute("d", yL > q.colBase + 0.02 ? `M${X(x)} ${Y(yL)}L${X(x)} ${Y(q.colBase + 0.006)}` : ""); }); }
   const VSk = vSpeeds(M), kOf = (k) => k === "VS" ? VSk.k0 : k === "VN" || k === "VC" ? VSk.kc : k === "V" ? VSk.kp : 1;   /* v126: 점 속도 = 3D와 같은 계산 배율(정제기 위 0.4 · 컬럼 7.4 · 증기관 44 m/s 등 실제 속도의 세제곱근) */
   for (const f of PID2.flows) { const live = !!on2[f.k]; if (live !== f.on) { f.on = live; f.el.classList.toggle("on", live); } if (live) { f.off = (f.off || 0) + (f.kind === "vap" ? 260 * kOf(f.k) : f.kind === "air" ? 260 : 120) * (paused ? 0 : dt); f.el.style.strokeDashoffset = (-f.off).toFixed(0); } }
   // 밸브 색(초록 열림 · 빨강 닫힘)
@@ -7170,7 +7190,8 @@ function pid2Frame(now) {
     const right = pts.slice().reverse().map((a) => [-a[0], a[1]]);
     PID2.dyn.tankLiq.setAttribute("d", h > 0.003 ? "M" + pts.concat(right).map((a) => X(a[0]) + " " + Y(a[1])).join("L") + "Z" : ""); }
   if (PID2.dyn.vs && Math.abs(h - (PID2.vsH ?? -1)) > 0.002) { PID2.vsH = h; const yN = G.yNeck, y0 = Math.min(h, G.topY) + 0.02, hw = 0.85 * (y0 >= hh ? R : R * Math.sqrt(Math.max(0, 1 - ((hh - y0) / hh) ** 2)));   /* v126: 액면에서 목관 입구로 모이는 증기 */
-    PID2.dyn.vs.forEach((e, i) => { const xs = Math.max(-hw, Math.min(hw, q.xCol + [-0.17, -0.05, 0.08][i])); e.setAttribute("d", y0 < yN - 0.04 ? `M${X(xs)} ${Y(y0)}Q${X(xs)} ${Y((y0 + yN) / 2)} ${X(q.xCol)} ${Y(yN - 0.01)}` : ""); }); }
+    PID2.dyn.vs.forEach((e, i) => { const xs = hw * [-0.8, -0.4, 0, 0.4, 0.8][i]; e.setAttribute("d", y0 < yN - 0.04 ? `M${X(xs)} ${Y(y0)}Q${X(xs)} ${Y((y0 + yN) / 2)} ${X(q.xCol - 0.006)} ${Y(yN - 0.01)}` : ""); });   /* v128: 액면 전체 → 목관 입구(사용자 '너무 오른쪽에서만') */
+    if (PID2.dyn.ls) PID2.dyn.ls.setAttribute("d", y0 < yN - 0.04 ? `M${X(q.xCol + 0.007)} ${Y(yN)}L${X(q.xCol + 0.007)} ${Y(y0 - 0.02)}` : ""); }
   PID2.dyn.jacket.classList.toggle("hot", !!on.J);
   // 앵커(돌아가는 모습: 앞에서 본 막대 길이 = D·cos θ)
   { const th = (PID2.clock * (p.N || 0) * 2 * Math.PI) % (2 * Math.PI), c = Math.cos(th), rr = p.D / 2 * c, up = 0.09;
@@ -7194,7 +7215,8 @@ function pid2Frame(now) {
     const set = (k, s) => { if (V[k] && V[k].textContent !== s) V[k].textContent = s; };
     set("TICH071", f(PR.Tmean, 1, " ℃")); set("TIH074", f(PR.TjEff != null ? PR.TjEff : CUR && CUR.Tj, 1, " ℃")); set("WIH071", f(PR.m, 1, " kg")); set("jOpen", CUR ? f(VLV.J ? CUR.jOpen * 100 : 0, 1, " %") : "–");
     set("PICH071", f(PR.Pstill, 2, " mmHg")); set("TIH075", f(PR.Thead, 1, " ℃")); set("vdot", f(PR.vdot, 1, " kg/h")); set("TICH071D", tb != null && ((PR.condKg || 0) > 0.05 || (PR.mC1 || 0) > 0.01) ? f(tb, 1, " ℃") : "–");
-    set("FICH073", f(PR.Rkg || 0, 1, " kg/h")); set("FICH072", f(PR.Dkg || 0, 1, " kg/h")); set("WIH073", f(PR.ves.main.A + PR.ves.main.B, 1, " kg")); set("WIH072", f(PR.ves.fore.A + PR.ves.fore.B, 1, " kg")); set("Ppump", f(PR.Ppump != null ? PR.Ppump : PR.Pcond, 2, " mmHg")); set("FIH071", CUR && CUR.heatMode === "steam" ? f(VLV.J ? PR.steamKgh || 0 : 0, 1, " kg/h") : "–");
+    set("FICH073", f(PR.Rkg || 0, 1, " kg/h")); set("FICH072", f(PR.Dkg || 0, 1, " kg/h")); set("WIH073", f(PR.ves.main.A + PR.ves.main.B, 1, " kg")); set("WIH072", f(PR.ves.fore.A + PR.ves.fore.B, 1, " kg")); set("Ppump", f(PR.Ppump != null ? PR.Ppump : PR.Pcond, 2, " mmHg")); set("FIH071", CUR && CUR.heatMode === "steam" ? f(VLV.J ? PR.steamKgh || 0 : 0, 1, " kg/h") : "–"); { const ld = c1Load(); set("C1load", ld == null ? "–" : ld.toFixed(ld < 10 ? 1 : 0) + " %"); }
+    { const c = "#" + tempColor(PR.Tmean, _p2t).getHexString(); if (PID2.liqC !== c) { PID2.liqC = c; PID2.dyn.tankLiq.style.fill = c; } }   /* v128: 정제기 액 색 = 온도 색(3D와 같은 눈금) */
     if (CUR) { const L = PID2.lbl, t1 = "N-Brine " + f(CUR.Tcw, 1, " ℃"), t2 = "L-Brine " + f(CUR.Tcw2 != null ? CUR.Tcw2 : CUR.Tcw, 1, " ℃"); if (L.Tcw && L.Tcw.textContent !== t1) L.Tcw.textContent = t1; if (L.Tcw2 && L.Tcw2.textContent !== t2) L.Tcw2.textContent = t2; } }
 }
 pid2Init();
@@ -7602,7 +7624,7 @@ function isoC1Liq() {
 }
 { const _fb6 = isoFrameBody; isoFrameBody = function (now, dt) { _fb6(now, dt); if (!ISOL.c1at || now - ISOL.c1at > 250) { ISOL.c1at = now; isoC1Liq(); } }; }
 
-window.__dt = { get LOOK() { const a = renderer.getContextAttributes ? renderer.getContextAttributes() : null; return { sw: SW_GL, lq: LQ_SET, aa: !!(a && a.antialias), pr: renderer.getPixelRatio(), shadow: !!renderer.shadowMap.enabled }; }, get PID2() { return PID2; }, get SUBS() { return SUBS; }, get C1TUBES() { let tubes = 0, bends = 0, sheets = 0; if (M) { const q = M.pipe; tankGroup.traverse((o) => { if (!o.isMesh || !o.geometry) return; const dx = Math.abs(o.position.x - q.xC), y = o.position.y, gt = o.geometry.type; if (dx > q.rC * 1.05 || y < q.yC1 || y > q.yC0 || Math.abs(o.position.z) > q.rC * 1.05) return; if (o.material === BARMAT && gt === "CylinderGeometry") tubes++; if (gt === "TorusGeometry") bends++; if (o.material === mats.tube) sheets++; }); } return { tubes, bends, sheets }; }, fn: { steamLam, lineTop, backPressure, fChurchill, headA, bubbleP, bubbleT, hvapT, hMin }, ab: (k) => { const r = abToggle(k); abDraw(); return r; }, abClear: () => abClear(), get AB() { return AB; }, AB_LIST, get CAM() { return { theta: orbit.theta, phi: orbit.phi, dist: orbit.dist }; }, get C1H() { return VES.c1h; }, get VP() { return VP; }, get VPFR() { return VPFR; }, get STEPLOG() { return STEPLOG; }, get VSP() { return VSP; }, get FASTJ() { return FASTJ; }, vaporStats: () => window.__vaporStats(), get JRATE() { return JRATE; }, get ST() { return ST; }, isoFocus: (k) => isoFocus(k), isoFit: () => { if (ISO) { ISO.userView = false; isoFit(); } }, get ISOFLOW() { return ISOFLOW; }, get ISOT() { return window.__isoT; }, get STYLE() { return STYLE; }, get FLOW_R() { return FLOW_R; }, vpTravel: () => vpTravel(), pidOpen: (k) => pidOpen(k), perfApply: (m, r) => perfApply(m, r), get kCorr() { return PR && PR.kCorr; }, pbDtpMax: (v) => { PB_DTP_MAX = v; }, Ueff: (p) => Ueff(p), headDepth: (p) => headDepth(p), get PERFT() { return PERFT; }, get BENCH() { return BENCH; }, GPU_NAME, get solverKind() { return solver.kind; }, get F1D() { return F1D; }, cond1D: (...a) => cond1D(...a), flow1D: () => flow1D(CUR), OP, opSetMode: (m) => opSetMode(m), opRender: () => opRender(true), get FX() { return FX; }, get FXP() { return FXP; }, fxFocus: (k) => fxFocus(k), tlRewind: (i) => tlRewind(i), tlUndo: () => tlUndo(), fillSteady: () => fillSteady(), get TURBO() { return TURBO; }, startJump: (k, h) => startJump(k, h), jumpEst: () => jumpEst(), get PB_RATE() { return PB_RATE; }, get TL_DT() { return TL_DT; }, VLV, setValve, valveHit: valveHitTest, openSpec: (k, x, y) => openSpec(k, x, y), closeSpec: () => closeSpec(), get SPEC_HIT() { return SPEC_HIT; }, specAt: (e) => specAtPointer(e), get EQ() { return EQ; }, get VLE_NAME() { return VLE_NAME; }, GAM: (x, T) => GAM(x, T), get M() { return M; }, get F() { return F; }, get ST() { return ST; }, get PR() { return PR; }, get CUR() { return CUR; }, orbit, fitView: () => fitView(), placeCamera: () => placeCamera(), camera, canvas, get PIPES() { return PIPES; }, get FILL() { return FILL; }, get VALVE_PARTS() { return VALVE_PARTS; }, solver, get VP() { return VP; }, get simRate() { return simRate; }, get TL() { return TL; }, get REPLAY() { return REPLAY; }, tlShow, tlLive };
+window.__dt = { get LOOK() { const a = renderer.getContextAttributes ? renderer.getContextAttributes() : null; return { sw: SW_GL, lq: LQ_SET, aa: !!(a && a.antialias), pr: renderer.getPixelRatio(), shadow: !!renderer.shadowMap.enabled }; }, get PID2() { return PID2; }, get SUBS() { return SUBS; }, get C1TUBES() { let tubes = 0, bends = 0, sheets = 0; if (M) { const q = M.pipe; tankGroup.traverse((o) => { if (!o.isMesh || !o.geometry) return; const dx = Math.abs(o.position.x - q.xC), y = o.position.y, gt = o.geometry.type; if (dx > q.rC * 1.05 || y < q.yC1 || y > q.yC0 || Math.abs(o.position.z) > q.rC * 1.05) return; if (o.material === BARMAT && gt === "CylinderGeometry") tubes++; if (gt === "TorusGeometry") bends++; if (o.material === mats.tube) sheets++; }); } return { tubes, bends, sheets }; }, fn: { steamLam, lineTop, backPressure, fChurchill, headA, bubbleP, bubbleT, hvapT, hMin }, ab: (k) => { const r = abToggle(k); abDraw(); return r; }, abClear: () => abClear(), get AB() { return AB; }, AB_LIST, get CAM() { return { theta: orbit.theta, phi: orbit.phi, dist: orbit.dist }; }, get C1H() { return VES.c1h; }, get VP() { return VP; }, get VPFR() { return VPFR; }, get STEPLOG() { return STEPLOG; }, get VSP() { return VSP; }, get FASTJ() { return FASTJ; }, vaporStats: () => window.__vaporStats(), get JRATE() { return JRATE; }, get ST() { return ST; }, isoFocus: (k) => isoFocus(k), isoFit: () => { if (ISO) { ISO.userView = false; isoFit(); } }, get ISOFLOW() { return ISOFLOW; }, get ISOT() { return window.__isoT; }, get STYLE() { return STYLE; }, get FLOW_R() { return FLOW_R; }, vpTravel: () => vpTravel(), pidOpen: (k) => pidOpen(k), perfApply: (m, r) => perfApply(m, r), get kCorr() { return PR && PR.kCorr; }, pbDtpMax: (v) => { PB_DTP_MAX = v; }, Ueff: (p) => Ueff(p), headDepth: (p) => headDepth(p), get PERFT() { return PERFT; }, get BENCH() { return BENCH; }, GPU_NAME, get solverKind() { return solver.kind; }, get F1D() { return F1D; }, cond1D: (...a) => cond1D(...a), flow1D: () => flow1D(CUR), OP, opSetMode: (m) => opSetMode(m), opRender: () => opRender(true), get FX() { return FX; }, get AGIT() { return AGIT; }, get LVOL() { return LVOL; }, c1Load, uSealSpan, get FXP() { return FXP; }, fxFocus: (k) => fxFocus(k), tlRewind: (i) => tlRewind(i), tlUndo: () => tlUndo(), fillSteady: () => fillSteady(), get TURBO() { return TURBO; }, startJump: (k, h) => startJump(k, h), jumpEst: () => jumpEst(), get PB_RATE() { return PB_RATE; }, get TL_DT() { return TL_DT; }, VLV, setValve, valveHit: valveHitTest, openSpec: (k, x, y) => openSpec(k, x, y), closeSpec: () => closeSpec(), get SPEC_HIT() { return SPEC_HIT; }, specAt: (e) => specAtPointer(e), get EQ() { return EQ; }, get VLE_NAME() { return VLE_NAME; }, GAM: (x, T) => GAM(x, T), get M() { return M; }, get F() { return F; }, get ST() { return ST; }, get PR() { return PR; }, get CUR() { return CUR; }, orbit, fitView: () => fitView(), placeCamera: () => placeCamera(), camera, canvas, get PIPES() { return PIPES; }, get FILL() { return FILL; }, get VALVE_PARTS() { return VALVE_PARTS; }, solver, get VP() { return VP; }, get simRate() { return simRate; }, get TL() { return TL; }, get REPLAY() { return REPLAY; }, tlShow, tlLive };
 applyTheme();
 syncOutputs(); rebuild(); applyView();
 resize(); placeCamera();

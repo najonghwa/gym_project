@@ -122,9 +122,10 @@ JS_TB_LIVE = r"""(async()=>{const D=window.__dt,t0=D.PR.t;D.STEPLOG.length=0;whi
 
 
 # v115: 끓기 시작 순서·점 수(흰 점이 응축해 파란 점이 된다), 지워지는 증기 점, 액막 높이, 2차 응축기 넘친 액
+# v128: 파란 점도 흰 점과 같은 구간(정제기 꼭대기 ~ 컬럼 바닥, 목관 둘레)에서 센다. 전에는 vaporStats의 nNeckLiq(목관 아래 정제기 위 공간으로 떨어지는 점까지)를 써서, 그림에서 목관을 줄이자(v128) 흰 점 구간만 짧아져 비가 2.38 → 3.75로 커졌다
 JS_ORDER = r"""(async()=>{const D=window.__dt,q=D.M.pipe;let tV=null,tL=null,dripMax=0,ratioMax=0,filmMax=0,lost0=D.vaporStats().lost,n=0;const t0=D.PR.t;
-  while(D.PR.t<t0+__SPAN__){const s=D.vaporStats();let vN=0,dN=0;for(const v of D.VP){if(v._y==null||v.liq||v._drop)continue;if(v._y>D.M.topY&&v._y<q.colBase)vN++;}for(const p of D.FXP)if(p.kind==='drip'&&Math.abs(p.x-q.xN)<q.rCol*1.2)dN++;
-    const tm=D.PR.t/60;if(vN>0&&tV==null)tV=tm;if(s.nNeckLiq>0&&tL==null)tL=tm;dripMax=Math.max(dripMax,dN);if(vN>=3)ratioMax=Math.max(ratioMax,s.nNeckLiq/vN);if(!(D.FILL.RD&&D.FILL.RD.full))filmMax=Math.max(filmMax,s.filmH);n++;await new Promise(r=>setTimeout(r,250));}
+  while(D.PR.t<t0+__SPAN__){const s=D.vaporStats();let vN=0,dN=0,lN=0;for(const v of D.VP){if(v._y==null)continue;const inNeck=v._y>D.M.topY&&v._y<q.colBase&&Math.abs((v._x==null?q.xN:v._x)-q.xN)<q.rCol*1.5;if(v.liq||v._drop){if(inNeck)lN++;continue;}if(v._y>D.M.topY&&v._y<q.colBase)vN++;}for(const p of D.FXP)if(p.kind==='drip'&&Math.abs(p.x-q.xN)<q.rCol*1.2)dN++;
+    const tm=D.PR.t/60;if(vN>0&&tV==null)tV=tm;if(s.nNeckLiq>0&&tL==null)tL=tm;dripMax=Math.max(dripMax,dN);if(vN>=3)ratioMax=Math.max(ratioMax,lN/vN);if(!(D.FILL.RD&&D.FILL.RD.full))filmMax=Math.max(filmMax,s.filmH);n++;await new Promise(r=>setTimeout(r,250));}
   return JSON.stringify({n,tV,tL,dripMax,ratio:+ratioMax.toFixed(2),filmMax,lost:D.vaporStats().lost-lost0})})()"""
 JS_OV = r"""(()=>{const D=window.__dt,P=D.PR,s=D.vaporStats();return JSON.stringify({ovKg:+(P.ovKg||0).toFixed(1),ov2:s.ov2,Tbot:P.Tbot,T1out:P.T1out,Tcw:D.CUR.Tcw})})()"""
 
@@ -303,7 +304,7 @@ def judge(out):
     if od:
         add("D1", "끓기 시작: 목관 액 점이 증기 점보다 먼저 생김", od["tV"] is not None and (od["tL"] is None or od["tL"] >= od["tV"]), f"증기 점 {round(od['tV'], 1) if od['tV'] is not None else None}분 → 액 점 {round(od['tL'], 1) if od['tL'] is not None else None}분", "증기 먼저")
         add("D30", "목관에 흰 점과 따로 뿌린 파란 방울", od["dripMax"] == 0, f"최대 {od['dripMax']}개", "0개")
-        add("D31", "목관 파란 점 ÷ 흰 점(흰 점 3개 이상일 때 최대)", od["ratio"] <= 3, f"{od['ratio']}배", "≤ 3배")
+        add("D31", "목관 파란 점 ÷ 흰 점(흰 점 3개 이상일 때 최대, 둘 다 정제기 꼭대기 ~ 컬럼 바닥 구간에서 셈 — v128)", od["ratio"] <= 3, f"{od['ratio']}배", "≤ 3배")
         add("D3", "액이 되지 못하고 지워진 증기 점(정제기·목관·컬럼)", od["lost"] == 0, f"{od['lost']}개", "0개")
         add("D32", "환류가 위에서 들어오기 전 충전층 액막 높이(충전층 비율)", od["filmMax"] <= 0.5, f"최대 {od['filmMax']}", "≤ 응축 전선(0.5 이하)")
     ov = g("1차 응축기 넘침", "ov")

@@ -93,8 +93,9 @@ const op=document.getElementById('opPanel'),w=document.querySelector('.op-warn')
 return JSON.stringify({op:q(op),closed:op?op.classList.contains('closed'):null,sel:q(document.getElementById('lblMode')),dock:q(document.querySelector('.valvedock')),warnH:w?Math.round(w.getBoundingClientRect().height):0,warn:w?w.textContent.trim():''})})()"""
 
 # v126(2026-11-19): 예열 중 도면 증기 점 · 충전물 예열 색 · 둥근 점 · 진공 라인 색과 범례(P1·P2·P4·P5)
-JS_GEO = r"""(()=>{const D=window.__dt,q=D.M.pipe,M=D.M;return JSON.stringify({hh:M.hh,Hs:M.Hs,topY:M.topY,yNz:q.yNz,colBase:q.colBase,colTop:q.colTop,yRf:q.yRf,ySpl:q.ySpl,yC1:q.yC1,yC0:q.yC0,yPipe:q.yPipe,xCol:q.xCol,xC:q.xC,xSpl:q.xSpl,xU1:q.xU1,xRf:q.xRf,yU:q.yU,yDish:q.yDish,rCol:q.rCol,xMn:q.xMn,yValve:q.yValve,tankTop:q.yTopM+q.hdM})})()"""
+JS_GEO = r"""(()=>{const D=window.__dt,q=D.M.pipe,M=D.M;return JSON.stringify({hh:M.hh,Hs:M.Hs,topY:M.topY,yNz:q.yNz,colBase:q.colBase,colTop:q.colTop,yRf:q.yRf,ySpl:q.ySpl,yC1:q.yC1,yC0:q.yC0,yPipe:q.yPipe,xCol:q.xCol,xC:q.xC,xSpl:q.xSpl,xU1:q.xU1,xRf:q.xRf,yU:q.yU,yDish:q.yDish,packY0:q.packY0,packY1:q.packY1,Hpack:D.CUR.Hpack,rCol:q.rCol,xMn:q.xMn,yValve:q.yValve,tankTop:q.yTopM+q.hdM})})()"""
 JS_V6A = r"""(async()=>{const D=window.__dt,P=D.PR,q=D.M.pipe,p=D.CUR,zz=(ms)=>new Promise(r=>setTimeout(r,ms)),b=document.getElementById('btn3d');
+await zz(400);const sec=((D.FX&&D.FX.sec)||[]).map(b=>b.visible?[b.material.color.r,b.material.color.g,b.material.color.b].map(x=>+x.toFixed(3)):null);
 let pts=0,ptsMap=0,film=0;window.__world.traverse(o=>{if(o.isPoints&&o.material&&o.material.size>=2){pts++;if(o.material.map)ptsMap++;}const g=o.geometry;if(o.isMesh&&o.visible&&g&&g.type==='CylinderGeometry'&&g.parameters.openEnded&&Math.abs(g.parameters.radiusTop-q.rCol*0.86)<1e-6)film++;});
 if(/도면/.test(b.textContent))b.click();await zz(2500);
 const Q=D.PID2,on=(k)=>Q.flows.filter(f=>f.k===k).map(f=>({on:!!f.on,d:(f.el.getAttribute('d')||'').length>0}));
@@ -107,7 +108,7 @@ const legend=[...Q.svg.querySelectorAll('text')].map(t=>t.textContent).filter(t=
 const keys=[...Q.svg.querySelectorAll('circle.p2-key')].map(c=>c.getAttribute('class'));
 const vtop=!!(Q.flows.find(f=>f.k==='V')||{}).on;
 if(/3D/.test(b.textContent))b.click();await zz(1500);
-return JSON.stringify({t:P.t/3600,boil:P.vdot>1&&!P.stopped,vpTop:!!P.vpTop,pts,ptsMap,film,VS:on('VS'),VN:on('VN'),VC:on('VC'),vcY:Q.vcY,yF,front,hotRows,expRows,blue,dash:cs.strokeDasharray,cap:cs.strokeLinecap,sCls:s?s.el.getAttribute('class'):null,legend,keys,vtop,Tsec:P.Tsec.map(x=>+x.toFixed(1))});})()"""
+return JSON.stringify({t:P.t/3600,boil:P.vdot>1&&!P.stopped,vpTop:!!P.vpTop,pts,ptsMap,film,VS:on('VS'),VN:on('VN'),VC:on('VC'),vcY:Q.vcY,yF,front,hotRows,expRows,blue,dash:cs.strokeDasharray,cap:cs.strokeLinecap,sCls:s?s.el.getAttribute('class'):null,legend,keys,vtop,sec,Tsec:P.Tsec.map(x=>+x.toFixed(1))});})()"""
 
 # v126: 환류 분배기 노즐 두 곳 · 밸브 부품 색 · 스팀 밸브 목 반지름(P3·P6·P7)
 JS_V6B = r"""(()=>{const D=window.__dt,F=D.FILL,segs=F.RD?F.RD.segs:[],vis=segs.map(s=>!!(s.ov&&s.ov.visible)),flow=!!(D.ISOFLOW&&D.ISOFLOW.on&&D.ISOFLOW.on.RD);
@@ -117,7 +118,9 @@ const out={};for(const k of Object.keys(D.VALVE_PARTS)){const parts=(D.VALVE_PAR
  out[k]={n:parts.length,mats:mats.size,fr:fr.length?+Math.min(...fr).toFixed(5):null,head};}
 const pj=(D.PIPES.J||[]).filter(o=>o.geometry&&o.geometry.type==='CylinderGeometry').map(o=>o.geometry.parameters.radiusTop);
 const q=D.M.pipe;let lo=Infinity,hi=-Infinity;for(const o of (D.VALVE_PARTS.M?D.VALVE_PARTS.M.parts:[])){const bb=new THREE.Box3().setFromObject(o);lo=Math.min(lo,bb.min.y);hi=Math.max(hi,bb.max.y);}
-return JSON.stringify({vis,flow,n:segs.length,valves:out,pipeJ:pj.length?+Math.max(...pj).toFixed(5):null,t:D.PR.t/3600,mv:{lo,hi,tankTop:q.yTopM+q.hdM,tee:q.yValve}})})()"""
+const A=D.AGIT||{},L=D.LVOL||{};let aOrd=null,hOrd=null;window.__world.traverse(o=>{if(!o.isMesh)return;if(A.mat&&o.material===A.mat)aOrd=aOrd==null?o.renderOrder:Math.min(aOrd,o.renderOrder);if(A.hull&&o.material===A.hull)hOrd=hOrd==null?o.renderOrder:Math.min(hOrd,o.renderOrder);});
+const ag={n:A.n||0,tr:!!(A.mat&&A.mat.transparent),dw:!!(A.mat&&A.mat.depthWrite),col:A.mat?[A.mat.color.r,A.mat.color.g,A.mat.color.b]:null,ord:aOrd,hull:hOrd,vol:L.mesh?{ord:L.mesh.renderOrder,vis:!!L.mesh.visible,Tm:L.u.Tm.value,tLo:L.u.tLo.value,tHi:L.u.tHi.value,op:L.u.uOp.value}:null,style:D.STYLE};
+return JSON.stringify({ag,vis,flow,n:segs.length,valves:out,pipeJ:pj.length?+Math.max(...pj).toFixed(5):null,t:D.PR.t/3600,mv:{lo,hi,tankTop:q.yTopM+q.hdM,tee:q.yValve}})})()"""
 
 # v127(2026-11-20): 도면의 환류 분배 구멍 4개와 구멍마다 떨어지는 액 점(Q1)
 JS_V7 = r"""(async()=>{const D=window.__dt,zz=(ms)=>new Promise(r=>setTimeout(r,ms)),b=document.getElementById('btn3d');
@@ -126,8 +129,14 @@ const Q=D.PID2,G=Q.geo,q=G.q,X=G.X,Y=G.Y;
 const holes=[...Q.svg.querySelectorAll('.p2-hole')].map(c=>[+c.getAttribute('cx'),+c.getAttribute('cy'),+c.getAttribute('r')]);
 const rd=Q.flows.filter(f=>f.k==='RD').map(f=>{const m=(f.el.getAttribute('d')||'').match(/M([\d.]+) ([\d.]+)L([\d.]+) ([\d.]+)/);return {on:!!f.on,cls:f.el.getAttribute('class'),seg:m?m.slice(1).map(Number):null};});
 const col=[Number(X(q.xCol-q.rCol)),Number(X(q.xCol+q.rCol))],yD=Number(Y(q.yDish)),yP=Number(Y(q.packY1)),on3=!!(D.ISOFLOW&&D.ISOFLOW.on&&D.ISOFLOW.on.RD);
+const fl=(k)=>Q.flows.filter(f=>f.k===k).map(f=>({on:!!f.on,d:f.el.getAttribute('d')||''})),P=D.PR;
+const more={x0:Number(X(0)),VS:fl('VS'),LC:fl('LC'),LN:fl('LN'),LS:fl('LS'),CE:fl('CE'),back:(P.fr&&P.fr.back)||0,onRD:on3,boil:P.vdot>1&&!P.stopped,yB:Number(Y(q.colBase)),sealOn:!!Q.sealOn,sealM:P.sealM||0,holdC:D.CUR.holdC,
+ ld:D.c1Load(),cap1:P.cap1,Qv1:P.Qv1,c1:P.c1,ldTxt:Q.vals.C1load?Q.vals.C1load.textContent:null,liqC:Q.liqC,Tm:P.Tmean};
 if(/3D/.test(b.textContent))b.click();await zz(1500);
-return JSON.stringify({holes,rd,col,yD,yP,on3,t:D.PR.t/3600});})()"""
+return JSON.stringify({holes,rd,col,yD,yP,on3,more,t:D.PR.t/3600});})()"""
+
+# v128(2026-11-20): 환류 U자 액봉 — 환류 밸브를 닫아도 U자 세 토막은 찬 채, 다시 열면 흐름 표시가 돌아온다(S3)
+JS_US = r"""(()=>{const D=window.__dt,f=D.FILL.R,u=D.uSealSpan(f),P=D.PR;return JSON.stringify({seal:P.sealM||0,holdC:D.CUR.holdC,mHeldC:P.mHeldC||0,head:f.head,tail:f.tail,L:f.Ltot,us:u,want:!!f.want,held:!!f.held,Rkg:P.Rkg||0,R:!!D.VLV.R,t:P.t/3600})})()"""
 
 def jumpS(h):   # 배치가 먼저 끝나면(가열 정지) 거기서 멈춘다
     return [["eval", f"window.__dt.startJump('at',{h});1"],
@@ -143,6 +152,8 @@ def scenarios(scen, tag, BOOT, jump, SHOTS):
          scen("합침 운전 패널", rec + jump(4) + [["wait", 2000], ["eval", "(()=>{const f=document.querySelector('.op-fold');if(f)f.click();return f?1:0})()"], ["wait", 2500], tag("op", JS_OP), ["shot", str(SHOTS / "합침_운전패널_4h.png")]]),
          scen("합침 배치 끝", rec + jumpS(90) + [tag("end", JS_END)]),
          scen("v126 후류 규칙", rec + [["eval", "(()=>{const e=document.getElementById('rcpTailKg');e.value='40';return e.value})()"]] + jumpS(90) + [tag("end40", JS_END)]),
+         scen("v128 U자 액봉", BOOT + [["eval", "window.__dt.opSetMode('free');1"], ["wait", 1500]] + jump(2.3) + [["wait", 4000], tag("us0", JS_US), ["eval", "window.__dt.setValve('R',false);1"], ["wait", 6000], tag("us1", JS_US),
+                                    ["shot", str(SHOTS / "v128_U자_환류닫음.png"), "#stage", 3, [480, 110, 190, 130]], ["eval", "window.__dt.setValve('R',true);1"], ["wait", 5000], tag("us2", JS_US)]),
          scen("v126 화면", rec + [tag("geo", JS_GEO)] + jump(1.25) + [tag("v6a", JS_V6A), ["wait", 1500], ["shot", str(SHOTS / "v126_예열_3D.png")]] + jump(6) + [["wait", 3000], tag("v6b", JS_V6B), tag("v7", JS_V7)])]
     return S
 
@@ -264,10 +275,11 @@ def judge(g, add):
             f"{z4['t']:.1f} h에 끝 · 초류 {z4['fore']:.1f} · 본류 {z4['main']:.1f} kg → 투입 − 초류 − 본류 = {left:.1f} kg(정제기 {z4['m']:.1f}) · 사유 '{z4['why'][:50]}'", "40 ± 0.5 kg · 사유 '후류'")
     v = g("v126 화면", "v6a")
     if v:
-        okVS = all(x["on"] and x["d"] for x in v["VS"]) and len(v["VS"]) == 3; okVN = all(x["on"] for x in v["VN"]) and len(v["VN"]) >= 1; okVC = all(x["on"] and x["d"] for x in v["VC"]) and len(v["VC"]) == 2
+        okVS = all(x["on"] and x["d"] for x in v["VS"]) and len(v["VS"]) == 5;   # v128: 액면 전체 5줄
+        okVS = okVS; okVN = all(x["on"] for x in v["VN"]) and len(v["VN"]) >= 1; okVC = all(x["on"] and x["d"] for x in v["VC"]) and len(v["VC"]) == 2
         pre = v["boil"] and not v["vpTop"]
         add("P1", "도면: 끓는 동안 정제기 안(액면 → 목관) · 목관 · 컬럼 안(바닥 → 예열 전선) 증기 점(예열 중에도)", pre and okVS and okVN and okVC and v["vcY"] is not None and abs(v["vcY"] - v["yF"]) < 0.003 and not v["vtop"],
-            f"{v['t']:.2f} h(끓음 {v['boil']} · 꼭대기 넘음 {v['vpTop']}) · 정제기 안 {sum(x['on'] for x in v['VS'])}/3 · 목관 {sum(x['on'] for x in v['VN'])} · 컬럼 안 {sum(x['on'] for x in v['VC'])}/2 · 점 끝 {v['vcY']:.3f} m = 예열 전선 {v['yF']:.3f} m · 꼭대기 위 증기관 {'켜짐' if v['vtop'] else '꺼짐'}",
+            f"{v['t']:.2f} h(끓음 {v['boil']} · 꼭대기 넘음 {v['vpTop']}) · 정제기 안 {sum(x['on'] for x in v['VS'])}/5 · 목관 {sum(x['on'] for x in v['VN'])} · 컬럼 안 {sum(x['on'] for x in v['VC'])}/2 · 점 끝 {v['vcY']:.3f} m = 예열 전선 {v['yF']:.3f} m · 꼭대기 위 증기관 {'켜짐' if v['vtop'] else '꺼짐'}",
             "예열 중 · 셋 다 켜짐 · 점 끝 = 전선 ± 3 mm · 증기관은 아직 꺼짐")
         add("P2", "3D 컬럼: 액막 원통 없음 · 충전물 = 구간 예열 정도 색(데워진 구간만, 파랑 없음) · 도면 충전물도 같은 색", v["film"] == 0 and v["hotRows"] == v["expRows"] and v["blue"] == 0 and len(v["hotRows"]) > 0,
             f"보이는 액막 원통 {v['film']}개 · 데워진 줄 {v['hotRows']}(구간 온도로 기대 {v['expRows']}) · 파란 고리 {v['blue']}개 · 구간 온도 {v['Tsec']} ℃", "0개 · 같음 · 0개")
@@ -291,15 +303,68 @@ def judge(g, add):
         under = all(f["seg"] and any(abs(f["seg"][0] - x) < 0.6 for x in xs) and abs(f["seg"][2] - f["seg"][0]) < 0.6 and v["yD"] < f["seg"][1] < f["seg"][3] <= v["yP"] + 1 for f in F)
         add("Q1", "도면: 분배 헤더의 작은 구멍 4개(컬럼 안, 헤더 높이) · 구멍마다 떨어지는 액 점 4줄(헤더 아래 → 충전층 위, 환류가 흐를 때 켜짐 — 3D와 같은 판정)", len(H) == 4 and inCol and len(F) == 4 and under and v["on3"] and all(f["on"] for f in F),
             f"구멍 {len(H)}개(x {', '.join(f'{x:.0f}' for x in xs)} · 컬럼 {v['col'][0]:.0f}~{v['col'][1]:.0f}) · 액 점 {sum(f['on'] for f in F)}/{len(F)}줄 켜짐 · 구멍 아래 {'예' if under else '아니오'} · 3D 판정 {v['on3']}", "4개 · 4/4줄 · 예")
+    v = g("v126 화면", "v6a")
+    if v and v.get("sec") is not None:
+        on = [c for c in v["sec"] if c]; blue = [c for c in on if c[2] > c[0] + 0.02]
+        add("R1", "컬럼 옆 온도 띠에 파랑 없음(예열 중) — 충전물과 같은 예열 정도 색(회색 → 노랑 → 주황). 사용자 11-20 '아직 컬럼이 파란색으로 나오는 게 있는데'", len(on) > 0 and not blue,
+            f"보이는 띠 {len(on)}/{len(v['sec'])}개 · 파란 띠 {len(blue)}개 · 색 " + ", ".join("#%02x%02x%02x" % tuple(round(x * 255) for x in c) for c in on), "보이는 띠 있음 · 파랑 0개")
+    v = g("v126 화면", "v6b")
+    if v and v.get("ag"):
+        a = v["ag"]; vol = a.get("vol") or {}
+        lin = lambda c: c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+        lum = lambda c: 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2])
+        stops = [(.114, .247, .722), (.122, .643, .788), (.373, .827, .541), (.949, .835, .267), (.941, .416, .165)]   # 액 온도 입체의 색 눈금(셰이더와 같은 값)
+        def ramp(t):
+            t = min(1, max(0, t)) * 4; i = min(3, int(t)); k = t - i; return tuple(stops[i][j] + (stops[i + 1][j] - stops[i][j]) * k for j in range(3))
+        ok = a["n"] >= 5 and a["tr"] and a["dw"] and vol.get("ord") is not None and a["ord"] is not None and a["ord"] > vol["ord"]; cr = None
+        if a.get("col") and vol.get("tHi") is not None:
+            liq = ramp((vol["Tm"] - vol["tLo"]) / max(1, vol["tHi"] - vol["tLo"])); l1, l2 = lum(liq), lum(a["col"]); cr = (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
+        add("R2", "교반기 축 · 날개가 액 온도 입체에 가려지지 않음(입체 뒤에 그림) · 뜨거운 액 색과 명도 대비 3 이상(재질 색 기준). 사용자 11-20 '교반기가 흐릿한 색이라 거의 안 보이네'", bool(ok and cr is not None and cr >= 3),
+            f"부품 {a['n']}개 · 그리는 순서 {a['ord']}(액 온도 입체 {vol.get('ord')}) · 외곽선 {a.get('hull')} · 재질 색 #" + ("%02x%02x%02x" % tuple(round(x * 255) for x in a["col"]) if a.get("col") else "-") + (f" · 액 {vol['Tm']:.1f} ℃ 색과 대비 {cr:.1f}" if cr is not None else " · 액 온도 입체 없음"), "5개 넘게 · 3.5 > 3 · 대비 ≥ 3")
+    v = g("v126 화면", "v7")
+    if v and v.get("more"):
+        m = v["more"]; num0 = lambda d: float(d[1:].split(" ")[0]) if d.startswith("M") else None
+        xs = [num0(x["d"]) for x in m["VS"] if x["d"]]; left = [x for x in xs if x < m["x0"] - 50]; right = [x for x in xs if x > m["x0"] + 50]
+        add("S1", "도면: 정제기 증기 점이 액면 전체에서 올라감(왼쪽 · 오른쪽 모두). 사용자 11-20 '너무 오른쪽에서만 기체가 올라가고'", len(xs) == 5 and len(left) >= 2 and len(right) >= 2 and all(x["on"] for x in m["VS"]),
+            f"증기 줄 {len(xs)}개 · 축 왼쪽 {len(left)} · 오른쪽 {len(right)} · 켜짐 {sum(x['on'] for x in m['VS'])}", "5줄 · 왼쪽 2 넘게 · 오른쪽 2 넘게 · 모두 켜짐")
+        want = bool(m["boil"] and (m["onRD"] or m["back"] > 0.02)); okL = all(len(m[k]) >= 1 and all(bool(x["on"]) == want and x["d"] for x in m[k]) for k in ("LC", "LN", "LS")) and len(m["LC"]) == 2
+        add("S2", "도면: 컬럼 안 · 목관 · 정제기 위 공간으로 내려오는 액 점(환류 + 컬럼에서 응축한 몫) — 3D 목관 줄기와 같은 판정. 사용자 11-20 '컬럼에서 그냥 식어서 내려오는 건 표현 안 된 거 같네'", want and okL and all(x["on"] for x in m["CE"]),
+            f"판정(끓음 {m['boil']} · 환류가 헤더에 닿음 {m['onRD']} · 컬럼 응축 몫 {m['back'] * 100:.1f} %) = {want} · 컬럼 안 {sum(x['on'] for x in m['LC'])}/{len(m['LC'])}줄 · 목관 {sum(x['on'] for x in m['LN'])} · 정제기 위 {sum(x['on'] for x in m['LS'])} · 응축기 관 안 {sum(x['on'] for x in m['CE'])}", "모두 켜짐")
+        ld = m.get("ld"); okLd = ld is not None and m["cap1"] > 0 and abs(ld - 100 * m["Qv1"] / m["cap1"]) < 1e-6 and (m.get("ldTxt") or "").endswith("%")
+        d1 = g("합침 첫 화면", "m1"); has3 = bool(d1 and "E-H071 응축 부하(계산)" in d1["tags"])
+        add("S5", "1차 응축기 부하율(응축 능력 대비 %) 값 상자: 3D · 도면. 사용자 11-20 '케파 대비 %도 나올 수 있나? 몇 퍼센트 이상이면 2차로'", bool(okLd and has3),
+            (f"부하 {ld:.2f} % = 응축 열 {m['Qv1'] / 1000:.2f} kW ÷ 응축 능력 {m['cap1'] / 1000:.1f} kW · 도면 '{m.get('ldTxt')}' · 3D 값 상자 {'있음' if has3 else '없음'} · 지금 2차로 가는 몫 {(1 - m['c1']) * 100:.3f} %" if ld is not None else "값 없음"), "값 = 응축 열 ÷ 능력 · 두 화면에 있음")
+        add("S6", "도면: 정제기 액 색 = 온도 색(3D와 같은 눈금) · U자 액봉에 찬 액 표시", bool(m.get("liqC")) and m["sealOn"] == (m["holdC"] > 0 and m["sealM"] >= m["holdC"] * 0.999) and m["sealOn"],
+            f"액 색 {m.get('liqC')}({m['Tm']:.1f} ℃) · U자 표시 {m['sealOn']}(실 루프 {m['sealM']:.2f} / {m['holdC']:.2f} kg)", "색 있음 · U자 표시 켜짐")
+    u0, u1, u2 = g("v128 U자 액봉", "us0"), g("v128 U자 액봉", "us1"), g("v128 U자 액봉", "us2")
+    if u0 and u1 and u2:
+        us = u1.get("us") or {}; okHold = bool(us) and abs(u1["head"] - us["s1"]) < 1e-3 and abs(u1["tail"] - us["s0"]) < 1e-3 and u1["held"] and not u1["want"] and not u1["R"]
+        add("S3", "환류 U자 액봉: 환류 밸브를 닫아도 U자 세 토막(내려감 · 바닥 · 올라감)은 찬 채로, 실 루프 무게 유지, 다시 열면 흐름 표시가 돌아옴. 사용자 11-20 '정제 밸브를 닫으면 U관에 액이 차 있나? 이런 것도 구현되어 있나?'",
+            okHold and abs(u1["seal"] - u1["holdC"]) < 1e-6 and u1["mHeldC"] >= u1["seal"] - 1e-6 and u2["want"] and not u2["held"] and abs(u2["head"] - u2["L"]) < 1e-3 and u2["tail"] < 1e-6,
+            f"닫기 전 환류 {u0['Rkg']:.1f} kg/h · 닫은 뒤 찬 구간 {u1['tail']:.3f}~{u1['head']:.3f} m(U자 {us.get('s0', 0):.3f}~{us.get('s1', 0):.3f} m, 관 전체 {u1['L']:.3f} m) · 실 루프 {u1['seal']:.2f} kg · 다시 연 뒤 {u2['tail']:.3f}~{u2['head']:.3f} m · 갇힘 표시 {u2['held']}", "U자 구간만 참 · 0.55 kg 유지 · 다시 흐름")
+    en = g("합침 배치 끝", "end")
+    if en:
+        res = en["m0"] - en["fore"] - en["main"] - en["m"]
+        add("S4", "배치 끝: 환류 U자 액봉에 든 액(0.55 kg)은 관에 남고 정제기로 흘러내리지 않음(물질 수지: 투입 = 초류 + 본류 + 정제기 + U자)", abs(res - 0.55) < 0.05 and "U자 액봉" in en["why"],
+            f"투입 {en['m0']:.1f} − 초류 {en['fore']:.2f} − 본류 {en['main']:.2f} − 정제기 {en['m']:.2f} = {res:.2f} kg · 끝 글에 'U자 액봉' {'있음' if 'U자 액봉' in en['why'] else '없음'}", "0.55 ± 0.05 kg · 글 있음")
     e = g("v126 화면", "geo")
+    if e and e.get("packY0") is not None:
+        neck = e["colBase"] - e["yNz"]; col = e["colTop"] - e["colBase"]; keep = abs(e["colTop"] - 2.492) < 1e-3 and abs(e["yDish"] - 2.352) < 1e-3 and abs(e["tankTop"] - 0.876) < 1e-3 and abs(e["yValve"] - 1.226) < 1e-3
+        hd = e["packY1"] - e["packY0"]
+        add("R4", "그림의 충전층 구간을 길게(구간 6칸이 구분되게) — 실제 높이는 계산에만. 사용자 11-20 '128도 컬럼이 너무 작은데? 패킹 있는 구간 말야 · 단을 나누기에 너무 짧음 · 이미지만 수정, 실제 사이즈는 계산으로'",
+            hd >= 0.6 and hd >= 2 * e["Hpack"] and abs(e["Hpack"] - 0.3) < 1e-9 and abs(e["yDish"] - e["packY1"] - 0.112) < 1e-3,
+            f"그림 충전층 {hd:.3f} m(구간 하나 {hd / 6 * 1000:.0f} mm) · 계산에 쓰는 충전 높이 {e['Hpack']:.2f} m · 분배 헤더는 충전층 위 {(e['yDish'] - e['packY1']) * 1000:.0f} mm", "그림 ≥ 0.6 m · 계산 0.30 m 그대로")
+        add("R3", "컬럼을 크게 · 목관을 짧게(그림 배치): 컬럼 몸통 ÷ 목관 ≥ 2, 목관은 0.3 m 넘게(요구 C8 · 모터 위 간격), 충전층은 컬럼 바닥에, 컬럼 꼭대기 · 분배 헤더 · 회수 탱크는 v127 자리(유출 티만 0.14 m 위 — P11). 사용자 11-20 '컬럼이 너무 작게 표현 · 사이 배관이 너무 긴데'",
+            col / neck >= 2 and 0.3 < neck < 0.5 and abs(e["packY0"] - e["colBase"] - 0.042) < 1e-3 and keep,
+            f"컬럼 몸통 {col:.3f} m · 목관 {neck:.3f} m(비 {col / neck:.2f}, v127은 0.594 · 0.779 = 0.76) · 충전층 {e['packY0']:.3f}~{e['packY1']:.3f} · 꼭대기 {e['colTop']:.3f} · 헤더 {e['yDish']:.3f} · 본류 탱크 꼭대기 {e['tankTop']:.3f} · 유출 티 {e['yValve']:.3f}", "비 ≥ 2 · 목관 0.3~0.5 m · 제자리")
     if e:
         add("P12", "정제기 몸통 직관부 = P&ID 800 mm(위 접선 = 아래 경판 + 800, 0.40 m³와 맞음)", abs(e["Hs"] - e["hh"] - 0.8) < 1e-6 and abs(e["topY"] - e["Hs"] - 0.175) < 1e-6,
             f"아래 경판 {e['hh']:.3f} · 위 접선 {e['Hs']:.3f} · 꼭지점 {e['topY']:.3f} m(직관부 {e['Hs'] - e['hh']:.3f})", "직관부 0.800")
     v = g("v126 화면", "v6b")
     if v and v.get("mv"):
         m = v["mv"]; a = m["lo"] - m["tankTop"]; b = m["tee"] - m["hi"]
-        add("P11", "본류 탱크 위 밸브(XV-H077)가 탱크 경판 · 티에 붙지 않음(사용자 11-19 '너무 붙어 있는데?')", a > 0.02 and b > 0.0,
-            f"밸브 아래 끝 ~ 탱크 꼭대기 {a * 1000:.0f} mm · 밸브 위 끝 ~ 티 {b * 1000:.0f} mm", "아래 20 mm 넘게 · 위 0 넘게 떨어짐")
+        add("P11", "본류 탱크 위 밸브(XV-H077)가 탱크 경판 · 티에 붙지 않음(사용자 11-19 '너무 붙어 있는데?' · 11-20 '밸브가 너무 탱크 상부랑 붙어 있는데' — v128: 기준 20 mm → 80 mm)", a > 0.08 and b > 0.08,
+            f"밸브 아래 끝 ~ 탱크 꼭대기 {a * 1000:.0f} mm · 밸브 위 끝 ~ 티 {b * 1000:.0f} mm", "아래 · 위 모두 80 mm 넘게")
     d = g("합침 첫 화면", "m1")
     if d:
         ip = d["inp"]; okI = abs(float(ip["Lpipe"]) - 4.7) < 1e-9 and abs(float(ip["nElb"]) - 2) < 1e-9 and abs(float(ip["holdC"]) - 0.55) < 1e-9
