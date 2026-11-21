@@ -58,10 +58,14 @@ def use_html(u):
     return (f'<p><i>계산</i><span>{esc(u["calc"])}</span></p><p><i>운전</i><span>{esc(u["plant"])}</span></p>'
             + (f'<p class="ex"><i>적용 예</i><span>{esc(u["ex"])}</span></p>' if u.get("ex") else ""))
 
+def flow_btn(k):
+    """그 식을 계산값 흐름도에서 고른 상태로 여는 단추(필요한 이유 · 들어오는 값 · 쓰이는 곳 · DB 대조 결과가 흐름도 아래 칸에 나온다)."""
+    return f'<button class="lnk tofl" data-to="flow" data-flow="{k}">값의 흐름 보기</button>'
+
 def tcard(i, f):
     """핵심 계산 한 항목: 산출값 → 용도 → 식의 요지 → 계산값. 시뮬레이터의 계산식은 접어 둔다."""
     u = f["use"]; eqs = [f["eq"]] if isinstance(f["eq"], str) else f["eq"]
-    return (f'<article class="tcard" data-f="{f["k"]}"><header><span class="n">{i}</span><h4>{esc(f["name"])}</h4><span class="law">{esc(f["law"])}</span></header><dl>'
+    return (f'<article class="tcard" data-f="{f["k"]}"><header><span class="n">{i}</span><h4>{esc(f["name"])}</h4><span class="law">{esc(f["law"])}</span>{flow_btn(f["k"])}</header><dl>'
             f'<dt>산출값</dt><dd class="gets">{esc(f["gets"])}</dd>'
             f'<dt>용도</dt><dd class="use">{use_html(u)}</dd>'
             f'<dt>식의 요지</dt><dd class="simp">{eq_html(u["simple"])}' + (f'<span class="rd">{esc(u["read"])}</span>' if u.get("read") else "") + "</dd>"
@@ -73,7 +77,7 @@ def tcard(i, f):
 def sub_table(nd):
     rows = [(i + 1, f) for i, f in enumerate(nd["formulas"]) if f["use"]["sub"]]
     if not rows: return ""
-    tr = "".join(f'<tr data-f="{f["k"]}"><td class="m">{i}</td><td><b>{esc(f["name"])}</b></td><td>{esc(f["gets"])}</td><td>{esc(f["use"]["calc"])} {esc(f["use"]["plant"])}'
+    tr = "".join(f'<tr data-f="{f["k"]}"><td class="m">{i}</td><td><b>{esc(f["name"])}</b><br>{flow_btn(f["k"])}</td><td>{esc(f["gets"])}</td><td>{esc(f["use"]["calc"])} {esc(f["use"]["plant"])}'
                  + (f' <span class="exs">적용 예: {esc(f["use"]["ex"])}</span>' if f["use"].get("ex") else "") + f'</td><td>{eq_html(f["use"]["simple"])}</td><td class="m">{esc(f["val"])}</td></tr>' for i, f in rows)
     return ('<h3>보조 계산 <small>핵심 계산의 입력을 만들거나 결과를 설명하는 식</small></h3><div class="tw"><table class="subt"><tr><th></th><th>이름</th><th>산출값</th><th>용도</th><th>식의 요지</th><th>계산값</th></tr>'
             + tr + "</table></div>")
@@ -105,7 +109,8 @@ def compare():
     return ('<section class="ch" id="cmp"><div class="sh"><h2>계산값과 현장값</h2>' f'<span class="tag">현장값은 DB {len(V["배치"])}배치({esc(V["기간"])})의 구간 평균</span></div>'
             f'<div class="blk"><div class="tw"><table class="cmp"><tr><th></th><th>DB 6배치</th><th>계산 {esc(VER)}</th><th>시험 계산</th><th>차이의 원인</th></tr>{crow}</table></div>'
             f'<p class="small">{esc(DB결과.short_text(D, VER))}</p>'
-            f'<p class="small">시험 계산은 시뮬레이터에 증기압식의 상수 A만 {db["A_use"]:.2f}로 바꿔 넣고 같은 레시피로 한 배치를 돌린 결과다. 표의 배관 출구 온도는 증기 배관 출구 압력의 포화 온도다. 상수를 구한 근거와 DB로 정하지 못한 항목은 발표자료의 \'DB 6배치 분석 결과\' 화면에 있다.</p></div></section>')
+            f'<p class="small">시험 계산은 시뮬레이터에 증기압식의 상수 A만 {db["A_use"]:.2f}로 바꿔 넣고 같은 레시피로 한 배치를 돌린 결과다. 표의 배관 출구 온도는 증기 배관 출구 압력의 포화 온도다. 상수를 구한 근거와 DB로 정하지 못한 항목은 발표자료의 \'DB 6배치 분석 결과\' 화면에 있다.</p>'
+            '<p class="small">DB 기록이 어느 식을 확인하거나 바로잡는 데 쓰였는지는 <button class="lnk" data-to="flow" data-dbgo="*">계산값 흐름도의 DB 6배치 기록</button>에 식마다 표시했다.</p></div></section>')
 
 def how():
     cells = [("산출값", "그 식으로 구하는 값이다."),
@@ -123,14 +128,17 @@ FLOW_SVG, FLOW_DATA = 흐름도.build(D, NODES)
 _bad = 흐름도.check_words(NODES); assert not _bad, ("용도의 '계산' 글과 흐름도의 선이 다르다", _bad)
 
 def flow():
-    nl = len(FLOW_DATA["l"]); nmain = sum(1 for l in FLOW_DATA["l"] if l[3] != "aux")
-    return ('<section class="ch" id="flow"><div class="sh"><h2>계산값 흐름도</h2>' f'<span class="tag">공식 {NFOR}개 · 값이 넘어가는 경로 {nl}개</span></div>'
+    nl = len(FLOW_DATA["l"]); nmain = sum(1 for l in FLOW_DATA["l"] if l[3] != "aux"); ndb = sum(len(x["t"]) for x in FLOW_DATA["db"]["src"])
+    return ('<section class="ch" id="flow"><div class="sh"><h2>계산값 흐름도</h2>' f'<span class="tag">공식 {NFOR}개 · 값이 넘어가는 경로 {nl}개 · DB 기록이 쓰인 곳 {ndb}개</span></div>'
             '<p class="say">공식마다 구한 값이 어느 계산의 입력이 되는지를 한 장에 그렸다. 열과 증기 · 액의 양은 왼쪽에서 오른쪽으로(스팀 → 정제기 → 응축기 → 회수 탱크), '
-            '압력은 오른쪽에서 왼쪽으로(진공펌프 → 증기 배관 → 정제기) 넘어가 정제기의 진공 비등 평형(2-4)에서 만난다. 상자를 누르면 그 값이 어디에서 와서 어디에 쓰이는지 그림과 아래 칸에 표시한다.</p>'
+            '압력은 오른쪽에서 왼쪽으로(진공펌프 → 증기 배관 → 정제기) 넘어가 정제기의 진공 비등 평형(2-4)에서 만난다. '
+            '아래 줄의 DB 6배치 기록은 현장 기록이 어느 식을 확인하거나 바로잡는 데 쓰였는지를 나타낸다. 식 상자나 기록 상자를 누르면 그림과 아래 칸에 내용을 표시한다.</p>'
             f'<figure><div class="swipe">그림은 좌우로 스크롤</div><div class="scroll">{FLOW_SVG}</div></figure>'
-            '<div class="blk flp" id="flow-p" aria-live="polite"><p class="small">상자의 번호는 구간 번호-식 번호로, 각 구간의 핵심 계산 · 보조 계산의 번호와 같다. 위쪽의 구간 이름을 누르면 그 구간으로 이동한다. '
+            '<div class="blk flp" id="flow-p" aria-live="polite"><p class="small">식 상자를 누르면 그 계산이 필요한 이유, 들어오는 값, 구한 값이 쓰이는 곳, DB 6배치와 대조한 결과를 표시한다. '
+            '값을 주는 식은 파란색, 그 값을 받아 쓰는 식은 주황색 테두리로 표시하고, 서로 값을 주고받는 식(피드백 루프)은 검정 점선 테두리로 표시한다. '
+            '상자의 번호는 구간 번호-식 번호로, 각 구간의 핵심 계산 · 보조 계산의 번호와 같다. 위쪽의 구간 이름을 누르면 그 구간으로 이동한다. '
             f'항상 표시되는 선은 {nmain}개(주 경로와, 바로 옆 식에 들어가는 보조 입력)이고, 멀리 떨어진 보조 입력 {nl - nmain}개는 상자를 누르면 점선으로 나타난다. '
-            '상자를 누르면 값을 주는 식은 초록색, 그 값을 받아 쓰는 식은 주황색 테두리로 표시한다. 서로 값을 주고받는 식(피드백 루프)은 검정 점선 테두리로 표시한다.</p></div></section>')
+            '기록 상자를 누르면 그 기록이 쓰인 식을 선과 테두리로 표시한다. 선의 색은 대조 결과를 나타낸다(초록색: 보정값 산출 · 보정 영향 · 확인, 황색: 일부 확인 · 차이 확인, 회색 점선: 확인 불가).</p></div></section>')
 
 def terms():
     gl = "".join(f"<tr><td><b>{esc(a)}</b></td><td>{esc(b)}</td></tr>" for a, b in GLOSS)
@@ -179,16 +187,40 @@ figure #fig-flow { min-width:1080px }
 .fl-lab { font:700 10.5px var(--f-body); paint-order:stroke; stroke:var(--panel); stroke-width:4px; stroke-linejoin:round } .fl-lab-heat { fill:var(--heat) } .fl-lab-mass { fill:var(--liq) } .fl-lab-pres { fill:var(--vac) } .fl-lab-ctrl { fill:var(--ink) }
 .fl-lg { fill:var(--sub); font:500 11.5px var(--f-body) }
 #fig-flow.sel .fl-b { opacity:.3 } #fig-flow.sel .fl-b.on, #fig-flow.sel .fl-b.in, #fig-flow.sel .fl-b.out { opacity:1 }
-#fig-flow.sel .fl-b.on rect { fill:var(--acc-soft); stroke:var(--ink); stroke-width:2.4 } #fig-flow.sel .fl-b.in rect { stroke:var(--db); stroke-width:2.2 } #fig-flow.sel .fl-b.out rect { stroke:var(--ng); stroke-width:2.2 }
+#fig-flow.sel .fl-b.on rect { fill:var(--acc-soft); stroke:var(--ink); stroke-width:2.4 } #fig-flow.sel .fl-b.in rect { stroke:var(--liq); stroke-width:2.2 } #fig-flow.sel .fl-b.out rect { stroke:var(--ng); stroke-width:2.2 }
 #fig-flow.sel .fl-b.in.out rect { stroke:var(--ink); stroke-width:2.2; stroke-dasharray:6 3 }
 #fig-flow.sel .fl-e[data-s] { opacity:.1 } #fig-flow.sel .fl-e.hit { opacity:1; stroke-width:2.6; display:inline } #fig-flow.sel .fl-lab { opacity:.12 } #fig-flow.sel .fl-lab.hit { opacity:1 }
 .flp { display:grid; gap:9px } .flp p { margin:0 } .flp .flh { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px } .flp .fid, .fchip span { font:700 12px var(--f-mono); color:var(--acc) } .flp .flh b { font-size:16px } .flp .sec { font-size:12.5px; color:var(--sub); margin-right:auto }
-.fdl { margin:0; display:grid; grid-template-columns:54px minmax(0, 1fr); gap:5px 10px; font-size:13.5px } .fdl dt { font-size:12px; font-weight:700; color:var(--sub); padding-top:1px } .fdl dd { margin:0; min-width:0 } .fdl .m { color:var(--acc); font-size:13px }
+.fdl { margin:0; display:grid; grid-template-columns:72px minmax(0, 1fr); gap:5px 10px; font-size:13.5px } .fdl dt { font-size:12px; font-weight:700; color:var(--sub); padding-top:1px } .fdl dd { margin:0; min-width:0 } .fdl .m { color:var(--acc); font-size:13px }
 .fio { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:14px } @media (max-width:760px) { .fio { grid-template-columns:1fr } }
-.fio h4 { margin:0 0 5px; font-size:13.5px } .fio h4 small { color:var(--sub); font-weight:500 } .fio > div:first-child h4 { color:var(--db) } .fio > div:last-child h4 { color:var(--ng) }
+.fio h4 { margin:0 0 5px; font-size:13.5px } .fio h4 small { color:var(--sub); font-weight:500 } .fio > div:first-child h4 { color:var(--liq) } .fio > div:last-child h4 { color:var(--ng) }
 .fio ul { list-style:none; margin:0; padding:0; display:grid; gap:5px } .fio li { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:13px } .fio li em { font-style:normal; font-size:11.5px; color:var(--sub); border:1px solid var(--line); border-radius:999px; padding:0 7px } .fio li.none { color:var(--sub) }
 .fchip { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:var(--panel); border-radius:999px; padding:1px 10px 1px 8px; font-size:13px; cursor:pointer; color:var(--ink) } .fchip:hover { border-color:var(--ink) }
 .tcard.flash, tr.flash { outline:2px solid var(--acc); outline-offset:2px }
+/* 흐름도: DB 6배치 기록 줄 · 식 상자의 대조 표시 · 고른 상자의 설명 칸 */
+.tcard .tofl { margin-left:auto; font-size:12px } .subt .tofl { font-size:11.5px }
+.fl-dband { fill:var(--db-soft); opacity:.6 }
+.fl-de { fill:none; stroke:var(--db); stroke-width:1.9; display:none } .fl-de.hit { display:inline } .fl-m-db { fill:var(--db) }
+.fl-dbb, .fl-dball { cursor:pointer } .fl-dbb rect { fill:var(--panel); stroke:var(--db); stroke-width:1.3 } .fl-dbb:hover rect { stroke-width:2.2 } .fl-dbb:focus, .fl-dball:focus { outline:none } .fl-dbb:focus-visible rect { stroke-width:2.6 }
+.fl-dbb.on rect { fill:var(--db-soft); stroke-width:2.4 }
+.fl-dn { fill:var(--ink); font:700 11.5px var(--f-body) } .fl-dt { fill:var(--db); font:600 9px var(--f-mono) } .fl-dv { fill:var(--sub); font:500 10px var(--f-body) } .fl-dtt { fill:var(--db); font:700 13px var(--f-body) }
+.fl-dball rect { fill:var(--db) } .fl-dball text { fill:var(--panel); font:700 10.5px var(--f-body) } .fl-dball:hover rect, .fl-dball.on rect { fill:var(--ink) } .fl-dball:focus-visible rect { stroke:var(--ink); stroke-width:2 }
+.fl-bd-cal { fill:var(--db) } .fl-bd-eff { fill:var(--panel); stroke:var(--db); stroke-width:1.8 } .fl-bd-ok { fill:var(--db) } .fl-bd-part circle { fill:var(--panel); stroke:var(--est); stroke-width:1.6 } .fl-bd-part path { fill:var(--est) } .fl-bd-no { fill:var(--panel); stroke:var(--sub); stroke-width:1.4 }
+.fl-lgb { font-weight:700; fill:var(--ink) }
+#fig-flow.sel .fl-dbb { opacity:.35 } #fig-flow.sel .fl-dbb.on, #fig-flow.sel .fl-dbb.hit { opacity:1 } #fig-flow.sel .fl-dbb.hit rect { stroke-width:2.4 }
+#fig-flow.sel .fl-b.dbt { opacity:1 } #fig-flow.sel .fl-b.dbt rect { stroke:var(--db); stroke-width:2.2 }
+#fig-flow.sel .fl-b.dbt.s-part rect, #fig-flow.sel .fl-b.dbt.s-gap rect { stroke:var(--est) } #fig-flow.sel .fl-b.dbt.s-no rect { stroke:var(--sub); stroke-dasharray:5 3 }
+.fl-de-part, .fl-de-gap { stroke:var(--est) } .fl-de-no { stroke:var(--sub); stroke-dasharray:4 3 } .fl-m-dbp { fill:var(--est) } .fl-m-dbn { fill:var(--sub) }
+.dst { display:inline-block; font-size:11.5px; font-weight:700; line-height:1.5; border-radius:999px; padding:0 8px; border:1px solid var(--line); white-space:nowrap }
+.dst-cal { background:var(--db); border-color:var(--db); color:var(--panel) } .dst-eff { background:var(--db-soft); border-color:var(--db); color:var(--db) } .dst-ok { border-color:var(--db); color:var(--db) }
+.dst-part, .dst-gap { background:var(--est-soft); border-color:var(--est); color:var(--est) } .dst-no { color:var(--sub) }
+.fchip.dchip { border-color:var(--db) } .fchip.dchip span, .flp .dbid { color:var(--db) }
+.fdl .fdb { display:grid; gap:7px } .fdl .fdb p { margin:0; display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px } .fdl .fdb .tx { flex:1 1 100% } .fdl .fdb .none { color:var(--sub) }
+.fio ul { gap:9px } .fio li, .fdbt li, .fdbl li { display:grid; gap:3px; align-items:start } .r1, .r2 { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px }
+.fio li p, .fdbt li p, .fdbl li p { margin:0; font-size:13px; color:var(--sub) } .fio li b { font-size:13px; font-weight:600 }
+.fdbt h4, .fdbs h4 { margin:0 0 2px; font-size:14px; color:var(--db) } .fdbt h4 small { color:var(--sub); font-weight:500 } .fdbt ul, .fdbl { list-style:none; margin:0; padding:0; display:grid; gap:10px }
+.fdbs { display:grid; gap:8px; border-top:1px solid var(--line); padding-top:11px } .fdbs p { font-size:13.5px } .fdbs .cnt { color:var(--sub); font-size:13px; display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px }
+.fdbl .tg { font:600 11.5px var(--f-mono); color:var(--db) } .fdbl .pair { display:inline-flex; align-items:center; gap:4px } .fdbl li, .fdbt li { border-left:3px solid var(--db); padding-left:10px }
 figure.plain { border:0; padding:0; background:transparent } figure.plain svg { min-width:480px } table.cmp td.m { white-space:nowrap }
 """
 
@@ -203,41 +235,87 @@ JS = r"""
   var h=(location.hash||'').slice(1); if(h) setTimeout(function(){ to(h) }, 60);
 })();
 (function(){
-  /* 계산값 흐름도: 상자를 누르면 들어오는 값 · 쓰이는 곳을 그림과 아래 칸에 표시한다 */
+  /* 계산값 흐름도: 식 상자를 누르면 필요한 이유 · 들어오는 값 · 쓰이는 곳 · DB 대조 결과를, 기록 상자를 누르면 그 기록이 쓰인 식을 그림과 아래 칸에 표시한다 */
   var svg=document.getElementById('fig-flow'), P=document.getElementById('flow-p'), F=window.FLOW; if(!svg||!P||!F) return;
-  var home=P.innerHTML, cur=null;
+  var DB=F.db, cur=null, curDb=null;
   var boxes=[].slice.call(svg.querySelectorAll('.fl-b')), edges=[].slice.call(svg.querySelectorAll('.fl-e[data-s]')), labs=[].slice.call(svg.querySelectorAll('.fl-lab'));
+  var dboxes=[].slice.call(svg.querySelectorAll('.fl-dbb')), dlines=[].slice.call(svg.querySelectorAll('.fl-de')), dall=svg.querySelector('.fl-dball');
+  var SRC={}, BYF={};
+  DB.src.forEach(function(s){ SRC[s.k]=s; s.t.forEach(function(t){ (BYF[t[0]]=BYF[t[0]]||[]).push([s.k, t[1], t[2]]) }) });
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c] }) }
   function chip(k){ var n=F.n[k]; return '<button class="fchip" data-pick="'+k+'"><span>'+n.id+'</span>'+esc(n.name)+'</button>' }
-  function show(k){
-    cur=k||null; svg.classList.toggle('sel', !!cur);
-    var ins={}, outs={};
-    if(cur) F.l.forEach(function(l){ if(l[1]===cur) ins[l[0]]=l; if(l[0]===cur) outs[l[1]]=l });
-    boxes.forEach(function(b){ var q=b.getAttribute('data-k'); b.classList.toggle('on', q===cur); b.classList.toggle('in', !!ins[q]); b.classList.toggle('out', !!outs[q]); b.setAttribute('aria-pressed', q===cur ? 'true' : 'false') });
+  function dchip(k){ return '<button class="fchip dchip" data-dbpick="'+k+'"><span>DB</span>'+esc(SRC[k].name)+'</button>' }
+  function stc(st){ return '<span class="dst dst-'+st+'" title="'+esc(DB.note[st])+'">'+esc(DB.st[st])+'</span>' }
+  function summary(){
+    var parts=[]; Object.keys(DB.st).forEach(function(st){ if(DB.cnt[st]) parts.push('<span>'+stc(st)+' '+DB.cnt[st]+'개</span>') });
+    var rows=DB.src.map(function(s){
+      return '<li><div class="r1">'+dchip(s.k)+'<span class="tg">'+esc(s.tags)+'</span></div><p>'+esc(s.how)+'</p><div class="r2">'
+        +s.t.map(function(t){ return '<span class="pair">'+chip(t[0])+stc(t[1])+'</span>' }).join('')+'</div></li>' }).join('');
+    return '<div class="fdbs"><h4>DB 6배치 기록이 쓰인 곳</h4><p>'+esc(DB.lead)+'</p><p class="cnt"><span>식 '+Object.keys(F.n).length+'개의 대조 결과</span>'+parts.join('')
+      +'<span>대조하지 않은 식 '+DB.none+'개</span></p><ul class="fdbl">'+rows+'</ul></div>';
+  }
+  var home=P.innerHTML+summary(); P.innerHTML=home;
+  function panelF(k, ins, outs){
+    var n=F.n[k], ki=Object.keys(ins), ko=Object.keys(outs), d=BYF[k]||[];
+    var li=function(l, other){ var h=F.how[l[0]+'>'+l[1]]||''; return '<li><div class="r1">'+chip(other)+'<b>'+esc(l[2])+'</b><em>'+esc(F.kind[l[3]])+'</em></div>'+(h ? '<p>'+esc(h)+'</p>' : '')+'</li>' };
+    var dbh=d.length ? d.map(function(e){ return '<p>'+stc(e[1])+dchip(e[0])+'<span class="tx">'+esc(e[2])+'</span></p>' }).join('')
+      : '<p class="none">DB 6배치 기록 가운데 이 식과 직접 대조한 것은 없다.</p>';
+    return '<div class="flh"><span class="fid">'+n.id+'</span><b>'+esc(n.name)+'</b><span class="sec">'+esc(n.sec)+(n.sub ? ' · 보조 계산' : '')+(n.law ? ' · '+esc(n.law) : '')+'</span>'
+      +'<button class="lnk" data-card="'+k+'">이 계산의 설명 보기</button><button class="lnk" data-pick="">선택 해제</button></div>'
+      +'<dl class="fdl"><dt>필요한 이유</dt><dd>'+esc(n.why)+'</dd><dt>산출값</dt><dd>'+esc(n.gets)+'</dd><dt>계산값</dt><dd class="m">'+esc(n.val)+'</dd>'
+      +'<dt>계산에서</dt><dd>'+esc(n.calc)+'</dd><dt>운전에서</dt><dd>'+esc(n.plant)+'</dd><dt>DB 6배치</dt><dd class="fdb">'+dbh+'</dd></dl>'
+      +'<div class="fio"><div><h4>들어오는 값 <small>'+ki.length+'개</small></h4><ul>'+(ki.map(function(q){ return li(ins[q], q) }).join('') || '<li class="none">다른 식에서 받는 값이 없다. 입력값과 물성으로 계산한다.</li>')+'</ul></div>'
+      +'<div><h4>구한 값이 쓰이는 곳 <small>'+ko.length+'개</small></h4><ul>'+(ko.map(function(q){ return li(outs[q], q) }).join('') || '<li class="none">다른 식의 입력으로 쓰이지 않는다. 결과를 확인하거나 해석하는 값이다.</li>')+'</ul></div></div>';
+  }
+  function panelD(k){
+    var s=SRC[k];
+    return '<div class="flh"><span class="fid dbid">DB</span><b>'+esc(s.name)+'</b><span class="sec">'+esc(s.tags)+' · DB '+DB.nb+'배치('+esc(DB.period)+')</span>'
+      +'<button class="lnk" data-dbpick="*">기록 전체 보기</button><button class="lnk" data-pick="">선택 해제</button></div>'
+      +'<dl class="fdl"><dt>기록</dt><dd>'+esc(s.what)+'</dd><dt>쓴 방법</dt><dd>'+esc(s.how)+'</dd></dl>'
+      +'<div class="fdbt"><h4>'+(k==='none' ? '대조하지 못한 식' : '이 기록이 쓰인 식')+' <small>'+s.t.length+'개</small></h4><ul>'
+      +s.t.map(function(t){ return '<li><div class="r1">'+chip(t[0])+stc(t[1])+'</div><p>'+esc(t[2])+'</p></li>' }).join('')+'</ul></div>';
+  }
+  function render(){
+    var ins={}, outs={}, tg={}, sc={};
+    svg.classList.toggle('sel', !!(cur||curDb)); svg.classList.toggle('dbm', !!curDb);
+    if(cur){ F.l.forEach(function(l){ if(l[1]===cur) ins[l[0]]=l; if(l[0]===cur) outs[l[1]]=l }); (BYF[cur]||[]).forEach(function(e){ sc[e[0]]=1 }) }
+    if(curDb) DB.src.forEach(function(s){ if(curDb==='*' || curDb===s.k) s.t.forEach(function(t){ tg[t[0]]=curDb==='*' ? DB.best[t[0]] : t[1] }) });
+    boxes.forEach(function(b){ var q=b.getAttribute('data-k'); b.classList.toggle('on', q===cur); b.classList.toggle('in', !!ins[q]); b.classList.toggle('out', !!outs[q]); b.classList.toggle('dbt', !!tg[q]); Object.keys(DB.st).forEach(function(st){ b.classList.toggle('s-'+st, tg[q]===st) }); b.setAttribute('aria-pressed', q===cur ? 'true' : 'false') });
     edges.forEach(function(e){ e.classList.toggle('hit', !!cur && (e.getAttribute('data-s')===cur || e.getAttribute('data-d')===cur)) });
     labs.forEach(function(t){ t.classList.toggle('hit', !!cur && (t.getAttribute('data-s')===cur || t.getAttribute('data-d')===cur)) });
-    if(!cur){ P.innerHTML=home; return }
-    var n=F.n[cur], li=function(l, other){ return '<li>'+chip(other)+'<span>'+esc(l[2])+'</span><em>'+esc(F.kind[l[3]])+'</em></li>' };
-    var ki=Object.keys(ins), ko=Object.keys(outs);
-    P.innerHTML='<div class="flh"><span class="fid">'+n.id+'</span><b>'+esc(n.name)+'</b><span class="sec">'+esc(n.sec)+(n.sub ? ' · 보조 계산' : '')+'</span><button class="lnk" data-card="'+cur+'">이 계산의 설명 보기</button><button class="lnk" data-pick="">선택 해제</button></div>'
-      +'<dl class="fdl"><dt>산출값</dt><dd>'+esc(n.gets)+'</dd><dt>계산값</dt><dd class="m">'+esc(n.val)+'</dd><dt>쓰임</dt><dd>'+esc(n.calc)+'</dd></dl>'
-      +'<div class="fio"><div><h4>들어오는 값 <small>'+ki.length+'개</small></h4><ul>'+(ki.map(function(q){ return li(ins[q], q) }).join('') || '<li class="none">다른 식에서 받는 값이 없다. 입력값과 물성으로 계산한다.</li>')+'</ul></div>'
-      +'<div><h4>쓰이는 곳 <small>'+ko.length+'개</small></h4><ul>'+(ko.map(function(q){ return li(outs[q], q) }).join('') || '<li class="none">다른 식의 입력으로 쓰이지 않는다. 결과를 확인하거나 해석하는 값이다.</li>')+'</ul></div></div>';
+    dlines.forEach(function(e){ e.classList.toggle('hit', curDb==='*' || (!!curDb && e.getAttribute('data-db')===curDb) || (!!cur && e.getAttribute('data-f')===cur)) });
+    dboxes.forEach(function(b){ var q=b.getAttribute('data-db'), on=curDb==='*' || curDb===q; b.classList.toggle('on', on); b.classList.toggle('hit', !!sc[q]); b.setAttribute('aria-pressed', on ? 'true' : 'false') });
+    if(dall){ dall.classList.toggle('on', curDb==='*'); dall.setAttribute('aria-pressed', curDb==='*' ? 'true' : 'false') }
+    P.innerHTML = cur ? panelF(cur, ins, outs) : curDb==='*' ? '<p class="small"><button class="lnk" data-pick="">선택 해제</button></p>'+summary() : curDb ? panelD(curDb) : home;
   }
-  svg.addEventListener('click', function(ev){ var b=ev.target.closest('.fl-b'); if(b){ var k=b.getAttribute('data-k'); show(k===cur ? null : k); return } if(!ev.target.closest('.fl-h')) show(null) });
+  function show(k){ cur=k||null; curDb=null; render() }
+  function showDb(k){ curDb=k||null; cur=null; render() }
+  function pickAt(t){
+    var b=t.closest('.fl-b'); if(b){ var k=b.getAttribute('data-k'); show(k===cur ? null : k); return true }
+    var d=t.closest('.fl-dbb'); if(d){ var q=d.getAttribute('data-db'); showDb(q===curDb ? null : q); return true }
+    if(t.closest('.fl-dball')){ showDb(curDb==='*' ? null : '*'); return true }
+    return false;
+  }
+  svg.addEventListener('click', function(ev){ if(pickAt(ev.target)) return; if(!ev.target.closest('.fl-h')) show(null) });
   svg.addEventListener('keydown', function(ev){
     if(ev.key!=='Enter' && ev.key!==' ') return;
-    var b=ev.target.closest('.fl-b'); if(b){ ev.preventDefault(); var k=b.getAttribute('data-k'); show(k===cur ? null : k); return }
+    if(pickAt(ev.target)){ ev.preventDefault(); return }
     var hd=ev.target.closest('.fl-h'); if(hd){ ev.preventDefault(); hd.dispatchEvent(new MouseEvent('click', {bubbles:true})) }
   });
   P.addEventListener('click', function(ev){
     var p=ev.target.closest('[data-pick]'); if(p){ show(p.getAttribute('data-pick')); return }
+    var q=ev.target.closest('[data-dbpick]'); if(q){ showDb(q.getAttribute('data-dbpick')); return }
     var c=ev.target.closest('[data-card]'); if(!c) return;
     var k=c.getAttribute('data-card'), e=document.querySelector('.tcard[data-f="'+k+'"], tr[data-f="'+k+'"]'); if(!e) return;
     try{ e.scrollIntoView({block:'center'}) }catch(x){ e.scrollIntoView() }
     e.classList.add('flash'); setTimeout(function(){ e.classList.remove('flash') }, 1800);
   });
-  window.__flow=show;
+  /* 구간의 항목에서 '값의 흐름 보기', 계산값과 현장값에서 'DB 6배치 기록'을 누르면 흐름도로 가서 그 상자를 고른다(이동은 위의 data-to가 한다) */
+  document.addEventListener('click', function(ev){
+    var f=ev.target.closest('[data-flow]'); if(f){ show(f.getAttribute('data-flow')); return }
+    var g=ev.target.closest('[data-dbgo]'); if(g) showDb(g.getAttribute('data-dbgo'));
+  });
+  window.__flow=show; window.__flowDb=showDb;
 })();
 """
 

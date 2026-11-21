@@ -177,7 +177,51 @@ want9 = [rngs(DBV["본류"]["T"]), rngs(DBV["본류"]["Ttop"]), rngs(DBV["초류
 miss9 = [w for w in want9 if w not in cx]
 item("T9-1", "계산값과 현장값: DB 6배치 · 계산 · 시험 계산 · 차이의 원인 5칸 8줄, 숫자가 DB값.json · 점검 기록 · 시험 계산 기록과 같고 '기본값은 아직 변경하지 않았다'는 글이 있음",
      S["cmp"] == 8 and S["cmpx"]["cols"] == 5 and not miss9 and "기본값은 아직 변경하지 않았다" in S["cmpx"]["tx"], f"{S['cmp']}줄 · 숫자 {len(want9) - len(miss9)} / {len(want9)}" + (f" · 없음: {miss9}" if miss9 else ""))
-cons = [s for s in other + oth_d + oth_l + nvo + fqo + sum((x[1] for x in sc.values()), []) if not s.startswith("console: clean")]
+# ---------------------------------------------------------------- 흐름도의 DB 6배치 기록 줄(T10) · 고른 상자의 설명(T11)
+# 판정 기준은 여기에만 둔다: 화면의 상자 · 선 · 설명 칸을 세어 자료(window.FLOW)와 견주고, 글의 숫자는 기록(DB값.json · 시험 계산 기록 · 점검 기록)에서 따로 만들어 찾는다.
+DBD = FD.get("db") or {"src": [], "best": {}, "st": {}, "lead": ""}; SRCD = {x["k"]: x for x in DBD["src"]}; ndb = sum(len(x["t"]) for x in DBD["src"])
+FQ2 = ("(()=>{const s=document.getElementById('fig-flow'),p=document.getElementById('flow-p');const q=(c,r)=>[...(r||document).querySelectorAll(c)];const vis=e=>getComputedStyle(e).display!=='none';"
+       "const fl=q('.fio li:not(.none)',p);"
+       "return JSON.stringify({q2:1,sel:s.classList.contains('sel'),on:q('.fl-b.on',s).map(b=>b.getAttribute('data-k')),dbon:q('.fl-dbb.on',s).map(b=>b.getAttribute('data-db')),"
+       "dbb:q('.fl-dbb',s).map(b=>b.getAttribute('data-db')),de:q('.fl-de',s).length,dshown:q('.fl-de',s).filter(vis).length,bd:q('.fl-b',s).filter(b=>b.querySelector('.fl-bd')).map(b=>b.getAttribute('data-k')),"
+       "dbt:q('.fl-b.dbt',s).map(b=>b.getAttribute('data-k')),pli:q('.fdbt li',p).length,plip:q('.fdbt li',p).filter(l=>l.querySelector('p')&&l.querySelector('p').textContent.trim().length>20&&l.querySelector('.dst')).length,"
+       "dts:q('.fdl dt',p).map(e=>e.textContent.trim()),dds:q('.fdl dd',p).map(e=>e.textContent.trim().length),fdb:q('.fdl .fdb p',p).length,lin:fl.length,lip:fl.filter(l=>l.querySelector('p')&&l.querySelector('p').textContent.trim().length>8).length,"
+       "sum:q('.fdbs',p).length,rows:q('.fdbl > li',p).length,btn:q('[data-flow]').length,btnk:[...new Set(q('[data-flow]').map(b=>b.getAttribute('data-flow')))].length,"
+       "top:Math.round(s.getBoundingClientRect().top),vh:innerHeight})})()")
+fb = [["wait", 2000], ["click", ".tnav [data-to=flow]"], ["wait", 500], ["eval", FQ2], ["click", ".fl-dbb[data-db=vt]"], ["wait", 300], ["eval", FQ2], ["click", ".fl-dball"], ["wait", 300], ["eval", FQ2],
+      ["click", ".fl-dball"], ["wait", 300], ["eval", FQ2], ["click", ".fl-b[data-k=vboil]"], ["wait", 300], ["eval", FQ2], ["click", ".fl-b[data-k=agit]"], ["wait", 300], ["eval", FQ2],
+      ["scroll", ".tcard[data-f=choke] [data-flow]"], ["wait", 300], ["click", ".tcard[data-f=choke] [data-flow]"], ["wait", 600], ["eval", FQ2],
+      ["scroll", "#cmp [data-dbgo]"], ["wait", 300], ["click", "#cmp [data-dbgo]"], ["wait", 600], ["eval", FQ2]]
+f2, fbo = drive(fb, 1440); f2 = [d for d in f2 if d.get("q2")]
+g = lambda i: f2[i] if len(f2) > i else {}
+ok101 = (len(f2) == 8 and len(g(0)["dbb"]) == 7 and sorted(g(0)["dbb"]) == sorted(SRCD) and g(0)["de"] == ndb and ndb >= 20 and g(0)["dshown"] == 0 and sorted(g(0)["bd"]) == sorted(DBD["best"]) and g(0)["sum"] == 1 and g(0)["rows"] == 7)
+item("T10-1", "흐름도의 DB 6배치 기록 줄: 기록 묶음 상자 7 · 기록 → 식의 선 = 자료의 쓰임 수(고르기 전에는 숨김) · 대조 표시가 붙은 식 = 자료에서 DB와 대조한 식 · 아래 칸에 'DB 6배치 기록이 쓰인 곳' 요약(기록 묶음 7줄)",
+     ok101, f"기록 묶음 {len(g(0).get('dbb', []))} · 선 {g(0).get('de')}(자료 {ndb}, 보이는 것 {g(0).get('dshown')}) · 표시가 붙은 식 {len(g(0).get('bd', []))}(자료 {len(DBD['best'])}) · 요약 {g(0).get('rows')}줄" if f2 else "기록 없음")
+nvt = len(SRCD.get("vt", {}).get("t", []))
+ok102 = (len(f2) == 8 and g(1)["dbon"] == ["vt"] and g(1)["dshown"] == nvt and sorted(g(1)["dbt"]) == sorted(t[0] for t in SRCD["vt"]["t"]) and g(1)["pli"] == g(1)["plip"] == nvt and "쓴 방법" in g(1)["dts"]
+         and len(g(2)["dbon"]) == 7 and g(2)["dshown"] == ndb and sorted(g(2)["dbt"]) == sorted(DBD["best"]) and not g(3)["sel"] and g(3)["dshown"] == 0
+         and len(g(7)["dbon"]) == 7 and 0 <= g(7)["top"] <= g(7)["vh"])
+item("T10-2", "기록 상자를 누르면 그 기록이 쓰인 식이 자료와 같은 수로 표시되고(선 · 테두리 · 설명 칸의 줄마다 대조 결과와 글), '쓰인 곳 모두 보기'는 모든 선과 대조한 식 전부를 표시하며 다시 누르면 풀림. 계산값과 현장값의 'DB 6배치 기록'을 누르면 흐름도가 전체 보기로 열림",
+     ok102, f"증발량 · 내부 온도: 선 {g(1).get('dshown')} · 식 {len(g(1).get('dbt', []))} · 줄 {g(1).get('plip')} / {nvt} · 모두 보기: 선 {g(2).get('dshown')} / {ndb} · 식 {len(g(2).get('dbt', []))} / {len(DBD['best'])}" if len(f2) >= 3 else "기록 없음")
+DBV2 = json.loads((HERE / "DB값.json").read_text(encoding="utf-8")); TRL2 = json.loads((HERE / "시험계산_기록.json").read_text(encoding="utf-8")); DBF2 = json.loads((HERE / "DB_맞춤_결과.json").read_text(encoding="utf-8"))
+tn2 = TRL2["runs"][f"{DBF2['A_use']:.2f}"]["sum"]; tb2 = TRL2["runs"][TRL2["base"]]["sum"]; r2 = lambda v, d=1: f"{min(v):.{d}f}~{max(v):.{d}f}"
+dbtx = DBD.get("lead", "") + " " + " ".join(x["what"] + " " + x["how"] + " " + " ".join(t[2] for t in x["t"]) for x in DBD["src"])
+want10 = [f"{DBF2['A0']} → {DBF2['A_use']:.2f}", f"{END['Tmain']:.1f} → {tn2['Tmain']:.1f}", f"{END['Tfore']:.1f} → {tn2['Tfore']:.1f}", r2(DBV2["본류"]["T"]), r2(DBV2["초류"]["T"]), r2(DBV2["본류"]["Ttop"]), f"{tn2['Tex30']:.1f} ℃",
+          f"{tb2['m2_30']:.4f}", f"{tn2['m2_30']:.4f}", f"{tb2['t90']:.2f} h", r2(DBV2["본류_h"]), r2(DBV2["초류_h"]), f"{DBF2['P100_old']:.3f} → {DBF2['P100_new']:.3f}", f"{END['TjeMain']:.1f} → {tn2['TjMain']:.1f}", r2(DBV2["본류"]["Tbot"]),
+          f"{min(k for k in DBV2['FICH072_무게_적분_비'] if k is not None):.2f}~{max(k for k in DBV2['FICH072_무게_적분_비'] if k is not None):.2f}"]
+miss10 = [w for w in want10 if w not in dbtx]
+item("T10-3", "DB 글의 숫자가 기록과 같음(DB값.json · 시험 계산 기록 · 점검 기록에서 따로 만든 글 조각이 자료에 있음) · '시뮬레이터 기본값은 아직 변경하지 않았다'는 글이 있음",
+     not miss10 and "시뮬레이터 기본값은 아직 변경하지 않았" in DBD.get("lead", ""), f"{len(want10) - len(miss10)} / {len(want10)}" + (f" · 없음: {miss10}" if miss10 else ""))
+whys = [k for k in bk if len((FD["n"].get(k) or {}).get("why", "")) < 25]; howk = set((FD.get("how") or {}).keys()); wantk = {f"{l[0]}>{l[1]}" for l in FD["l"]}
+dts5 = ["필요한 이유", "산출값", "계산값", "계산에서", "운전에서", "DB 6배치"]
+ok111 = (not whys and howk == wantk and all(len(v) > 8 for v in (FD.get("how") or {}).values()) and len(f2) == 8
+         and g(4)["on"] == ["vboil"] and g(4)["dts"] == dts5 and all(n > 8 for n in g(4)["dds"]) and g(4)["lin"] == g(4)["lip"] == nin("vboil") + nout("vboil") and g(4)["fdb"] == sum(1 for x in DBD["src"] for t in x["t"] if t[0] == "vboil") >= 1
+         and g(4)["dshown"] == g(4)["fdb"] and g(5)["on"] == ["agit"] and g(5)["dts"] == dts5 and g(5)["fdb"] == 1 and g(5)["dshown"] == 0)
+item("T11-1", "식 상자를 누르면 필요한 이유 · 산출값 · 계산값 · 계산에서 · 운전에서 · DB 6배치 여섯 줄이 나오고, 들어오는 값 · 쓰이는 곳의 줄마다 받는 식에서 쓰는 방법이 적혀 있음(필요한 이유 35 · 쓰는 방법 = 선의 수). DB와 대조한 식은 그 기록의 선도 나타남",
+     ok111, f"필요한 이유 {len(bk) - len(whys)} / {len(bk)} · 쓰는 방법 {len(howk & wantk)} / {len(wantk)} · 진공 비등 평형: 줄 {g(4).get('lip')} / {nin('vboil') + nout('vboil')} · DB {g(4).get('fdb')}건" if len(f2) >= 6 else "기록 없음")
+item("T11-2", "구간의 항목(핵심 계산 카드 · 보조 계산 줄) 35개마다 '값의 흐름 보기'가 있고, 누르면 흐름도가 화면에 오며 그 식이 골라짐",
+     len(f2) == 8 and g(0)["btn"] == 35 and g(0)["btnk"] == 35 and g(6)["on"] == ["choke"] and 0 <= g(6)["top"] <= g(6)["vh"], f"단추 {g(0).get('btn')} · 음속 한계: 고른 식 {g(6).get('on')} · 그림 위 {g(6).get('top')}" if len(f2) >= 7 else "기록 없음")
+cons = [s for s in other + oth_d + oth_l + nvo + fqo + fbo + sum((x[1] for x in sc.values()), []) if not s.startswith("console: clean")]
 item("S4", "콘솔 오류 0", not cons, "; ".join(cons[:3]) or "없음")
 bad_h = [h for h in S["heads"] if re.search(r"(다|요|까|죠)[.?!]?$", h)]
 item("S5", "제목(h1 ~ h4)이 명사형", not bad_h, f"제목 {len(S['heads'])}개" + (" · " + ", ".join(bad_h) if bad_h else ""))

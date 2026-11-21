@@ -8,14 +8,24 @@
 - 열과 증기 · 액의 양은 왼쪽 → 오른쪽(스팀 → 정제기 → 응축기 → 회수 탱크), 압력은 오른쪽 → 왼쪽(진공펌프 → 증기 배관 → 정제기)으로 넘어가 정제기(2-4)에서 만난다.
 - 늘 보이는 선: 열 · 양 · 압력 · 제어의 주 경로와, 바로 옆 식에 들어가는 보조 입력. 멀리 떨어진 보조 입력(AUX)은 상자를 고르면 나타난다.
 - 숫자는 다른 화면과 같은 기록(값.json · 점검 기록)에서 읽는다.
+- DB 6배치 기록 줄(2026-11-21): 식 상자 아래에 기록 묶음 상자 7개를 놓고, 식마다 DB와 대조한 결과를 작은 표시로 보인다. 글은 흐름_설명.py에 있다(필요한 이유 · 선마다 쓰는 방법 · 기록이 쓰인 식).
+  선의 수를 세는 점검(T7-1)과 섞이지 않도록 기록 → 식의 선은 class가 fl-de다(계산값의 선은 fl-e).
 """
 import json, math
-from 그림 import esc
+from 그림 import esc, tw
+import 흐름_설명 as TX
 
-W, H = 1200, 566
+W, H = 1200, 636
 X0, PX, BW = 26, 147, 124            # 첫 칸 왼쪽, 칸 간격, 상자 너비(칸 사이 통로 23)
 Y0, PY, BH = 70, 72, 50              # 첫 줄 위, 줄 간격, 상자 높이(줄 사이 22: 통로의 선과 이름표가 들어간다)
 CH = PX - BW
+# DB 6배치 기록 줄(2026-11-21 사용자 요구: DB 데이터가 어디에 어떻게 쓰여 어느 식을 더 정확하게 했는지 흐름에 표시)
+#  식 상자 아래에 기록 묶음 상자를 한 줄로 놓는다. 첫 칸은 줄의 이름과 '쓰인 곳 모두 보기' 단추, 나머지 일곱 칸이 기록 묶음이다.
+#  기록 묶음 → 식의 선은 묶음이나 식을 골랐을 때만 나타난다(늘 보이면 계산값의 선과 섞인다). 식 상자에는 대조 결과를 작은 표시로 늘 보인다.
+SY = Y0 + 5 * PY + BH + 36           # 기록 줄의 바탕 위
+SBY, SBH = SY + 6, 46                # 기록 묶음 상자의 위 · 높이
+YDB = SY - 6                         # 기록 묶음에서 나온 선이 옆으로 지나가는 높이(식 상자 아래 · 기록 줄 위)
+DBCOL = dict(heat=1, vt=2, dT=3, c1=4, fl=5, none=6, wt=7)      # 기록 묶음의 칸(가능한 한 쓰인 식의 칸 아래)
 
 # 상자 자리(칸 = 구간, 줄). 주 경로의 상자가 이웃하도록 배치했다
 GRID = dict(valve=(0, 0), steamlam=(0, 1), jacket=(0, 2), agit=(0, 3), heatbal=(0, 4), loss=(0, 5),
@@ -164,6 +174,31 @@ def _aux_path(s, d):
     return f"M{a[0]:.1f} {a[1]:.1f}C{m:.1f} {a[1]:.1f} {m:.1f} {b[1]:.1f} {b[0]:.1f} {b[1]:.1f}"
 
 
+def _db_path(i, col, fk):
+    """기록 묶음(i번째, 칸 col) → 식 fk의 선. 묶음 위에서 나와 YDB 높이로 옆으로 간 뒤, 식이 있는 칸 옆의 통로를 타고 올라가 식 상자의 옆으로 들어간다."""
+    cd, rd = GRID[fk]; ax = X0 + col * PX + BW / 2; off = (i - 3) * 2.4
+    ty = Y0 + rd * PY + BH / 2 + 16
+    if cd < 7: xch = X0 + cd * PX + BW + CH / 2 + off; b = (X0 + cd * PX + BW + 2.0, ty)
+    else: xch = X0 + cd * PX - CH / 2 + off; b = (X0 + cd * PX - 2.0, ty)       # 마지막 칸은 오른쪽에 통로가 없어 왼쪽으로 들어간다
+    return _round([(ax, SBY), (ax, YDB), (xch, YDB), (xch, ty), b], 5)
+
+def _badge(st, x, y):
+    """식 상자 안의 DB 대조 표시. 보정값 산출 ◆ · 보정 영향 ◇ · 확인 ● · 일부 확인 · 차이 확인 ◐ · 확인 불가 ○."""
+    t = f"<title>DB 6배치: {esc(TX.ST[st])} — {esc(TX.ST_NOTE[st])}</title>"
+    if st in ("cal", "eff"): return f'<path class="fl-bd fl-bd-{st}" d="M{x} {y - 6}L{x + 6} {y}L{x} {y + 6}L{x - 6} {y}z">{t}</path>'
+    if st == "ok": return f'<circle class="fl-bd fl-bd-ok" cx="{x}" cy="{y}" r="5">{t}</circle>'
+    if st in ("part", "gap"): return f'<g class="fl-bd fl-bd-part">{t}<circle cx="{x}" cy="{y}" r="5"/><path d="M{x} {y - 5}A5 5 0 0 0 {x} {y + 5}z"/></g>'
+    return f'<circle class="fl-bd fl-bd-no" cx="{x}" cy="{y}" r="4.6">{t}</circle>'
+
+def db_status(SRC):
+    """식마다 상자에 보일 대조 결과 하나(여러 기록에 걸리면 ST의 앞쪽 것)."""
+    order = list(TX.ST); best = {}
+    for s in SRC:
+        for fk, st, _ in s["t"]:
+            if fk not in best or order.index(st) < order.index(best[fk]): best[fk] = st
+    return best
+
+
 def build(D, NODES):
     """(svg, data). data = 상자를 골랐을 때 아래 칸에 적을 내용."""
     F = {f["k"]: (nd, i + 1, f) for nd in NODES for i, f in enumerate(nd["formulas"])}
@@ -173,8 +208,16 @@ def build(D, NODES):
     L = links(); assert len({(s, d) for s, d, _, _ in L}) == len(L), "같은 선이 두 번 있다"
     for s, d, _, _ in L: assert s in GRID and d in GRID and s != d, (s, d)
     V = values(D); fid = lambda k: f"{F[k][0]['n']}-{F[k][1]}"
-    o = [f'<svg id="fig-flow" viewBox="0 0 {W} {H}" role="img" aria-label="공식 {len(F)}개의 산출값이 넘어가는 경로. 열과 증기 · 액의 양은 왼쪽에서 오른쪽으로, 압력은 오른쪽에서 왼쪽으로 넘어가 정제기의 진공 비등 평형에서 만난다">'
-         '<defs>' + "".join(f'<marker id="fl-a-{k}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto"><path class="fl-m fl-m-{k}" d="M0 0.6L8 4L0 7.4z"/></marker>' for k in ("heat", "mass", "pres", "ctrl", "sup", "aux")) + '</defs>']
+    # 설명 글(흐름_설명.py)이 식 · 선과 빠짐없이 맞는지
+    assert set(TX.WHY) == set(F), ("필요한 이유가 없는 식 · 남는 글", set(TX.WHY) ^ set(F))
+    assert set(TX.HOW) == {(s, d) for s, d, _, _ in L}, ("쓰는 방법이 없는 선 · 남는 글", set(TX.HOW) ^ {(s, d) for s, d, _, _ in L})
+    SRC = TX.db_use(D); assert [s["k"] for s in SRC] == list(DBCOL), "기록 묶음의 순서 = 칸의 순서여야 한다"
+    for s in SRC:
+        assert len({fk for fk, _, _ in s["t"]}) == len(s["t"]), (s["k"], "한 기록 묶음에 같은 식이 두 번 있다")
+        for fk, st, tx in s["t"]: assert fk in F and st in TX.ST and len(tx) > 20, (s["k"], fk, st)
+    BEST = db_status(SRC)
+    o = [f'<svg id="fig-flow" viewBox="0 0 {W} {H}" role="img" aria-label="공식 {len(F)}개의 산출값이 넘어가는 경로. 열과 증기 · 액의 양은 왼쪽에서 오른쪽으로, 압력은 오른쪽에서 왼쪽으로 넘어가 정제기의 진공 비등 평형에서 만난다. 아래 줄은 DB 6배치 기록이 쓰인 식을 나타낸다">'
+         '<defs>' + "".join(f'<marker id="fl-a-{k}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto"><path class="fl-m fl-m-{k}" d="M0 0.6L8 4L0 7.4z"/></marker>' for k in ("heat", "mass", "pres", "ctrl", "sup", "aux", "db", "dbp", "dbn")) + '</defs>']
     # 칸 바탕과 구간 이름
     for nd in NODES:
         x = X0 + (nd["n"] - 1) * PX
@@ -188,21 +231,46 @@ def build(D, NODES):
         if opt.get("lab") and lp: labs.append(f'<text class="fl-lab fl-lab-{kind}" x="{lp[0]:.1f}" y="{lp[1]:.1f}" text-anchor="middle" data-s="{s}" data-d="{d}">{esc(opt["lab"])}</text>')
     for s, d, lab in AUX:
         o.append(f'<path class="fl-e fl-aux" d="{_aux_path(s, d)}" marker-end="url(#fl-a-aux)" data-s="{s}" data-d="{d}"><title>{esc(fid(s))} → {esc(fid(d))}: {esc(lab)}</title></path>')
+    # DB 6배치 기록 줄: 바탕 · 기록 묶음에서 식으로 가는 선(고르면 나타난다)
+    o.append(f'<rect class="fl-dband" x="{X0 - 4}" y="{SY}" width="{7 * PX + BW + 8}" height="{SBH + 12}" rx="10"/>')
+    for i, s in enumerate(SRC):
+        for fk, st, _ in s["t"]:
+            mk = "dbn" if st == "no" else "dbp" if st in ("part", "gap") else "db"        # 선의 색 = 대조 결과(초록: 보정 · 확인, 황색: 일부 확인 · 차이 확인, 회색 점선: 확인 불가)
+            o.append(f'<path class="fl-de fl-de-{st}" d="{_db_path(i, DBCOL[s["k"]], fk)}" marker-end="url(#fl-a-{mk})" data-db="{s["k"]}" data-f="{fk}"><title>{esc(s["name"])} → {esc(fid(fk))}: {esc(TX.ST[st])}</title></path>')
     # 상자
     for k, (nd, i, f) in F.items():
         x, y = _xy(k); nm = SHORT.get(k, f["name"]); v = V[k]; y1 = y + (17 if len(v) == 2 else 20)
         o.append(f'<g class="fl-b" data-k="{k}" tabindex="0" role="button" aria-label="{esc(fid(k))} {esc(f["name"])}"><rect x="{x}" y="{y}" width="{BW}" height="{BH}" rx="8"/>'
                  f'<text class="fl-id" x="{x + 8}" y="{y1}">{fid(k)}</text><text class="fl-nm" x="{x + 33}" y="{y1}">{esc(nm)}</text>'
-                 + "".join(f'<text class="fl-v" x="{x + 8}" y="{y1 + 14 + j * 12.5}">{esc(t)}</text>' for j, t in enumerate(v)) + "</g>")
+                 + "".join(f'<text class="fl-v" x="{x + 8}" y="{y1 + 14 + j * 12.5}">{esc(t)}</text>' for j, t in enumerate(v))
+                 + (_badge(BEST[k], x + BW - 10, y + BH - 10) if k in BEST else "") + "</g>")
     o += labs                                    # 이름표는 상자보다 위에 그린다
+    # DB 6배치 기록 줄: 줄의 이름 · '쓰인 곳 모두 보기' 단추 · 기록 묶음 상자
+    o.append(f'<text class="fl-dtt" x="{X0 + 4}" y="{SY + 19}">DB 6배치 기록</text><text class="fl-dv" x="{X0 + 4}" y="{SY + 32}">{esc(D["dbv"]["기간"])} · 구간 평균</text>'
+             f'<g class="fl-dball" tabindex="0" role="button" aria-label="DB 6배치 기록이 쓰인 곳 모두 보기"><rect x="{X0 + 2}" y="{SY + 38}" width="{BW - 8}" height="16" rx="8"/><text x="{X0 + 2 + (BW - 8) / 2}" y="{SY + 50}" text-anchor="middle">쓰인 곳 모두 보기</text></g>')
+    for i, s in enumerate(SRC):
+        x = X0 + DBCOL[s["k"]] * PX; nt = len(s["t"])
+        assert tw(s["name"], 11.5) <= BW - 14 and len(s["tags"]) <= 20, (s["k"], "기록 묶음의 이름 · 태그가 상자보다 길다")
+        o.append(f'<g class="fl-dbb" data-db="{s["k"]}" tabindex="0" role="button" aria-label="DB 기록 {esc(s["name"])}"><rect x="{x}" y="{SBY}" width="{BW}" height="{SBH}" rx="8"/>'
+                 f'<text class="fl-dn" x="{x + 8}" y="{SBY + 16}">{esc(s["name"])}</text><text class="fl-dt" x="{x + 8}" y="{SBY + 28}">{esc(s["tags"])}</text>'
+                 f'<text class="fl-dv" x="{x + 8}" y="{SBY + 40}">{"대조하지 못한" if s["k"] == "none" else "쓰인"} 식 {nt}개</text></g>')
     # 범례
-    ly = H - 16; lx = X0
+    ly2 = H - 14; lx = X0
+    o.append(f'<text class="fl-lg fl-lgb" x="{lx}" y="{ly2 + 4}">DB 6배치와의 대조</text>'); lx += tw("DB 6배치와의 대조", 11.5) + 20
+    for st, name in (("cal", TX.ST["cal"]), ("eff", TX.ST["eff"]), ("ok", TX.ST["ok"]), ("part", TX.ST["part"] + " · " + TX.ST["gap"]), ("no", TX.ST["no"])):
+        o.append(_badge(st, lx + 6, ly2) + f'<text class="fl-lg" x="{lx + 17}" y="{ly2 + 4}">{name}</text>'); lx += 17 + tw(name, 11.5) + 20
+    o.append(f'<text class="fl-lg" x="{W - 14}" y="{ly2 + 4}" text-anchor="end">표시가 없는 식은 DB 기록과 대조하지 않은 식 · 기록 상자를 누르면 쓰인 식을 표시</text>')
+    ly = H - 36; lx = X0
     for kind, name in (("heat", "열"), ("mass", "증기 · 액의 양"), ("pres", "압력"), ("ctrl", "제어"), ("sup", "보조 입력")):
         o.append(f'<path class="fl-e fl-{kind}" d="M{lx} {ly}h30" marker-end="url(#fl-a-{kind})"/><text class="fl-lg" x="{lx + 38}" y="{ly + 4}">{name}</text>'); lx += 62 + len(name) * 11.5
     o.append(f'<text class="fl-lg" x="{W - 14}" y="{ly + 4}" text-anchor="end">숫자는 본류 구간({D["snap"]["30"]["PR"]["t_h"]:.0f} h)의 계산값 · 상자를 누르면 들어오는 값과 쓰이는 곳을 표시</text>')
     o.append("</svg>")
-    data = dict(n={k: dict(id=fid(k), name=f["name"], sec=nd["name"], gets=f["gets"], val=f["val"], calc=f["use"]["calc"], sub=bool(f["use"]["sub"])) for k, (nd, i, f) in F.items()},
-                l=[[s, d, lab, kind] for s, d, lab, kind in L], kind=KIND)
+    cnt = {st: sum(1 for v in BEST.values() if v == st) for st in TX.ST}
+    data = dict(n={k: dict(id=fid(k), name=f["name"], sec=nd["name"], law=f.get("law", ""), gets=f["gets"], val=f["val"], calc=f["use"]["calc"], plant=f["use"]["plant"], why=TX.WHY[k], sub=bool(f["use"]["sub"])) for k, (nd, i, f) in F.items()},
+                l=[[s, d, lab, kind] for s, d, lab, kind in L], kind=KIND,
+                how={f"{s}>{d}": t for (s, d), t in TX.HOW.items()},            # 선마다: 받는 식이 그 값을 쓰는 방법
+                db=dict(src=[dict(k=s["k"], name=s["name"], tags=s["tags"].replace("·", " · "), what=s["what"], how=s["how"], t=[list(t) for t in s["t"]]) for s in SRC],
+                        st=TX.ST, note=TX.ST_NOTE, best=BEST, cnt=cnt, none=len(F) - len(BEST), lead=TX.db_lead(D, fid), period=D["dbv"]["기간"], nb=len(D["dbv"]["배치"])))
     return "".join(o), data
 
 
