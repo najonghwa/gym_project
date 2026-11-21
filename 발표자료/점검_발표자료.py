@@ -6,15 +6,15 @@
 - 브라우저(헤드리스 크롬)로 실제 그려진 화면에서 센다: 구조 · 겹침(어두운 · 밝은 화면) · 좁은 화면.
 - 내는 것: 점검결과_발표자료.md · 점검결과_발표자료.json
 """
-import json, pathlib, re, subprocess, sys, tempfile
+import math, json, pathlib, re, subprocess, sys, tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
 OUT = HERE.parent / "정제_시뮬레이터_발표자료.html"; ART = HERE / "발표자료_아티팩트.html"
 DRV = pathlib.Path.home() / ".claude" / "skills" / "anatomy" / "scripts" / "drive.mjs"
 tag = sys.argv[1] if len(sys.argv) > 1 else "v130_최종"
 OV = (HERE / "점검_겹침.js").read_text(encoding="utf-8").split("\n", 1)[1].strip()
-IDS = ["ov", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "ab", "db", "rs", "pl", "gd", "dm"]
-NFIG = 11 + 5 + 12      # 겹침을 보는 그림: 설비 그림 11(전체 1 · 구간 8 · 이상 상황 1 · DB 1) + 시연 화면 5 + 이상 상황 12가지
+IDS = ["ov", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "ab", "dr", "db", "rs", "rr", "pl", "gd", "dm"]
+NFIG = 12 + 5 + 5 + 12  # 겹침을 보는 그림: 설비 그림 12(전체 1 · 구간 8 · 이상 상황 1 · DB 2) + 그래프 5(증발량과 내부 온도 1 · 환류비 4) + 시연 화면 5 + 이상 상황 12가지
 CASES = ["c1hot", "c1cold", "c2hot", "cwlow", "steam", "rhigh", "rlow", "leak", "pump", "pstop", "cold", "bare"]
 
 STRUCT = r"""(()=>{const q=(s,r)=>[...(r||document).querySelectorAll(s)];const tx=e=>e?e.textContent.trim():'';const out={};
@@ -47,6 +47,12 @@ out.dm={tag:tx(document.querySelector('#dm .tag')),prep:q('#dm .blk li').length,
  say:tx(q('.dcols > div',d)[2]).length,img:q('figure svg image',d).filter(i=>/^data:image\/webp;base64,/.test(i.getAttribute('href'))&&i.getAttribute('href').length>20000).length,marks:q('.mkc',d).length,rings:q('.mkr',d).length,t5:!!d.querySelector('.b-t5'),cap:tx(d.querySelector('figcaption')).length}))};
 out.rs={bars:q('#rs .sbar').length,segs:q('#rs .sbar i').length,rows:q('#rs table tr').length-1,legs:q('#rs .sleg span').map(tx)};
 out.pl={stats:q('#pl .stat').map(e=>tx(e.querySelector('b'))),rows:q('#pl table tr').length-1,lists:q('#pl ul.pl').map(u=>q('li',u).length)};
+const dr=document.getElementById('dr');out.dr=dr?{tab:dr.getAttribute('data-tab'),figs:q('figure svg',dr).map(s=>s.id),brows:q('.brow',dr).map(b=>tx(b.querySelector('.bv'))),bsim:q('.brow.sim',dr).length,
+ cmp:q('table.cmp tr',dr).slice(1).map(r=>q('td',r).map(tx)),cols:q('table.cmp th',dr).length,lists:q('ul.pl',dr).map(u=>q('li',u).length),pts:q('#fig-vt circle.pt-m,#fig-vt circle.pt-f').filter(c=>c.querySelector('title')).length,
+ dbv:q('#fig-dr text.dbv').map(tx),cv:q('#fig-dr text.cvi,#fig-dr text.cvo').map(tx),cvo:q('#fig-dr text.cvo').length,tgx:q('#fig-dr rect.tgx').length,tx:tx(dr).replace(/\s+/g,' ')}:null;
+out.dbst=tb[0]?q('td .bdg',tb[0]).map(tx):[];
+const rr=document.getElementById('rr');out.rr=rr?{tab:rr.getAttribute('data-tab'),figs:q('figure svg',rr).map(s=>s.id),pts:q('figure svg circle',rr).length,tables:q('table.cmp',rr).map(t=>q('tr',t).filter(r=>r.querySelector('td')).length),bands:q('.plot-band',rr).length,
+ cells:q('table.cmp td',rr).map(tx),tx:tx(rr).replace(/\s+/g,' ')}:null;
 out.subs=q('.subs button').length;out.pbar=!!document.getElementById('pbar')&&document.getElementById('pbar').hidden;
 out.heads=q('h2,h3').map(h=>[...h.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim());out.tabs=q('.tabs button').map(tx);out.navs=q('.nodes button').length;
 return JSON.stringify(out)})()"""
@@ -154,9 +160,9 @@ bad_go = [x["go"] for T in (t5, fu) for x in T["steps"] if x["go"] not in S["sce
 tot5 = tsum(t5) + t5["slack"]; demo5 = tsum(t5, "demo"); talk5 = tsum(t5, "talk")
 item("P10-2", "5분 버전: 시연을 포함해 5분 이내, 설명은 5분에서 시연 시간을 뺀 것보다 짧음", 0 < tot5 <= 300 and demo5 >= 60 and talk5 <= 300 - demo5 and GD.get("t5", {}).get("tot") == "총 " + mmss(tot5),
      f"총 {mmss(tot5)} = 설명 {mmss(talk5)} + 시연 {mmss(demo5)} + 여유 {mmss(t5['slack'])}")
-gos = [x["go"] for x in fu["steps"]]; core = ["ov"] + [f"n{i}" for i in range(1, 9)] + ["ab", "db"]
+gos = [x["go"] for x in fu["steps"]]; core = ["ov"] + [f"n{i}" for i in range(1, 9)] + ["ab", "dr"]
 pos = [gos.index(c) if c in gos else -1 for c in core]
-item("P10-3", "자세한 버전: 전체 구성 → 구간 1~8 → 이상 상황 → DB 데이터 순서로 기존 화면을 모두 지나고 시연이 들어 있음, 띄울 화면이 모두 실제 화면", min(pos) >= 0 and pos == sorted(pos) and tsum(fu, "demo") > 0 and not bad_go and GD.get("full", {}).get("tot") == "총 " + mmss(tsum(fu) + fu["slack"]),
+item("P10-3", "자세한 버전: 전체 구성 → 구간 1~8 → 이상 상황 → DB 6배치 분석 결과 순서로 지나고 시연이 들어 있음, 띄울 화면이 모두 실제 화면", min(pos) >= 0 and pos == sorted(pos) and tsum(fu, "demo") > 0 and not bad_go and GD.get("full", {}).get("tot") == "총 " + mmss(tsum(fu) + fu["slack"]),
      f"총 {mmss(tsum(fu) + fu['slack'])} · 설명 {mmss(tsum(fu, 'talk'))} · 시연 {mmss(tsum(fu, 'demo'))}" + (f" · 없는 화면 {bad_go}" if bad_go else ""))
 gbad = []; goth = []
 for key, T in (("t5", t5), ("full", fu)):
@@ -187,8 +193,8 @@ item("P10-6", "시연 기록: 기록한 시뮬레이터 판 = 발표자료의 �
 nfor_ = sum(n["cards"] for n in ND); nal = [x for n in ND for x in n["al"]]; nest_ = sum(1 for x in nal if x.endswith("가정")); nhard_ = sum(1 for x in nal if x.endswith("추정"))
 wants = [f"소요 시간 {END['t']:.1f} h", f"초류 {END['fore']:.1f} kg", f"본류 {END['main']:.1f} kg", f"정제기 잔량 {END['m']:.1f} kg", f"환류 U자 액봉 {END['m0'] - END['m'] - END['fore'] - END['main']:.2f} kg"]
 flat = plain.replace(" ", ""); misss = [w for w in wants if w.replace(" ", "") not in flat]
-item("P10-7", "요약 화면 2: 배치 결과 막대 2(시간 4칸 · 물질 4칸) · 현장값 비교 4줄 · 지표 4(공식 · 가정 · 추정 수가 본문과 같음) · 구간 표 8줄 · 추정 목록 = 추정 수, 숫자가 기록과 같음",
-     S["rs"]["bars"] == 2 and S["rs"]["segs"] == 8 and S["rs"]["rows"] == 4 and S["pl"]["stats"][:3] == [str(nfor_), str(nest_), str(nhard_)] and len(S["pl"]["stats"]) == 4 and S["pl"]["rows"] == 8 and S["pl"]["lists"][0] == nhard_ and S["subs"] == 4 and not misss,
+item("P10-7", "요약 화면: 배치 결과 막대 2(시간 4칸 · 물질 4칸) · DB 비교 4줄 · 지표 5(공식 · 가정 · 추정 수가 본문과 같음) · 구간 표 8줄 · 추정 목록 = 추정 수, 숫자가 기록과 같음",
+     S["rs"]["bars"] == 2 and S["rs"]["segs"] == 8 and S["rs"]["rows"] == 4 and S["pl"]["stats"][:3] == [str(nfor_), str(nest_), str(nhard_)] and len(S["pl"]["stats"]) == 5 and S["pl"]["rows"] == 8 and S["pl"]["lists"][0] == nhard_ and S["subs"] == 7 and not misss,
      f"지표 {' · '.join(S['pl']['stats'])} · 추정 목록 {S['pl']['lists'][0]} · 숫자 글 {len(wants) - len(misss)} / {len(wants)}" + (" · 없음: " + ", ".join(misss) if misss else ""))
 
 # ---------------------------------------------------------------- 공식 카드의 용도 · 식의 요지(P11) — 사용자 2026-11-20
@@ -208,15 +214,77 @@ a, b = _ab("c1hot"); wantu += [f"개도를 {a['MV']:.1f} → {b['MV']:.1f} %로 
 missu = [w for w in wantu if w not in plain]
 item("P11-2", "적용 예 12개 이상, 그 숫자가 이상 상황 기록과 같음(기록에서 따로 만든 글 조각이 화면에 있음)", nex >= 12 and not missu, f"적용 예 {nex}개 · 숫자 글 {len(wantu) - len(missu)} / {len(wantu)}" + (" · 없음: " + ", ".join(missu) if missu else ""))
 
+# ---------------------------------------------------------------- DB 6배치 분석 결과(P12) · 환류비별 계산 결과(P13)
+DBV = json.loads((HERE / "DB값.json").read_text(encoding="utf-8")); DBF = json.loads((HERE / "DB_맞춤_결과.json").read_text(encoding="utf-8")); TRL = json.loads((HERE / "시험계산_기록.json").read_text(encoding="utf-8"))
+VALS = json.loads((HERE / "값.json").read_text(encoding="utf-8")); DR = S["dr"] or {}; flatp = re.sub(r"\s+", " ", plain)
+rngs = lambda v, d=1: f"{min(v):.{d}f}~{max(v):.{d}f}"
+ok121 = (DR.get("tab") == "db" and S["scenes"].index("dr") == S["scenes"].index("db") - 1 and DR["figs"] == ["fig-dr", "fig-vt"] and len(DR["brows"]) == len(DBV["배치"]) + 1 and DR["bsim"] == 1
+         and len(DR["cmp"]) == 8 and DR["cols"] == 5 and DR["lists"] == [6, 6] and DR["pts"] == 2 * len(DBV["배치"]) and DR["tgx"] >= 3)
+item("P12-1", "DB 6배치 분석 결과: DB 탭의 첫 화면 · 그림 2(계기별 값 · 증발량과 내부 온도 12점) · 배치 막대 6 + 계산 1 · 비교표 8줄 5칸 · 확인한 사항 6 · 정하지 못한 사항 6",
+     ok121, f"그림 {DR.get('figs')} · 막대 {len(DR.get('brows', []))} · 비교표 {len(DR.get('cmp', []))}줄 · 목록 {DR.get('lists')} · 점 {DR.get('pts')}")
+# DB 값: DB값.json에서 따로 만든 범위 글이 그림과 표에 있는지, 배치 막대의 숫자가 표의 값과 같은지
+wantdb = [rngs(DBV["본류"]["Ttop"]), rngs(DBV["본류"]["Tj"]), rngs(DBV["본류"]["T"]), rngs(DBV["투입"], 0), rngs(DBV["본류"]["R"]), rngs(DBV["본류"]["D"]), rngs(DBV["본류"]["Tbot"]), rngs(DBV["본류량"], 0), rngs(DBV["초류량"])]
+missdb = [w for w in wantdb if not any(w in t for t in DR.get("dbv", []))]
+wantc = [rngs(DBV["초류"]["T"]), rngs(DBV["본류"]["T"]), rngs(DBV["초류"]["Ttop"]), rngs(DBV["본류"]["Ttop"]), rngs(DBV["초류"]["Tj"]), rngs(DBV["초류"]["R"]), rngs(DBV["초류"]["D"]), rngs(DBV["전환류_h"]), rngs(DBV["초류_h"]), rngs(DBV["본류_h"]), rngs(DBV["승온_90도_h"])]
+cmpdb = " ".join(r[1] for r in DR.get("cmp", [])); missc = [w for w in wantc if w not in cmpdb]
+badbar = []
+for j, b in enumerate(DBV["배치"]):
+    nums = [float(x) for x in re.findall(r"\d+\.\d+", DR["brows"][j])] if j < len(DR.get("brows", [])) else []
+    exp = [DBV["전체_h"][j] - DBV["초류_h"][j] - DBV["본류_h"][j], DBV["초류_h"][j], DBV["본류_h"][j]]
+    if len(nums) != 3 or any(abs(a - e) > 0.051 for a, e in zip(nums, exp)): badbar.append(b)
+item("P12-2", "DB 값이 DB값.json과 같음: 계기별 그림의 범위 9개 · 비교표의 범위 11개 · 배치 막대 6줄의 구간 시간", not missdb and not missc and not badbar,
+     f"그림 {len(wantdb) - len(missdb)} / {len(wantdb)} · 표 {len(wantc) - len(missc)} / {len(wantc)} · 막대 {len(DBV['배치']) - len(badbar)} / {len(DBV['배치'])}" + (f" · 없음: {missdb + missc + badbar}" if missdb or missc or badbar else ""))
+# 계산값 · 시험 계산 = 기록. 시험 계산의 본류 (증발량, 내부 온도)가 DB 12점의 관계 위에 있는지는 여기서 따로 계산한다
+Au = DBF["A_use"]; keyA = f"{Au:.2f}"; tb_, tn_ = TRL["runs"][TRL["base"]]["sum"], TRL["runs"].get(keyA, {}).get("sum")
+B0 = VALS["snap"]["30"]["CUR"]["antB"]["B"]; kq = [k for k in DBV["FICH072_무게_적분_비"] if k is not None]; km = sum(kq) / len(kq); kk = [k if k is not None else round(km, 2) for k in DBV["FICH072_무게_적분_비"]]
+cs = [math.log10(DBV[ph]["R"][j] + DBV[ph]["D"][j] * kk[j]) + B0 / (DBV[ph]["T"][j] + 273.15) for ph in ("초류", "본류") for j in range(len(DBV["배치"]))]; cdb = sum(cs) / len(cs)
+gapT = (tn_["Tmain"] - (B0 / (cdb - math.log10(tn_["Rmain"] + tn_["Dmain"])) - 273.15)) if tn_ else 99
+simc = " ".join(r[2] for r in DR.get("cmp", [])); tric = " ".join(r[3] for r in DR.get("cmp", []))
+wsim = [f"{END['Tfore']:.1f}", f"{END['Tmain']:.1f}", f"{END['ThFore']:.1f}", f"{END['ThMain']:.1f}"]; wtri = [f"{tn_['Tfore']:.1f}", f"{tn_['Tmain']:.1f}", f"{tn_['ThMain']:.1f}", f"{tn_['Tex30']:.1f}", f"{tn_['m2_30']:.4f}"] if tn_ else ["없음"]
+msim = [w for w in wsim if w not in simc]; mtri = [w for w in wtri if w not in tric]
+vdk = CHK.get("ver") or "v130"
+item("P12-3", "비교표의 계산값 = 점검 기록, 시험 계산값 = 시험계산_기록.json(판이 발표자료와 같고 기준 계산이 점검 기록과 같음), 시험 계산의 본류 내부 온도가 같은 증발량의 DB 관계와 0.3 ℃ 안",
+     not msim and not mtri and tn_ is not None and vdk in tb_["ver"] and vdk in tn_["ver"] and abs(tb_["Tmain"] - END["Tmain"]) < 0.3 and abs(gapT) < 0.3,
+     f"계산 {len(wsim) - len(msim)} / {len(wsim)} · 시험 {len(wtri) - len(mtri)} / {len(wtri)} · 판 {tb_['ver']} · DB 관계와의 차 {gapT:+.2f} ℃")
+A0 = VALS["snap"]["30"]["CUR"]["antB"]["A"]; n_A = len(re.findall(r"12\.\d\d", flatp)); others = sorted({m for m in re.findall(r"A (?:=|만|를)? ?(1[12]\.\d\d)", flatp)} - {keyA, f"{A0}", f"{DBF['A_phys']:.2f}"})
+item("P12-4", "시뮬레이터 기본값은 그대로(값.json의 상수 A = 지금 식), 화면의 새 상수는 DB_맞춤 결과 한 가지, '기본값은 변경하지 않았다'는 글이 결과 화면과 요약 화면에 있음",
+     abs(A0 - DBF["A0"]) < 1e-9 and keyA in DR.get("tx", "") and not others and "기본값은 변경하지 않았다" in DR.get("tx", "") and "기본값은 아직 변경하지 않았다" in flatp,
+     f"지금 식 A {A0} · DB로 구한 값 {keyA} · 다른 값 {others or '없음'}")
+st_ = S["dbst"]; cnt = {k: st_.count(k) for k in ("확인", "일부 확인", "확인 불가")}
+item("P12-5", "수집 항목 19건마다 6배치 결과(확인 · 일부 확인 · 확인 불가), 그 수가 결과 화면 · 요약 화면의 글과 같음",
+     len(st_) == S["db"]["rows"] == sum(cnt.values()) and f"확인 {cnt['확인']}건, 일부 확인 {cnt['일부 확인']}건, 확인 불가 {cnt['확인 불가']}건" in DR.get("tx", "") and S["pl"]["stats"][4].replace(" ", "") == f"{cnt['확인']}/{len(st_)}",
+     f"확인 {cnt['확인']} · 일부 확인 {cnt['일부 확인']} · 확인 불가 {cnt['확인 불가']} · 합 {len(st_)}")
+stale = [w for w in ("시계열 데이터를 확보하면 보정", "현장 데이터 2점", "배치 트렌드 그래프(육안 판독)", "어느 방식으로 운전 중인지는 확인하지 못했다", "DB 시계열 데이터로 정한다", "은 확인 중이다") if w in flatp]
+item("P12-6", "DB를 받기 전의 글(시계열을 확보하면 보정한다 · PIMS 두 점만으로 견준 표 · 제어 방식 확인 중)이 남아 있지 않음", not stale, "남은 글 없음" if not stale else ", ".join(stale))
+RRS = S["rr"] or {}; RM = json.loads((HERE / "환류비_기록.json").read_text(encoding="utf-8")); RF = json.loads((HERE / "환류비_기록_초류.json").read_text(encoding="utf-8"))
+nrun = len(RM["runs"]) + len(RF["runs"]); lo15 = lambda rs: [r for r in rs if abs(r["alpha"] - 1.5) < 1e-9]      # 표의 시간 칸은 상대휘발도 1.5의 계산이다
+_wt = lambda v: "< 0.0001" if v < 0.0001 else (f"{v:.3f}" if v >= 0.01 else f"{v:.5f}")      # 표의 불순물 표기: 0.01 % 이상은 소수 셋째, 그 아래는 다섯째 자리, 0.0001 % 미만은 부등호로 적음
+want_rr = [_wt(r['wM']) for r in RM["runs"] + RF["runs"]] + [f"{r['t_main']:.1f}" for r in lo15(RM["runs"])] + [f"{r['t_fore']:.1f}" for r in lo15(RF["runs"])]
+cells_rr = " ".join(RRS.get("cells", [])); miss_rr = [w for w in want_rr if w not in cells_rr]
+item("P13-1", "환류비별 계산 결과: 요약 탭 · 그래프 4(초류 · 본류 환류비별 저비점 불순물과 소요 시간) · DB 환류비 띠 4 · 표 2, 표의 숫자가 환류비 기록과 같고 기록의 판이 발표자료와 같음",
+     RRS.get("tab") == "sm" and RRS.get("figs") == ["fig-rr1", "fig-rr2", "fig-rr3", "fig-rr4"] and RRS.get("bands") == 4 and len(RRS.get("tables", [])) == 2 and sum(RRS["tables"]) * 2 == nrun and not miss_rr and vdk in RM["ver"] and vdk in RF["ver"],
+     f"그래프 {len(RRS.get('figs', []))} · 계산 {nrun}회 · 표의 숫자 {len(want_rr) - len(miss_rr)} / {len(want_rr)} · 판 {RM['ver']}")
+lim_rr = ("추정", "고비점 불순물", "컷별 성분 분석", "이 결과만으로 본류 환류비를 낮추기로 정할 수는 없으며")
+item("P13-2", "환류비 글의 한계 표시: 상대휘발도가 추정값이라는 것 · 고비점 불순물은 계산에 없다는 것 · 본류 환류비는 컷별 성분 분석 뒤에 판단한다는 것이 화면에 있음",
+     all(w in RRS.get("tx", "") for w in lim_rr), "모두 있음" if all(w in RRS.get("tx", "") for w in lim_rr) else "빠진 글: " + ", ".join(w for w in lim_rr if w not in RRS.get("tx", "")))
+# 환류비 판단의 숫자를 기록에서 따로 다시 구한다: 상대휘발도 20에서 본류의 저비점 불순물이 0.001 % 아래로 내려가는 첫 초류 환류비, 본류 환류비 1마다 늘어나는 본류 시간
+_x = lambda r: r.get("RDact", r["Rf"] / r["Pd"] if r.get("Pd") else 0.0)
+fh_ = sorted([r for r in RF["runs"] if abs(r["alpha"] - 20) < 1e-9], key=lambda r: r["R"]); ml_ = sorted(lo15(RM["runs"]), key=lambda r: r["R"])
+kn_ = next((r for r in fh_ if r["wM"] <= 0.001), None); sl_ = (ml_[-1]["t_main"] - ml_[0]["t_main"]) / (_x(ml_[-1]) - _x(ml_[0])) if len(ml_) >= 2 else None
+want_v = ([f"환류비 {_x(kn_):.1f}에서 본류의 저비점 불순물이 {_wt(kn_['wM'])} %까지 내려간다"] if kn_ else ["기준 아래로 내려가는 점 없음"]) + ([f"환류비가 1 오를 때마다 약 {sl_:.0f} h씩"] if sl_ else ["본류 기록 모자람"])
+miss_v = [w for w in want_v if w not in RRS.get("tx", "")]
+item("P13-3", "환류비 판단: 초류 구간(상대휘발도 20에서 0.001 % 아래로 내려가는 환류비) · 본류 구간(환류비가 1 오를 때마다 늘어나는 시간)의 숫자가 환류비 기록에서 다시 구한 값과 같음",
+     not miss_v and "환류비 판단" in RRS.get("tx", ""), f"숫자 {len(want_v) - len(miss_v)} / {len(want_v)}" + (f" · 없음: {miss_v}" if miss_v else ""))
+
 # ---------------------------------------------------------------- 겹침 · 좁은 화면 · 오류
 nd_, bad_d, figs_d, oth_d = overlap_run(None); nl_, bad_l, figs_l, oth_l = overlap_run("light")
-item("S2", "겹침 · 그림 밖 · 상자 넘침 · 화살표 엇갈림 0(어두운 · 밝은 화면, 설비 그림 11 + 시연 화면 5 + 상황 12)", nd_ == 0 and nl_ == 0 and figs_d == NFIG and figs_l == NFIG, f"어두운 {nd_} · 밝은 {nl_} · 본 그림 {figs_d} + {figs_l}" + (" · " + "; ".join((bad_d + bad_l)[:4]) if nd_ + nl_ else ""))
+item("S2", "겹침 · 그림 밖 · 상자 넘침 · 화살표 엇갈림 0(어두운 · 밝은 화면, 설비 그림 12 + 그래프 5 + 시연 화면 5 + 상황 12)", nd_ == 0 and nl_ == 0 and figs_d == NFIG and figs_l == NFIG, f"어두운 {nd_} · 밝은 {nl_} · 본 그림 {figs_d} + {figs_l}" + (" · " + "; ".join((bad_d + bad_l)[:4]) if nd_ + nl_ else ""))
 sc = {}
 for w in (390, 768, 1440):
     a = [["wait", 2000]]
     for i in IDS: a += go(i) + [["eval", SCROLL]]
     v, o = drive(a, w); sc[w] = (max(d["sw"] - d["cw"] for d in v if d.get("scroll")), len(v), o)
-item("S3", "쪽 가로 스크롤 없음(390 · 768 · 1440 너비, 장면 15)", all(x[0] <= 0 and x[1] == len(IDS) for x in sc.values()), " · ".join(f"{w}: 넘침 {x[0]}" for w, x in sc.items()))
+item("S3", "쪽 가로 스크롤 없음(390 · 768 · 1440 너비, 장면 17)", all(x[0] <= 0 and x[1] == len(IDS) for x in sc.values()), " · ".join(f"{w}: 넘침 {x[0]}" for w, x in sc.items()))
 cons = [s for s in other + oth_d + oth_l + goth + sum((x[2] for x in sc.values()), []) if not s.startswith("console: clean")]
 item("S4", "콘솔 오류 0", not cons, "; ".join(cons[:3]) or "없음")
 bad_h = [h for h in S["heads"] if re.search(r"(다|요|까|죠)[.?!]?$", h) and not h.endswith("순서")]

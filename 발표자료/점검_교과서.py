@@ -27,7 +27,12 @@ out.ch=q('section.ch').filter(s=>/^c\d$/.test(s.id)).map(s=>{const cards=q('.tca
   coeq:Object.fromEntries(q('.co',s).map(c=>[c.getAttribute('data-f'),q('.co-e',c).map(tx).join(' ')])),
   simp:Object.fromEntries(cards.map(c=>[c.getAttribute('data-f'),tx(c.querySelector('dd.simp .eqn'))]).concat(rows.map(r=>[r.getAttribute('data-f'),tx(q('td',r)[4])]))),
   amShown:q('.am',s).filter(a=>getComputedStyle(a).display!=='none').length,tgd:q('rect.tgd',s).length}});
-out.how={cells:q('#how .how4 > div').length,fig:q('#how figure svg').length,pins:q('#fig-ov .pin').length,chain:q('#how .chain li').length};
+out.how={cells:q('#how .how4 > div').length,fig:q('#how figure svg').length,pins:q('#fig-ov .pin').length,chain:q('#how .chain li').length,toflow:q('#how [data-to=flow]').length};
+const fl=document.getElementById('fig-flow');out.flow=fl?{boxes:q('.fl-b',fl).map(b=>({k:b.getAttribute('data-k'),id:tx(b.querySelector('.fl-id')),v:q('.fl-v',b).map(tx).join(' ')})),edges:q('.fl-e[data-s]',fl).map(e=>[e.getAttribute('data-s'),e.getAttribute('data-d'),getComputedStyle(e).display!=='none']),
+ labs:q('.fl-lab',fl).map(tx),heads:q('.fl-h',fl).map(h=>h.getAttribute('data-to')),data:window.FLOW||null,panel:tx(document.getElementById('flow-p')).length}:null;
+out.cards=q('.tcard[data-f], tr[data-f]').map(c=>{const sec=c.closest('section.ch').id.slice(1);const n=c.matches('tr')?tx(q('td',c)[0]):tx(c.querySelector('.n'));return {k:c.getAttribute('data-f'),id:sec+'-'+n,calc:c.matches('tr')?tx(q('td',c)[3]):tx(c.querySelector('dd.use p span'))}});
+const rr=document.getElementById('rr');out.rr=rr?{figs:q('figure svg',rr).map(s=>s.id),bands:q('.plot-band',rr).length,pts:q('figure svg circle',rr).length,tx:tx(rr).replace(/\s+/g,' ')}:null;
+out.cmpx={cols:q('#cmp table.cmp th').length,cells:q('#cmp table.cmp td').map(tx),tx:tx(document.getElementById('cmp')).replace(/\s+/g,' ')};
 out.loop=q('#loop .loop').length;out.cmp=q('#cmp table tr').length-1;out.terms=q('#terms table tr').length;
 out.heads=q('h1,h2,h3,h4').map(h=>[...h.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim());
 return JSON.stringify(out)})()"""
@@ -61,10 +66,10 @@ dv, _ = drive([["wait", 2500], ["eval", r"""(()=>{const q=(s,r)=>[...(r||documen
  return JSON.stringify({deck:1,cards:q('.fcard').map(c=>({k:c.getAttribute('data-f'),val:tx(c.querySelector('.val')).replace(/^계산값/,''),simp:tx(c.querySelector('.simp .eqn')),eq:q('.eqline',c).map(tx).join(' ')}))})})()"""]], 1440, target=DECK)
 DK = {c["k"]: c for c in dv[0]["cards"]}
 keys = [k for c in CH for k in c["keys"] + c["subkeys"]]; ncore = sum(len(c["keys"]) for c in CH); nsub = sum(len(c["subkeys"]) for c in CH)
-want_secs = ["how"] + [f"c{i}" for i in range(1, 9)] + ["loop", "cmp", "terms"]
-item("T2-1", "구성: 읽는 법 → 구간 8개 → 피드백 루프 → 계산값과 현장값 → 용어, 구간 줄의 버튼이 같은 순서", S["secs"] == want_secs and S["nav"] == want_secs and S["h1"] == "정제 교과서", f"절 {len(S['secs'])} · 구간 줄 {len(S['nav'])}")
+want_secs = ["how", "flow"] + [f"c{i}" for i in range(1, 9)] + ["loop", "rr", "cmp", "terms"]
+item("T2-1", "구성: 읽는 법 → 계산값 흐름도 → 구간 8개 → 피드백 루프 → 환류비별 계산 결과 → 계산값과 현장값 → 용어, 구간 줄의 버튼이 같은 순서", S["secs"] == want_secs and S["nav"] == want_secs and S["h1"] == "정제 교과서", f"절 {len(S['secs'])} · 구간 줄 {len(S['nav'])}")
 item("T2-2", "구간마다 요지 한 줄 · 설명 · 넘기는 값 · 그림 하나 · 그림 설명", all(c["q"] > 8 and c["say"] > 20 and c["hand"] >= 1 and c["fig"] == 1 and c["cap"] > 20 for c in CH) and len(CH) == 8, f"{sum(1 for c in CH if c['q'] > 8 and c['fig'] == 1)} / 8")
-item("T2-3", "읽는 법: 항목 구성 설명 4칸 · 전체 그림(번호 8) · 값이 넘어가는 순서 12", S["how"]["cells"] == 4 and S["how"]["fig"] == 1 and S["how"]["pins"] == 8 and S["how"]["chain"] == 12, f"칸 {S['how']['cells']} · 번호 {S['how']['pins']} · 순서 {S['how']['chain']}")
+item("T2-3", "읽는 법: 항목 구성 설명 4칸 · 전체 그림(번호 8) · 계산값 흐름도로 가는 줄(글 목록 대신 그림)", S["how"]["cells"] == 4 and S["how"]["fig"] == 1 and S["how"]["pins"] == 8 and S["how"]["chain"] == 0 and S["how"]["toflow"] == 1, f"칸 {S['how']['cells']} · 번호 {S['how']['pins']} · 흐름도로 가는 줄 {S['how']['toflow']}")
 item("T3-1", "항목 = 발표자료의 공식 35개(핵심 계산 카드 + 보조 계산 표, 빠짐 · 겹침 없음)", sorted(keys) == sorted(DK) and len(keys) == len(set(keys)) == 35, f"핵심 {ncore} + 보조 {nsub} = {len(keys)} · 발표자료 {len(DK)}")
 item("T3-2", "핵심 계산 카드마다 산출값 · 용도 2줄 이상(계산 · 운전) · 식의 요지 · 계산값 · 접어 둔 계산식", sum(c["full"] for c in CH) == ncore and ncore >= 20, f"{sum(c['full'] for c in CH)} / {ncore} · 적용 예 {sum(c['ex'] for c in CH)}개")
 item("T3-3", "보조 계산 표의 줄마다 여섯 칸(번호 · 이름 · 산출값 · 용도 · 식의 요지 · 계산값)이 참", sum(c["subfull"] for c in CH) == nsub, f"{sum(c['subfull'] for c in CH)} / {nsub}")
@@ -101,6 +106,7 @@ _old = HERE.parent / "정제_교과서_이전판.html"       # 예전 판은 개
 item("T5-1", "예전 교과서의 내용(헥산–톨루엔 예 · 비유 · 배우는 과목 · 확인 문제 · 계산 방법)이 남아 있지 않음", not left,
      f"남은 낱말 {left if left else 0} · 크기 {OUT.stat().st_size / 1e3:.0f} KB" + (f"(예전 판 {_old.stat().st_size / 1e3:.0f} KB는 {_old.name}로 보관)" if _old.exists() else "(예전 판 보관본은 이 폴더에 없음)"))
 
+NFIG = 14
 def overlap_run(theme):
     vals, other = drive([["wait", 2500], ["eval", OV]], 1440, theme); n = 0; bad = []; figs = 0
     for d in vals:
@@ -110,7 +116,7 @@ def overlap_run(theme):
                 n += len(r[k]); bad += [f"{fid} {k}: {s}" for s in r[k]]
     return n, bad, figs, other
 nd_, bad_d, figs_d, oth_d = overlap_run(None); nl_, bad_l, figs_l, oth_l = overlap_run("light")
-item("S2", "그림의 글 겹침 · 그림 밖 · 말풍선 넘침 · 화살표 엇갈림 0(어두운 · 밝은 화면, 그림 9)", nd_ == 0 and nl_ == 0 and figs_d == 9 and figs_l == 9, f"어두운 {nd_} · 밝은 {nl_} · 본 그림 {figs_d} + {figs_l}" + (" · " + "; ".join((bad_d + bad_l)[:4]) if nd_ + nl_ else ""))
+item("S2", "그림의 글 겹침 · 그림 밖 · 말풍선 넘침 · 화살표 엇갈림 0(어두운 · 밝은 화면, 그림 14: 전체 1 · 흐름도 1 · 구간 8 · 환류비 4)", nd_ == 0 and nl_ == 0 and figs_d == NFIG and figs_l == NFIG, f"어두운 {nd_} · 밝은 {nl_} · 본 그림 {figs_d} + {figs_l}" + (" · " + "; ".join((bad_d + bad_l)[:4]) if nd_ + nl_ else ""))
 sc = {}
 for w in (390, 768, 1440):
     v, o = drive([["wait", 2000], ["eval", SCROLL]], w); sc[w] = (max(d["sw"] - d["cw"] for d in v if d.get("scroll")), o)
@@ -120,7 +126,58 @@ for sid in ("c3", "loop", "c8", "how"): nav_a += [["click", f".tnav [data-to={si
 nv, nvo = drive(nav_a, 1440); nv = [d for d in nv if d.get("nav")]
 item("T6-1", "구간 줄의 버튼을 누르면 그 절이 구간 줄 바로 아래로 옴(구간 줄은 위에 붙어 있음)", len(nv) == 4 and all(0 <= d["top"] - d["navb"] <= 40 or d["nav"] == "how" for d in nv) and all(d["navb"] <= 120 for d in nv[:3]),
      " · ".join(f"{d['nav']}: 구간 줄 아래 {d['top'] - d['navb']}px" for d in nv))
-cons = [s for s in other + oth_d + oth_l + nvo + sum((x[1] for x in sc.values()), []) if not s.startswith("console: clean")]
+# ---------------------------------------------------------------- 계산값 흐름도(T7)
+FL = S["flow"] or {}; FD = FL.get("data") or {"n": {}, "l": []}; CARD = {c["k"]: c for c in S["cards"]}
+bk = [b["k"] for b in FL.get("boxes", [])]; badid = [b["k"] for b in FL.get("boxes", []) if CARD.get(b["k"], {}).get("id") != b["id"]]
+ends = {l[0] for l in FD["l"]} | {l[1] for l in FD["l"]}; lone = [k for k in bk if k not in ends]
+item("T7-1", "계산값 흐름도: 상자 35 = 공식 35(번호가 구간의 핵심 계산 · 보조 계산 번호와 같음) · 선 = 자료의 경로 수 · 모든 식이 선으로 이어짐 · 구간 이름 8",
+     sorted(bk) == sorted(keys) and len(bk) == 35 and not badid and len(FL.get("edges", [])) == len(FD["l"]) and not lone and FL.get("heads") == [f"c{i}" for i in range(1, 9)],
+     f"상자 {len(bk)} · 선 {len(FL.get('edges', []))}(늘 보이는 것 {sum(1 for e in FL.get('edges', []) if e[2])}) · 번호 다름 {badid or '없음'} · 외딴 식 {lone or '없음'}")
+# 용도의 '계산' 글에 적힌 '식 N' · '구간 N'이 흐름도의 선과 맞는지(흐름도.check_words와 같은 규칙을 화면의 글과 자료로 다시 본다)
+byid = {c["id"]: c["k"] for c in S["cards"]}; adj = {k: set() for k in bk}; outs = {k: set() for k in bk}
+for a, b, _, _ in FD["l"]: adj[a].add(b); adj[b].add(a); outs[a].add(b)
+badw = []
+for c in S["cards"]:
+    k = c["k"]; sec = c["id"].split("-")[0]
+    for m in re.finditer(r"식 (\d+)", c["calc"]):
+        tk = byid.get(f"{sec}-{m.group(1)}")
+        if tk is None or tk == k or (tk not in adj[k] and not (outs[k] & outs[tk])): badw.append(f"{c['id']} {m.group(0)}")
+    for m in re.finditer(r"구간 (\d+)", c["calc"]):
+        ks = {q for i, q in byid.items() if i.split("-")[0] == m.group(1)}
+        if not (adj[k] & ks): badw.append(f"{c['id']} {m.group(0)}")
+item("T7-2", "항목마다 적은 '계산' 용도의 글(식 N · 구간 N)과 흐름도의 선이 같은 내용", not badw and len(S["cards"]) == 35, f"글 {len(S['cards'])}개 · 다름 {badw or '없음'}")
+# 상자의 숫자 = 기록(본류 30 h)
+P3 = VAL["snap"]["30"]["PR"]; fv = {b["k"]: b["v"] for b in FL.get("boxes", [])}
+wantf = {"vboil": [f"증발 {P3['vdot']:.1f} kg/h", f"정제기 {P3['Pstill']:.2f} torr"], "jacket": [f"전달 {P3['Q']:.0f} W"], "bubble": [f"{P3['Tbub']:.1f} ℃"], "comp": [f"입구 {P3['Ptop']:.2f} torr"], "choke": [f"출구 {P3['Pexit']:.2f} torr"],
+         "split": [f"환류 {P3['Rkg']:.1f} kg/h", f"유출 {P3['Dkg']:.1f} kg/h"], "pump": [f"{P3['Ppump']:.2f} torr"], "load": [f"{P3['Qc']:.0f} W"], "loss": [f"{P3['Qloss']:.0f} W"], "pi": [f"개도 {P3['MVpct']:.1f} %"]}
+missf = [k for k, ws in wantf.items() if not all(w in fv.get(k, "") for w in ws)]
+item("T7-3", "흐름도 상자의 계산값이 기록(본류 30 h)과 같음(10개 상자를 기록에서 따로 만들어 대조)", not missf, f"{len(wantf) - len(missf)} / {len(wantf)}" + (f" · 다름: {missf}" if missf else ""))
+# 눌러 보기: 상자를 고르면 들어오는 값 · 쓰이는 곳이 자료와 같은 수로 표시되고, 설명 보기가 그 항목으로 간다. 그림이 한 화면에 들어온다
+FQ = ("(()=>{const s=document.getElementById('fig-flow'),p=document.getElementById('flow-p');const r=s.getBoundingClientRect(),nb=document.querySelector('.tnav').getBoundingClientRect().bottom;"
+      "return JSON.stringify({fq:1,sel:s.classList.contains('sel'),on:[...s.querySelectorAll('.fl-b.on')].map(b=>b.getAttribute('data-k')),nin:s.querySelectorAll('.fl-b.in').length,nout:s.querySelectorAll('.fl-b.out').length,"
+      "hit:s.querySelectorAll('.fl-e.hit').length,shown:[...s.querySelectorAll('.fl-e.hit')].filter(e=>getComputedStyle(e).display!=='none').length,lis:[...p.querySelectorAll('.fio > div')].map(d=>d.querySelectorAll('li:not(.none)').length),"
+      "top:Math.round(r.top),bottom:Math.round(r.bottom),navb:Math.round(nb),vh:innerHeight,card:(()=>{const c=document.querySelector('.tcard.flash, tr.flash');if(!c)return null;const q=c.getBoundingClientRect();return q.top>=0&&q.bottom<=innerHeight+2})()})})()")
+fa = [["wait", 2000], ["click", ".tnav [data-to=flow]"], ["wait", 500], ["eval", FQ], ["click", ".fl-b[data-k=vboil]"], ["wait", 300], ["eval", FQ], ["click", ".fl-b[data-k=mass]"], ["wait", 300], ["eval", FQ],
+      ["click", "#flow-p [data-card]"], ["wait", 500], ["eval", FQ], ["click", ".tnav [data-to=flow]"], ["wait", 400], ["click", ".fl-b[data-k=mass]"], ["wait", 300], ["eval", FQ]]
+fq, fqo = drive(fa, 1440); fq = [d for d in fq if d.get("fq")]
+nin = lambda k: sum(1 for l in FD["l"] if l[1] == k); nout = lambda k: sum(1 for l in FD["l"] if l[0] == k)
+ok74 = (len(fq) == 5 and not fq[0]["sel"] and fq[1]["on"] == ["vboil"] and fq[1]["lis"] == [nin("vboil"), nout("vboil")] and fq[1]["hit"] == fq[1]["shown"] == nin("vboil") + nout("vboil")
+        and fq[2]["on"] == ["mass"] and fq[2]["lis"] == [nin("mass"), nout("mass")] and nout("mass") == 0 and fq[3]["card"] is True and not fq[4]["sel"])
+item("T7-4", "흐름도의 상자를 누르면 들어오는 값 · 쓰이는 곳이 자료와 같은 수로 표시되고(숨겨 둔 보조 입력의 선도 나타남), '이 계산의 설명 보기'가 그 항목으로 가며, 다시 누르면 풀림",
+     ok74, " · ".join(f"{d['on'] or '없음'} 들어옴·쓰임 {d['lis']} 선 {d['shown']}" for d in fq[1:3]) if len(fq) >= 3 else "기록 없음")
+item("T7-5", "흐름도가 한 화면에 들어옴(1440 × 1000 창에서 구간 줄 아래부터 그림 끝까지가 창 안)", len(fq) >= 1 and fq[0]["bottom"] <= fq[0]["vh"] and fq[0]["top"] >= fq[0]["navb"],
+     f"그림 위 {fq[0]['top']} · 아래 {fq[0]['bottom']} · 창 높이 {fq[0]['vh']}" if fq else "기록 없음")
+# ---------------------------------------------------------------- 환류비별 계산 결과(T8) · DB 6배치 비교(T9)
+RRS = S["rr"] or {}
+item("T8-1", "환류비별 계산 결과: 그래프 4(초류 · 본류 환류비별 저비점 불순물과 소요 시간) · DB 환류비 띠 4 · '환류비 판단'과 한계(상대휘발도는 추정 · 고비점 불순물은 계산에 없음 · 컷별 성분 분석 뒤 판단)가 글에 있음",
+     RRS.get("figs") == ["fig-rr1", "fig-rr2", "fig-rr3", "fig-rr4"] and RRS.get("bands") == 4 and all(w in RRS.get("tx", "") for w in ("추정", "고비점 불순물", "컷별 성분 분석", "환류비 판단")), f"그래프 {len(RRS.get('figs', []))} · 띠 {RRS.get('bands')} · 점 {RRS.get('pts')}")
+DBV = json.loads((HERE / "DB값.json").read_text(encoding="utf-8")); TRL = json.loads((HERE / "시험계산_기록.json").read_text(encoding="utf-8")); DBF = json.loads((HERE / "DB_맞춤_결과.json").read_text(encoding="utf-8"))
+tn_ = TRL["runs"].get(f"{DBF['A_use']:.2f}", {}).get("sum"); cx = " ".join(S["cmpx"]["cells"]); rngs = lambda v, d=1: f"{min(v):.{d}f}~{max(v):.{d}f}"
+want9 = [rngs(DBV["본류"]["T"]), rngs(DBV["본류"]["Ttop"]), rngs(DBV["초류_h"]), rngs(DBV["본류_h"]), f"{END['Tmain']:.1f}", f"{END['ThMain']:.1f}"] + ([f"{tn_['Tmain']:.1f}", f"{tn_['Tex30']:.1f}"] if tn_ else ["시험 계산 없음"])
+miss9 = [w for w in want9 if w not in cx]
+item("T9-1", "계산값과 현장값: DB 6배치 · 계산 · 시험 계산 · 차이의 원인 5칸 8줄, 숫자가 DB값.json · 점검 기록 · 시험 계산 기록과 같고 '기본값은 아직 변경하지 않았다'는 글이 있음",
+     S["cmp"] == 8 and S["cmpx"]["cols"] == 5 and not miss9 and "기본값은 아직 변경하지 않았다" in S["cmpx"]["tx"], f"{S['cmp']}줄 · 숫자 {len(want9) - len(miss9)} / {len(want9)}" + (f" · 없음: {miss9}" if miss9 else ""))
+cons = [s for s in other + oth_d + oth_l + nvo + fqo + sum((x[1] for x in sc.values()), []) if not s.startswith("console: clean")]
 item("S4", "콘솔 오류 0", not cons, "; ".join(cons[:3]) or "없음")
 bad_h = [h for h in S["heads"] if re.search(r"(다|요|까|죠)[.?!]?$", h)]
 item("S5", "제목(h1 ~ h4)이 명사형", not bad_h, f"제목 {len(S['heads'])}개" + (" · " + ", ".join(bad_h) if bad_h else ""))

@@ -194,16 +194,12 @@ def fig_db():
     for x, y, tag, desc, an, cls in T: o.append(_tg(x, y, tag, desc, an, cls))
     o.append("</svg>"); return "".join(o)
 
-def cmp_rows(D):
-    """계산값과 현장값 비교 표의 줄(항목 · 현장 · 계산 · 차이의 원인). 현장값은 PIMS 화면과 배치 트렌드 그래프에서 읽은 값이다."""
+def pims_rows(D):
+    """PIMS 화면(초류)의 한 점으로만 비교할 수 있는 항목(스팀 밸브 개도 · 스팀 유량). DB 6배치 분석에는 이 값이 없다."""
     from 내용 import PIMS
     E = D["end"]; P6 = D["snap"]["6"]["PR"]; C = D["snap"]["30"]["CUR"]
-    return [("내부 온도 TICH071", "초류 93.5 ℃(화면) · 99~100 ℃(그래프), 본류 100~101.5 ℃", f"초류 {N(E['Tfore'])} ℃, 본류 {N(E['Tmain'])} ℃", "증기압식의 상수 A"),
-            ("탑 온도 TIH075", "초류 76.8 · 82~84 ℃, 본류 84 → 87.6 ℃", f"초류 {N(E['ThFore'])} ℃, 본류 {N(E['ThMain'])} ℃", "온도계 설치 위치, 증기압식"),
-            ("환류 · 유출", "초류 3.79 · 1.46, 본류 3.82 · 5.93 kg/h(화면)", f"초류 {N(E['Rfore'], 2)} · {N(E['Dfore'], 2)}, 본류 {N(E['Rmain'], 2)} · {N(E['Dmain'], 2)} kg/h", "스팀 밸브 특성식, 제어 방식"),
-            ("스팀 밸브 개도 TICH071_MV", f"초류 {PIMS['MV']} %(화면) · 승온 50, 정제 25 내외(그래프)", f"승온 70 %(예시), 초류 {N(E['mvFore'])} %, 본류 {N(E['mvMain'])} %", "스팀 밸브 특성식"),
-            ("스팀 유량 FIH071", f"초류 {PIMS['FI']} kg/h(밸브 전단 · 개도 {PIMS['MV']} %, 화면)", f"초류 {N(P6['steamKgh'])} kg/h(개도 {N(P6['MVpct'])} %) · 특성식의 {PIMS['MV']:.0f} % 값은 {N(C['mSteamMax'] * C['valveR'] ** (PIMS['MV'] / 100 - 1))} kg/h", "스팀 밸브 특성식, 스팀 열량 중 액에 전달되는 비율"),
-            ("구간 소요 시간", "초류 9.0 h · 본류 72.7 h(그래프의 배치), 중앙값 24.5 h · 61.6 h", f"초류 {N(E['fore_h'])} h · 본류 {N(E['main_h'])} h", "유출량의 설정값 유지 여부")]
+    return [("스팀 밸브 개도 TICH071_MV", f"초류 {PIMS['MV']} %", f"초류 {N(E['mvFore'])} %, 본류 {N(E['mvMain'])} %", "스팀 밸브 특성식"),
+            ("스팀 유량 FIH071", f"초류 {PIMS['FI']} kg/h(밸브 전단 · 개도 {PIMS['MV']} %)", f"초류 {N(P6['steamKgh'])} kg/h(개도 {N(P6['MVpct'])} %) · 특성식의 {PIMS['MV']:.0f} % 값은 {N(C['mSteamMax'] * C['valveR'] ** (PIMS['MV'] / 100 - 1))} kg/h", "스팀 밸브 특성식, 스팀 열량 중 액에 전달되는 비율")]
 
 def scene_db(D, NODES):
     from 내용 import PIMS
@@ -215,16 +211,20 @@ def scene_db(D, NODES):
     hh = lambda m: (m / mix["rho"] - Vh) / Ac                                    # 2:1 경판 위 직동부 액 높이
     UAp = C["U"] * (A30 + math.pi * Tv * (hh(PIMS["W"]) - hh(P30["m"])))          # PIMS 화면 시점(정제기 371.9 kg)의 U·A
     dTneed = qS * 1000 / UAp
-    rows = "".join(f'<tr><td>{n["n"]} {esc(n["name"])}</td><td class="m">{esc(d["tags"])}</td><td>{eq_html(d["eq"])}</td><td>{esc(d["gets"])}</td></tr>' for n in NODES for d in n["db"])
+    import DB결과
+    rows = "".join(f'<tr><td>{n["n"]} {esc(n["name"])}</td><td class="m">{esc(d["tags"])}</td><td>{eq_html(d["eq"])}</td><td>{esc(d["gets"])}</td>'
+                   f'<td><span class="bdg {DB결과.ST[d["st"]][1]}">{DB결과.ST[d["st"]][0]}</span> {esc(d["got"])}</td></tr>' for n in NODES for d in n["db"])
     hard = "".join(f'<tr><td>{n["n"]} {esc(n["name"])}</td><td>{esc(a["what"])}</td><td>{esc(a["why"])}</td><td>{esc(a["effect"])}</td></tr>' for n in NODES for a in n["assume"] if a["kind"] == "hard")
     est = sum(1 for n in NODES for a in n["assume"] if a["kind"] == "est"); nh = sum(1 for n in NODES for a in n["assume"] if a["kind"] == "hard")
-    cmp_ = cmp_rows(D)
-    crow = "".join(f"<tr><td>{esc(a)}</td><td>{esc(b)}</td><td class=\"m\">{esc(c)}</td><td>{esc(d)}</td></tr>" for a, b, c, d in cmp_)
+    c = DB결과.st_count(NODES)
+    prow = "".join(f"<tr><td>{esc(a)}</td><td>{esc(b)}</td><td class=\"m\">{esc(cc)}</td><td>{esc(d)}</td></tr>" for a, b, cc, d in pims_rows(D))
     return ('<section class="scene" id="db" data-tab="db" hidden><div class="sh"><h2>DB 데이터로 결정되는 항목</h2><span class="tag">PIMS 시계열 · 분석 데이터</span></div>'
-            f'<p class="say">현재 입력값 가운데 {est}건은 가정, {nh}건은 추정이다. 가정 항목은 아래 계기의 시계열 데이터를 확보하면 공식에 대입해 정할 수 있다. 식은 그대로 두고 식의 상수만 현장값으로 바꾸는 작업이다.</p>'
+            f'<p class="say">현재 입력값 가운데 {est}건은 가정, {nh}건은 추정이다. 가정 항목은 아래 계기의 시계열 데이터를 공식에 대입해 정한다. 식은 그대로 두고 식의 상수만 현장값으로 바꾸는 작업이다. '
+            f'DB 6배치의 구간 평균으로 확인한 결과를 항목마다 적었다(확인 {c["ok"]}건 · 일부 확인 {c["part"]}건 · 확인 불가 {c["no"]}건). 확인 불가는 기록이 없거나, 있어도 쓸 수 없는 경우다.</p>'
             f'<figure><div class="scroll">{fig_db()}</div><figcaption>초록색 태그는 PIMS 화면에서 확인한 계기(옆의 글은 측정 항목), 점선 태그는 현재 측정하지 않는 항목이다.</figcaption></figure>'
-            f'<div class="blk"><h3>수집 데이터 → 적용 식 → 결정 항목 <span class="bdg b-db">DB</span></h3><div class="tw"><table><tr><th>구간</th><th>수집 데이터</th><th>적용 식</th><th>결정 항목</th></tr>{rows}</table></div></div>'
-            f'<div class="grid2"><div class="blk"><h3>계산값과 현장값 비교 <small>현장값은 PIMS 화면과 배치 트렌드 그래프(육안 판독)</small></h3><div class="tw"><table><tr><th></th><th>현장</th><th>계산</th><th>차이의 원인</th></tr>{crow}</table></div>'
+            f'<div class="blk"><h3>수집 데이터 → 적용 식 → 결정 항목 → 6배치 결과 <span class="bdg b-db">DB</span></h3><div class="tw"><table><tr><th>구간</th><th>수집 데이터</th><th>적용 식</th><th>결정 항목</th><th>DB 6배치 결과</th></tr>{rows}</table></div>'
+            '<p class="small">계산값과 DB 6배치의 비교, DB로 구한 증기압식 상수는 <button class="lnk" data-go="dr">DB 6배치 분석 결과</button>에 있다.</p></div>'
+            f'<div class="grid2"><div class="blk"><h3>스팀 유량 지시값 검토 <small>PIMS 화면(초류)의 한 점</small></h3><div class="tw"><table><tr><th></th><th>현장(PIMS 화면)</th><th>계산</th><th>차이의 원인</th></tr>{prow}</table></div>'
             f'<p class="small">FIH071은 스팀 컨트롤 밸브 전단에 있다. 같은 배관이면 밸브 앞뒤의 질량 유량은 같으므로, 개도 {PIMS["MV"]} %로 조인 결과가 이미 지시값 {PIMS["FI"]} kg/h에 들어 있다. 그런데 이 양이 자켓에서 전량 응축하면 {qS:.1f} kW이고, 같은 화면의 환류 + 유출 {PIMS["R"] + PIMS["D"]:.2f} kg/h를 증발시키는 데 필요한 열량은 {qP:.2f} kW다({qS / qP:.0f}배 차이). 자켓 온도 TIH074({PIMS["Tj"]} ℃)도 내부 온도({PIMS["T"]} ℃)와 1 ℃ 이내인데, {qS:.1f} kW를 전달하려면 자켓이 액보다 약 {dTneed:.0f} ℃ 높아야 한다(U·A {UAp:.0f} W/K, U는 추정값). 따라서 지시값 전부가 자켓에서 응축된다고 보기는 어렵다. 유량계 측정 범위(저유량 오차), 유량계와 밸브 사이 분기, 스팀 트랩 상태, TIH074 설치 위치를 확인하고, 승온 구간의 온도 상승률과 스팀 유량을 함께 확보하면 판별할 수 있다.</p>'
-            '<p class="small">현재 확보한 정보만으로는 정할 수 없어 증기압식과 스팀 밸브 특성식은 변경하지 않았다. 시계열 데이터를 확보하면 위 표의 순서대로 보정한다.</p></div>'
+            '<p class="small">스팀 밸브 개도와 스팀 유량의 시계열은 DB 6배치 분석에 포함되지 않아, 스팀 밸브 특성식은 변경하지 않았다.</p></div>'
             f'<div class="blk"><h3>데이터로도 정하기 어려운 항목 <span class="bdg b-hard">추정</span></h3><div class="tw"><table><tr><th>구간</th><th>항목</th><th>근거</th><th>영향</th></tr>{hard}</table></div></div></div></section>')

@@ -3,6 +3,7 @@
 
 실행:  python 만들기.py [점검 결과 이름]        예: python 만들기.py v130_최종
 - 읽는 것: 값.json(시뮬레이터 v126에서 뽑은 계산 값, 다섯 시점) · ../점검/점검결과_<이름>.json(이상 상황 12가지 기록, 배치 끝 기록)
+           DB값.json(DB 6배치의 구간 평균 표) · 시험계산_기록.json(증기압식 상수만 바꿔 넣은 계산 — 시험계산.py)
            시연_기록.json · 시연_화면_1~5.webp(시연_캡처.py가 시뮬레이터를 직접 눌러 남긴 값과 화면 — 발표 순서의 '시연 순서'에 쓴다)
 - 내는 것: ../정제_시뮬레이터_발표자료.html(파일 하나로 열림) · 발표자료_아티팩트.html(앞머리 없는 조각)
 - 숫자는 손으로 옮겨 적지 않는다. 그림과 글의 값은 모두 위 두 기록에서 읽는다.
@@ -12,6 +13,7 @@ import io, json, math, pathlib, sys, html
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE.parent / "점검"))
 import 그림 as G, 내용, 장면, 틀, 순서, 용도
+import DB_맞춤 as DBF, DB결과      # DB 6배치: 요약값을 시뮬레이터 식에 넣은 계산(DB_맞춤.py) · 화면과 문장(DB결과.py)
 from 그림 import esc, eq_html
 from 내용 import N
 
@@ -50,9 +52,11 @@ EXTRA = dict(Re=Re_ag, hAg=hAg, U=U_, rpm=C["N"] * 60, torr_cm=torr_cm, dT_1cm=t
              lost_txt=("0.01 g/h 미만" if (P30["lostkg"] or 0) * 1000 < 0.01 else f'{(P30["lostkg"] or 0) * 1000:.2f} g/h'), tau_min=P30["tauP"] / 60, pstopP=AB["pstop"][1]["Ppump"], plant_T=101.5)
 assert abs(EXTRA["vpass"] - P30["Qc"] / P30["lam"] * 3600) < 0.02, "꼭대기를 넘는 증기: 증발 − 컬럼 안 응축 = 응축 부하 ÷ 증발열이어야 한다"
 assert abs(C["hold"] * EXTRA["Vpack_L"] / 1000 * mix["rho"] - P30["mHold"]) < 0.01, "충전층 홀드업 = 6 % × 충전층 부피 × 밀도"
-D = dict(snap=VAL["snap"], end=END, extra=EXTRA, ab=AB, chk=CHK["R"])
+D = dict(snap=VAL["snap"], end=END, extra=EXTRA, ab=AB, chk=CHK["R"], db=DBF.OUT, dbv=DBF.DBV, pims_main=순서.PIMS_MAIN)      # db = DB 6배치 계산 결과, dbv = DB 배치 표
+DB결과.judge(D["db"], VER)                 # DB와 견준 글의 판정이 숫자와 맞는지(달라지면 여기서 멈춘다)
 _rec = HERE / "시연_기록.json"; REC = json.loads(_rec.read_text(encoding="utf-8")) if _rec.exists() else None      # 시연_캡처.py가 남긴 기록(용도의 적용 예 · 시연 순서)
 NODES = 용도.attach(D, 내용.build(D), REC)          # 공식마다 use = 용도(계산 · 운전 · 적용 예) · 식의 요지를 붙인다
+NODES = DB결과.attach(D, NODES)                    # DB 수집 항목마다 st · got = 6배치에서 확인한 내용을 붙인다
 
 # ---------------------------------------------------------------- 조각
 BD = {"est": ("b-est", "가정"), "hard": ("b-hard", "추정"), "db": ("b-db", "DB"), "dwg": ("b-dwg", "도면")}
@@ -108,7 +112,8 @@ def overview():
 def page(parts, standalone):
     nodes_bar = '<div class="nodes" hidden>' + "".join(f'<button data-go="{n["id"]}"><i>{n["n"]}</i>{esc(n["name"])}</button>' for n in NODES) + "</div>"
     # 요약 · 발표 순서 탭의 장면 줄, 발표 순서를 시작하면 나타나는 진행 표시줄(내용은 틀.JS가 window.TRACKS에서 채운다)
-    subs = ('<div class="subs" data-for="sm" hidden><button data-go="rs">계산 결과와 현장값 비교</button><button data-go="pl">한계와 개선 계획</button></div>'
+    subs = ('<div class="subs" data-for="db" hidden><button data-go="dr">DB 6배치 분석 결과</button><button data-go="db">DB 데이터로 결정되는 항목</button></div>'
+            '<div class="subs" data-for="sm" hidden><button data-go="rs">계산 결과와 현장값 비교</button><button data-go="rr">환류비별 계산 결과</button><button data-go="pl">한계와 개선 계획</button></div>'
             '<div class="subs" data-for="gd" hidden><button data-go="gd">발표 순서</button><button data-go="dm">시연 순서</button></div>') if TRACKS else ""
     pbar = ('<div class="pbar" id="pbar" hidden><div class="pb-l"><span class="pb-tr" id="pb-tr"></span><span class="pb-n" id="pb-n"></span></div>'
             '<div class="pb-m"><b id="pb-t"></b><span id="pb-msg"></span><span class="pb-val" id="pb-val" hidden></span></div>'
@@ -131,7 +136,7 @@ SCRIPT_DATA = ""; TRACKS = None
 PARTS = [overview()] + [node_scene(n) for n in NODES]
 try:
     import 이상 as AB_MOD                      # 이상 상황 · DB 화면(따로 둔 파일)
-    ab_html, ab_data = AB_MOD.scene_ab(D, NODES, ABNAME); PARTS.append(ab_html); PARTS.append(AB_MOD.scene_db(D, NODES))
+    ab_html, ab_data = AB_MOD.scene_ab(D, NODES, ABNAME); PARTS.append(ab_html); PARTS.append(DB결과.scene_dr(D, NODES, VER)); PARTS.append(AB_MOD.scene_db(D, NODES))
     SCRIPT_DATA = "window.AB_DATA=" + json.dumps(ab_data, ensure_ascii=False) + ";\n"
 except ModuleNotFoundError:
     pass

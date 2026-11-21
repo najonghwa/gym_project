@@ -126,14 +126,18 @@ def fig_n2(nd, D):
     Tmin, Tmax, Pmax = 70.0, 130.0, 3.0; X_ = lambda T: px0 + (T - Tmin) / (Tmax - Tmin) * pw; Y_ = lambda Pv: py0 + ph - min(Pv, Pmax) / Pmax * ph
     psat = lambda T: 10 ** (A_ - B_ / (T + 273.15)); q = []
     a0 = nd["assume"][0]
-    q.append(text(bx + 14, by + 22, "증기압 곡선(현재 증기압식)", "co-n", "start") + amark(bx + bw - 12, by + 18, a0["kind"], "a", "", "end") + text(bx + bw - 60, by + 22, a0["fig"], "ast", "end"))
+    DB = D["db"]; A2 = DB["A_use"]; psat2 = lambda T: 10 ** (A2 - B_ / (T + 273.15)); Tlo, Thi = DB["DBR"]["Tmain"]
+    q.append(text(bx + 14, by + 22, "증기압 곡선", "co-n", "start") + amark(bx + bw - 12, by + 18, a0["kind"], "a", "", "end") + text(bx + bw - 60, by + 22, a0["fig"], "ast", "end"))
+    q.append(f'<rect class="plot-band" x="{X_(Tlo):.1f}" y="{py0}" width="{X_(Thi) - X_(Tlo):.1f}" height="{ph}"/>')      # DB 6배치 본류 구간의 내부 온도 범위
     for pv in (1, 2, 3): q.append(f'<path class="plot-g" d="M{px0} {Y_(pv):.1f}H{px0 + pw}"/>' + text(px0 - 6, Y_(pv) + 4, f"{pv}", "tk", "end"))
     for tv in (80, 100, 120): q.append(text(X_(tv), py0 + ph + 16, f"{tv}", "tk"))
     q.append(f'<path class="plot-ax" d="M{px0} {py0}V{py0 + ph}H{px0 + pw}"/>' + text(px0 + pw, py0 + ph + 34, "온도 ℃", "ts", "end") + text(px0 - 6, py0 - 9, "torr", "ts", "end"))
     q.append(f'<path class="plot-c" d="{P([(X_(T), Y_(psat(T))) for T in [Tmin + i * 1.0 for i in range(int(Tmax - Tmin) + 1)]])}"/>')
-    q.append(f'<circle class="plot-p" cx="{X_(84):.1f}" cy="{Y_(psat(84)):.1f}" r="4.5"/>' + text(X_(84) + 4, Y_(psat(84)) - 10, "84 ℃ · 0.10(문헌값)", "ts", "middle"))
-    Tn = P30["Tmean"]; q.append(f'<circle class="plot-p2" cx="{X_(Tn):.1f}" cy="{Y_(psat(Tn)):.1f}" r="5"/>' + text(X_(Tn) - 10, Y_(psat(Tn)) - 22, "현재 계산", "tm", "end") + text(X_(Tn) - 10, Y_(psat(Tn)) - 7, f"{N(Tn)} ℃", "tm", "end"))
-    Tp = X["plant_T"]; q.append(f'<path class="plot-p3" d="M{X_(Tp):.1f} {py0 + 6}V{py0 + ph}"/>' + text(X_(Tp) - 6, py0 + 16, f"현장 내부 온도 {N(Tp)} ℃", "markt", "end"))
+    q.append(f'<path class="plot-c3" d="{P([(X_(T), Y_(psat2(T))) for T in [Tmin + i * 0.5 for i in range(int((Tmax - Tmin) * 2) + 1)] if psat2(T) <= Pmax])}"/>')      # DB 12점으로 구한 상수의 곡선
+    Tl = B_ / (A2 - math.log10(2.2)) - 273.15; q.append(text(X_(Tl) + 7, Y_(2.2) + 4, f"A {A2:.2f}", "dbv", "start"))
+    q.append(f'<path class="thin" d="M{X_(84):.1f} {Y_(psat(84)) - 6:.1f}V{Y_(1.55):.1f}"/>' + f'<circle class="plot-p" cx="{X_(84):.1f}" cy="{Y_(psat(84)):.1f}" r="4.5"/>' + text(X_(84) + 5, Y_(1.55) + 9, "84 ℃ · 0.10(SDS)", "ts", "end"))
+    Tn = P30["Tmean"]; q.append(f'<circle class="plot-p2" cx="{X_(Tn):.1f}" cy="{Y_(psat(Tn)):.1f}" r="5"/>' + text(X_(Tn) + 9, Y_(psat(Tn)) + 16, "현재 계산", "tm", "start") + text(X_(Tn) + 9, Y_(psat(Tn)) + 30, f"{N(Tn)} ℃", "tm", "start"))
+    q.append(text(X_(Tlo) - 5, py0 + 14, "DB 본류", "dbv", "end") + text(X_(Tlo) - 5, py0 + 28, f"{Tlo}~{Thi} ℃", "dbv", "end"))
     o.append(panel("plot", bx, by, bw, bh, "".join(q)))
     o.append(_col(fid, nd, [("antoine", (500, 300), "liq"), ("bubble", (cx - r + 2, lv + 1), "liq"), ("head", (xr + 2, lv + 100), "liq")], LX, LW, "R"))
     o.append(_col(fid, nd, [("vboil", (xn + 8, 104), "vap"), ("hvap", (cx + 132, lv - 9), "vap")], RX, RW, "L", y1=by - 12))
@@ -177,13 +181,14 @@ def fig_n4(nd, D):
     o.append(text(bx0, ytop + 94, f"증기 {N(X['vpass'], 1)} kg/h", "tm", "start") + text(bx1, ytop + 94, f"마하수 {N(P30['Mach'], 2)} · 한계 0.95", "tm", "end"))
     o.append(tagbub(xa + 16, ytop + 142, "TIH075 위치 미확정", "start", "tgx") + _am(nd, 2, xa + 16, ytop + 166))
     o.append(text(xb - 56, yce + 20, f"응축기 측 {N(P30['Pcond'], 2)} torr", "ts", "end"))
-    # 현장 두 점(PIMS 화면)
-    tx, ty = 20, 300; q = [text(tx + 14, ty + 22, "현장 데이터 2점(PIMS 화면)", "co-n", "start")]
-    rows = [("", "초류", "본류"), ("환류 + 유출", "5.25 kg/h", "9.75 kg/h"), ("내부 온도", "93.5 ℃", "101.5 ℃"), ("해당 온도의 증기압", "0.215 torr", "0.398 torr")]
+    # DB 6배치 12점(초류 · 본류 구간 평균)
+    DB = D["db"]; cv = DB["VPsd"] / DB["VPmean"] * 100
+    tx, ty = 20, 300; q = [text(tx + 14, ty + 22, "DB 6배치 12점(초류 · 본류)", "co-n", "start")]
+    rows = [("", "최소", "최대"), ("환류 + 유출", f"{DB['Vrng'][0]:.2f} kg/h", f"{DB['Vrng'][1]:.2f} kg/h"), ("내부 온도", f"{DB['Trng'][0]} ℃", f"{DB['Trng'][1]} ℃"), ("증발량 ÷ 증기압", f"{DB['VPrng'][0]:.1f}", f"{DB['VPrng'][1]:.1f}")]
     for i, (a, b, c) in enumerate(rows):
         yy = ty + 46 + i * 20
         q.append((text(tx + 14, yy, a, "ts", "start") if a else "") + text(tx + 214, yy, b, "tnum" if i else "ts", "end") + text(tx + 326, yy, c, "tnum" if i else "ts", "end"))
-    q.append(text(tx + 14, ty + 132, "증발량 비 1.857 = 증기압 비 1.852", "tm", "start") + text(tx + 14, ty + 152, "→ 증기 배관이 초킹 상태로 추정됨", "ts", "start"))
+    q.append(text(tx + 14, ty + 132, f"증발량 ÷ 증기압 = {DB['VPmean']:.1f} ± {DB['VPsd']:.1f}(변동 {cv:.0f} %)", "tm", "start") + text(tx + 14, ty + 152, "→ 증발량이 압력에 비례: 초킹 상태의 특징", "ts", "start"))
     q.append(text(tx + 14, ty + 180, "사용 계기", "ts", "start") + tagdb(tx + 70, ty + 176, "FICH073", "start") + tagdb(tx + 138, ty + 176, "FICH072", "start") + tagdb(tx + 206, ty + 176, "TICH071", "start"))
     o.append(panel("pims", tx, ty, 340, 196, "".join(q)))
     o.append(_col(fid, nd, [("leq", (xa - 9, ytop - 6), "n"), ("comp", (xa - 9, ytop + 100), "vap")], 20, 340, "R", y1=ty - 12))

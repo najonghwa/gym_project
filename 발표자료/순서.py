@@ -9,8 +9,8 @@
 """
 import base64, math, pathlib, re
 from 그림 import esc
-from 내용 import N
-import 이상
+from 내용 import N, jo
+import 이상, DB결과, 환류비
 
 HERE = pathlib.Path(__file__).resolve().parent
 mmss = lambda s: f"{int(s) // 60}:{int(s) % 60:02d}"
@@ -25,7 +25,7 @@ CIRC = "①②③④⑤"
 # 구간 화면에서 대표로 제시할 공식(구간마다 하나) — 값은 그 공식 카드의 '계산값' 그대로
 NODE_KEY = {1: "jacket", 2: "vboil", 3: "nst", 4: "choke", 5: "ntu", 6: "split", 7: "pump", 8: "mass"}
 NODE_SEC = {1: 90, 2: 90, 3: 90, 4: 60, 5: 60, 6: 60, 7: 60, 8: 90}
-PIMS_MAIN = (3.82, 5.93)      # PIMS 화면의 본류 구간 환류 · 유출 지시값(kg/h). 이상.cmp_rows의 현장 칸과 같은 값인지 아래에서 확인한다
+PIMS_MAIN = (3.82, 5.93)      # PIMS 화면의 본류 구간 환류 · 유출 지시값(kg/h). 'DB 6배치 분석 결과'의 증발량 그림에 PIMS 화면의 점으로 찍는다
 DEMO_NAME = {1: "교반에 따른 액 내 온도 분포", 2: "정상 운전 흐름", 3: "도면 보기", 4: "이상 상황: 1차 N-Brine 온도 상승", 5: "밸브 조작: 환류 밸브 닫기"}
 
 
@@ -34,10 +34,7 @@ def tracks(D, NODES, REC, npass):
     E = D["end"]; nfor = sum(len(n["formulas"]) for n in NODES)
     nest = sum(1 for n in NODES for a in n["assume"] if a["kind"] == "est"); nhard = sum(1 for n in NODES for a in n["assume"] if a["kind"] == "hard")
     F = {f["k"]: f for n in NODES for f in n["formulas"]}
-    row = [r for r in 이상.cmp_rows(D) if r[0].startswith("환류")][0]
-    assert f"본류 {PIMS_MAIN[0]} · {PIMS_MAIN[1]}" in row[1], row[1]
-    assert abs(E["Rmain"] - PIMS_MAIN[0]) < 0.3 and abs(E["Dmain"] - PIMS_MAIN[1]) < 0.3, "본류 환류 · 유출이 현장값과 0.3 kg/h 넘게 다르다 — '거의 같다'는 글을 고칠 것"
-    assert E["Tmain"] > 101.5 + 5 and E["ThMain"] > 87.6 + 5, "온도 계산값이 현장값보다 높다는 글의 근거가 달라졌다"
+    db = D["db"]; J = DB결과.judge(db); _, TN = DB결과.trial(db); A_ = f'{db["A_use"]:.2f}'; c = DB결과.st_count(NODES); ndb = sum(c.values())      # 판정이 달라지면 judge에서 멈춘다
     assert "에너지 수지" in F["vboil"]["law"] and "압력 평형" in F["vboil"]["law"], F["vboil"]["law"]
     verbs = " → ".join(n["verb"] for n in NODES)
     t5 = [
@@ -48,9 +45,10 @@ def tracks(D, NODES, REC, npass):
         dict(t="시연", sec=120, go="dm", kind="demo", demo=[1, 2, 4], scr="시연 순서 ① ② ④",
              msg="시뮬레이터 화면으로 전환한다. 교반에 따른 온도 분포, 정상 운전 흐름, 이상 상황(1차 N-Brine 온도 상승) 순으로 조작하고, 수치는 설비 옆에 표시되는 계산값으로 확인한다."),
         dict(t="계산 결과와 현장값 비교", sec=45, go="rs", kind="talk", scr="계산 결과와 현장값 비교",
-             msg=f"투입 {N(E['m0'], 0)} kg 배치의 계산 결과는 종료 {N(E['t'])} h, 초류 {N(E['fore'])} kg, 본류 {N(E['main'])} kg이다. 현장값과 비교하면 본류 구간의 환류 · 유출 유량은 거의 같고, 온도는 계산값이 높다."),
+             msg=f"투입 {N(E['m0'], 0)} kg 배치의 계산 결과는 종료 {N(E['t'])} h, 초류 {N(E['fore'])} kg, 본류 {N(E['main'])} kg이다. DB 6배치와 비교하면 증발량과 구간 소요 시간은 배치 간 범위 안에 있고, 본류 내부 온도는 계산값이 {N(J['dT_main'][0], 0)}~{N(J['dT_main'][1], 0)} ℃ 높다. "
+                 f"원인인 증기압식의 상수를 DB로 구해 넣으면 {N(TN['Tmain'])} ℃로 DB 범위에 든다."),
         dict(t="한계와 개선 계획", sec=45, go="pl", kind="talk", scr="한계와 개선 계획",
-             msg=f"입력값 가운데 가정 {nest}건은 계기 시계열 데이터로 정할 수 있고, 추정 {nhard}건은 물성 · 분석 자료가 더 필요하다. 식의 형태는 그대로 두고 상수를 현장 데이터에 맞춰 보정하는 작업이 남아 있다."),
+             msg=f"입력값 가운데 가정 {nest}건은 계기 시계열 데이터로 정할 수 있고, 추정 {nhard}건은 물성 · 분석 자료가 더 필요하다. DB 6배치로 증기압식의 상수를 구했으며, 이 값의 반영과 나머지 가정값의 보정이 남아 있다."),
     ]
     full = [
         dict(t="전체 구성", sec=120, go="ov", kind="talk", scr="전체 구성",
@@ -66,10 +64,11 @@ def tracks(D, NODES, REC, npass):
              msg=f"원인에 해당하는 입력값 하나만 바꾸고, 정상 운전과 같은 공식으로 다시 계산한다. 시나리오 12종을 적용해, 계산된 변화의 방향과 크기를 별도로 구한 기준과 비교했다(검증 {npass} / 12 통과)."),
         dict(t="시연 2 · 이상 상황", sec=120, go="dm", kind="demo", demo=[4, 5], scr="시연 순서 ④ ⑤",
              msg="방금 설명한 시나리오를 시뮬레이터에 적용한다. [재생]을 누르고 1차 N-Brine 온도 상승을 적용했다가 되돌린 다음, 환류 밸브를 닫았다가 연다."),
-        dict(t="DB 데이터 활용", sec=120, go="db", kind="talk", scr="DB 데이터 활용",
-             msg=f"가정 {nest}건은 계기 시계열 데이터를 공식에 대입해 정할 수 있다. 수집 데이터, 적용 식, 결정 항목을 표로 정리했으며, 계산값과 현장값의 차이와 그 원인은 비교표에 있다."),
+        dict(t="DB 데이터 활용", sec=120, go="dr", kind="talk", scr="DB 6배치 분석 결과",
+             msg=f"사내 DB 6배치의 계기 기록으로 계산값을 검증했다. 증발량과 구간 소요 시간은 배치 간 범위 안에 있고, 온도는 계산값이 DB보다 높다. 증기 배관이 초킹 상태라는 점을 이용해 증기압식의 상수를 구했으며(A {A_}), 이 값을 넣은 시험 계산은 DB의 내부 온도 범위에 든다. "
+                 f"수집 항목 {ndb}건 가운데 확인한 것은 {c['ok']}건, 일부 확인한 것은 {c['part']}건이다."),
         dict(t="한계와 개선 계획", sec=60, go="pl", kind="talk", scr="한계와 개선 계획",
-             msg=f"현재 수치의 근거 수준을 정리하며 마친다. 가정 {nest}건과 추정 {nhard}건, 계산에 포함되지 않은 현상을 밝히고 데이터 확보 후의 보정 방향을 제시한다."),
+             msg=f"현재 수치의 근거 수준을 정리하며 마친다. 가정 {nest}건과 추정 {nhard}건, 계산에 포함되지 않은 현상을 밝히고, DB로 구한 상수의 반영과 추가로 요청할 데이터를 제시한다."),
     ]
     return dict(t5=dict(name="5분 버전", slack=15, steps=t5, flow="대상과 목적 → 계산 구조 → 동작 확인(시연) → 결과와 현장값 → 한계와 계획"),
                 full=dict(name="자세한 버전", slack=0, steps=full, flow="전체 구조 → 동작 확인(시연 1) → 구간별 공식 1~8 → 이상 상황의 구현 방법과 시연 2 → 데이터 활용 → 한계와 계획"))
@@ -229,37 +228,43 @@ def scene_rs(D, NODES, VER):
     seal = E["m0"] - E["m"] - E["fore"] - E["main"]
     mseg = [("초류", E["fore"], "fore"), ("본류", E["main"], "main"), ("정제기 잔량", E["m"], "rest"), ("환류 U자 액봉", seal, "seal")]
     assert abs(sum(v for _, v, _ in tseg) - E["t"]) < 1e-6 and abs(sum(v for _, v, _ in mseg) - E["m0"]) < 1e-6
-    rows = [r for r in 이상.cmp_rows(D) if r[0].split()[0] in ("내부", "탑", "환류", "구간")]; assert len(rows) == 4, [r[0] for r in rows]
-    crow = "".join(f'<tr><td>{esc(a)}</td><td>{esc(b)}</td><td class="m">{esc(c)}</td><td>{esc(d)}</td></tr>' for a, b, c, d in rows)
+    db = D["db"]; rows = [r for r in DB결과.cmp_rows(D) if r["k"] in ("T", "Th", "RD", "t")]; assert len(rows) == 4
+    crow = "".join(f'<tr><td>{esc(r["name"])}</td><td class="m">{DB결과.cell(r["db"])}</td><td class="m">{DB결과.cell(r["sim"])}</td><td class="m">{DB결과.cell(r["trial"])}</td></tr>' for r in rows)
     acc = F["accum"]
     return ('<section class="scene" id="rs" data-tab="sm" hidden><div class="sh"><h2>계산 결과와 현장값 비교</h2>' f'<span class="tag">투입 {N(E["m0"], 0)} kg 배치 · {esc(VER)}</span></div>'
-            '<p class="q">배치 계산 결과 및 PIMS 현장값과의 차이</p>'
-            '<div class="grid2"><div class="blk"><h3>배치 계산 결과 <small>레시피 운전 · 시작부터 종료까지</small></h3>'
+            '<p class="q">배치 계산 결과와 DB 6배치의 차이</p>'
+            '<div class="grid2 g23"><div class="blk"><h3>배치 계산 결과 <small>레시피 운전 · 시작부터 종료까지</small></h3>'
             f'<p class="lb">소요 시간 <b>{N(E["t"])} h</b></p>{_bar(tseg, "h", 1)}'
             f'<p class="lb">물질수지 <b>{N(E["m0"], 0)} kg</b></p>{_bar(mseg, "kg", 1)}'
             f'<p class="small">{esc(acc["val"])} {bdg("hard")} {esc(acc["why"])}</p></div>'
-            '<div class="blk"><h3>현장값과의 비교 <small>현장값은 PIMS 화면과 배치 트렌드 그래프(육안 판독)</small></h3>'
-            f'<div class="tw"><table><tr><th></th><th>현장</th><th>계산</th><th>차이의 원인</th></tr>{crow}</table></div>'
-            '<p class="small">본류 구간의 환류 · 유출 유량은 현장값과 거의 같다. 내부 온도와 탑 온도는 계산값이 높다. 증기압식의 상수와 스팀 밸브 특성식은 현재 확보한 정보만으로는 정할 수 없어 변경하지 않았으며, 시계열 데이터를 확보하면 보정한다.</p>'
-            '<p class="small"><button class="lnk" data-go="db">DB 데이터 활용 화면</button>에 전체 비교표와 스팀 유량 지시값을 검토한 내용이 있다.</p></div></div></section>')
+            f'<div class="blk"><h3>DB 6배치와의 비교 <small>DB는 구간 평균의 범위 · 시험 계산은 상수 A만 {db["A_use"]:.2f}로 변경</small></h3>'
+            f'<div class="tw"><table class="cmp"><tr><th></th><th>DB 6배치</th><th>계산 {esc(VER)}</th><th>시험 계산</th></tr>{crow}</table></div>'
+            f'<p class="small">{esc(DB결과.short_text(D, VER))} 표의 배관 출구 온도는 증기 배관 출구 압력의 포화 온도다.</p>'
+            '<p class="small"><button class="lnk" data-go="dr">DB 6배치 분석 결과</button>에 전체 비교표와 상수를 구한 근거가 있다.</p></div></div></section>')
 
 
 def scene_pl(D, NODES, npass):
     nfor = sum(len(n["formulas"]) for n in NODES); ndb = sum(len(n["db"]) for n in NODES)
     nest = sum(1 for n in NODES for a in n["assume"] if a["kind"] == "est"); nhard = sum(1 for n in NODES for a in n["assume"] if a["kind"] == "hard")
+    db = D["db"]; c = DB결과.st_count(NODES); _, TN = DB결과.trial(db); A_ = f'{db["A_use"]:.2f}'
     tiles = [(str(nfor), "적용 공식", f"{len(NODES)}개 구간"), (str(nest), "가정", "도면 · 운전 데이터로 정할 수 있는 값"), (str(nhard), "추정", "데이터를 확보해도 정하기 어려운 값"),
-             (f"{npass} / 12", "이상 상황 검증", "변화 방향과 크기를 별도 기준과 비교")]
+             (f"{npass} / 12", "이상 상황 검증", "변화 방향과 크기를 별도 기준과 비교"), (f'{c["ok"]} / {ndb}', "DB 6배치로 확인", f'일부 확인 {c["part"]}건 · 확인 불가 {c["no"]}건')]
+    plan = [f'증기압식의 상수 A를 {db["A0"]}에서 {jo(A_, "으로", "로")} 변경한다(시험 계산 완료: 본류 내부 온도 {N(TN["Tmain"])} ℃).',
+            "탑 온도 TIH075의 표시 위치를 증기 배관 출구 쪽으로 옮긴다(TE-H075 설치 위치 확인 후).",
+            "스팀 제어를 현장과 같은 내부 온도 제어 방식으로 계산한다.",
+            "승온 구간의 시계열로 U·A와 열용량을, 비등 개시 온도로 증기압식의 기울기 B를 정한다."]
     th = "".join(f'<div class="stat"><b>{esc(a)}</b><span>{esc(b)}</span><small>{esc(c)}</small></div>' for a, b, c in tiles)
     cnt = "".join(f'<tr><td><button class="lnk" data-go="{n["id"]}">{n["n"]} {esc(n["name"])}</button></td><td class="m">{sum(1 for a in n["assume"] if a["kind"] == "est")}</td>'
-                  f'<td class="m">{sum(1 for a in n["assume"] if a["kind"] == "hard")}</td><td class="m">{len(n["db"])}</td></tr>' for n in NODES)
+                  f'<td class="m">{sum(1 for a in n["assume"] if a["kind"] == "hard")}</td><td class="m">{len(n["db"])}</td><td class="m">{sum(1 for d in n["db"] if d["st"] == "ok")}</td></tr>' for n in NODES)
     hard = "".join(f'<li><b>{n["n"]} {esc(n["name"])}</b> {esc(a["what"])}</li>' for n in NODES for a in n["assume"] if a["kind"] == "hard")
     nm = "".join(f"<li>{esc(x)}</li>" for x in 이상.NOT_MODELED)
     return ('<section class="scene" id="pl" data-tab="sm" hidden><div class="sh"><h2>한계와 개선 계획</h2>' f'<span class="tag">가정 {nest}건 · 추정 {nhard}건 · DB 수집 항목 {ndb}건</span></div>'
             '<p class="q">현재 입력값의 근거 수준과 데이터 확보 후의 보정 방향</p>' f'<div class="stats">{th}</div>'
             '<div class="cols"><div class="blk"><h3>데이터로 결정할 수 있는 항목 ' + bdg("est") + '</h3>'
-            f'<p class="p">가정 {nest}건은 계기 시계열 데이터를 공식에 대입해 정한다. 식의 형태는 그대로 두고 상수만 현장 데이터에 맞춰 보정한다. DB 수집 항목 {ndb}건마다 수집 데이터와 적용 식을 정리했다.</p>'
-            f'<div class="tw"><table><tr><th>구간</th><th>가정</th><th>추정</th><th>DB 항목</th></tr>{cnt}</table></div>'
-            '<p class="small"><button class="lnk" data-go="db">DB 데이터 활용 화면</button>에 수집 데이터 · 적용 식 · 결정 항목의 표가 있다.</p></div>'
+            f'<p class="p">가정 {nest}건은 계기 시계열 데이터를 공식에 대입해 정한다. 식의 형태는 그대로 두고 상수만 현장 데이터에 맞춰 보정한다. DB 수집 항목 {ndb}건 가운데 {c["ok"]}건은 DB 6배치의 구간 평균으로 확인했다.</p>'
+            f'<div class="tw"><table><tr><th>구간</th><th>가정</th><th>추정</th><th>DB 항목</th><th>확인</th></tr>{cnt}</table></div>'
+            '<h3 class="h3b">DB 분석에 따른 보정 항목</h3><ol class="pl gl">' + "".join(f"<li>{esc(x)}</li>" for x in plan) + '</ol>'
+            '<p class="small"><button class="lnk" data-go="dr">DB 6배치 분석 결과</button>에 근거가, <button class="lnk" data-go="db">DB 데이터로 결정되는 항목</button>에 항목별 표가 있다.</p></div>'
             '<div class="blk"><h3>데이터로도 정하기 어려운 항목 ' + bdg("hard") + f'</h3><ul class="pl">{hard}</ul>'
             '<p class="small">본류 순도는 원료 · 초류 · 본류 · 잔류액의 성분 분석 데이터로 농축비 E를 정한 뒤에야 예측할 수 있다.</p></div>'
             f'<div class="blk"><h3>계산에 포함되지 않은 현상</h3><ul class="pl">{nm}</ul>'
@@ -269,6 +274,6 @@ def scene_pl(D, NODES, npass):
 def build(D, NODES, REC, VER):
     npass = sum(1 for r in D["chk"] if r["id"].startswith("K-") and not r["id"].endswith("-u") and r["ok"] is True)
     TR = tracks(D, NODES, REC, npass)
-    scenes = [scene_rs(D, NODES, VER), scene_pl(D, NODES, npass), scene_gd(TR), scene_dm(D, NODES, REC, TR)]
+    scenes = [scene_rs(D, NODES, VER), 환류비.scene_rr(D, VER), scene_pl(D, NODES, npass), scene_gd(TR), scene_dm(D, NODES, REC, TR)]      # 요약 3장(계산 결과 · 환류비별 계산 결과 · 한계와 개선 계획) · 발표 순서 · 시연 순서
     data = {k: dict(name=T["name"], slack=T["slack"], steps=[{a: b for a, b in s.items() if a in ("t", "sec", "go", "at", "ab", "demo", "kind", "msg", "val")} for s in T["steps"]]) for k, T in TR.items()}
     return scenes, data

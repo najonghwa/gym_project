@@ -86,7 +86,7 @@ figcaption { font-size:13px; color:var(--sub); padding:6px 4px 2px; border-top:1
 .alist .w { font-weight:600 } .alist .lt { display:inline-grid; place-items:center; width:19px; height:19px; border-radius:50%; border:1px solid var(--sub); font:600 11px var(--f-mono); margin-right:4px; vertical-align:1px } .alist .y, .alist .e { color:var(--sub); font-size:12.5px }
 .dlist { list-style:none; margin:0; padding:0; display:grid; gap:10px } .dlist li { display:grid; gap:2px; font-size:13.5px }
 .dlist .tg { font:600 12px var(--f-mono); color:var(--db) } .dlist .g { color:var(--sub); font-size:12.5px }
-.tw { overflow-x:auto } table { border-collapse:collapse; width:100%; font-size:13.5px }
+.tw { overflow-x:auto } table { border-collapse:collapse; width:100%; font-size:13.5px } table.cmp td.m { white-space:nowrap } th[colspan] { text-align:center } .tcap { font-weight:600; color:var(--ink); margin:10px 0 0 }
 th, td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; vertical-align:top } th { color:var(--sub); font-weight:600; font-size:12.5px; white-space:nowrap }
 td.m, .m { font-family:var(--f-mono); font-variant-numeric:tabular-nums }
 .grid2 { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:14px } @media (max-width:900px) { .grid2 { grid-template-columns:1fr } }
@@ -147,6 +147,10 @@ svg { width:100%; height:auto; display:block }
 .mark { fill:none; stroke:var(--ng); stroke-width:2.4; stroke-dasharray:5 3 } .markt { fill:var(--ng); font:700 12px var(--f-body) }
 .vb { fill:var(--panel); stroke:var(--line); stroke-width:1 } .vb.chg { stroke:var(--ng); stroke-width:1.8 } .vbl { fill:var(--sub); font:500 10.5px var(--f-body) } .vbv { fill:var(--ink); font:600 12px var(--f-mono) } .vbv.chg { fill:var(--ng) } .stepc { fill:var(--ng) } .stept { fill:var(--panel); font:700 10.5px var(--f-mono) }
 .dim { opacity:.22 } .plot-ax { fill:none; stroke:var(--sub); stroke-width:1 } .plot-g { fill:none; stroke:var(--line); stroke-width:1 } .plot-c { fill:none; stroke:var(--ink); stroke-width:2 } .plot-c2 { fill:none; stroke:var(--hard); stroke-width:1.6; stroke-dasharray:5 3 }
+.plot-c3 { fill:none; stroke:var(--db); stroke-width:2; stroke-dasharray:6 3 } .plot-band { fill:var(--db-soft); stroke:none; opacity:.8 }
+.pt-s2 { fill:var(--ink); stroke:var(--panel); stroke-width:1 } .pt-h { fill:var(--panel); stroke:var(--hard); stroke-width:1.8 }
+.pt-m { fill:var(--db); stroke:var(--panel); stroke-width:1.2 } .pt-f { fill:var(--panel); stroke:var(--db); stroke-width:1.8 } .pt-p { fill:none; stroke:var(--sub); stroke-width:1.5 } .pt-s { fill:var(--ink) } .pt-t { fill:var(--acc) }
+.dbv { fill:var(--db); font:600 11.5px var(--f-mono) } .cvi { fill:var(--ink); font:600 11.5px var(--f-mono) } .cvo { fill:var(--ng); font:700 11.5px var(--f-mono) }
 .plot-p { fill:var(--panel); stroke:var(--ink); stroke-width:1.8 } .plot-p2 { fill:var(--acc); stroke:none } .plot-p3 { fill:none; stroke:var(--ng); stroke-width:1.6; stroke-dasharray:4 3 }
 .bar-f { fill:var(--est-soft); stroke:var(--est) } .bar-m { fill:var(--liq-soft); stroke:var(--liq) } .bar-t { fill:var(--soft); stroke:var(--sub) } .bar-h { fill:var(--panel); stroke:var(--line) }
 """
@@ -217,6 +221,13 @@ ol.ops { margin:0; padding-left:21px } ol.ops li { margin:3px 0; font-size:13.5p
 .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:10px }
 .stat { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 14px; display:grid; gap:1px } .stat b { font:700 30px/1.15 var(--f-mono); letter-spacing:-.02em } .stat span { font-weight:700; font-size:14.5px } .stat small { font-size:12.5px; color:var(--sub) }
 .lb { margin:8px 0 5px; font-size:13px; color:var(--sub) } .lb b { color:var(--ink); font:700 15px var(--f-mono); margin-left:4px } .blk .p { margin:0 0 8px; font-size:13.5px }
+.grid2.g23 { grid-template-columns:minmax(0, 2fr) minmax(0, 3fr) } @media (max-width:900px) { .grid2.g23 { grid-template-columns:1fr } }
+figure.plain { border:0; padding:0; background:transparent } figure.plain svg { min-width:520px } .blk h3.h3b { margin-top:14px }
+.brows { display:grid; gap:7px; margin:2px 0 6px } .brow { display:grid; grid-template-columns:150px minmax(0, 1fr) 132px; gap:10px; align-items:center }
+.brow .bl b { font:700 13px var(--f-mono); display:block } .brow .bl small { display:block; font-size:11.5px; color:var(--sub); line-height:1.3 } .brow .bb .sbar { height:18px }
+.brow .bv { font:500 12px var(--f-mono); color:var(--sub); text-align:right; white-space:nowrap } .brow .bv b { color:var(--ink); font-weight:600 }
+.brow.sim { border-top:1px dashed var(--line); padding-top:8px } .brow.sim .bl b { color:var(--acc) }
+@media (max-width:560px) { .brow { grid-template-columns:118px minmax(0, 1fr) } .brow .bv { grid-column:1 / -1; text-align:left } }
 .sbar { display:flex; gap:2px; height:22px } .sbar i { display:block; min-width:3px; border-radius:3px }
 .sleg { display:flex; flex-wrap:wrap; gap:3px 14px; font-size:12.5px; color:var(--sub); margin:5px 0 6px } .sleg span { display:inline-flex; align-items:center; gap:5px } .sleg i { display:inline-block; width:11px; height:11px; border-radius:3px } .sleg b { color:var(--ink); font:600 12.5px var(--f-mono) }
 .sg-heat { background:var(--heat-soft); border:1px solid var(--heat) } .sg-vap { background:var(--vap-soft); border:1px solid var(--vap) } .sg-fore { background:var(--est-soft); border:1px solid var(--est) }
