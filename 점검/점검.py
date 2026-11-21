@@ -166,7 +166,8 @@ def build_scenarios():
     for (w, h) in [(1440, 1000), (1366, 768), (1920, 1080)]:
         a = BOOT + [["eval", "window.__dt.opSetMode('free');1"], ["wait", 1500]] + jump(2.6) + [["wait", 4000], ["eval", "window.__dt.setValve('P',true);1"], ["wait", 5000],
             tag("dcs", JS_DCS), ["wait", 5000], tag("dcs2", JS_DCS), tag("dots_reflux", JS_DOTS.replace("__REP__", "10")), tag("state_reflux", JS_STATE), tag("flux", JS_FLUX), tag("misc", JS_MISC), tag("rtoggle", JS_RTOGGLE),
-            ["shot", str(SHOTS / f"전환류_{w}x{h}.png")]]
+            ["shot", str(SHOTS / f"전환류_{w}x{h}.png")],
+            tag("veq0", Y.JS_VEQ), Y.V_ON, ["wait", 6500], tag("dcsV", JS_DCS), tag("veq", Y.JS_VEQ), ["shot", str(SHOTS / f"전환류_{w}x{h}_진공흐름.png")], Y.V_OFF, ["wait", 1500]]   # v131
         S.append(scen(f"전환류 {w}×{h}", a, w, h))
     light = BOOT + [["eval", "window.__dt.opSetMode('free');1"], ["wait", 1500]] + jump(2.3) + [["wait", 5000], tag("dots_light", JS_DOTS.replace("__REP__", "8")), ["shot", str(SHOTS / "밝은화면.png")]]
     S.append(scen("밝은 화면", light, theme="light"))
@@ -253,6 +254,14 @@ def judge(out):
             add("C1", f"값 상자가 설비 몸통·밸브 테두리 상자와 겹침(참고) — {w}×{h}", None, d.get("touch") or "0개", "참고(설비 외곽 직사각형 기준이라 실제 겹침보다 넓게 잡힘)")
             add("C2", f"값 상자가 기준점에서 60 px 넘게 떨어짐 — {w}×{h}", not d["far"], d["far"] or "0개", "0개")
             add("C34", f"'유출' 상자가 유출 관 오른쪽 — {w}×{h}", d["distRight"] is True, d["distRight"], "오른쪽")
+            dv, ve, v0 = g(sn, "dcsV"), g(sn, "veq"), g(sn, "veq0")
+            if dv and ve and v0:   # v131
+                add("V8", f"진공 흐름을 켠 3D: 값 상자(구간 압력 3개 포함)끼리 겹침 · 배관 걸림 · 기준점에서 60 px 넘게 떨어짐 · 설비 몸통 · 화살촉 · 뜻 글 가림 — {w}×{h}",
+                    not dv["pairs"] and not dv["pipe"] and not dv["far"] and dv["n"] == d["n"] + 3 and not ve["equip"] and not ve["arrows"] and not ve["note"],
+                    f"상자 {d['n']} → {dv['n']}개 · 겹침 {dv['pairs'] or '0쌍'} · 관 걸림 {dv['pipe'] or '0개'} · 먼 것 {dv['far'] or '0개'} · 설비 가림 {ve['equip'] or '0개'} · 화살촉 가림 {ve['arrows'] or '0개'} · 뜻 글 가림 {ve['note'] or '0개'} · 화살촉 {ve['nArr']}개", "3개 늘고 모두 0")
+                add("V8", f"스팀 게이지 값 상자가 스팀 밸브 바로 옆(30 px 안)이고, 값 상자가 설비 몸통(정면 윤곽 사각형)을 가리지 않음(진공 흐름 끔 · 켬) — {w}×{h}",
+                    v0["gd"] is not None and v0["gd"] <= 30 and ve["gd"] is not None and ve["gd"] <= 30 and not v0["equip"],
+                    f"게이지–밸브 끔 {v0['gd']} px · 켬 {ve['gd']} px · 끈 상태 설비 가림 {v0['equip'] or '0개'}", "30 px 안 · 0개")
             if w == 1440:
                 add("C27", "이름–값 사이 빈칸 > 6 px", not d["bigGap"], d["bigGap"] or "0개", "0개")
                 add("A4", "응축액 온도 이름 '하부'", d["hbName"] == "하부", d["hbName"], "하부")

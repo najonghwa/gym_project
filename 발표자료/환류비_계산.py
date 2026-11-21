@@ -19,7 +19,7 @@ arg = lambda k, d=None: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else d
 SIM = pathlib.Path(arg("--sim")) if arg("--sim") else next((HERE.parent / n for n in ("정제_탱크_시뮬레이터.html", "index.html") if (HERE.parent / n).exists()), None)
 DRIVE = str(KDIR / "도구" / "drive.mjs") if (KDIR / "도구" / "drive.mjs").exists() else str(pathlib.Path.home() / ".claude" / "skills" / "anatomy" / "scripts" / "drive.mjs")
 PART = arg("--part", "main"); assert PART in ("main", "fore")
-OUT = HERE / (arg("--out") or ("환류비_기록.json" if PART == "main" else "환류비_기록_초류.json"))      # --out: 여러 창에서 나눠 돌릴 때 따로 받아 두는 파일(끝나면 합친다)
+OUT = HERE / (arg("--out") or ("환류비_기록.json" if PART == "main" else "환류비_기록_초류.json"))      # --out: 여러 창에서 나눠 돌릴 때 따로 받아 두는 파일(끝나면 환류비_합치기.py로 합친다)
 VTOT = 10.0 if PART == "main" else 7.0                             # 그 구간의 환류 + 유출 설정(kg/h). 본류 기본 조건은 4 + 6, 초류는 하한 개도에서의 증발량에 맞춘 값
 RS = [0.0, 2.0, 4.0, 5.0, 6.0] if PART == "main" else [0.0, 2.0, 4.0, 5.0, 5.8, 6.2]      # 환류 설정(kg/h). 유출 = VTOT − 환류. 본류는 환류비 0 ~ 1.5(DB의 본류 환류비 범위를 덮는다)
 ALPHAS = [1.5, 20.0]                                               # 저비점 불순물의 상대휘발도: 1.5 = 지금 입력 기본값(가정), 20 = 사내 검토서의 TDMAHf 증기압에 해당하는 값

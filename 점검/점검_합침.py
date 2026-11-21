@@ -4,6 +4,7 @@
 사내망 변경내역(정제시뮬레이터_사내망_변경내역_v116-v124.md) 6절의 줄마다 '합친 판에 들어갔는가'를 숫자로 본다.
 만든 쪽 코드와 따로 떨어진 확인이어야 하므로 기대값은 변경내역에서 옮겨 적었고(PRESET 등), 식은 여기서 다시 계산한다.
 항목 번호 M1~M21은 요구목록.md (M)절, N1~N7은 (N)절(추가 점검 문서와 운전 개념, 2026-11-18), P1~P9는 (P)절(화면 지적 · 후류 정의 · PIMS 태그, 2026-11-19)과 같다.
+v131(2026-11-21): V1~V9는 (V)절(진공 흐름 보기 · 2차 응축기 부하 · 스팀 밸브 옆 개도 게이지). 값만이 아니라 화면 그림의 화소 · 가려짐까지 본다.
 """
 import json, math, re
 
@@ -150,6 +151,97 @@ return JSON.stringify({on:!!Z.on,kind:D.solverKind,t:P.t/3600,rpm:D.CUR.N*60,Tm:
  emph:!!Z.emph,pressed:b?b.getAttribute('aria-pressed'):null,note:n&&!n.hidden?n.textContent:null,zEm:u?u.zEm.value:null,zOn:u?u.zOn.value:null,hot:s?s.hot:null,nStir:s?s.n:null})})()"""
 JS_RPM = lambda v: "(()=>{const e=document.getElementById('rpm');e.value='%d';e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));return 1})()" % v
 
+# ---------- v131: 진공 흐름 · 2차 부하 · 스팀 게이지 ----------
+# 계산 상태(PR)와 화면(값 상자 글 · 화살촉 · 뜻 글 · 게이지)을 함께 읽는다. 자리는 #stage 왼쪽 위 기준(화면 그림의 화소와 맞춘다)
+JS_VAC = r"""(()=>{const D=window.__dt,P=D.PR,st=D.vacState(),bt=document.getElementById('vacFlow'),nt=document.getElementById('vacNote'),sg=document.getElementById('stage').getBoundingClientRect(),cv=D.canvas,cr=cv.getBoundingClientRect(),cam=D.camera,V=cam.position.constructor,v=new V(),g=D.PIPES.V[0].parent;
+const inS=(r)=>r.width>0&&r.height>0&&r.left>=sg.left-1&&r.right<=sg.right+1&&r.top>=sg.top-1&&r.bottom<=sg.bottom+1;
+const tags={},tvis={};document.querySelectorAll('.dcs-tag').forEach(e=>{if(e.hidden||!e.dataset.n)return;tags[e.dataset.n]=e.children[1].textContent;const r=e.getBoundingClientRect(),t=document.elementFromPoint(r.left+r.width/2,r.top+Math.min(8,r.height/2));tvis[e.dataset.n]=inS(r)&&!!t&&e.contains(t)});
+const arr=D.VAC.arr.map(a=>{v.set(a.g.position.x,a.g.position.y,0);g.localToWorld(v);v.project(cam);const x=(v.x+1)/2*cr.width+cr.left,y=(1-v.y)/2*cr.height+cr.top;v.set(a.g.position.x+a.g.scale.x*0.55,a.g.position.y,0);g.localToWorld(v);v.project(cam);const rx=Math.abs((v.x+1)/2*cr.width+cr.left-x),e=document.elementFromPoint(x,y);
+ return {id:a.id,sec:a.sec,on:a.g.visible,k:+(a.g.scale.x/a.s0).toFixed(4),hollow:a.ring.visible,rot:+a.g.rotation.z.toFixed(4),x:+(x-sg.left).toFixed(1),y:+(y-sg.top).toFixed(1),r:+rx.toFixed(1),top:e===cv}});
+const Q=D.PID2,iso=D.STYLE==='iso',gon=Q&&Q.vac?Q.vac.g.getAttribute('display')!=='none':false,p2=Q&&Q.vac?{disp:Q.vac.g.getAttribute('display'),
+ arr:Q.vac.arr.map(a=>{const on=gon&&a.el.getAttribute('display')!=='none',r=on?a.el.getBoundingClientRect():{left:0,top:0,width:0,height:0,right:0,bottom:0};return {id:a.id,sec:a.sec,on,k:a.k!=null?+a.k.toFixed(4):null,base:a.base,hollow:/ o$/.test(a.el.getAttribute('class')),deg:a.deg,x:+(r.left+r.width/2-sg.left).toFixed(1),y:+(r.top+r.height/2-sg.top).toFixed(1),r:+(Math.max(r.width,r.height)/2).toFixed(1),inS:on?inS(r):false}}),
+ vals:Object.fromEntries(['Ptop','Pexit','Pcond','PICH071','Ppump','C1load','C2load','jOpen'].map(k=>[k,Q.vals[k]?Q.vals[k].textContent:null])),
+ box:Object.fromEntries(['Ptop','Pexit','Pcond','C2load'].map(k=>{const e=Q.vals[k]&&Q.vals[k].closest('.p2-val');if(!e||(k!=='C2load'&&!gon))return [k,false];return [k,inS(e.getBoundingClientRect())]}))}:null;
+const nr=nt&&!nt.hidden?nt.getBoundingClientRect():null,ovl=(a,b)=>Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1,ncs=nt?getComputedStyle(nt):null,
+ cover=nr?[...document.querySelectorAll('#hud > *, #opPanel, #batchSheet, #lblModeBox, .dcs-tag')].filter(e=>!e.hidden&&e.offsetParent!==null&&ovl(e.getBoundingClientRect(),nr)).map(e=>e.id||e.dataset.n||e.className):[];
+const tank=[...document.querySelectorAll('.dcs-tag')].filter(e=>!e.hidden&&/초류|본류|회수/.test(e.dataset.n||'')&&/압력|PI /.test(e.dataset.n||'')).map(e=>e.dataset.n);
+const te=document.getElementById('vacNoteT'),TL=te&&!te.hidden&&nt&&!nt.hidden?te.textContent:null;
+return JSON.stringify({t:+(P.t/3600).toFixed(3),iso,on:D.VAC.on,cam:D.camera.position.toArray().map(x=>+x.toFixed(4)),pressed:bt?bt.getAttribute('aria-pressed'):null,note:nt&&!nt.hidden?nt.innerText.replace(/\s+/g,' ').trim():null,noteVis:!!nr&&inS(nr)&&ncs.visibility==='visible'&&+ncs.opacity>0.9&&cover.length===0,noteCover:cover,pump:st.pump,lag:st.lag,tank,tline:TL,stTank:st.tank===undefined?null:st.tank,glOn:!!D.CUR.glOn,gl:P.gl&&P.gl.F&&P.gl.M?{F:P.gl.F.P,M:P.gl.M.P}:null,
+raw:{Pstill:P.Pstill,Ptop:P.Ptop,Pexit:P.Pexit,Pcond:P.Pcond,Ppump:P.Ppump,Pseal:P.Pseal||0,vdot:P.vdot,vpass:P.vpass,c1:P.c1,c2:P.c2,Qv1:P.Qv1,Qc2:P.Qc2,cap1:P.cap1,cap2:P.cap2,m2:P.m2kg,lost:P.lostkg||0,nAir:P.nAir,stopped:!!P.stopped,VS:!!D.VLV.S,VV:!!D.VLV.V,Mach:P.Mach},
+c1L:D.c1Load(),c2L:D.c2Load(),arr,tags,tvis,p2})})()"""
+# 스팀 게이지: 3D 값 상자 안의 막대 · 상태 글 · [자동으로], 도면 게이지, 운전 상태
+JS_GA = r"""(()=>{const D=window.__dt,el=document.querySelector('.dcs-tag.gauge'),r=el&&el.querySelector('.dg-r'),a=el&&el.querySelector('.dg-a'),t=el&&el.querySelector('.dg-t'),bb=el&&!el.hidden?el.getBoundingClientRect():null,rb=r&&bb?r.getBoundingClientRect():null,P=D.PID2,G=P&&P.gauge,cr=D.canvas.getBoundingClientRect();
+let vx=null;try{const q=D.M.pipe,g=D.PIPES.V[0].parent,v=new D.camera.position.constructor(-(q.Rj||D.M.R)-0.22*D.M.p.T,q.yJin,0);g.localToWorld(v);v.project(D.camera);vx=[(v.x+1)/2*cr.width+cr.left,(1-v.y)/2*cr.height+cr.top]}catch(e){}
+const at=rb?document.elementFromPoint(rb.left+rb.width*0.5,rb.top+rb.height/2):null,gr=G?G.g.getBoundingClientRect():null,hr=G?G.g.querySelector('.p2-ghit').getBoundingClientRect():null;
+return JSON.stringify({iso:D.STYLE==='iso',el:!!el,txt:el?el.children[1].textContent:null,rv:r?+r.value:null,dis:r?r.disabled:null,mode:t?t.textContent:null,chip:a?!a.hidden:null,held:el?el.classList.contains('held'):null,box:bb?[bb.left,bb.top,bb.width,bb.height]:null,valve:vx,reach:!!at&&at===r,
+j:+document.getElementById('jOpen').value,mv:D.CUR.jOpen*100,hold:!!D.OP.hold.J,recipe:!!D.OP.recipe,vdot:D.PR.vdot,lock:D.steamLock(),
+g2:G?{cx:+G.th.getAttribute('cx'),w:+G.fill.getAttribute('width'),auto:G.auto.getAttribute('display')!=='none',x0:G.x0,x1:G.x1,num:P.vals.jOpen.textContent,mode:G.mode.textContent,held:G.g.classList.contains('held'),view:P.view?P.view.join(','):null,box:gr?[gr.width,gr.height]:null,hit:hr?[hr.width,hr.height]:null}:null,
+pop:(()=>{const g=document.getElementById('vGauge');return !!(g&&!g.hidden)})(),log:(D.PR.ops||[]).slice(-4).map(o=>o.text)})})()"""
+JS_GTOUCH = r"""(()=>{const h=document.querySelector('.p2-ghit'),r=h.getBoundingClientRect(),y=r.top+r.height/2,ev=(t,f)=>h.dispatchEvent(new PointerEvent(t,{pointerType:'touch',pointerId:7,isPrimary:true,button:0,buttons:t==='pointerup'?0:1,clientX:r.left+r.width*f,clientY:y,bubbles:true,cancelable:true}));ev('pointerdown',0.3);ev('pointermove',0.5);ev('pointermove',0.8);ev('pointerup',0.8);return JSON.stringify({ok:1})})()"""
+# 3D 값 상자가 설비 몸통(정면 윤곽 사각형) · 화살촉을 가리는지, 게이지가 스팀 밸브에서 얼마나 떨어졌는지(JS_DCS에 없는 것)
+JS_VEQ = r"""(()=>{const D=window.__dt,M=D.M,q=M.pipe,cam=D.camera,cv=D.canvas,W=cv.clientWidth,H=cv.clientHeight,Rj=q.Rj||M.R,V=cam.position.constructor,v=new V(),g=D.PIPES.V[0].parent;
+const pj=(x,y,z)=>{v.set(x,y,z);g.localToWorld(v);v.project(cam);return [(v.x+1)/2*W,(1-v.y)/2*H]};
+const bb=(x0,x1,y0,y1)=>{const a=pj(x0,y0,0),b=pj(x1,y1,0);return [Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1])]};
+const eq={정제기:bb(-Rj,Rj,M.hh,M.Hs),컬럼:bb(q.xCol-q.rCol,q.xCol+q.rCol,q.colBase,q.colTop),'1차 응축기':bb(q.xC-q.rC,q.xC+q.rC,q.yC1,q.yC0),'2차 응축기':bb(q.x20,q.x21,q.y2c-q.r2,q.y2c+q.r2),'본류 탱크':bb(q.xMn-q.rRM,q.xMn+q.rRM,q.yRvM,q.yTopM),'초류 탱크':bb(q.xF-q.rRF,q.xF+q.rRF,q.yRvF,q.yTopF)};
+const B=(D.dcsBox||[]).filter(b=>{const e=[...document.querySelectorAll('.dcs-tag')].find(x=>x.dataset.n===b.n);return e&&!e.hidden});
+const equip=[];for(const b of B)for(const k in eq){const r=eq[k],w=Math.min(b.x+b.w,r[2])-Math.max(b.x,r[0]),h=Math.min(b.y+b.h,r[3])-Math.max(b.y,r[1]);if(w>2&&h>2)equip.push(b.n+' ↔ '+k+' '+Math.round(w*h)+'px²')}
+const arrows=[];for(const a of D.VAC.arr){if(!a.g.visible)continue;const c=pj(a.g.position.x,a.g.position.y,0),e=pj(a.g.position.x+a.g.scale.x*0.62,a.g.position.y,0),r=Math.abs(e[0]-c[0]);for(const b of B)if(c[0]+r>b.x&&c[0]-r<b.x+b.w&&c[1]+r>b.y&&c[1]-r<b.y+b.h)arrows.push(a.id+' ↔ '+b.n)}
+const gz=B.find(b=>/스팀 밸브 개도/.test(b.n)),jv=pj(-Rj-0.22*M.p.T,q.yJin,0),gd=gz?Math.hypot(Math.max(gz.x,Math.min(jv[0],gz.x+gz.w))-jv[0],Math.max(gz.y,Math.min(jv[1],gz.y+gz.h))-jv[1]):null;
+const nt=document.getElementById('vacNote'),cr=cv.getBoundingClientRect(),nr=nt&&!nt.hidden?nt.getBoundingClientRect():null,note=[];if(nr)for(const b of B){const w=Math.min(b.x+b.w,nr.right-cr.left)-Math.max(b.x,nr.left-cr.left),h=Math.min(b.y+b.h,nr.bottom-cr.top)-Math.max(b.y,nr.top-cr.top);if(w>1&&h>1)note.push(b.n)}
+return JSON.stringify({equip,arrows,note,gd:gd==null?null:+gd.toFixed(1),n:B.length,nArr:D.VAC.arr.filter(a=>a.g.visible).length})})()"""
+# 도면: 화살촉이 글 · 값 상자에 걸리는지(JS_P2OV는 관 선과 글 · 상자만 본다)
+JS_P2ARR = r"""(()=>{const P=window.__dt.PID2,svg=P.svg,out=[],rs=[],gon=P.vac.g.getAttribute('display')!=='none';
+for(const t of svg.querySelectorAll('text')){if(t.closest('.p2-val'))continue;const r=t.getBoundingClientRect();if(r.width)rs.push(['글 '+t.textContent.trim().slice(0,20),r])}
+for(const g of svg.querySelectorAll('g.p2-val')){if(!gon&&g.closest('.p2-vacg'))continue;const r=g.querySelector('rect').getBoundingClientRect();if(r.width)rs.push(['상자 '+(g.textContent||'').trim().slice(0,20),r])}
+if(gon)for(const a of P.vac.arr){if(a.el.getAttribute('display')==='none')continue;const r=a.el.getBoundingClientRect();for(const [k,q] of rs){const w=Math.min(r.right,q.right)-Math.max(r.left,q.left),h=Math.min(r.bottom,q.bottom)-Math.max(r.top,q.top);if(w>1&&h>1)out.push(a.id+' × '+k)}}
+return JSON.stringify({hit:out,n:gon?P.vac.arr.filter(a=>a.el.getAttribute('display')!=='none').length:0})})()"""
+V_GL = lambda on: ["eval", "(()=>{const c=document.getElementById('glOn');if(c.checked!==" + ("true" if on else "false") + "){c.checked=" + ("true" if on else "false") + ";c.dispatchEvent(new Event('input',{bubbles:true}));c.dispatchEvent(new Event('change',{bubbles:true}))}return c.checked})()"]   # 유출관 높이로 막힘 계산 켬 · 끔
+V_ON = ["eval", "(()=>{const b=document.getElementById('vacFlow');if(b.getAttribute('aria-pressed')!=='true')b.click();return b.getAttribute('aria-pressed')})()"]
+V_OFF = ["eval", "(()=>{const b=document.getElementById('vacFlow');if(b.getAttribute('aria-pressed')==='true')b.click();return b.getAttribute('aria-pressed')})()"]
+V_2D = ["eval", "(()=>{const b=document.getElementById('btn3d');if(/도면/.test(b.textContent))b.click();return b.textContent})()"]
+V_3D = ["eval", "(()=>{const b=document.getElementById('btn3d');if(/3D/.test(b.textContent))b.click();return b.textContent})()"]
+
+def png_rows(path):
+    """표준 라이브러리만 쓰는 PNG 읽기(8비트 RGB · RGBA, 인터레이스 없음) — 화면 그림에 화살촉 색이 실제로 찍혔는지 볼 때 쓴다"""
+    import struct, zlib
+    b = open(path, "rb").read()
+    if b[:8] != b"\x89PNG\r\n\x1a\n": raise ValueError("PNG 아님")
+    i = 8; w = h = bpp = None; idat = []
+    while i < len(b):
+        n, typ = struct.unpack(">I4s", b[i:i + 8]); d = b[i + 8:i + 8 + n]; i += 12 + n
+        if typ == b"IHDR":
+            w, h, bit, col, _, _, inter = struct.unpack(">IIBBBBB", d)
+            if bit != 8 or inter != 0 or col not in (2, 6): raise ValueError(f"PNG 형식 {bit}/{col}/{inter}")
+            bpp = 3 if col == 2 else 4
+        elif typ == b"IDAT": idat.append(d)
+        elif typ == b"IEND": break
+    raw = zlib.decompress(b"".join(idat)); st = w * bpp; rows = []; prev = bytearray(st); p = 0
+    for _ in range(h):
+        f = raw[p]; cur = bytearray(raw[p + 1:p + 1 + st]); p += 1 + st
+        if f == 1:
+            for x in range(bpp, st): cur[x] = (cur[x] + cur[x - bpp]) & 255
+        elif f == 2:
+            for x in range(st): cur[x] = (cur[x] + prev[x]) & 255
+        elif f == 3:
+            for x in range(st): cur[x] = (cur[x] + (((cur[x - bpp] if x >= bpp else 0) + prev[x]) >> 1)) & 255
+        elif f == 4:
+            for x in range(st):
+                a = cur[x - bpp] if x >= bpp else 0; bb = prev[x]; c = prev[x - bpp] if x >= bpp else 0; pa = abs(bb - c); pb = abs(a - c); pc = abs(a + bb - 2 * c)
+                cur[x] = (cur[x] + (a if pa <= pb and pa <= pc else bb if pb <= pc else c)) & 255
+        rows.append(cur); prev = cur
+    return w, h, bpp, rows
+
+def violet_px(img, x, y, r, iso):
+    """(x, y) 둘레의 화살촉 색(보라) 화소 수. 그림은 #stage를 4 px 여백과 함께 찍은 것이라 자리에 4를 더한다.
+    3D 화살촉은 화면에 (217, 202, 252)로 찍히고(증기 흰 점 · 균압 라인의 옅은 보라 점과 다른 색), 도면 화살촉은 #b79cff — 빈 화살촉의 가는 선은 바탕과 섞인 색까지 센다"""
+    w, h, bpp, rows = img; n = 0; x += 4; y += 4; r = max(6, r + 2)
+    for yy in range(max(0, int(y - r)), min(h, int(y + r) + 1)):
+        row = rows[yy]
+        for xx in range(max(0, int(x - r)), min(w, int(x + r) + 1)):
+            o = xx * bpp; R, G, B = row[o], row[o + 1], row[o + 2]
+            if (R >= 85 and G >= 75 and B >= 125 and R >= G and B - G >= 45) if iso else (R >= 195 and G >= 180 and B >= 235 and B - G >= 30 and R - G >= 5): n += 1
+    return n
+
 def jumpS(h):   # 배치가 먼저 끝나면(가열 정지) 거기서 멈춘다
     return [["eval", f"window.__dt.startJump('at',{h});1"],
             ["until", f"(()=>{{const D=window.__dt,P=D.PR;return !!(P&&!D.TURBO&&(P.t>={h}*3600-120||P.stopped))}})()", 1500000], ["wait", 1500]]
@@ -173,6 +265,17 @@ def scenarios(scen, tag, BOOT, jump, SHOTS):
                                    ["eval", "document.getElementById('heatEm').click();1"], ["wait", 6000], tag("z2", JS_ZH), ["eval", JS_RPM(0)], ["wait", 25000], tag("z3", JS_ZH), ["shot", str(SHOTS / "v129_교반_정지.png"), "#stage", 3, [380, 300, 170, 230]],
                                    ["eval", JS_RPM(80)], ["wait", 3000], tag("z4", JS_ZH)]),
          scen("v126 화면", rec + [tag("geo", JS_GEO)] + jump(1.25) + [tag("v6a", JS_V6A), ["wait", 1500], ["shot", str(SHOTS / "v126_예열_3D.png")]] + jump(6) + [["wait", 3000], tag("v6b", JS_V6B), tag("v7", JS_V7)])]
+    st4 = lambda name: ["shot", str(SHOTS / name), "#stage"]   # v131: 스테이지만(자리 = 화소) — 화살촉이 실제로 찍혔는지 그림에서 센다
+    S += [scen("v131 진공 흐름", rec + jump(0.3) + [["wait", 3000], tag("p0", JS_VAC), V_ON, ["wait", 3500], tag("p1", JS_VAC), st4("v131_진공흐름_예열_3D.png")] + jump(6) + [["wait", 5000], tag("n3", JS_VAC), st4("v131_진공흐름_정상_3D.png"), tag("n3eq", JS_VEQ),
+                                    V_2D, ["wait", 3500], tag("n2", JS_VAC), st4("v131_진공흐름_정상_2D.png"), tag("n2ov", JS_P2OV), tag("n2arr", JS_P2ARR), V_OFF, ["wait", 1500], st4("v131_진공흐름_정상_2D_끔.png"), V_3D, ["wait", 3000], st4("v131_진공흐름_정상_3D_끔.png"), tag("off", JS_VAC),
+                                    V_ON, ["eval", "window.__dt.ab('pstop');1"]] + jump(6.6) + [["wait", 5000], tag("s3", JS_VAC), st4("v131_진공흐름_펌프정지_3D.png"), V_2D, ["wait", 3500], tag("s2", JS_VAC), st4("v131_진공흐름_펌프정지_2D.png")]),
+          scen("v131 진공 흐름 리크", rec + [V_ON] + jump(6) + [["eval", "window.__dt.ab('leak');1"]] + jump(7.3) + [["wait", 5000], tag("l3", JS_VAC), st4("v131_진공흐름_리크_3D.png"), V_2D, ["wait", 3500], tag("l2", JS_VAC), st4("v131_진공흐름_리크_2D.png")]),
+          scen("v131 2차 부하", rec + jump(6) + [["wait", 4000], tag("c0", JS_VAC), V_ON, ["eval", "window.__dt.ab('c1hot');1"]] + jump(6.5) + [["wait", 5000], tag("c1", JS_VAC), st4("v131_2차부하_1차냉매95도_3D.png"), V_2D, ["wait", 3500], tag("c2", JS_VAC), st4("v131_2차부하_1차냉매95도_2D.png"),
+                                  V_GL(True), ["wait", 5000], tag("t2", JS_VAC), V_3D, ["wait", 3000], tag("t3", JS_VAC), st4("v131_진공흐름_막힘계산_3D.png"), V_GL(False), ["wait", 4000], tag("t0", JS_VAC)]),
+          scen("v131 스팀 게이지", rec + jump(6) + [["wait", 5000], tag("g0", JS_GA), st4("v131_스팀게이지_3D_자동.png"), ["click", ".dcs-tag.gauge .dg-r", 0.5, 0.5], ["wait", 1500], tag("g1", JS_GA), ["wait", 5000], tag("g2", JS_GA), st4("v131_스팀게이지_3D_수동.png"),
+                                     ["drag", ".dcs-tag.gauge .dg-r", 0.5, 0.5, 0.22, 0.5, 12], ["wait", 1500], tag("g3", JS_GA), ["click", ".dcs-tag.gauge .dg-a"], ["wait", 1200], tag("g4", JS_GA), ["wait", 6000], tag("g5", JS_GA),
+                                     V_2D, ["wait", 3500], tag("h0", JS_GA), ["click", ".p2-ghit", 0.6, 0.5], ["wait", 1500], tag("h1", JS_GA), ["drag", ".p2-ghit", 0.6, 0.5, 0.3, 0.5, 12], ["wait", 1500], tag("h2", JS_GA), st4("v131_스팀게이지_2D_수동.png"),
+                                     ["eval", JS_GTOUCH], ["wait", 1200], tag("h3", JS_GA), ["click", ".p2-gauto"], ["wait", 1200], tag("h4", JS_GA), ["wait", 5000], tag("h5", JS_GA)])]
     return S
 
 # ---------- 따로 계산 ----------
@@ -430,6 +533,126 @@ def judge(g, add):
             f"Lpipe {ip['Lpipe']} m · 엘보 {ip['nElb']} · holdC {ip['holdC']} kg", "4.7 · 2 · 0.55")
         need = ["PIH093 펌프 쪽 압력", "FIH071 스팀 유량"]; miss = [t for t in need if t not in d["tags"]]
         add("P9", "PIMS 태그: 펌프 쪽 압력 PIH093 · 스팀 유량 FIH071(11-19 PIMS 화면) 값 상자", not miss, "모두 있음" if not miss else "없음: " + ", ".join(miss), "둘 다 있음")
+    judge131(g, add)
+
+def judge131(g, add):
+    """v131: 진공 흐름(V1~V4 · V9) · 2차 부하(V5) · 스팀 게이지(V6 · V7) · 자리(V8). 기준은 계산 상태(PR)에서 여기서 다시 구한 값이고, 화살촉은 화면 그림의 화소로도 본다."""
+    import pathlib
+    shots = pathlib.Path(__file__).resolve().parent / "shots"
+    f2 = lambda v: f"{v:.2f}"; VT = {"PI 컬럼 상부(계산)": "top", "PI 증기 배관 출구(계산)": "exit", "PI 응축기(계산)": "cond"}
+    def chain(d):   # 따로 구한 구간 압력: 응축기 = 펌프 쪽 + 밀폐 압력, 위쪽 값은 아래쪽보다 낮지 않게
+        r = d["raw"]; pc = r["Ppump"] + (r["Pseal"] if r["VV"] else 0); ps = max(r["Pstill"], pc); pt = max(pc, min(r["Ptop"], ps)); pe = max(pc, min(r["Pexit"], pt)); return dict(still=ps, top=pt, exit=pe, cond=pc, pump=r["Ppump"])
+    def want(d):    # 따로 구한 화살촉: 구간 → (보임, 크기 배율, 빈 화살촉)
+        r = d["raw"]; c = chain(d); live = not r["stopped"]; vd = max(0, r["vdot"] or 0) if live else 0; vp = max(0, r["vpass"] or 0) if live and r["VV"] else 0; thr = max(1e-4, 0.002 * c["still"])
+        dd = dict(AB=c["still"] - c["top"], BC=c["top"] - c["exit"], CD=c["exit"] - c["cond"]); gas = dict(AB=vd > 0.05, BC=vp > 0.05, CD=vp > 0.05); mx = max([dd[k] for k in dd if gas[k] and dd[k] > thr] or [0]); out = {}
+        for k in dd: hol = not dd[k] > thr; out[k] = (gas[k], 0.6 if hol else 0.6 + 0.6 * dd[k] / mx, hol)
+        c1 = min(1, max(0, r["c1"])) if r["c1"] is not None else 1; air = (r["nAir"] or 0) * 0.028964 * 3600; pump = d["pump"]; lost = max(0, r["lost"] or 0) if live else 0
+        out["T2"] = (vp * (1 - c1) > 1e-4 or bool(pump and air > 0), 0.6, True); out["S"] = (bool(pump and (air > 0 or lost > 1e-6)), 0.6, True)
+        return out, dd, dict(vd=vd, vp=vp, v2=vp * (1 - c1), air=air, thr=thr)
+    def arrows_bad(d, iso):   # 화살촉(3D 또는 도면)의 보임 · 크기 · 빈 여부가 따로 구한 것과 다른 것
+        w, _, fl = want(d); bad = []
+        for a in (d["p2"]["arr"] if iso else d["arr"]):
+            on, k, hol = w[a["sec"]]; kk = k * (a.get("base") or 1) if iso else k
+            if on and not hol and abs(k - 0.6) < 0.02: continue   # 압력 차가 문턱 바로 위(채움 ↔ 빈 경계)는 판정하지 않는다
+            if bool(a["on"]) != bool(on) or (on and (abs((a["k"] or 0) - kk) > 0.03 or bool(a["hollow"]) != hol)): bad.append(f'{a["id"]}: 보임 {a["on"]}(기대 {on}) · 크기 {a["k"]}(기대 {kk:.3f}) · 빈 {a["hollow"]}(기대 {hol})')
+        return bad
+    def num(s):
+        m = re.search(r"-?\d+(?:\.\d+)?", s or ""); return float(m.group(0)) if m else None
+    def vals_bad(d, tol=0.016):   # 화면 숫자(3D 값 상자 글 또는 도면 값 글) = 따로 구한 구간 압력(소수 둘째 자리 반올림 + 값 글을 고치는 간격만큼의 여유)
+        c = chain(d); src = {"top": d["p2"]["vals"]["Ptop"], "exit": d["p2"]["vals"]["Pexit"], "cond": d["p2"]["vals"]["Pcond"]} if d["iso"] else {v: d["tags"].get(k) for k, v in VT.items()}; bad = []
+        for k, s in src.items():
+            x = num(s)
+            if x is None or "mmHg" not in s or abs(x - c[k]) > tol: bad.append(f"{k} '{s}' ≠ {c[k]:.3f}")
+        return bad
+    def seen(d, on_png, off_png, iso):   # 화면 그림에서 보이는 화살촉마다 [이름, 켠 그림의 보라 화소, 끈 그림의 보라 화소]
+        try: a = png_rows(str(shots / on_png)); b = png_rows(str(shots / off_png)) if off_png else None
+        except Exception as e: return None, f"그림을 못 읽음({e})"
+        out = [[x["id"], violet_px(a, x["x"], x["y"], x["r"], iso), violet_px(b, x["x"], x["y"], x["r"], iso) if b else 0] for x in (d["p2"]["arr"] if iso else d["arr"]) if x["on"]]
+        return out, ""
+    TK = "회수 탱크 · 균압 라인: 응축기와 같은 압력으로 둔다(따로 계산하지 않음)"   # 뜻 글의 회수 탱크 줄(기본 계산)
+    sn = "v131 진공 흐름"; p0, p1, n3, n2, s3, s2, off, ov, n2arr, n3eq = (g(sn, k) for k in ("p0", "p1", "n3", "n2", "s3", "s2", "off", "n2ov", "n2arr", "n3eq"))
+    if p0 and p1 and n3 and n2 and off:
+        vt0 = [k for k in VT if k in p0["tags"]]; c = chain(n3); t3 = {k: n3["tags"].get(k) for k in VT}; b3 = vals_bad(n3); b2 = vals_bad(n2); v2 = n2["p2"]["vals"]
+        okOff0 = p0["pressed"] == "false" and not p0["on"] and not vt0 and p0["note"] is None and not any(a["on"] for a in p0["arr"]) and (p0["p2"] is None or p0["p2"]["disp"] == "none")
+        okOn3 = n3["pressed"] == "true" and not b3 and all(n3["tvis"].get(k) for k in VT) and bool(n3["note"]) and "압력 차" in n3["note"] and "방향" in n3["note"] and n3["noteVis"]
+        okOn2 = n2["iso"] and n2["p2"]["disp"] != "none" and not b2 and all(n2["p2"]["box"].get(k) for k in ("Ptop", "Pexit", "Pcond")) and n2["noteVis"]
+        okOff1 = off["pressed"] == "false" and not any(k in off["tags"] for k in VT) and off["note"] is None and not any(a["on"] for a in off["arr"]) and max(abs(a - b) for a, b in zip(off["cam"], n3["cam"])) < 1e-3
+        add("V1", "[진공 흐름] 스위치: 기본 꺼짐(값 상자 · 화살촉 · 뜻 글 없음). 켜면 구간 압력 값 상자 3개(컬럼 상부 · 증기 배관 출구 · 응축기, 계산값)가 3D와 도면에 보이고 뜻 글이 그림 왼쪽 위에 나온다. 끄면 되돌아가고 그림 크기(카메라)는 그대로. 사용자 11-20 '진공흐름 버튼누르면 … 각 구간마다 어떤지'",
+            bool(okOff0 and okOn3 and okOn2 and okOff1),
+            f"처음 {p0['pressed']} · 상자 {len(vt0)}개 → 켠 뒤 3D {t3}(따로 구한 값 상부 {c['top']:.3f} · 출구 {c['exit']:.3f} · 응축기 {c['cond']:.3f}, 가려지지 않음 {all(n3['tvis'].get(k) for k in VT)}) · 도면 {v2['Ptop']} · {v2['Pexit']} · {v2['Pcond']}(화면 안 {n2['p2']['box']}) · 뜻 글 보임 3D {n3['noteVis']} · 도면 {n2['noteVis']} · 끈 뒤 상자 {sum(1 for k in VT if k in off['tags'])}개 · 어긋남 {(b3 + b2) or '없음'}",
+            "꺼짐 0개 → 켜면 3개(3D = 도면 = 계산값, 보임) · 뜻 글 → 끄면 0개")
+        _, dd, fl = want(n3); order = c["still"] > c["top"] > c["exit"] > c["cond"] >= c["pump"] - 1e-9; a3 = arrows_bad(n3, False); a2 = arrows_bad(n2, True)
+        kk = {a["id"]: a["k"] for a in n3["arr"] if a["on"]}; rot = {a["id"]: a["rot"] for a in n3["arr"]}; deg = {a["id"]: a["deg"] for a in n2["p2"]["arr"]}
+        dirOK = abs(rot["neck"] - math.pi / 2) < 1e-3 and abs(rot["up"] - math.pi / 2) < 1e-3 and abs(rot["run"]) < 1e-3 and abs(rot["in"] + math.pi / 2) < 1e-3 and abs(rot["t2"]) < 1e-3 and abs(rot["s"]) < 1e-3 and [deg[k] for k in ("neck", "up", "run", "in", "t2", "s")] == [-90, -90, 0, 90, 0, 0]
+        add("V2", "진공 흐름의 방향 · 세기(정상 운전 6 h): 구간 압력이 정제기 > 컬럼 상부 > 증기 배관 출구 > 응축기 순이고, 화살촉은 그 순서(위 → 오른쪽 → 아래 → 펌프 쪽)를 가리킨다. 크기 = 0.6 + 0.6 × (구간 압력 차 ÷ 가장 큰 구간 압력 차) — 3D와 도면이 같다(표시 규칙)",
+            bool(order and not a3 and not a2 and dirOK and kk and kk.get("up", 0) == max(kk.values()) and max(dd, key=dd.get) == "BC"),
+            f"압력 {c['still']:.3f} > {c['top']:.3f} > {c['exit']:.3f} > {c['cond']:.3f} ≥ {c['pump']:.3f} mmHg · 압력 차 충전층 {dd['AB']:.3f} · 배관 {dd['BC']:.3f} · 출구 {dd['CD']:.3f} · 증기 {fl['vp']:.1f} kg/h · 3D 크기 {kk} · 어긋남 3D {a3 or '없음'} · 도면 {a2 or '없음'}", "순서대로 · 가장 큰 화살촉 = 증기 배관 · 어긋남 없음")
+        s3d, e3 = seen(n3, "v131_진공흐름_정상_3D.png", "v131_진공흐름_정상_3D_끔.png", False); s2d, e2 = seen(n2, "v131_진공흐름_정상_2D.png", "v131_진공흐름_정상_2D_끔.png", True)
+        okPx = bool(s3d) and bool(s2d) and len(s3d) == 6 and len(s2d) == 6 and all(x[1] >= 15 and x[2] <= 2 for x in s3d + s2d) and all(a["top"] for a in n3["arr"] if a["on"]) and all(a["inS"] for a in n2["p2"]["arr"] if a["on"])
+        add("V2", "화살촉이 화면에 실제로 보인다(정상 운전 6 h): 화면 그림에서 화살촉 자리마다 화살촉 색(보라) 화소를 센다 — 켠 그림에는 있고 끈 그림의 같은 자리에는 없다. 3D는 다른 화면 요소에 가려지지 않고, 도면은 그림 안에 있다",
+            okPx, f"[이름, 켠 그림, 끈 그림] 3D {s3d if s3d is not None else e3} · 도면 {s2d if s2d is not None else e2}", "화살촉 6개 모두 켠 그림 15화소 이상 · 끈 그림 2화소 이하")
+        hol = {a["id"]: (a["on"], a["hollow"], a["k"]) for a in n3["arr"] if a["sec"] in ("T2", "S")}; hol2 = {a["id"]: (a["on"], a["hollow"], a["k"]) for a in n2["p2"]["arr"] if a["sec"] in ("T2", "S")}
+        add("V3", "계산에 없는 것은 지어내지 않는다: 응축기 → 2차 응축기 → 진공펌프 구간은 계산에서 같은 압력(관 압력 손실 없음)이라 크기를 매기지 않고 빈 화살촉(가장 작은 크기)으로 방향만 내고, 회수 탱크 · 균압 라인은 값 상자도 화살촉도 없고, 뜻 글에 '응축기와 같은 압력으로 둔다(따로 계산하지 않음)'고 적는다(3D · 도면 같은 글)",
+            bool(len(hol) == 2 and all(v == (True, True, 0.6) for v in hol.values()) and all(v == (True, True, 0.6) for v in hol2.values()) and abs(c["cond"] - c["pump"]) < 1e-9 and not n3["tank"] and not p1["tank"] and len(n3["arr"]) == 6 and len(n2["p2"]["arr"]) == 6 and n3.get("tline") == TK and n2.get("tline") == TK and n3.get("stTank") is False),
+            f"응축기 {c['cond']:.3f} = 펌프 쪽 {c['pump']:.3f} mmHg · 1차 → 2차 · 2차 → 펌프 화살촉 3D {hol} · 도면 {hol2} · 리크 공기 {fl['air'] * 1000:.2f} g/h · 회수 탱크 압력 상자 {len(n3['tank'])}개 · 화살촉 자리 {len(n3['arr'])}곳(균압 라인 0) · 뜻 글 3D '{n3.get('tline')}' · 도면 '{n2.get('tline')}'", "빈 화살촉 2개(크기 0.6) · 회수 탱크 상자 0개 · 뜻 글에 한 줄")
+        if ov and n2arr and n3eq:
+            add("V8", "진공 흐름을 켠 도면: 새 값 상자(컬럼 상부 · 증기관 출구 · 응축기 압력, E-H072 부하) · 게이지 상자가 관 선과 다른 글에 걸리지 않고, 화살촉이 글 · 값 상자에 걸리지 않음", not ov["cross"] and not ov["overlap"] and not n2arr["hit"] and n2arr["n"] == 6,
+                f"관에 걸림 {ov['cross'] or '없음'} · 서로 겹침 {ov['overlap'] or '없음'} · 본 글 · 상자 {ov['items']}개 · 화살촉 {n2arr['n']}개 중 걸린 것 {n2arr['hit'] or '없음'}", "0개")
+            add("V8", "진공 흐름을 켠 3D(1440×1000, 레시피 6 h): 값 상자가 설비 몸통(정면 윤곽 사각형) · 화살촉 · 뜻 글을 가리지 않음", not n3eq["equip"] and not n3eq["arrows"] and not n3eq["note"] and n3eq["nArr"] == 6,
+                f"설비 가림 {n3eq['equip'] or '없음'} · 화살촉 가림 {n3eq['arrows'] or '없음'} · 뜻 글 가림 {n3eq['note'] or '없음'} · 값 상자 {n3eq['n']}개 · 화살촉 {n3eq['nArr']}개", "0개")
+    if p1 and s3 and s2:
+        c = chain(p1); eq = max(c.values()) - min(c.values()); fil = [a["id"] for a in p1["arr"] if a["on"] and not a["hollow"]]; hol = [a["id"] for a in p1["arr"] if a["on"] and a["hollow"]]; b1 = arrows_bad(p1, False) + vals_bad(p1)
+        cs = chain(s3); eqs = max(cs.values()) - min(cs.values()); ons = [a["id"] for a in s3["arr"] if a["on"]]; on2 = [a["id"] for a in s2["p2"]["arr"] if a["on"]]; bs = arrows_bad(s3, False) + arrows_bad(s2, True) + vals_bad(s3, 0.03) + vals_bad(s2, 0.03)
+        lagOK = s3["lag"] is None or "따라오지 않은" in (s3["note"] or "")
+        add("V4", "흐름이 없으면 화살촉도 없다: 끓기 전(0.3 h)에는 구간 압력이 모두 같고 채운 화살촉 0개(펌프가 빼는 리크 공기 방향만 빈 화살촉 2개). 진공 펌프를 세우고(PCV 0 %) 6.6 h까지 건너뛴 뒤(약 30분)에는 증발이 멈추고 펌프로 가는 기체도 없어 화살촉 0개(3D · 도면), 구간 압력은 펌프 쪽 값과 같다. 정제기 압력 상자(저장값)가 낮게 남아 있으면 뜻 글에 밝힌다",
+            bool(eq < 0.01 * c["pump"] and not fil and sorted(hol) == ["s", "t2"] and not b1 and not s3["pump"] and (s3["raw"]["vdot"] or 0) < 0.05 and not ons and not on2 and not bs and eqs < 1e-9 and cs["pump"] > 5 * c["pump"] and lagOK),
+            f"끓기 전: 압력 {c['still']:.3f}~{c['pump']:.3f} mmHg · 채운 화살촉 {fil or '없음'} · 빈 화살촉 {hol} → 펌프 정지 {((s3['t'] - off['t']) * 60 if off else float('nan')):.0f}분 뒤: 펌프 쪽 {cs['pump']:.2f} mmHg · 증발 {s3['raw']['vdot']:.2f} kg/h · 화살촉 3D {ons or '없음'} · 도면 {on2 or '없음'} · 값 상자 {[s3['tags'].get(k) for k in VT]} · 정제기 압력 상자 {s3['tags'].get('PICH071 탱크 압력')}(저장값 {s3['raw']['Pstill']:.2f}) · 뜻 글 '{(s3['note'] or '')[-42:]}' · 어긋남 {(b1 + bs) or '없음'}",
+            "끓기 전 채운 화살촉 0 · 빈 화살촉 2 → 펌프 정지 뒤 0개 · 낮게 남은 값은 밝힘")
+    l3, l2 = g("v131 진공 흐름 리크", "l3"), g("v131 진공 흐름 리크", "l2")
+    if l3 and l2 and n3:
+        c = chain(l3); c0 = chain(n3); w, dd, fl = want(l3); bad = arrows_bad(l3, False) + arrows_bad(l2, True) + vals_bad(l3) + vals_bad(l2); a = {x["id"]: (x["on"], x["hollow"]) for x in l3["arr"]}
+        add("V9", "이상 상황에서 숫자 · 화살촉이 계산값대로 바뀐다(진공 리크 증가 5 mmHg/min, 78분 뒤): 펌프 쪽 압력이 올라 증기 배관 출구가 초킹되지 않으면 출구 압력 = 응축기 압력이 되고 그 구간 화살촉은 빈 것(방향만), 충전층 · 배관 구간은 채운 화살촉. 3D = 도면 = 계산값",
+            bool(not bad and c["cond"] > 5 * c0["cond"] and fl["vp"] > 1 and abs(c["exit"] - c["cond"]) <= fl["thr"] and a["in"] == (True, True) and a["neck"] == (True, False) and a["run"] == (True, False) and dd["BC"] < chain(n3)["top"] - chain(n3)["exit"]),
+            f"응축기 {c0['cond']:.2f} → {c['cond']:.2f} mmHg · 정제기 {c['still']:.2f} · 상부 {c['top']:.2f} · 출구 {c['exit']:.2f} · 증기 {fl['vp']:.1f} kg/h · 마하 {l3['raw']['Mach']:.2f} · 화살촉(보임, 빈 것) {a} · 3D 값 {[l3['tags'].get(k) for k in VT]} · 도면 값 {[l2['p2']['vals'][k] for k in ('Ptop', 'Pexit', 'Pcond')]} · 어긋남 {bad or '없음'}",
+            "출구 = 응축기 → 빈 화살촉 · 나머지 채운 화살촉 · 어긋남 없음")
+    sn = "v131 2차 부하"; c0, c1, c2 = g(sn, "c0"), g(sn, "c1"), g(sn, "c2")
+    if c0 and c1 and c2:
+        def ld2(d):
+            r = d["raw"]; return None if not (r["cap2"] and r["cap2"] > 0) or r["stopped"] else 100 * r["Qv1"] * (1 - min(1, max(0, r["c1"]))) / r["cap2"]
+        fmt = lambda v: "–" if v is None else (f"{v:.1f}" if v < 10 else f"{v:.0f}"); a, b1, b2 = ld2(c0), ld2(c1), ld2(c2); N2 = "E-H072 응축 부하(계산)"; t0, t1 = c0["tags"].get(N2), c1["tags"].get(N2); r1 = c1["raw"]; d2 = c2["p2"]["vals"]["C2load"]
+        okV = a is not None and b1 is not None and abs((c0["c2L"] or 0) - a) < 1e-9 and abs((c1["c2L"] or 0) - b1) < 1e-9 and t0 == fmt(a) + "%" and num(t1) is not None and abs(num(t1) - b1) < 0.06 and num(d2) is not None and abs(num(d2) - b2) < 0.06 and d2.endswith(" %")
+        okSee = bool(c0["tvis"].get(N2) and c1["tvis"].get(N2) and c2["p2"]["box"].get("C2load"))
+        okHot = b1 is not None and r1["c1"] < 0.01 and b1 > 50 * max(a or 0, 1e-9) and abs(b1 - 100 * r1["Qv1"] / r1["cap2"]) < 0.02 * b1 and (r1["m2"] or 0) > 1 and str(c1["tags"].get("E-H071 응축 부하(계산)") or "–").startswith("–")
+        add("V5", "2차 응축기 부하 값 상자(3D '2차 부하' · 도면 'E-H072 부하'): 부하율 = 1차에서 응축되지 못하고 넘어온 증기의 응축 열 ÷ 2차 응축 능력 = Qv1·(1 − c1) ÷ cap2(1차와 같은 뜻 · 같은 형식). 1차 N-Brine 온도 상승(95 ℃)이면 증기가 모두 2차로 넘어가 부하율이 오르고 1차는 능력 0이라 '–'. 사용자 11-20 '2차콘덴서쪽도 2차 부하로 적어놓자'",
+            bool(okV and okSee and okHot),
+            f"정상: 넘어온 열 {c0['raw']['Qv1'] * (1 - c0['raw']['c1']):.3f} W ÷ 능력 {c0['raw']['cap2'] / 1000:.1f} kW = {(a or 0):.5f} % → 상자 '{t0}' · 1차 N-Brine 95 ℃: 1차 응축 비율 {r1['c1']:.3f} · 2차로 {(r1['m2'] or 0):.2f} kg/h · {r1['Qv1']:.0f} W ÷ {(r1['cap2'] or 0) / 1000:.1f} kW = {(b1 or 0):.3f} % → 상자 '{t1}' · 도면 '{d2}' · 1차 상자 '{c1['tags'].get('E-H071 응축 부하(계산)')}' · 화면에 보임 {okSee}", "상자 = 따로 구한 값 · 보임 · 냉매 온도 상승 때 50배 넘게 오름")
+    t2, t3, t0 = g("v131 2차 부하", "t2"), g("v131 2차 부하", "t3"), g("v131 2차 부하", "t0")
+    if t2 and t3 and t0:
+        def tl_ok(d):   # '초류 탱크 x.xx · 본류 탱크 x.xx mmHg(…)'의 두 숫자 = 계산한 탱크 압력
+            m = re.match(r"초류 탱크 (-?\d+(?:\.\d+)?) · 본류 탱크 (-?\d+(?:\.\d+)?) mmHg", d.get("tline") or ""); gl = d.get("gl")
+            return bool(m and gl and abs(float(m.group(1)) - gl["F"]) < 0.016 and abs(float(m.group(2)) - gl["M"]) < 0.016 and "응축기와 같은 압력" not in d["tline"])
+        add("V3", "'유출관 높이로 막힘 계산'을 켜면 회수 탱크 압력을 따로 계산하므로 뜻 글의 회수 탱크 줄이 '응축기와 같은 압력으로 둔다' 대신 계산값(초류 탱크 · 본류 탱크 mmHg)으로 바뀐다(3D · 도면). 끄면 되돌아온다",
+            bool(t3.get("glOn") and t2.get("glOn") and isinstance(t3.get("stTank"), dict) and tl_ok(t3) and tl_ok(t2) and (not t3["iso"]) and t2["iso"] and not t0.get("glOn") and t0.get("tline") == TK),
+            f"켬: 3D '{t3.get('tline')}'(계산값 초류 {(t3.get('gl') or {}).get('F', float('nan')):.3f} · 본류 {(t3.get('gl') or {}).get('M', float('nan')):.3f}) · 도면 '{t2.get('tline')}' → 끔: '{t0.get('tline')}'", "켜면 계산값 · 끄면 원래 글")
+    sn = "v131 스팀 게이지"; G = {k: g(sn, k) for k in ("g0", "g1", "g2", "g3", "g4", "g5", "h0", "h1", "h2", "h3", "h4", "h5")}
+    if all(G.values()):
+        g0, g1, g2, g3, g4, g5, h0, h1, h2, h3, h4, h5 = (G[k] for k in ("g0", "g1", "g2", "g3", "g4", "g5", "h0", "h1", "h2", "h3", "h4", "h5"))
+        bx = g0["box"]; vx = g0["valve"]; dist = math.hypot(max(bx[0], min(vx[0], bx[0] + bx[2])) - vx[0], max(bx[1], min(vx[1], bx[1] + bx[3])) - vx[1]) if bx and vx else 999
+        same = bool(bx and g1["box"] and g4["box"]) and all(abs(a - b) < 0.6 for a, b in zip(bx, g1["box"])) and all(abs(a - b) < 0.6 for a, b in zip(bx, g4["box"]))
+        ok0 = g0["el"] and g0["recipe"] and not g0["hold"] and g0["chip"] is False and g0["mode"] == "자동(PI) 조절 중" and abs(g0["rv"] - round(g0["mv"])) <= 1 and dist <= 30 and g0["reach"] and not g0["pop"]
+        ok1 = g1["hold"] and g1["chip"] and g1["held"] and g1["mode"] == "수동 고정" and 45 <= g1["rv"] <= 55 and abs(g1["mv"] - g1["rv"]) < 0.6 and abs(g2["mv"] - g1["mv"]) < 0.6 and g2["vdot"] > g0["vdot"] + 0.3 and not g1["pop"] and same
+        ok3 = g3["hold"] and 14 <= g3["rv"] <= 26 and abs(g3["mv"] - g3["rv"]) < 0.6
+        ok4 = (not g4["hold"]) and g4["chip"] is False and not g4["held"] and g4["mode"] == "자동(PI) 조절 중" and "스팀 자동(PI) 복귀" in " ".join(g4["log"]) and abs(g5["mv"] - g3["mv"]) > 0.3
+        add("V6", "스팀 밸브 옆 개도 게이지(3D): '스팀 개도' 값 상자 안의 막대가 지금 개도(자동이면 스팀 PI가 정한 값)와 '자동(PI) 조절 중'을 보인다. 막대를 누르거나 끌면 개도가 바로 바뀌고, 레시피 운전 중이면 그 개도로 고정되어 '수동 고정'과 [자동으로]가 나타난다. [자동으로]를 누르면 스팀 PI로 돌아간다(운전 패널의 '스팀 자동(PI)으로'와 같음). 상자 크기 · 자리는 그대로. 사용자 11-20 '스팀밸브옆에서 그냥 바로 게이지가있어서 내가 바로바로 게이지조절'",
+            bool(ok0 and ok1 and ok3 and ok4),
+            f"자동: 막대 {g0['rv']} · 개도 {g0['mv']:.1f} % · '{g0['mode']}' · 밸브까지 {dist:.0f} px · 막대가 맨 위 {g0['reach']} → 가운데를 누름: {g1['mv']:.0f} %('{g1['mode']}' · [자동으로] {g1['chip']}) · 5초 뒤 {g2['mv']:.0f} % · 증발 {g0['vdot']:.2f} → {g2['vdot']:.2f} kg/h · 상자 그대로 {same} → 끌어서 {g3['mv']:.0f} % → [자동으로]: 고정 {g4['hold']} · '{g4['mode']}' · 6초 뒤 {g5['mv']:.1f} %", "누름 · 끌기 = 그 개도로 고정 · [자동으로] = PI 복귀 · 밸브에서 30 px 안")
+        gg = h0["g2"] or {}; pos = (gg["cx"] - gg["x0"]) / (gg["x1"] - gg["x0"]) * 100 if gg else -1
+        ok20 = h0["iso"] and bool(gg) and not gg["auto"] and gg["mode"] == "자동(PI) 조절 중" and abs(pos - h0["mv"]) < 1.5 and (gg["hit"] or [0, 0])[0] > 20
+        ok21 = h1["hold"] and h1["g2"]["auto"] and h1["g2"]["mode"] == "수동 고정" and 55 <= h1["mv"] <= 70 and h1["g2"]["num"] == f"{h1['mv']:.1f} %" and 20 <= h2["mv"] <= 34 and h2["g2"]["view"] == h0["g2"]["view"]
+        ok22 = 78 <= h3["mv"] <= 92 and h3["hold"] and (not h4["hold"]) and not h4["g2"]["auto"] and h4["g2"]["mode"] == "자동(PI) 조절 중" and abs(h5["mv"] - h3["mv"]) > 0.2
+        add("V7", "스팀 밸브 옆 개도 게이지(도면): 'TCV-H071 개도' 값 상자 안의 막대 — 누름 · 끌기 · 터치 포인터로 개도가 바뀌고, 끄는 동안 도면은 움직이지 않는다. 상태 글(자동 · 수동 고정)과 [자동으로]는 3D와 같다",
+            bool(ok20 and ok21 and ok22),
+            f"도면 막대 자리 {pos:.1f} %(개도 {h0['mv']:.1f} % · '{gg.get('mode')}' · 누르는 자리 {[round(x) for x in (gg.get('hit') or [0, 0])]} px) → 누름 {h1['mv']:.0f} %('{h1['g2']['num']}' · '{h1['g2']['mode']}') → 끌기 {h2['mv']:.0f} % · 도면 보는 범위 그대로 {h2['g2']['view'] == h0['g2']['view']} → 터치 {h3['mv']:.0f} % → [자동으로]: 고정 {h4['hold']} · 5초 뒤 {h5['mv']:.1f} %", "누름 · 끌기 · 터치로 바뀜 · 도면 안 움직임 · 자동 복귀")
 
 def static(html_path):
     R = []; h = html_path.read_text(encoding="utf-8")
