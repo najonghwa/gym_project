@@ -18,7 +18,9 @@ import io, json, math, pathlib, statistics as st, sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 tag = next((a for a in sys.argv[1:] if not a.startswith("-")), "v130_최종")
-DBV = json.loads((HERE / "DB값.json").read_text(encoding="utf-8"))
+_dbf = HERE / "DB값.json"      # 현장 데이터라 공개 저장소에는 두지 않는다(2026-11-21 사용자). 형식은 DB값_양식.json
+if not _dbf.exists(): raise SystemExit("DB값.json이 없다 — 현장 데이터라 공개 저장소에는 두지 않는다. DB 배치 분석 표를 DB값_양식.json과 같은 형식으로 만들어 발표자료/에 두고 다시 돌린다.")
+DBV = json.loads(_dbf.read_text(encoding="utf-8"))
 VAL = json.loads((HERE / "값.json").read_text(encoding="utf-8"))
 _ck = HERE.parent / "점검" / f"점검결과_{tag}.json"
 if not _ck.exists(): _ck = HERE / f"점검결과_{tag}.json"

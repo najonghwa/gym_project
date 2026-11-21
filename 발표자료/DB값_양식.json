@@ -1,0 +1,368 @@
+{
+ "설명": "DB값.json의 양식이다. 값은 비워 두었다(현장 데이터는 공개 저장소에 두지 않는다). 사내망에서 DB 배치 분석 표를 이 모양으로 채워 DB값.json이라는 이름으로 발표자료/에 두면 DB_맞춤.py · 만들기.py · 교과서.py가 읽는다. 배치 수만큼의 목록은 '배치'의 순서를 따른다. 숫자 칸은 구간 평균(온도 ℃, 유량 kg/h, 시간 h, 무게 kg), 값이 없으면 null. 글 칸(출처 · 이유 · 확인할 것)은 문장으로 적는다.",
+ "출처": "",
+ "옮긴이": "",
+ "배치": [
+  "배치1",
+  "배치2",
+  "배치3",
+  "배치4",
+  "배치5",
+  "배치6"
+ ],
+ "기간": "YYYY-MM~MM",
+ "증기압식_문서": {
+  "A": null,
+  "B": null,
+  "설명": ""
+ },
+ "투입": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "투입_승온뒤_최대": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "승온_90도_h": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "탑_70도_h": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "전환류_h": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "초류_h": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "본류_h": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "전체_h": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "초류량": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "초류_투입_pct": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "본류량": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "남은양": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "남은양_제외": [
+  ""
+ ],
+ "남은양_제외_이유": "",
+ "초류": {
+  "D": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "R": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "T": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "Tj": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "Ttop": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ]
+ },
+ "본류": {
+  "D": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "R": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "T": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "Tj": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "Ttop": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "Tbot": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ]
+ },
+ "교반_rpm": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "WIH071_0_h": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "FICH072_무게_적분_비": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "범위": {
+  "투입_전_분": [
+   null,
+   null
+  ],
+  "자켓_10분뒤": [
+   null,
+   null
+  ],
+  "승온_기울기": [
+   null,
+   null
+  ],
+  "승온_시작온도": [
+   null,
+   null
+  ],
+  "승온_90도_분": [
+   null,
+   null
+  ],
+  "자켓_승온_최고": [
+   null,
+   null
+  ],
+  "내부온도_제어": [
+   null,
+   null
+  ],
+  "전환류_환류": [
+   null,
+   null
+  ],
+  "초류_유출_SV": null,
+  "본류_유출": [
+   null,
+   null
+  ],
+  "WIH071_승온중_증가_kg": [
+   null,
+   null
+  ],
+  "WIH071_증가_kg_per_C": [
+   null,
+   null
+  ],
+  "WIH071_증가_대표": null,
+  "무게_바닥_kg": null,
+  "WIH072_바닥_kg": null,
+  "이차응축기_유입": [
+   null,
+   null
+  ],
+  "유출시작_h": [
+   null,
+   null
+  ]
+ },
+ "값없는_태그": [
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  ""
+ ],
+ "쓸수없는_태그": {
+  "PICH071": "",
+  "PIH093": ""
+ },
+ "문서의_목표": {
+  "초류": {
+   "T": [
+    null,
+    null
+   ],
+   "Ttop": [
+    null,
+    null
+   ],
+   "V": null,
+   "RD": null
+  },
+  "본류": {
+   "T": [
+    null,
+    null
+   ],
+   "Ttop": [
+    null,
+    null
+   ],
+   "V": [
+    null,
+    null
+   ],
+   "RD": [
+    null,
+    null
+   ]
+  }
+ },
+ "문서의_압력해석": {
+  "탑_torr": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "정제기_포화압_torr": [
+   null,
+   null
+  ],
+  "압력차_최대_torr": [
+   null,
+   null
+  ]
+ },
+ "공정팀_확인": [
+  "",
+  "",
+  "",
+  "",
+  ""
+ ]
+}
