@@ -45,7 +45,7 @@ boil:P.Tmean>=P.Tbub-0.3,on:Object.keys(D.AB.on),stopped:!!P.stopped})})()"""
 # 이상 상황: (열쇠, 이름, 건 뒤 본 시각[h])
 AB_CASES = [("c1hot", "1차 N-Brine 온도 상승", 0.5), ("c1cold", "1차 N-Brine 과냉", 0.5), ("c2hot", "2차 L-Brine 온도 상승", 0.5), ("cwlow", "냉매 유량 부족", 0.5),
             ("steam", "스팀 개도 과다", 0.5), ("rhigh", "환류 과다", 0.5), ("rlow", "환류 부족", 0.5), ("leak", "진공 리크 증가", 0.5), ("pump", "진공 배기 능력 저하", 0.5), ("pstop", "진공 펌프 정지", 0.5),
-            ("cold", "외기 한파", 0.5), ("bare", "단열 손상", 0.5)]
+            ("cold", "외기 한파", 0.5), ("bare", "단열 손상", 0.5), ("preg", "스팀 레귤레이터 고장", 0.5)]   # v135 계산 쪽: 이상 상황 13번째(밸브 앞 스팀 압력 1.96 → 7 bar(g), 가정)
 
 def scenarios(scen, tag, BOOT, jump, SHOTS):
     rec = BOOT + [["eval", "window.__dt.opSetMode('recipe');1"], ["wait", 1500]]
@@ -142,6 +142,10 @@ def _steam(a, b, c):
     return (b["MV"] == 70 and b["V"] > 1.5 * a["V"] and b["Pstill"] > 1.5 * a["Pstill"] and b["Tpot"] > a["Tpot"] + 5 and b["D"] > 2 * a["D"] and b["flood"] > a["flood"] and c["MV"] < b["MV"] - 5,
             f"증발 {f2(a['V'])} → {f2(b['V'])} kg/h · 정제기 압력 {a['Pstill']:.2f} → {b['Pstill']:.2f} torr · 내부 {a['Tpot']:.1f} → {b['Tpot']:.1f} ℃ · 유출 {f2(a['D'])} → {f2(b['D'])} · 범람 비 {a['flood']} → {b['flood']} · 되돌린 뒤 개도 {b['MV']} → {c['MV']} %",
             "증발 1.5배 · 압력 1.5배 · 내부 +5 ℃ · 유출 2배 넘게 · 되돌리면 개도가 내려오기 시작(30분에 5 %p 넘게)")
+def _preg(a, b, c):   # v135: 밸브 앞 스팀 압력이 오르면 같은 개도에서 스팀이 는다(임계 흐름 ∝ 절대 압력) — 입열 · 증발이 늘고, 되돌리면 입열이 다시 준다
+    return (b["Q"] > 1.5 * a["Q"] and b["V"] > 1.15 * a["V"] and b["Tpot"] >= a["Tpot"] and c["Q"] < b["Q"],
+            f"입열 {a['Q']:.0f} → {b['Q']:.0f} W · 증발 {f2(a['V'])} → {f2(b['V'])} kg/h · 내부 {a['Tpot']:.1f} → {b['Tpot']:.1f} ℃ · 되돌린 뒤 입열 {c['Q']:.0f} W",
+            "입열 1.5배 넘게 · 증발 1.15배 넘게 · 되돌리면 입열이 준다")
 def _rhigh(a, b, c):
     return (b["R"] > 1.3 * a["R"] and b["D"] < 0.6 * a["D"] and b["MV"] >= a["MV"] - 0.5 and c["R"] < 1.15 * a["R"],
             f"환류 {f2(a['R'])} → {f2(b['R'])} kg/h · 유출 {f2(a['D'])} → {f2(b['D'])} kg/h · 스팀 개도 {a['MV']} → {b['MV']} %", "환류 1.3배 넘게 · 유출 60 % 밑 · 스팀은 같거나 더 열림")
@@ -175,4 +179,4 @@ def _bare(a, b, c):
     U = lambda t: 1 / (t / 1000 / 0.04 + 1 / 10); ri = U(b["tIns"]) / U(a["tIns"]) * (b["Tpot"] - b["Tamb"]) / (a["Tpot"] - a["Tamb"]); rs = b["Qloss"] / a["Qloss"]
     return (abs(rs / ri - 1) < 0.1 and b["back"] > 1.5 * a["back"],
             f"탱크 열손실 {a['Qloss']:.0f} → {b['Qloss']:.0f} W({rs:.2f}배, 따로 계산 {ri:.2f}배) · 컬럼 안 응축 {f2(a['back'])} → {f2(b['back'])} kg/h", "열손실 = 1/(t/k + 1/10) 비 ±10 % · 컬럼 안 응축 1.5배 넘게")
-CRIT = {"c1hot": _c1hot, "c1cold": _c1cold, "c2hot": _c2hot, "cwlow": _cwlow, "steam": _steam, "rhigh": _rhigh, "rlow": _rlow, "leak": _leak, "pump": _pump, "pstop": _pstop, "cold": _cold, "bare": _bare}
+CRIT = {"c1hot": _c1hot, "c1cold": _c1cold, "c2hot": _c2hot, "cwlow": _cwlow, "steam": _steam, "rhigh": _rhigh, "rlow": _rlow, "leak": _leak, "pump": _pump, "pstop": _pstop, "cold": _cold, "bare": _bare, "preg": _preg}

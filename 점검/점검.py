@@ -156,6 +156,326 @@ def scen(name, actions, width=1440, height=1000, theme=None, q=""):
 def tag(t, js):  # eval 결과에 이름을 붙인다
     return ["eval", f"(async()=>{{const r=await ({js});return JSON.stringify({{tag:{json.dumps(t)},v:JSON.parse(r)}})}})()"]
 
+# >>> 현실성(X) 장면 시작
+# ---------- 현실성(2026-11-22): 화면이 실제 설비 · 계산대로 움직이는가 — 요구목록 (X)절, 번호 = 현실성_목록.md 항목 번호 ----------
+# 장면은 화면 조작으로만 상태를 만든다: 밸브 줄 단추 누르기 · 입력칸 · 이상 상황 창(ab) · 스팀 개도 게이지(steamSet) · 빨리 감기(startJump). 계산 상태(PR)는 읽기만 한다.
+# 재는 것: 0.1초마다 적은 기록(관 채움 · 그린 높이 · 점의 길), 화면 그림을 잘라 찍은 것(받는 탱크 · 정제기 액면, 도면의 관 · 컬럼 색 화소), 보이는 물체의 상태.
+# 판정은 점검_합침.judge_real이 한다. 그림 자르기: 측정 식이 그 자리에 보이지 않는 상자(#__xc_*)를 두고 그 상자를 찍는다(그림에는 아무것도 더하지 않는다).
+XVB = lambda k: ["click", '#valves button[data-v="' + k + '"]']   # 밸브 줄 단추를 마우스로 누른다
+def XSET(i, v): return ["eval", "(()=>{const e=document.getElementById(" + json.dumps(i) + ");if(!e)return 'no';e.value=" + json.dumps(str(v)) + ";e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));return e.value})()"]
+def XDL(sec): return ["eval", "window.__xdl=performance.now()+" + str(int(sec * 1000)) + ";1"]   # 기다림의 끝(기다리던 일이 안 생겨도 장면이 끊기지 않게)
+def XJUMP(h, settle=3000):   # 빨리 감기(배치가 먼저 끝나면 거기서 멈춘다)
+    return [["eval", f"window.__dt.startJump('at',{h});1"], ["until", f"(()=>{{const D=window.__dt,P=D.PR;return !!(P&&!D.TURBO&&(P.t>={h}*3600-120||P.stopped))}})()", 1500000], ["wait", settle]]
+def XJREL(dh, settle=4000):   # 지금부터 dh 시간 빨리 감기
+    return [["eval", "window.__xjt=window.__dt.PR.t/3600+" + str(dh) + ";window.__dt.startJump('at',window.__xjt);1"], ["until", "(()=>{const D=window.__dt,P=D.PR;return !!(P&&!D.TURBO&&(P.t>=window.__xjt*3600-120||P.stopped))})()", 900000], ["wait", settle]]
+def XSHOT(name, sel): return ["shot", str(SHOTS / name), sel]
+
+# 재는 도우미(읽기만): 3D 점 → 화면 자리, 관 채움, 잘라 찍을 상자, 보이는 글, 도면 좌표(mm) → 화면 자리, 점의 길
+XH = r"""(()=>{const D=window.__dt,H=window.__xh={};
+H.r=(v,n)=>v==null||!isFinite(v)?null:+(+v).toFixed(n==null?3:n);
+H.pr=(x,y,z)=>{const cam=D.camera,rc=D.canvas.getBoundingClientRect(),G=D.PIPES.V[0].parent;G.updateMatrixWorld(true);const v=new cam.position.constructor(x,y,z||0);v.applyMatrix4(G.matrixWorld);v.project(cam);return [(v.x*0.5+0.5)*rc.width+rc.left,(-v.y*0.5+0.5)*rc.height+rc.top]};
+H.drawn=(f)=>{const iv=[],fl0=!f.want&&f.dr?Math.max(f.tail,f.dr.t||0):f.tail,fh=f.want&&f.fv!=null?Math.min(f.head,f.fv):f.head;if(fh>fl0+1e-6)iv.push([fl0,fh]);for(const p of f.pls||[])if(p[1]>p[0]+1e-6)iv.push([p[0],p[1]]);iv.sort((a,b)=>a[0]-b[0]);let L=0,c=null;for(const x of iv){if(!c||x[0]>c[1]){if(c)L+=c[1]-c[0];c=[x[0],x[1]]}else c[1]=Math.max(c[1],x[1])}if(c)L+=c[1]-c[0];return L};   /* v135 사본: 그린 액 길이(흐르는 · 빠지는 구간 ∪ 고인 구간) — v134부터 고인 액은 f.pls로 따로 */
+H.fill=(k)=>{const f=D.FILL[k];if(!f)return null;const s0=f.segs.find(s=>s.ov.visible)||f.segs[0];return [H.r(f.head,4),H.r(f.tail,4),H.r(f.Ltot,4),f.want?1:0,f.held?1:0,f.segs.filter(s=>s.ov.visible).length,f.vapNow===undefined?-1:f.vapNow?1:0,f.sV==null?null:H.r(f.sV,4),s0&&s0.om&&s0.om.color?s0.om.color.getHexString():null,f.plug?H.r(f.plug.L,4):null,(f.pls||[]).map(p=>[H.r(p[0],4),H.r(p[1],4)]),H.r(H.drawn(f),4)]};   /* v135 사본: 뒤에 [9] 밸브 앞 고인 액 길이 · [10] 고인 구간들 · [11] 그린 액 길이 */
+H.crop=(id,x,y,w,h)=>{x=Math.round(x);y=Math.round(y);w=Math.max(8,Math.round(w));h=Math.max(8,Math.round(h));let e=document.getElementById(id);if(!e){e=document.createElement('div');e.id=id;document.body.appendChild(e)}e.style.cssText='position:fixed;left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+h+'px;pointer-events:none;opacity:0';return [x,y,w,h]};
+for(const id of ['__xc_fore','__xc_main','__xc_still','__xc_p2','__xc_seg'])H.crop(id,0,0,8,8);
+H.vis=(e)=>{for(let x=e;x&&x!==document.body;x=x.parentElement){const cs=getComputedStyle(x);if(cs.display==='none'||cs.visibility==='hidden'||x.hidden||+cs.opacity===0)return false}const r=e.getBoundingClientRect();return r.width>1&&r.height>1&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth};
+H.tagv=(n)=>{const e=document.querySelector('.dcs-tag[data-n="'+n+'"]');return e&&H.vis(e)&&e.children[1]?e.children[1].textContent.trim():null};
+H.texts=(rx)=>{const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const out=[];let n;while(n=w.nextNode()){const s=n.nodeValue.trim();if(!s)continue;const p=n.parentElement;if(!p||['SCRIPT','STYLE'].includes(p.tagName))continue;if(rx.test(s)&&H.vis(p))out.push(s.slice(0,140))}return out};
+H.pts=(els,step)=>{const pts=[];for(const el of els){if(!el||!el.getTotalLength)continue;let L=0;try{L=el.getTotalLength()}catch(e){continue}const m=el.getScreenCTM();if(!m||!(L>0))continue;for(let s=0;s<=L+1e-6;s+=step){const p=el.getPointAtLength(Math.min(s,L));pts.push([m.a*p.x+m.c*p.y+m.e,m.b*p.x+m.d*p.y+m.f])}}return pts};
+H.box=(pts,pad)=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of pts){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])}if(!pts.length)return [0,0,8,8];return [x0-pad,y0-pad,x1-x0+2*pad,y1-y0+2*pad]};
+H.rel=(rc,pts)=>pts.map(p=>[+(p[0]-rc[0]+4).toFixed(1),+(p[1]-rc[1]+4).toFixed(1)]);
+H.p2=()=>{const Q=D.PID2,M=D.M,q=M.pipe;if(!Q||!Q.svg||Q.root.hidden)return null;const g=Q.svg.firstChild,m=g&&g.getScreenCTM?g.getScreenCTM():null;if(!m)return null;const xMin=-(M.R||M.p.T/2)-0.75,yMax=q.yPipe+0.2;return {f:(x,y)=>{const X=(x-xMin)*1000,Y=(yMax-y)*1000;return [m.a*X+m.c*Y+m.e,m.b*X+m.d*Y+m.f]},iy:(sy)=>yMax-((sy-m.f)/m.d)/1000,k:1000*m.d}};
+H.vrt=()=>{let n=0,aft=0,thru=0;for(const v of D.VP){if(v.liq||v.cd>=0)continue;n++;const r=v.route;if(r==='vent'||r==='passvent'||r==='c2fore'||r==='pass2fore'){if(v.s>=9)aft++;else if(v.s===8)thru++}}return [n,aft,thru]};
+H.bub=()=>{let n=0;for(const p of D.FXP)if(p.kind==='bub'||p.kind==='bubS')n++;return n};
+H.vcol=(k)=>{const p=D.VALVE_PARTS&&D.VALVE_PARTS[k];if(!p||!p.parts||!p.parts.length)return null;const m=p.parts[0].material;return m&&m.color?m.color.getHexString():null};
+H.btn=(k)=>{const b=document.querySelector('#valves button[data-v="'+k+'"]');return b?b.getAttribute('aria-pressed'):null};
+return 1})()"""
+
+# 밸브 · 관 상태 한 장
+XSTATE = r"""(()=>{const D=window.__dt,P=D.PR,H=window.__xh,F=D.FILL;const o={};for(const k of ['C','R','RD','P','F','FL','M','T2','L2','S'])o[k]=H.fill(k);const u=D.uSealSpan(F.R);
+ return JSON.stringify({rt:+(performance.now()/1000).toFixed(2),t:+P.t.toFixed(1),st:P.rcp?P.rcp.st:null,stopped:!!P.stopped,VLV:Object.fromEntries(['R','P','F','M','J','C1','V'].map(k=>[k,D.VLV[k]?1:0])),
+  vcol:{F:H.vcol('F'),P:H.vcol('P'),R:H.vcol('R'),J:H.vcol('J')},btn:{F:H.btn('F'),P:H.btn('P'),R:H.btn('R'),J:H.btn('J')},
+  R:H.r(P.Rkg,2),Dk:H.r(P.Dkg,2),cond:H.r(P.condKg,2),sv:D.OP&&D.OP.rfic?D.OP.rfic.sv:null,manual:!!(D.OP&&D.OP.manual),recipe:!!(D.OP&&D.OP.recipe),
+  fore:H.r(P.ves.fore.A+P.ves.fore.B,4),main:H.r(P.ves.main.A+P.ves.main.B,4),spill:[H.r(P.spill.fore,4),H.r(P.spill.main,4)],lah:[P.lah.fore,P.lah.main],
+  fx:{ring:!!(D.FX.lah&&D.FX.lah.fore&&D.FX.lah.fore.visible),spill:!!(D.FX.spill&&D.FX.spill.fore&&D.FX.spill.fore.visible),pud:!!(D.FX.pud&&D.FX.pud.fore&&D.FX.pud.fore.visible)},
+  sealM:H.r(P.sealM,4),holdC:D.CUR.holdC,us:u?[H.r(u.s0,4),H.r(u.s1,4)]:null,fill:o,style:D.STYLE,tagR:H.tagv('FICH073 환류'),tagD:H.tagv('FICH072 유출')})})()"""
+
+# 0.1초마다 적는 기록: 다시 열 때 관 채움(X26)
+XPOLL_FILL = r"""(()=>{const D=window.__dt;window.__lg=[];let last=-1;if(window.__pi)clearInterval(window.__pi);window.__pi=setInterval(()=>{const P=D.PR;if(!P||P.t===last)return;last=P.t;const F=D.FILL,H=window.__xh,o=[];for(const k of ['P','F','FL']){const f=F[k];o.push(f?[+f.head.toFixed(4),+f.tail.toFixed(4),f.held?1:0,f.segs.filter(s=>s.ov.visible).length,H&&H.drawn?+H.drawn(f).toFixed(4):null,f.plug?+f.plug.L.toFixed(4):null,f.want?1:0]:null)}   /* v135 사본: [4] 그린 액 길이 · [5] 밸브 앞 고인 액 · [6] 흐름 */window.__lg.push([+(performance.now()/1000).toFixed(2),+P.t.toFixed(1),D.VLV.F?1:0,o])},100);return 1})()"""
+# 0.1초마다: 환류 · 유출을 닫아 고이고 넘칠 때(X1 · X2 · X13 · X14)
+XPOLL_POOL = r"""(()=>{const D=window.__dt,H=window.__xh;window.__lg=[];let last=-1;if(window.__pi)clearInterval(window.__pi);window.__pi=setInterval(()=>{const P=D.PR;if(!P||P.t===last)return;last=P.t;const fr=P.fr||{},vr=H.vrt();
+ window.__lg.push([+(performance.now()/1000).toFixed(2),+P.t.toFixed(1),+(P.splFrac||0).toFixed(3),+(P.cPipeFrac||0).toFixed(3),+(P.hC1||0).toFixed(4),D.C1H==null?null:+D.C1H.toFixed(4),+(P.ovKg||0).toFixed(3),+(P.ves.fore.A+P.ves.fore.B).toFixed(4),+(P.condKg||0).toFixed(3),H.fill('T2'),H.fill('L2'),vr[0],vr[1],vr[2],+((fr.n2||0)+(fr.lost||0)).toFixed(5),+(P.vdot||0).toFixed(3),+(P.m2kg||0).toFixed(4),+(P.lostkg||0).toFixed(5),+(P.mC1||0).toFixed(3),D.VLV.R?1:0,D.VLV.P?1:0])},100);return 1})()"""
+# 0.1초마다: 받는 탱크 고액위 · 넘침(X8 · X9)
+XPOLL_LAH = r"""(()=>{const D=window.__dt,H=window.__xh;window.__lg=[];let last=-1;if(window.__pi)clearInterval(window.__pi);window.__pi=setInterval(()=>{const P=D.PR;if(!P||P.t===last)return;last=P.t;const FX=D.FX;
+ window.__lg.push([+(performance.now()/1000).toFixed(2),+P.t.toFixed(1),+(P.ves.fore.A+P.ves.fore.B).toFixed(4),D.VLV.F?1:0,H.btn('F'),H.vcol('F'),P.lah.fore,+(P.spill.fore||0).toFixed(4),FX.lah&&FX.lah.fore&&FX.lah.fore.visible?1:0,FX.spill&&FX.spill.fore&&FX.spill.fore.visible?1:0,FX.pud&&FX.pud.fore&&FX.pud.fore.visible?1:0,+(P.Dkg||0).toFixed(3),P.rcp?P.rcp.st:null])},100);return 1})()"""
+# 0.1초마다: 끓기 시작(3D) — 기포 · 구간별 증기 점 · 목관 액 점 · 관 채움 · U자 · 환류 값 상자(X6 · X22 · X24) · 끝 열 = 증기 점 앞머리 VF.head(11-22 더함: 응축기 안 점이 기록 사이에 빠지는 시각 경합)
+XPOLL_ON3 = r"""(()=>{const D=window.__dt,H=window.__xh;window.__lg=[];let last=-1;if(window.__pi)clearInterval(window.__pi);window.__pi=setInterval(()=>{const P=D.PR;if(!P||P.t===last)return;last=P.t;let s=null;try{s=D.vaporStats()}catch(e){}const F=D.FILL,fr=(k)=>F[k]?+(F[k].head/F[k].Ltot).toFixed(3):0;
+ window.__lg.push([+(P.t/60).toFixed(3),+P.vdot.toFixed(3),H.bub(),s?s.sec.tank.n:0,s?s.sec.neck.n:0,s?s.sec.colLow.n:0,s?s.sec.colUp.n:0,s?s.sec.pipe.n:0,s?s.sec.cond.n:0,s?s.nNeckLiq:0,P.vpTop?1:0,P.vpCond?1:0,fr('V'),fr('C'),fr('R'),F.RD?F.RD.segs.filter(x=>x.ov.visible).length:0,+(P.sealM||0).toFixed(4),+(P.Rkg||0).toFixed(2),H.tagv('FICH073 환류'),s?s.head:null])},100);return 1})()"""
+# 0.1초마다: 끓기 시작(도면) — 켜진 흐름 점 · 도면 환류 값(X6 · X22 · X24)
+XPOLL_ON2 = r"""(()=>{const D=window.__dt;window.__lg=[];let last=-1;if(window.__pi)clearInterval(window.__pi);window.__pi=setInterval(()=>{const P=D.PR,Q=D.PID2;if(!P||P.t===last)return;last=P.t;const on={};if(Q&&Q.flows&&!Q.root.hidden){for(const f of Q.flows){if(f.el.classList.contains('on'))on[f.k]=(on[f.k]||0)+1}}
+ window.__lg.push([+(P.t/60).toFixed(3),+P.vdot.toFixed(3),+(P.sealM||0).toFixed(4),+(P.Rkg||0).toFixed(2),Q&&Q.vals&&Q.vals.FICH073?Q.vals.FICH073.textContent:null,P.vpTop?1:0,P.vpCond?1:0,on])},100);return 1})()"""
+# 0.1초마다: 배치 끝(X19 · X28 · X31)
+XPOLL_END = r"""(()=>{const D=window.__dt,H=window.__xh;window.__lg=[];let last=-1;if(window.__pi)clearInterval(window.__pi);window.__pi=setInterval(()=>{const P=D.PR;if(!P||P.t===last)return;last=P.t;const F=D.FILL,o={};for(const k of ['V','C','R','RD','P','F','FL','M','T2','L2']){const f=F[k];if(f)o[k]=[+f.head.toFixed(4),+f.tail.toFixed(4)]}const u=D.uSealSpan(F.R);
+ window.__lg.push([+(performance.now()/1000).toFixed(2),+P.t.toFixed(1),P.stopped?1:0,H.vrt()[0],H.bub(),o,u?+u.s1.toFixed(4):null,D.VLV.J?1:0,+(D.CUR.jOpen*100).toFixed(2),+(P.vdot||0).toFixed(3)])},100);return 1})()"""
+XGET = r"""(()=>{if(window.__pi)clearInterval(window.__pi);window.__pi=null;const L=window.__lg||[];window.__lg=[];const D=window.__dt,F=D.FILL;const Lt={},sv={};for(const k in F){Lt[k]=+F[k].Ltot.toFixed(4);sv[k]=F[k].sV==null?null:+F[k].sV.toFixed(4)}return JSON.stringify({lg:L,Lt,sv,holdC:D.CUR.holdC})})()"""
+
+# 받는 탱크 · 정제기: 잘라 찍을 상자(처음 잰 자리를 그대로 쓴다)와 높이 사다리(설비 높이 y ↔ 그림 속 자리), 계산 부피 비(무게 ÷ 밀도 ÷ 용량 — 여기서 다시 구함)
+XLAD3 = r"""(()=>{const D=window.__dt,H=window.__xh,q=D.M.pipe,M=D.M,P=D.PR,C=D.CUR;
+ const vesR=(key,y)=>{const f=key==='fore',R=f?q.rRF:q.rRM,hd=f?q.hdF:q.hdM,y0=f?q.yRvF:q.yRvM,y1=f?q.yTopF:q.yTopM,u=y<y0?(y0-y)/hd:y>y1?(y-y1)/hd:0;return R*Math.sqrt(Math.max(0,1-u*u))};
+ if(!H.rects)H.rects={};const out={};
+ for(const key of ['fore','main']){const f=key==='fore',x=f?q.xF:q.xMn,R=f?q.rRF:q.rRM,hd=f?q.hdF:q.hdM,y0=(f?q.yRvF:q.yRvM)-hd,y1=(f?q.yTopF:q.yTopM)+hd,dx=0.5*R;
+  if(!H.rects[key]){const a=H.pr(x-1.25*R,y1,0),b=H.pr(x+1.25*R,y0,0),c=H.pr(x,y1+0.03,-R),d=H.pr(x,y0-0.04,R);H.rects[key]=H.crop('__xc_'+key,Math.min(a[0],b[0]),Math.min(a[1],c[1])-8,Math.abs(b[0]-a[0]),Math.max(b[1],d[1])-Math.min(a[1],c[1])+16)}else H.crop('__xc_'+key,...H.rects[key]);
+  const rc=H.rects[key],lad=[];for(let i=0;i<=120;i++){const y=y0+(y1-y0)*i/120,r=vesR(key,y);if(r<=dx){lad.push([+y.toFixed(5),null]);continue}const z=-Math.sqrt(r*r-dx*dx),p=H.pr(x-dx,y,z);lad.push([+y.toFixed(5),[+(p[0]-rc[0]+4).toFixed(2),+(p[1]-rc[1]+4).toFixed(2)]])}
+  const v=P.ves[key],m=v.A+v.B,rho=m>0?1/((v.A/m)/P.pA.rho+(v.B/m)/P.pB.rho):800,cap=(f?C.capF:C.capM)/1000,frac=Math.min(1,m/rho/cap);
+  const sx=H.pr(x+1.02*R,(y0+y1)/2,0)[0],top=H.pr(x,y1,0),bot=H.pr(x,y0,0);
+  out[key]={rect:rc,R,hd,y0,y1,m:+m.toFixed(4),rho:+rho.toFixed(1),frac:+frac.toFixed(5),lad,spx:+(sx-rc[0]+4).toFixed(1),top:H.rel(rc,[top])[0],bot:H.rel(rc,[bot])[0],ring:H.rel(rc,[H.pr(x,(y0+hd)+0.97*((y1-hd)-(y0+hd)),R)])[0]}}
+ {const R=M.R,hh=M.hh,dx=0.5*R;if(!H.rects.still){const a=H.pr(-1.15*R,M.topY,0),b=H.pr(1.15*R,0,0),c=H.pr(0,M.topY,-R),d=H.pr(0,0,R);H.rects.still=H.crop('__xc_still',Math.min(a[0],b[0]),Math.min(a[1],c[1])-8,Math.abs(b[0]-a[0]),Math.max(b[1],d[1])-Math.min(a[1],c[1])+16)}else H.crop('__xc_still',...H.rects.still);
+  const rc=H.rects.still,lad=[],zb=-Math.sqrt(R*R-dx*dx);for(let i=0;i<=140;i++){const y=M.topY*i/140,r=y>=hh?R:R*Math.sqrt(Math.max(0,1-((hh-y)/hh)**2));if(r<=dx){lad.push([+y.toFixed(5),null]);continue}const z=-Math.sqrt(r*r-dx*dx),p=H.pr(-dx,y,z);lad.push([+y.toFixed(5),[+(p[0]-rc[0]+4).toFixed(2),+(p[1]-rc[1]+4).toFixed(2)]])}
+  const sw=M.surfY(-dx,zb),pe=H.pr(-dx,sw,zb);out.still={rect:rc,R,hh,topY:M.topY,h:+P.h.toFixed(5),m:+P.m.toFixed(3),rho:+P.mix.rho.toFixed(1),sw:+sw.toFixed(5),exp:H.rel(rc,[pe])[0],lad}}
+ out.t=+P.t.toFixed(1);out.st=P.rcp?P.rcp.st:null;return JSON.stringify(out)})()"""
+
+# 도면: 액 도형(정제기 · 받는 탱크 · 1차 응축기 고임)의 화면 상자와 계산값의 화면 자리
+XP2LEV = r"""(()=>{const D=window.__dt,H=window.__xh,Q=D.PID2,P=D.PR,M=D.M,q=M.pipe,C=D.CUR;const T=H.p2();if(!T)return JSON.stringify({hidden:true});
+ const bb=(e)=>{if(!e)return null;const r=e.getBoundingClientRect();return r.width||r.height?[+r.left.toFixed(1),+r.top.toFixed(1),+r.width.toFixed(1),+r.height.toFixed(1)]:null};
+ const v=(key)=>{const x=P.ves[key],m=x.A+x.B,rho=m>0?1/((x.A/m)/P.pA.rho+(x.B/m)/P.pB.rho):800,f=key==='fore',cap=(f?C.capF:C.capM)/1000,hd=f?q.hdF:q.hdM,y0=(f?q.yRvF:q.yRvM)-hd,y1=(f?q.yTopF:q.yTopM)+hd;
+  return {m:+m.toFixed(4),frac:+Math.min(1,m/rho/cap).toFixed(5),R:f?q.rRF:q.rRM,hd,y0,y1,box:bb(Q.dyn[key])}};
+ return JSON.stringify({k:+T.k.toFixed(4),mY:[T.iy(0),T.iy(1000)],f0:T.f(0,0),f1:T.f(0,1),still:{h:+P.h.toFixed(5),yh:+T.f(0,P.h)[1].toFixed(2),yb:+T.f(0,0)[1].toFixed(2),box:bb(Q.dyn.tankLiq)},fore:v('fore'),main:v('main'),c1:{h:H.r(P.hC1,4),box:bb(Q.dyn.c1Liq)},t:+P.t.toFixed(1)})})()"""
+
+# 받는 탱크 무게 증가 · 유출 표시 · 증기 점 수(20초, 0.5초마다)
+XRATE = r"""(async()=>{const D=window.__dt,H=window.__xh;const s=[];const t0=performance.now();
+ while(performance.now()-t0<20000){const p=D.PR,vr=H.vrt();s.push([+(p.t).toFixed(1),+(p.ves.fore.A+p.ves.fore.B).toFixed(5),+(p.ves.main.A+p.ves.main.B).toFixed(5),+(p.Dkg||0).toFixed(3),+(p.vdot||0).toFixed(3),vr[0],H.tagv('FICH072 유출'),H.tagv('WIH072 초류 무게'),H.tagv('WIH073 본류 무게')]);await new Promise(r=>setTimeout(r,500))}
+ return JSON.stringify({s,st:D.PR.rcp?D.PR.rcp.st:null,VLV:{F:D.VLV.F?1:0,M:D.VLV.M?1:0,P:D.VLV.P?1:0}})})()"""
+
+# 환류 관 · 유출 관에서 가장 긴 토막의 화면 자리(줄기 굵기 재기, X34)
+XSEG = r"""(()=>{const D=window.__dt,H=window.__xh,F=D.FILL,P=D.PR;const out={},pts=[];
+ for(const k of ['R','P']){const f=F[k];if(!f||!f.segs.length)continue;const s=f.segs.reduce((a,b)=>b.L>a.L?b:a),a=s.a,d=s.d,at=(t)=>H.pr(a.x+d.x*s.L*t,a.y+d.y*s.L*t,a.z+d.z*s.L*t);
+  const p0=at(0.2),p1=at(0.8),m=[a.x+d.x*s.L/2,a.y+d.y*s.L/2,a.z+d.z*s.L/2],pm=H.pr(m[0],m[1],m[2]),pu=H.pr(m[0],m[1]+s.r,m[2]),px=H.pr(m[0]+s.r,m[1],m[2]);
+  out[k]={p0,p1,rpx:+Math.max(Math.hypot(pu[0]-pm[0],pu[1]-pm[1]),Math.hypot(px[0]-pm[0],px[1]-pm[1])).toFixed(2),w:s.w==null?null:+s.w.toFixed(3),head:H.r(f.head,3),L:H.r(f.Ltot,3),want:f.want?1:0};pts.push(p0,p1)}
+ const rc=H.crop('__xc_seg',...H.box(pts,16));for(const k in out){out[k].p0=H.rel(rc,[out[k].p0])[0];out[k].p1=H.rel(rc,[out[k].p1])[0]}
+ return JSON.stringify({rect:rc,seg:out,R:H.r(P.Rkg,2),Dk:H.r(P.Dkg,2),VLV:{F:D.VLV.F?1:0,M:D.VLV.M?1:0}})})()"""
+
+# 도면: 닫힌 밸브 앞 관(유출 관 P · 초류 가지 F)의 선을 따라 고른 점(그림 화소로 남은 액 색을 본다)과 흐름 점 상태
+XP2RES = r"""(()=>{const D=window.__dt,H=window.__xh,Q=D.PID2;if(!Q||!Q.svg||Q.root.hidden)return JSON.stringify({hidden:true});
+ const fl=(k)=>Q.flows.filter(f=>f.k===k);const smp={P:H.pts(fl('P').map(f=>f.el),6),F:H.pts(fl('F').map(f=>f.el),6)};const rc=H.crop('__xc_p2',...H.box(smp.P.concat(smp.F),12));
+ const st={};for(const k of ['P','F','FL','M','R']){st[k]=fl(k).map(f=>[f.el.classList.contains('on')?1:0,+(+getComputedStyle(f.el).opacity).toFixed(2),getComputedStyle(f.el).stroke])}
+ const vb=(k)=>{const g=(Q.valves[k]||[])[0];if(!g)return null;const r=g.getBoundingClientRect();return [+(r.left+r.width/2-rc[0]+4).toFixed(1),+(r.top+r.height/2-rc[1]+4).toFixed(1),g.getAttribute('class')]};
+ return JSON.stringify({rect:rc,pts:{P:H.rel(rc,smp.P),F:H.rel(rc,smp.F)},st,valves:{P:vb('P'),F:vb('F'),M:vb('M')},VLV:{P:D.VLV.P?1:0,F:D.VLV.F?1:0,M:D.VLV.M?1:0},fill:{P:H.fill('P'),F:H.fill('F'),FL:H.fill('FL')}})})()"""
+
+# 도면: 넘치는 동안 미응축 증기 관(T2) · 2차 응축기 → 초류 관(L2)의 흐름 점 색과 선을 따라 고른 점, 1차 응축기 고임 사각형 높이
+XP2OV = r"""(()=>{const D=window.__dt,H=window.__xh,Q=D.PID2,P=D.PR;const T=H.p2();if(!T)return JSON.stringify({hidden:true});
+ const fl=(k)=>Q.flows.filter(f=>f.k===k);const st=(k)=>fl(k).map(f=>[f.el.classList.contains('on')?1:0,+(+getComputedStyle(f.el).opacity).toFixed(2),getComputedStyle(f.el).stroke,f.kind]);
+ const pT2=H.pts(fl('T2').map(f=>f.el),5),pL2=H.pts(fl('L2').map(f=>f.el),5);const rc=H.crop('__xc_p2',...H.box(pT2.concat(pL2),10));const c=Q.dyn.c1Liq?Q.dyn.c1Liq.getBoundingClientRect():null;
+ return JSON.stringify({rect:rc,T2:{st:st('T2'),pts:H.rel(rc,pT2)},L2:{st:st('L2'),pts:H.rel(rc,pL2)},ov:H.r(P.ovKg,2),fr2:P.fr?H.r((P.fr.n2||0)+(P.fr.lost||0),4):null,c1:{hC1:H.r(P.hC1,4),hpx:c?+c.height.toFixed(2):null,k:+T.k.toFixed(4)}})})()"""
+
+# 환류 관(U자) 채움
+XRSNAP = r"""(()=>{const D=window.__dt,H=window.__xh,P=D.PR,f=D.FILL.R;const u=D.uSealSpan(f);return JSON.stringify({style:D.STYLE,R:H.fill('R'),us:u?[H.r(u.s0,4),H.r(u.s1,4)]:null,sealM:H.r(P.sealM,4),holdC:D.CUR.holdC,VR:D.VLV.R?1:0,segs:f.segs.map(s=>s.ov.visible?1:0),seal2d:D.PID2&&D.PID2.dyn&&D.PID2.dyn.useal?D.PID2.dyn.useal.getAttribute('class'):null})})()"""
+
+# 도면: 초류 탱크 둘레(고액위 · 넘침 표시)
+XP2TANK = r"""(()=>{const D=window.__dt,H=window.__xh,Q=D.PID2,P=D.PR,q=D.M.pipe;const T=H.p2();if(!T)return JSON.stringify({hidden:true});
+ const x=q.xF,R=q.rRF,hd=q.hdF,y0=q.yRvF-hd,y1=q.yTopF+hd,a=T.f(x-R,y1),b=T.f(x+R,y0);const rc=H.crop('__xc_p2',Math.min(a[0],b[0])-45,Math.min(a[1],b[1])-35,Math.abs(b[0]-a[0])+90,Math.abs(b[1]-a[1])+70);
+ const tok=/^(p2-)?(lah|spill|ovf|overflow|pud|hilevel|hiLevel|alarm)/;const hits=[];for(const e of Q.svg.querySelectorAll('*')){if(e===Q.dyn.col)continue;const cl=(e.getAttribute('class')||'').split(/\s+/);const tx=e.tagName==='text'?e.textContent:'';if((cl.some(c=>tok.test(c))||/고액위|넘침|LAH/.test(tx))&&+getComputedStyle(e).opacity>0.05&&getComputedStyle(e).display!=='none')hits.push((e.getAttribute('class')||e.tagName)+':'+tx.slice(0,20))}
+ const vf=(Q.valves.F||[]).map(g=>g.getAttribute('class'));const vpos=[];for(const k in Q.valves)for(const g of Q.valves[k]){const r=g.getBoundingClientRect();vpos.push([k,+(r.left+r.width/2-rc[0]+4).toFixed(1),+(r.top+r.height/2-rc[1]+4).toFixed(1),+(Math.max(r.width,r.height)/2+4).toFixed(1)])}
+ return JSON.stringify({rect:rc,tank:H.rel(rc,[[Math.min(a[0],b[0]),Math.min(a[1],b[1])],[Math.max(a[0],b[0]),Math.max(a[1],b[1])]]),hits,valveF:vf,vpos,VF:D.VLV.F?1:0,spill:H.r(P.spill.fore,4),lah:P.lah.fore,fore:H.r(P.ves.fore.A+P.ves.fore.B,4),box:(()=>{const e=Q.dyn.fore;if(!e)return null;const r=e.getBoundingClientRect();return H.rel(rc,[[r.left,r.top],[r.right,r.bottom]])})()})})()"""
+
+# 1차 냉매 온도 상승 · 스팀 과다 · 펌프 쪽 넘침 · 범람 · 과충전 상태
+XSTF = r"""(()=>{const D=window.__dt,H=window.__xh,P=D.PR,fr=P.fr||{};return JSON.stringify({t:+P.t.toFixed(1),c1:P.c1==null?null:+P.c1.toFixed(4),m2:H.r(P.m2kg,3),lostkg:H.r(P.lostkg,4),vdot:H.r(P.vdot,3),back:H.r(fr.back,4),seal:H.r(fr.seal,4),n2:H.r(fr.n2,4),R:H.r(P.Rkg,2),Dk:H.r(P.Dkg,2),fore:H.r(P.ves.fore.A+P.ves.fore.B,4),
+ C:H.fill('C'),T2:H.fill('T2'),L2:H.fill('L2'),tagBot:H.tagv('TICH071D 응축액 출구'),tagC2:H.tagv('E-H072 응축 부하(계산)')})})()"""
+XP2FLOWS = r"""(()=>{const D=window.__dt,Q=D.PID2;if(!Q||!Q.svg||Q.root.hidden)return JSON.stringify({hidden:true});const st={};for(const f of Q.flows){(st[f.k]=st[f.k]||[]).push([f.el.classList.contains('on')?1:0,+(+getComputedStyle(f.el).opacity).toFixed(2),getComputedStyle(f.el).stroke,f.kind])}
+ return JSON.stringify({st,vals:Object.fromEntries(Object.entries(Q.vals||{}).map(([k,v])=>[k,v.textContent])),valveJ:(Q.valves.J||[]).map(g=>g.getAttribute('class'))})})()"""
+XSTG = r"""(()=>{const D=window.__dt,H=window.__xh,P=D.PR,C=D.CUR;const tags=[...document.querySelectorAll('.dcs-tag')].filter(e=>H.vis(e)).map(e=>[e.dataset.n,e.children[1]?e.children[1].textContent.trim():'',e.className]);
+ return JSON.stringify({t:+P.t.toFixed(1),T:H.r(P.Tmean,2),TmaxL:H.r(P.TmaxL,2),hot:H.r(P.hotFrac,3),Tlim:C.Tlim,vdot:H.r(P.vdot,3),nv:H.vrt()[0],glow:!!(D.FX.hotGlow&&D.FX.hotGlow.visible),txtHot:H.texts(/열안정|분해|한계.{0,8}초과/),
+  pumpLiq:H.r(P.pumpLiqKg,3),lost:H.r(P.lost,4),ov:H.r(P.ovKg,2),Dk:H.r(P.Dkg,2),R:H.r(P.Rkg,2),fore:H.r(P.ves.fore.A+P.ves.fore.B,4),S:H.fill('S'),T2:H.fill('T2'),L2:H.fill('L2'),txtLost:H.texts(/펌프 쪽.{0,12}액|잃은|진공펌프.{0,12}액|액이 넘어/),tags,chips:[...document.querySelectorAll('.chip')].filter(e=>H.vis(e)).map(e=>e.textContent.trim().slice(0,80))})})()"""
+XP2S = r"""(()=>{const D=window.__dt,H=window.__xh,Q=D.PID2;if(!Q||!Q.svg||Q.root.hidden)return JSON.stringify({hidden:true});const fl=(k)=>Q.flows.filter(f=>f.k===k);const pS=H.pts(fl('S').map(f=>f.el),5);const rc=H.crop('__xc_p2',...H.box(pS,10));
+ const st=(k)=>fl(k).map(f=>[f.el.classList.contains('on')?1:0,+(+getComputedStyle(f.el).opacity).toFixed(2),getComputedStyle(f.el).stroke,f.kind]);
+ const txt=[...Q.svg.querySelectorAll('text')].map(e=>e.textContent).filter(s=>/잃은|손실 액|펌프 쪽.{0,8}액|진공펌프.{0,8}액/.test(s)).slice(0,10);
+ return JSON.stringify({rect:rc,S:{st:st('S'),pts:H.rel(rc,pS)},T2:st('T2'),L2:st('L2'),vals:Object.fromEntries(Object.entries(Q.vals||{}).map(([k,v])=>[k,v.textContent])),txt})})()"""
+XSTH = r"""(()=>{const D=window.__dt,H=window.__xh,P=D.PR,FX=D.FX;const hx=Math.max(0,(P.mHeld||0)-(P.mHold0||0));return JSON.stringify({t:+P.t.toFixed(1),flood:H.r(P.flood,3),mFlood:H.r(P.mFlood,4),hx:H.r(hx,4),bed:H.r(P.mFloodBed,4),top:H.r(P.mFloodTop,4),colFull:!!P.colFull,R:H.r(P.Rkg,2),Lmax:P.Lmax==null||!isFinite(P.Lmax)?null:H.r(P.Lmax,1),vdot:H.r(P.vdot,2),
+ lv:H.r(FX.floodLv,4),vis:!!(FX.floodLiq&&FX.floodLiq.visible),glow:!!(FX.colGlow&&FX.colGlow.visible),Dcol:D.CUR.Dcol,jOpen:H.r(D.CUR.jOpen,3),VP:D.VLV.P?1:0,hold:Object.keys(D.OP.hold||{}).filter(k=>D.OP.hold[k]),Ps:H.r(P.Pstill,3)})})()"""
+# 도면: 컬럼 충전층(범람 액이 차오를 자리)을 따라 고른 점
+XP2COL = r"""(()=>{const D=window.__dt,H=window.__xh,Q=D.PID2,P=D.PR,q=D.M.pipe;const T=H.p2();if(!T)return JSON.stringify({hidden:true});const hx=Math.max(0,(P.mHeld||0)-(P.mHold0||0)),bed=P.mFloodBed||1,lv=Math.min(1,hx/bed),yTop=q.packY0+lv*(q.packY1-q.packY0);
+ const pts=[];for(const fx of [-0.5,0,0.5]){const a=T.f(q.xCol+fx*q.rCol,q.packY0+0.005),b=T.f(q.xCol+fx*q.rCol,yTop);const n=Math.max(2,Math.ceil(Math.abs(b[1]-a[1])/3));for(let i=0;i<=n;i++)pts.push([a[0]+(b[0]-a[0])*i/n,a[1]+(b[1]-a[1])*i/n])}
+ const all=pts.concat([T.f(q.xCol-q.rCol,q.packY1),T.f(q.xCol+q.rCol,q.packY0)]);const rc=H.crop('__xc_p2',...H.box(all,12));
+ return JSON.stringify({rect:rc,pts:H.rel(rc,pts),lv:+lv.toFixed(4),flood:H.r(P.flood,3),colCls:Q.dyn.col?Q.dyn.col.getAttribute('class'):null,colInCls:Q.dyn.colIn?Q.dyn.colIn.getAttribute('class'):null})})()"""
+XCHG = r"""(()=>{const D=window.__dt,H=window.__xh,M=D.M,P=D.PR,C=D.CUR;const R=M.R,hh=M.hh,A=Math.PI*R*R,Vs=A*hh*2/3+A*(M.Hs-hh)+A*M.ht*2/3;
+ return JSON.stringify({H:(document.getElementById('H')||{}).value,HsIn:(document.getElementById('Hs')||{}).value,m0:H.r(P.m0,1),V0:H.r(P.V0*1000,1),h0:H.r(C.H0,4),Hs:H.r(M.Hs,4),topY:H.r(M.topY,4),Vshell:H.r(Vs*1000,1),
+  note:((document.getElementById('fillnote')||{}).textContent||'').slice(0,160),warn:H.texts(/용량.{0,6}(초과|넘)|넘칩|과충전|넣을 수 없|투입.{0,6}초과/).slice(0,6),chips:[...document.querySelectorAll('.chip')].filter(e=>H.vis(e)).map(e=>e.textContent.trim().slice(0,80))})})()"""
+
+def real_scenarios():
+    """현실성(X) 장면 9개 — 모두 이름이 '현실성'으로 시작한다(--only 현실성)."""
+    S = []; rec = BOOT + [["eval", "window.__dt.opSetMode('recipe');1"], ["wait", 1500], ["eval", XH]]
+    W, H = 1920, 1080
+    # (A) 밸브 조작: 레시피 ③ 초류(6 h)에서 밸브 줄 단추로 닫고 연다 — X26 다시 열기 · X10 · X11 닫힌 밸브 앞(3D · 도면) · X59 도면 다녀오기 · X13 · X1 · X2 · X14 고임과 넘침 · X58 참고
+    a = rec + XJUMP(6, 5000) + [tag("a_f0", XSTATE), XVB("F"), ["wait", 8000], tag("a_fc", XSTATE), ["eval", XPOLL_FILL], ["wait", 600], XVB("F"), ["wait", 6000], tag("a_reopen", XGET), ["wait", 2000]]
+    a += [XVB("F"), ["wait", 6500], tag("a_x10", XSTATE), Y.V_2D, ["wait", 3000], tag("a_x10_2d", XP2RES), XSHOT("x_a_x10_2d.png", "#__xc_p2"), Y.V_3D, ["wait", 2500], XVB("F"), ["wait", 7000]]
+    a += [XVB("P"), ["wait", 6500], tag("a_x11", XSTATE), Y.V_2D, ["wait", 3000], tag("a_x11_2d", XP2RES), XSHOT("x_a_x11_2d.png", "#__xc_p2"), Y.V_3D, ["wait", 2500], XVB("P"), ["wait", 7000]]
+    a += [XVB("R"), ["wait", 30000], tag("a_x59_0", XRSNAP), Y.V_2D, ["wait", 3000], tag("a_x59_2d", XRSNAP), Y.V_3D, ["wait", 4000], tag("a_x59_1", XRSNAP), XVB("R"), ["wait", 9000]]
+    a += [tag("a_pool0", XSTATE), ["eval", XPOLL_POOL], ["wait", 1000], XVB("R"), XVB("P"), XDL(240), ["until", "(window.__dt.PR.ovKg||0)>1||performance.now()>window.__xdl", 270000], ["wait", 14000],
+          tag("a_ovseg", XSEG.replace("['R','P']", "['T2','L2']")), XSHOT("x_a_ov_seg_a.png", "#__xc_seg"), ["wait", 400], XSHOT("x_a_ov_seg_b.png", "#__xc_seg"),   # 넘어가는 액의 3D 색(T2 · L2 화소)
+          tag("a_pool", XGET), Y.V_2D, ["wait", 3000], tag("a_ov2d", XP2OV), XSHOT("x_a_ov_2d.png", "#__xc_p2"), Y.V_3D, ["wait", 2000], XVB("R"), XVB("P"), ["wait", 3000]]
+    S.append(scen("현실성 밸브 조작", a, W, H))
+    # (B) 받는 탱크 가득 참: 초류 컷 입력 150 kg(초류 탱크 69 L ≈ 105 kg보다 큼) — X8 고액위 인터록 · X9 넘침(3D · 색 · 도면) · X7 고액위 가까이의 액면
+    b = rec + [XSET("rcpForeKg", 150), ["wait", 1200], tag("b_lad0", XLAD3), XSHOT("x_b0_fore.png", "#__xc_fore")] + XJUMP(6, 3000) + [
+        ["eval", "(()=>{const D=window.__dt,P=D.PR,v=P.ves.fore,m=v.A+v.B,rho=m>0?1/((v.A/m)/P.pA.rho+(v.B/m)/P.pB.rho):1500,left=0.955*D.CUR.capF/1000*rho-m;window.__xjt=P.t/3600+Math.max(0,0.9*left/Math.max(1,P.Dkg||0));D.startJump('at',window.__xjt);return window.__xjt})()"],   # 유출 유량으로 어림한 시각의 90 %까지 한 번에 빨리 감기
+        ["until", "(()=>{const D=window.__dt,P=D.PR;return !!(P&&!D.TURBO&&(P.t>=window.__xjt*3600-120||P.stopped||P.lah.fore!=null))})()", 1500000], ["wait", 2000], XDL(900),
+        ["until", "(()=>{const D=window.__dt,P=D.PR;if(D.TURBO)return false;const v=P.ves.fore,m=v.A+v.B,rho=m>0?1/((v.A/m)/P.pA.rho+(v.B/m)/P.pB.rho):1500,left=0.955*D.CUR.capF/1000*rho-m;if(left<=0||P.lah.fore!=null||P.stopped||performance.now()>window.__xdl)return true;D.startJump('at',P.t/3600+Math.min(2,Math.max(0.05,0.5*left/Math.max(1,P.Dkg||0))));return false})()", 960000],   # 고액위(97 %) 바로 앞(95.5 %)까지 남은 양에 맞춰 줄여 가며 빨리 감기
+        ["wait", 4000], tag("b_lad_near", XLAD3), XSHOT("x_b_near_fore_a.png", "#__xc_fore"), ["wait", 700], XSHOT("x_b_near_fore_b.png", "#__xc_fore"),
+        Y.V_2D, ["wait", 3000], tag("b_near_2d", XP2TANK), XSHOT("x_b_near_2d.png", "#__xc_p2"), Y.V_3D, ["wait", 2000],   # 도면 기준 그림(고액위 전) — 범례 등 늘 있는 색을 빼고 새로 생긴 표시만 센다
+        ["eval", XPOLL_LAH], XDL(300), ["until", "window.__dt.PR.lah.fore!=null||window.__dt.PR.stopped||performance.now()>window.__xdl", 320000], ["wait", 1500],
+        tag("b_lad_lah", XLAD3), XSHOT("x_b_lah_fore_a.png", "#__xc_fore"), ["wait", 20000], tag("b_lah10", XSTATE),
+        Y.V_2D, ["wait", 3000], tag("b_lah_2d", XP2TANK), XSHOT("x_b_lah_2d.png", "#__xc_p2"), Y.V_3D, ["wait", 2000],
+        ["eval", "(()=>{const D=window.__dt;if(!D.VLV.F){const b=document.querySelector('#valves button[data-v=\"F\"]');if(b)b.click();return 'reopen'}return 'open'})()"],   # 인터록이 닫았으면 사용자가 다시 연다(넘침을 보려고)
+        XDL(700), ["until", "(()=>{const D=window.__dt,P=D.PR;if(D.TURBO)return false;if((P.spill.fore||0)>0.05||P.stopped||performance.now()>window.__xdl)return true;const v=P.ves.fore,m=v.A+v.B,rho=m>0?1/((v.A/m)/P.pA.rho+(v.B/m)/P.pB.rho):1500,cap=D.CUR.capF/1000*rho;if(m<cap-1.2&&D.VLV.F&&D.VLV.P)D.startJump('at',P.t/3600+0.2);return false})()", 730000],
+        ["wait", 2500], tag("b_spill", XSTATE), tag("b_lad_spill", XLAD3), XSHOT("x_b_spill_fore_a.png", "#__xc_fore"), ["wait", 700], XSHOT("x_b_spill_fore_b.png", "#__xc_fore"),
+        Y.V_2D, ["wait", 3000], tag("b_spill_2d", XP2TANK), XSHOT("x_b_spill_2d.png", "#__xc_p2"), Y.V_3D, ["wait", 14000], tag("b_spill2", XSTATE), tag("b_log", XGET)]
+    S.append(scen("현실성 받는 탱크 가득 참", b, W, H))
+    # (C) 끓기 시작 3D · (D) 도면: 레시피, 1.0 h부터 실제 속도로 환류가 자리 잡을 때까지 — X6 · X22 · X24
+    done = "(()=>{const D=window.__dt,P=D.PR,F=D.FILL;return !!(F.RD&&F.RD.full&&(P.Rkg||0)>3)||performance.now()>window.__xdl})()"
+    S.append(scen("현실성 끓기 시작 3D", rec + XJUMP(1.0, 2500) + [["eval", XPOLL_ON3], XDL(420), ["until", done, 450000], ["wait", 4000], tag("c_log", XGET)], 1440, 900))
+    S.append(scen("현실성 끓기 시작 도면", rec + XJUMP(1.0, 2500) + [Y.V_2D, ["wait", 3000], ["eval", XPOLL_ON2], XDL(420), ["until", done, 450000], ["wait", 4000], tag("d_log", XGET)], 1440, 900))
+    # (E) 레시피 기본 배치: 0 · 6 · 30 · 50 h 액면(3D 그림 화소 · 도면 도형) · 무게 증가율 · 증기 점 수 · 줄기 굵기, 배치 끝 — X7 · X36 · X40 · X32 · X34 · X19 · X28 · X31
+    e = rec + [["wait", 1500], tag("e_lad0", XLAD3), XSHOT("x_e0_fore.png", "#__xc_fore"), XSHOT("x_e0_main.png", "#__xc_main")]
+    for hh in (6, 30, 50):
+        e += XJUMP(hh, 6000) + [tag(f"e_lad{hh}", XLAD3), XSHOT(f"x_e{hh}_fore_a.png", "#__xc_fore"), XSHOT(f"x_e{hh}_main_a.png", "#__xc_main"), XSHOT(f"x_e{hh}_still_a.png", "#__xc_still"), ["wait", 700],
+                                XSHOT(f"x_e{hh}_fore_b.png", "#__xc_fore"), XSHOT(f"x_e{hh}_main_b.png", "#__xc_main"), XSHOT(f"x_e{hh}_still_b.png", "#__xc_still"),
+                                tag(f"e_seg{hh}", XSEG), XSHOT(f"x_e{hh}_seg_a.png", "#__xc_seg"), ["wait", 500], XSHOT(f"x_e{hh}_seg_b.png", "#__xc_seg"),
+                                tag(f"e_rate{hh}", XRATE), Y.V_2D, ["wait", 3500], tag(f"e_p2_{hh}", XP2LEV), Y.V_3D, ["wait", 2500]]
+    e += XJUMP(61.0, 3000) + [XDL(900), ["until", "(()=>{const D=window.__dt,P=D.PR,m=P.ves.main.A+P.ves.main.B;if(D.TURBO)return false;if(P.stopped||m>=288.0||performance.now()>window.__xdl)return true;D.startJump('at',P.t/3600+0.15);return false})()", 960000], ["wait", 3000],
+          ["eval", XPOLL_END], XDL(420), ["until", "window.__dt.PR.stopped||performance.now()>window.__xdl", 450000], ["wait", 12000],
+          tag("e_end_log", XGET), tag("e_end_3d", XSTATE), tag("e_end_ga", Y.JS_GA), Y.V_2D, ["wait", 3000], tag("e_end_2d", XP2FLOWS), tag("e_end_ga2", Y.JS_GA), Y.V_3D, ["wait", 1500]]
+    S.append(scen("현실성 액면 · 배치 끝", e, W, H))
+    # (F) 1차 N-Brine 온도 상승(이상 상황 창): 1차 응축 0 — X45 · X4 참고
+    f = rec + XJUMP(6, 4000) + [tag("f_0", XSTF), ["eval", "window.__dt.ab('c1hot');1"]] + XJREL(0.33, 5000) + [tag("f_1", XSTF), ["wait", 10000], tag("f_2", XSTF), Y.V_2D, ["wait", 3000], tag("f_2d", XP2FLOWS), Y.V_3D, ["wait", 1500]]
+    S.append(scen("현실성 1차 냉매 95도", f, W, H))
+    # (G) 유출 관 내경 입력 2 mm(넘침 관 능력 약 13 kg/h) + 이상 상황 '스팀 개도 과다' — X53 한계 초과 · X32 점 수, 이어서 환류 · 유출을 닫아 펌프 쪽 넘침 — X3
+    gg = rec + [XSET("DpipeP", 2), ["wait", 1500]] + XJUMP(6, 3000) + [tag("g_0", XSTG), ["eval", "window.__dt.ab('steam');1"]] + XJREL(0.33, 5000) + [tag("g_1", XSTG)] + XJREL(0.27, 4000) + [
+         tag("g_2", XSTG), XVB("R"), XVB("P"), XDL(400), ["until", "(window.__dt.PR.pumpLiqKg||0)>0.5||performance.now()>window.__xdl", 420000], ["wait", 12000], tag("g_3", XSTG),
+         Y.V_2D, ["wait", 3000], tag("g_3_2d", XP2S), XSHOT("x_g_3_2d.png", "#__xc_p2"), Y.V_3D, ["wait", 1500]]
+    S.append(scen("현실성 스팀 과다 · 펌프 쪽 넘침", gg, W, H))
+    # (H) 컬럼 범람: CpHf 기본 설비는 계산상 범람하지 않으므로 컬럼 내경 입력 100 mm · 스팀 헤더 160 ℃ · 게이지 100 % · 유출 밸브 닫음(사용자 잡음) — X15
+    hh_ = rec + [XSET("Dcol", 100), XSET("Psteam", ""), XSET("Tj", 160), ["wait", 2500]] + XJUMP(1.6, 3000) + [["eval", "window.__dt.steamSet(100,true);1"], XVB("P"), ["wait", 400], XVB("P"), ["wait", 600], tag("h_hold", XSTH)] + XJUMP(2.5, 5000) + [
+          tag("h_25", XSTH), Y.V_2D, ["wait", 3000], tag("h_25_2d", XP2COL), XSHOT("x_h_25_2d.png", "#__xc_p2"), Y.V_3D, ["wait", 2500]] + XJUMP(4.0, 5000) + [tag("h_40", XSTH)]
+    S.append(scen("현실성 범람", hh_, W, H))
+    # (I) 정제기 용량보다 많이 투입(700 kg, 정제기 안 부피 약 398 L ≈ 608 kg) — X21 참고
+    S.append(scen("현실성 과충전", rec + [tag("i_0", XCHG), XSET("H", 700), ["wait", 6000], ["until", "!!window.__dt.PR&&!!window.__dt.M", 60000], ["wait", 3000], tag("i_1", XCHG)], W, H))
+    return S
+# <<< 현실성(X) 장면 끝
+
+# >>> 새 디자인 장면 시작
+# ---------- 새 디자인(v132~) 장면: 이름이 '새디자인'으로 시작(--only 새디자인), 옵션과 상관없이 look=design으로 연다(기본 표현 장면은 주소에 look을 붙이지 않음) ----------
+# 옮긴 곳: v132 작업 기록(진행.md '공식 검사 프로그램에 옮길 장면 · 판정 줄(제안)' N1 ~ N16)과 그쪽 시험 도구(t20_vapor · t30_liquid · t40_stage4). 판정은 점검_합침.judge_ds.
+# 새 디자인 값은 __dt.dsfProbe()로 읽는다(김 vap[구간] = 진하기 d · 목표 tgt · 앞머리 f · 계산 유량 q · 보임 vis / 액 liq[관] = 흐르는 구간 a · 남는 구간 b · want · q · fill, RD · neck · 줄기 · pool · c1 · air / parts / s4 / vortex).
+XDS_H = r"""(()=>{const D=window.__dt,X=window.__xd={};
+X.r=(v,n)=>v==null||!isFinite(v)?null:+(+v).toFixed(n==null?3:n);
+X.calc=()=>{const P=D.PR;return {t:+P.t.toFixed(1),vdot:X.r(P.vdot,3),vpass:X.r(P.vpass,3),c1:P.c1==null?null:X.r(P.c1,4),m2:X.r(P.m2kg,3),lost:X.r(P.lostkg,4),R:X.r(P.Rkg,3),D:X.r(P.Dkg,3),L:X.r(P.Lkg,3),back:X.r(P.backKg,3),cond:X.r(P.condKg,3),fNC:P.fNC==null?null:X.r(P.fNC,4),flood:X.r(P.flood,3),steam:X.r(P.steamKgh,4),Ppump:X.r(P.Ppump,4),stopped:!!P.stopped,lah:P.lah,spill:P.spill,ov:X.r(P.ovKg,3),hC1:X.r(P.hC1,4),spl:X.r(P.splFrac,4),foreKg:X.r(P.ves.fore.A+P.ves.fore.B,3),mHeld:X.r(P.mHeld,4),mHold0:X.r(P.mHold0,4),bed:X.r(P.mFloodBed,4),seal:X.r(P.sealM,4)}};
+X.ext=(e)=>!e||!e.a?0:Math.max(0,e.a[1]-e.a[0])+Math.max(0,e.b[1]-e.b[0]);
+X.flowA=(e)=>!e||!e.a?0:Math.max(0,e.a[1]-e.a[0]);
+X.VK=['head','neck','col','V','bon','tub','T2','C2','S','J','jk'];
+X.n3=(v)=>X.VK.map(k=>v[k]?[v[k].q,v[k].tgt]:null);
+return D.dsfProbe?1:0})()"""
+XDS_PROBE = r"""(()=>{const D=window.__dt,X=window.__xd;const p=D.dsfProbe?D.dsfProbe():null;return JSON.stringify(Object.assign({},p||{},{calc:X.calc(),ds:D.DS?{on:D.DS.on,want:D.DS.want,pick:D.DS.pick,auto:D.DS.auto||null}:null,VLV:Object.fromEntries(['R','P','F','M','J'].map(k=>[k,D.VLV[k]?1:0]))}))})()"""
+# 끓기 시작(N1 · N2 · N3 · N8): 0.1 s마다 김 · 액이 처음 보인 공정 시각, 0.5 s마다 증기관 앞머리(지금 장면 VF와 견줌), 1 s마다 김 (계산 유량, 목표 진하기)
+XDS_REC_BOIL = r"""(()=>{const D=window.__dt,X=window.__xd;if(window.__xr&&window.__xr.iv)clearInterval(window.__xr.iv);const R=window.__xr={first:{},vs:[],n3:[],k:0};
+const LK=['C','R','P','M','F','FL','L2','T2'];
+R.iv=setInterval(()=>{const P=D.PR;if(!P||!D.dsfProbe)return;const pr=D.dsfProbe(),v=pr.vap||{},l=pr.liq||{},t=P.t,fs=(k,c)=>{if(c&&R.first[k]==null)R.first[k]=t};
+ fs('boil',(P.vdot||0)>1&&!P.stopped);fs('vpTop',P.vpTop);fs('vpCond',P.vpCond);fs('cond',(P.condKg||0)>0.3);fs('Rkg',(P.Rkg||0)>0.3);fs('Dkg',(P.Dkg||0)>0.3);
+ for(const k of X.VK)if(v[k])fs('v.'+k,v[k].vis);
+ for(const k of LK){const e=l[k];if(e)fs('l.'+k,(e.a[1]>e.a[0])||(e.b[1]>e.b[0]))}
+ fs('RD',l.RD&&l.RD.on);fs('filmR',l.film&&l.film.r>0.01);fs('filmC',l.film&&l.film.c>0.01);fs('neck',l.neck&&l.neck.on);fs('mainStream',l.mainStream&&l.mainStream.on);fs('foreStream',l.foreStream&&l.foreStream.on);
+ fs('c1film',l.c1&&l.c1.film>0.01);fs('c1str',l.c1&&l.c1.streams);fs('pool',l.pool&&l.pool.y>l.pool.yb+0.002);const pa=pr.parts||{};fs('drops',pa.drops>0);fs('vpDrops',pa.vpDrops>0);fs('bubbles',pa.bubbles>0);fs('domes',pa.domes>0);
+ if(R.k%10===0)R.n3.push([+t.toFixed(1),X.n3(v)]);
+ if(R.k%5===0){let s=null;try{s=D.vaporStats()}catch(e){}if(s)R.vs.push([+t.toFixed(1),s.headLenV,s.lenV,s.vpTop?1:0,v.V?v.V.f:null])}
+ R.k++;},100);return 1})()"""
+XDS_GET_BOIL = r"""(()=>{const R=window.__xr;clearInterval(R.iv);return JSON.stringify({first:R.first,vs:R.vs,n3:R.n3,VK:window.__xd.VK})})()"""
+# 초류 밸브 닫았다 열기(N10): 0.1 s마다 [화면 s, 보이는 길이 비 P · F · FL, 흐르는 구간 F · FL, F 남는 구간, 초류 밸브]
+XDS_REC_F = r"""(()=>{const D=window.__dt,X=window.__xd;if(window.__xf&&window.__xf.iv)clearInterval(window.__xf.iv);const R=window.__xf={s:[]};
+R.iv=setInterval(()=>{if(!D.dsfProbe)return;const l=D.dsfProbe().liq||{};R.s.push([+(performance.now()/1000).toFixed(2),X.r(X.ext(l.P),3),X.r(X.ext(l.F),3),X.r(X.ext(l.FL),3),X.r(X.flowA(l.F),3),X.r(X.flowA(l.FL),3),l.F&&l.F.b?l.F.b[0]:null,l.F&&l.F.b?l.F.b[1]:null,D.VLV.F?1:0])},100);return 1})()"""
+XDS_GET_F = r"""(()=>{const R=window.__xf;clearInterval(R.iv);return JSON.stringify({s:R.s})})()"""
+XDS_RLIQ = r"""(()=>{const D=window.__dt,l=(D.dsfProbe().liq||{}).R||{};return JSON.stringify({a:l.a||null,b:l.b||null,seal:+(D.PR.sealM||0).toFixed(4),VR:D.VLV.R?1:0,style:D.STYLE,ds:D.DS?D.DS.on:null})})()"""
+# 환류 · 유출 닫음 95 s(N4 · N12): 0.1 s마다 [화면 s, 공정 s, 계산 액위, 넘침, 그린 고임 비, 계산 고임 비, 배기관 · L2 액 길이, 배기관 · 2차 · 진공 라인 김 보임, 밸브 R · P], 1 s마다 김 (유량, 목표)
+XDS_REC_H = r"""(()=>{const D=window.__dt,X=window.__xd;if(window.__xh2&&window.__xh2.iv)clearInterval(window.__xh2.iv);const R=window.__xh2={s:[],n3:[],k:0};
+R.iv=setInterval(()=>{const P=D.PR;if(!P||!D.dsfProbe)return;const pr=D.dsfProbe(),v=pr.vap||{},l=pr.liq||{},po=l.pool||{};
+ R.s.push([+(performance.now()/1000).toFixed(2),+P.t.toFixed(1),X.r(P.hC1,4),X.r(P.ovKg,3),po.frac==null?null:X.r(po.frac,4),po.calcFrac==null?null:X.r(po.calcFrac,4),X.r(X.ext(l.T2),3),X.r(X.ext(l.L2),3),v.T2&&v.T2.vis?1:0,v.C2&&v.C2.vis?1:0,v.S&&v.S.vis?1:0,D.VLV.R?1:0,D.VLV.P?1:0]);
+ if(R.k%10===0)R.n3.push([+P.t.toFixed(1),X.n3(v)]);R.k++;},100);return 1})()"""
+XDS_GET_H = r"""(()=>{const R=window.__xh2;clearInterval(R.iv);return JSON.stringify({s:R.s,n3:R.n3})})()"""
+XDS_SPL = r"""(()=>{const D=window.__dt;return JSON.stringify({spl:D.PR.splFrac,hC1:D.PR.hC1,ds:D.dsfProbe().s4.spl})})()"""
+# 상태가 바뀔 때(N5 · N6 · N7): 끓음 멈춤 · 응축 0 · 김이 처음 보인 · 사라진 화면 시각, 응축액 관이 빈 시각, 1 s마다 김 (유량, 목표)
+XDS_REC_V = r"""(()=>{const D=window.__dt,X=window.__xd;if(window.__xv&&window.__xv.iv)clearInterval(window.__xv.iv);const R=window.__xv={first:{},last:{},marks:{},n3:[],k:0};
+R.iv=setInterval(()=>{const P=D.PR;if(!P||!D.dsfProbe)return;const pr=D.dsfProbe(),v=pr.vap||{},l=pr.liq||{},now=+(performance.now()/1000).toFixed(2);
+ if(((P.vdot||0)<1||P.stopped)&&R.first.noboil==null)R.first.noboil=now;if((P.condKg||0)<0.3&&R.first.nocond==null)R.first.nocond=now;
+ for(const k of X.VK){const e=v[k];if(!e)continue;if(e.vis&&R.first[k]==null)R.first[k]=now;if(R.first.noboil!=null&&!e.vis&&R.last[k]==null&&R.first[k]!=null)R.last[k]=now}
+ if(R.first.nocond!=null&&R.first.Cempty==null&&X.ext(l.C)<0.02)R.first.Cempty=now;
+ if(R.k%10===0)R.n3.push([+P.t.toFixed(1),X.n3(v)]);R.k++;},100);return 1})()"""
+XDS_MARK = lambda nm: ["eval", "(()=>{const D=window.__dt;window.__xv.marks[" + json.dumps(nm) + "]={now:+(performance.now()/1000).toFixed(2),vap:D.dsfProbe().vap,calc:window.__xd.calc()};return 1})()"]
+XDS_GET_V = r"""(()=>{const R=window.__xv;clearInterval(R.iv);return JSON.stringify({first:R.first,last:R.last,marks:R.marks,n3:R.n3})})()"""
+XDS_END = r"""(()=>{const D=window.__dt;const j=(D.DS&&D.DS.valves||[]).find(v=>v.key==='J');return JSON.stringify({stopped:!!D.PR.stopped,why:String(D.PR.why||'').slice(0,60),VLVJ:!!D.VLV.J,jOpen:D.CUR.jOpen,dsJ:j?!!j.open:null,steam:D.PR.steamKgh,ds:D.DS?D.DS.on:null})})()"""
+# 받는 탱크 고액위(N15): 0.1 s마다 [화면 s, 공정 s, 초류 kg, 계산 고액위, 그린 고리, 그린 넘침 줄기, 웅덩이, 넘친 양, 초류 밸브]
+XDS_REC_L = r"""(()=>{const D=window.__dt,X=window.__xd;if(window.__xl&&window.__xl.iv)clearInterval(window.__xl.iv);const R=window.__xl={s:[]};
+R.iv=setInterval(()=>{const P=D.PR;if(!P||!D.dsfProbe)return;const f=((D.dsfProbe().s4||{}).fore)||{};R.s.push([+(performance.now()/1000).toFixed(2),+P.t.toFixed(1),X.r(P.ves.fore.A+P.ves.fore.B,3),P.lah.fore!=null?1:0,f.lah?1:0,f.spill?1:0,X.r(f.pud,4),X.r(P.spill.fore,4),D.VLV.F?1:0])},100);return 1})()"""
+XDS_GET_L = r"""(()=>{const R=window.__xl;clearInterval(R.iv);return JSON.stringify({s:R.s})})()"""
+# 기본 표현(N16): 표현 상태 · 트렌드 접힘 · 안내 글 · 그래픽 이름
+XDS_ST = r"""(()=>{const D=window.__dt,S=D.DS||{};const d=document.getElementById('jumpDone');return JSON.stringify({on:S.on,want:S.want,pick:S.pick,auto:S.auto||null,look:D.LOOK,trend:(document.getElementById('trend')||{classList:{contains:()=>null}}).classList.contains('closed'),sel:(document.getElementById('lookMode')||{}).value||null,hint:(document.getElementById('viewhint')||{}).textContent||'',note:d&&!d.hidden?d.textContent:null,gpu:String(D.GPU_NAME).slice(0,60),probe:!!D.dsfProbe})})()"""
+
+def ds_scenarios():
+    """새 디자인 장면 17개(옵션과 상관없이 새 디자인으로 연다)."""
+    S = []; rec = BOOT + [["eval", "window.__dt.opSetMode('recipe');1"], ["wait", 1500], ["eval", XDS_H]]
+    W, H = 1440, 900   # 그쪽 시험과 같은 창
+    def D(name, acts, look="design", w=W, h=H, q="", args=""):
+        s = scen(name, acts, w, h, q=q); s["look"] = look
+        if args: s["args"] = args
+        S.append(s)
+    P = lambda t: tag(t, XDS_PROBE)
+    # (1) 끓기 시작 1.0 h → 240분(N1 · N2 · N3 · N8)
+    D("새디자인 끓기 시작", rec + XJUMP(1.0, 2500) + [["eval", XDS_REC_BOIL], XDL(560), ["until", "window.__dt.PR.t>=240*60||performance.now()>window.__xdl", 600000], tag("ds_boil", XDS_GET_BOIL)])
+    # (2) 6 h: 줄기 굵기(N9) → 초류 밸브 닫았다 열기(N10) → 환류 밸브 닫고 도면 다녀오기(N11) → 환류 · 유출 닫음 95 s(N4 · N12)
+    v = rec + XJUMP(6, 4000) + [["wait", 4000], P("ds_h6")]
+    v += [["eval", XDS_REC_F], ["wait", 600], XVB("F"), ["wait", 8000], XVB("F"), ["wait", 2400], ["wait", 2000], tag("ds_f", XDS_GET_F), ["wait", 6000]]
+    v += [XVB("R"), ["wait", 8300], tag("ds_r0", XDS_RLIQ), ["click", "#btn3d"], ["wait", 3000], ["click", "#btn3d"], ["wait", 3000], tag("ds_r1", XDS_RLIQ), XVB("R"), ["wait", 9000]]
+    v += [["eval", XDS_REC_H], ["wait", 600], XVB("R"), ["wait", 300], XVB("P")]
+    for i in range(1, 6): v += [["wait", 15000], tag(f"ds_q{i}", XDS_SPL)]
+    v += [["wait", 20000], tag("ds_hold", XDS_GET_H), XVB("R"), ["wait", 300], XVB("P"), ["wait", 3000]]
+    D("새디자인 6 h 밸브", v)
+    # (3) 1차 N-Brine 온도 상승(N5): 40 s
+    D("새디자인 1차 냉매 95도", rec + XJUMP(6, 4000) + [P("ds_c0"), ["eval", XDS_REC_V], ["eval", "String(window.__dt.ab('c1hot'))"], ["wait", 40000], P("ds_c2"), tag("ds_cv", XDS_GET_V)])
+    # (4) 진공 펌프 정지(N6): 15 s(약 7분) · 40 s · 60 s(약 30분) → 되돌리고 40 s
+    D("새디자인 진공 펌프 정지", rec + XJUMP(6, 4000) + [["eval", XDS_REC_V], ["eval", "String(window.__dt.ab('pstop'))"], ["wait", 15000], XDS_MARK("7분"), ["wait", 25000], P("ds_p2"), ["wait", 20000], XDS_MARK("30분"),
+                                                      ["eval", "String(window.__dt.ab('pstop'))"], ["wait", 40000], XDS_MARK("되돌림 20분"), tag("ds_pv", XDS_GET_V)])
+    # (5) 배치 끝(N7): 끝까지 빨리 감기 → 가열 정지 → 3 s · 12 s
+    D("새디자인 배치 끝", rec + XJUMP(6, 3000) + [["eval", "String(window.__dt.startJump('end'))"], ["until", "(()=>{const D=window.__dt,P=D.PR;return !!(P&&P.stopped&&!D.TURBO)})()", 1500000], ["eval", XDS_REC_V], ["wait", 3000], tag("ds_e1", XDS_END), ["wait", 9000], XDS_MARK("12 s"), tag("ds_ev", XDS_GET_V)])
+    # (6 ~ 11) 이상 상황(N13): 6 h에서 걸고 20 s · 40 s(공정 약 10분 · 20분). 흐름이 그대로인 셋 · 냉매 부족과 환류 둘은 한 장면에서 되돌리고 30 s 뒤 다음 것
+    def ab(keys, name):
+        a = rec + XJUMP(6, 4000)
+        for j, k in enumerate(keys):
+            a += [P(f"ds_{k}_p0"), ["eval", f"String(window.__dt.ab('{k}'))"], ["wait", 20000], P(f"ds_{k}_p1"), ["wait", 20000], P(f"ds_{k}_p2")]
+            if j < len(keys) - 1: a += [["eval", f"String(window.__dt.ab('{k}'))"], ["wait", 30000]]
+        D(name, a)
+    ab(["c1cold", "c2hot", "pump", "cwlow"], "새디자인 이상 상황 냉매 · 배기")
+    ab(["rhigh", "rlow"], "새디자인 이상 상황 환류")
+    ab(["steam"], "새디자인 이상 상황 스팀 과다")
+    ab(["leak"], "새디자인 이상 상황 진공 리크")
+    ab(["cold"], "새디자인 이상 상황 외기 한파")
+    ab(["bare"], "새디자인 이상 상황 단열 손상")
+    # (12) 컬럼 범람(N14): 컬럼 내경 100 mm · 스팀 헤더 160 ℃ · 게이지 100 % · 유출 밸브 닫음(현실성 범람 장면과 같은 조작 — 그쪽 제안 장면 '70 mm → 3 h'는 범람비 1.03 ~ 1.05이지만 쌓인 액이 자리의 2 % 아래라 쌓인 액 그림을 볼 수 없었다, 그쪽 4단계 A9b)
+    D("새디자인 범람", rec + [XSET("Dcol", 100), XSET("Psteam", ""), XSET("Tj", 160), ["wait", 2500]] + XJUMP(1.6, 3000) + [P("ds_fl0"), ["eval", "window.__dt.steamSet(100,true);1"], XVB("P"), ["wait", 400], XVB("P"), ["wait", 600]]
+      + XJUMP(2.5, 5000) + [P("ds_fl1")] + XJUMP(4.0, 5000) + [P("ds_fl2")])
+    # (13) 받는 탱크 고액위(N15): 초류 컷 150 kg → 고액위 바로 앞까지 빨리 감기 → 실제 속도로 고액위 · 20 s → (인터록이 닫았으면 다시 엶) → 넘칠 때까지
+    D("새디자인 받는 탱크 고액위", rec + [XSET("rcpForeKg", 150), ["wait", 1200]] + XJUMP(6, 3000) + [
+        ["eval", "(()=>{const D=window.__dt,P=D.PR,v=P.ves.fore,m=v.A+v.B,rho=m>0?1/((v.A/m)/P.pA.rho+(v.B/m)/P.pB.rho):1500,left=0.955*D.CUR.capF/1000*rho-m;window.__xjt=P.t/3600+Math.max(0,0.9*left/Math.max(1,P.Dkg||0));D.startJump('at',window.__xjt);return window.__xjt})()"],
+        ["until", "(()=>{const D=window.__dt,P=D.PR;return !!(P&&!D.TURBO&&(P.t>=window.__xjt*3600-120||P.stopped||P.lah.fore!=null))})()", 1500000], ["wait", 2000], XDL(900),
+        ["until", "(()=>{const D=window.__dt,P=D.PR;if(D.TURBO)return false;const v=P.ves.fore,m=v.A+v.B,rho=m>0?1/((v.A/m)/P.pA.rho+(v.B/m)/P.pB.rho):1500,left=0.955*D.CUR.capF/1000*rho-m;if(left<=0||P.lah.fore!=null||P.stopped||performance.now()>window.__xdl)return true;D.startJump('at',P.t/3600+Math.min(2,Math.max(0.05,0.5*left/Math.max(1,P.Dkg||0))));return false})()", 960000],
+        ["wait", 3000], ["eval", XDS_REC_L], XDL(300), ["until", "window.__dt.PR.lah.fore!=null||window.__dt.PR.stopped||performance.now()>window.__xdl", 320000], ["wait", 20000], P("ds_l1"),
+        ["eval", "(()=>{const D=window.__dt;if(!D.VLV.F){const b=document.querySelector('#valves button[data-v=\"F\"]');if(b)b.click();return 'reopen'}return 'open'})()"],
+        XDL(700), ["until", "(()=>{const D=window.__dt,P=D.PR;if(D.TURBO)return false;if((P.spill.fore||0)>0.05||P.stopped||performance.now()>window.__xdl)return true;const v=P.ves.fore,m=v.A+v.B,rho=m>0?1/((v.A/m)/P.pA.rho+(v.B/m)/P.pB.rho):1500,cap=D.CUR.capF/1000*rho;if(m<cap-1.2&&D.VLV.F&&D.VLV.P)D.startJump('at',P.t/3600+0.2);return false})()", 730000],
+        ["wait", 4000], P("ds_l2"), tag("ds_lah", XDS_GET_L)])
+    # (14 ~ 17) 기본 표현(N16): 주소에 look 없이 연다 — 이 PC의 GPU · 소프트웨어 렌더링 · 화질 '화면 가볍게'(?lq=1) · 느린 화면(초당 20장 아래 5 s 넘게)
+    boot = BOOT + [["eval", XDS_H], ["wait", 3000]]
+    D("새디자인 기본 표현", boot + [tag("ds_st", XDS_ST), P("ds_def")], look="")
+    D("새디자인 기본 표현 소프트웨어 렌더링", boot + [tag("ds_st", XDS_ST)], look="", args="--use-angle=swiftshader --use-gl=angle --disable-gpu-compositing")
+    D("새디자인 기본 표현 화면 가볍게", boot + [tag("ds_st", XDS_ST)], look="", q="lq=1")
+    D("새디자인 기본 표현 느린 화면", BOOT + [["eval", "window.__dt.opSetMode('recipe');1"], ["wait", 1500], ["eval", XDS_H]] + XJUMP(6, 4000) + [tag("ds_s0", XDS_ST),
+        ["eval", "(()=>{window.__xslow=setInterval(()=>{const t=performance.now();while(performance.now()-t<90){}},0);return 1})()"], ["wait", 9000], ["eval", "(()=>{clearInterval(window.__xslow);return 1})()"], ["wait", 1500], tag("ds_s1", XDS_ST)], look="")
+    return S
+# <<< 새 디자인 장면 끝
+
 def build_scenarios():
     S = []
     S.append(scen("기본", BOOT + [tag("text", JS_TEXT), tag("geom", JS_GEOM), ["shot", str(SHOTS / "기본.png")]]))
@@ -183,9 +503,32 @@ def build_scenarios():
     S.append(scen("수동 끓기 실시간 ×120", BOOT + [["eval", SET_MANUAL], ["wait", 1500]] + jump(1.0) + [["eval", "(()=>{const e=document.getElementById('accel');e.value='120';e.dispatchEvent(new Event('change',{bubbles:true}));return e.value})()"], tag("tb_live", JS_TB_LIVE.replace("__SPAN__", "900"))]))
     S += X.scenarios(scen, tag, BOOT, jump, SHOTS)
     S += Y.scenarios(scen, tag, BOOT, jump, SHOTS)
+    S += real_scenarios()   # 현실성(X), 2026-11-22
+    S += ds_scenarios()   # 새 디자인(v132~), 2026-11-22
     return S
 
+# >>> 표현 옵션(--look · --sim) 시작
+# v132~: 표현 고르기(--look lite|design, 기본 lite). 장면에 "look"이 있으면 그것("" = 주소에 안 붙임 — 기본 표현 시험), 없으면 --look 값을 주소에 붙인다. v131처럼 look을 모르는 판은 무시한다.
+# --sim: 열 빌드 파일(시험 빌드 등). 정적 검사(F2 · F5 · F1 · F3 · M1 …)도 그 파일로 한다. 장면에 "args"가 있으면 크롬 추가 인자(DRIVE_ARGS — 소프트웨어 렌더링 시험)
+LOOK_ARG = "lite"
+def _xlook_url(url, sc):
+    lk = sc.get("look", LOOK_ARG)
+    return url + ("&" if "?" in url else "?") + "look=" + lk if lk else url
+def _xmeta(a):   # 결과 파일에 남기는 표현 · 빌드(다시 판정하면 지난 기록의 값을 그대로)
+    if a.rejudge:
+        try: o = json.loads((HERE / f"점검결과_{a.rejudge}.json").read_text(encoding="utf-8"))
+        except Exception: o = {}
+        return {"look": o.get("look"), "sim": o.get("sim")}
+    return {"look": LOOK_ARG, "sim": str(SIM_HTML)}
+def _xlook_head(a):
+    m = _xmeta(a); lk = m["look"]; nm = {"lite": "가벼움(look=lite)", "design": "새 디자인(look=design)"}
+    ds = " — 이름이 '새디자인'으로 시작하는 장면은 옵션과 상관없이 새 디자인(기본 표현 장면은 주소에 look 없이)"
+    if a.rejudge: return f"표현: {nm.get(lk, '기록 없음(--look 전의 기록 — v131까지는 가벼움뿐)')}{ds if lk else ''} · 다시 판정한 기록 '{a.rejudge}'" + (f"(장면을 연 빌드 {m['sim']})" if m.get("sim") else "") + f" · 정적 검사 빌드 {SIM_HTML}"
+    return f"표현: {nm[lk]}{ds} · 연 빌드 {m['sim']}"
+# <<< 표현 옵션(--look · --sim) 끝
+
 def run(sc, url):
+    url = _xlook_url(url, sc); os.environ["DRIVE_ARGS"] = sc.get("args") or ""   # v132~: 표현 · 크롬 추가 인자
     f = HERE / ("_act_" + re.sub(r"\W", "_", sc["name"]) + ".json")
     f.write_text(json.dumps(sc["actions"], ensure_ascii=False), encoding="utf-8")
     if sc.get("q"): url = url + ("&" if "?" in url else "?") + sc["q"]
@@ -382,7 +725,11 @@ def regress_checks(prefix):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--url", default=""); ap.add_argument("--only", default=""); ap.add_argument("--reg", default=""); ap.add_argument("--tag", default=""); ap.add_argument("--rejudge", default="")
+    ap.add_argument("--look", default="lite", choices=["lite", "design"]); ap.add_argument("--sim", default="")   # v132~: 표현(기본 가벼움) · 열 빌드 파일
     a = ap.parse_args()
+    global SIM_HTML, LOOK_ARG
+    LOOK_ARG = a.look
+    if a.sim: SIM_HTML = pathlib.Path(a.sim).resolve()
     if not a.url and not a.rejudge: a.url = serve_local(); print("로컬 서버:", a.url, "←", SIM_HTML.name, flush=True)
     only = set(x for x in a.only.split(",") if x)
     out = {}
@@ -396,12 +743,13 @@ def main():
     if a.reg: R += regress_checks(a.reg)
     npass = sum(r["ok"] is True for r in R); nfail = sum(r["ok"] is False for r in R); nref = sum(r["ok"] is None for r in R)
     md = [f"# 자동 점검 결과 {ver or ''} {a.tag}".rstrip(), "", f"통과 {npass} · 실패 {nfail} · 판정 {npass + nfail}항목(참고 {nref}줄 따로)  ({time.strftime('%Y-%m-%d %H:%M')})", "", "| 결과 | ID | 항목 | 잰 값 | 기준 |", "|---|---|---|---|---|"]
+    md[2:2] = [_xlook_head(a), ""]   # v132~: 결과 파일 머리에 표현
     for r in R:
         v = r["val"]; v = v if isinstance(v, str) else json.dumps(v, ensure_ascii=False)
         md.append(f"| {'참고' if r['ok'] is None else '통과' if r['ok'] else '**실패**'} | {r['id']} | {r['name']} | {v.replace('|', '/')[:300]} | {r['crit']} |")
     name = "점검결과" + (("_" + a.tag) if a.tag else "")
     (HERE / (name + ".md")).write_text("\n".join(md) + "\n", encoding="utf-8")
-    (HERE / (name + ".json")).write_text(json.dumps({"ver": ver, "R": R, "raw": out}, ensure_ascii=False, indent=1), encoding="utf-8")
+    (HERE / (name + ".json")).write_text(json.dumps({"ver": ver, **_xmeta(a), "R": R, "raw": out}, ensure_ascii=False, indent=1), encoding="utf-8")   # v132~: 표현 · 빌드도 남김
     print(f"통과 {npass} · 실패 {nfail}")
     for r in R:
         if r["ok"] is False: print("  실패", r["id"], r["name"], "→", str(r["val"])[:200])
