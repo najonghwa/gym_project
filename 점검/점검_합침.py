@@ -1047,7 +1047,7 @@ def _xj_onset(g, add):   # (C · D) 끓기 시작
             return None
         cs = dict(boil=lambda r: r[1] > 1, bub=lambda r: r[2] > 0, tank=lambda r: r[3] > 0, neck=lambda r: r[4] > 0, colLow=lambda r: r[5] > 0, colUp=lambda r: r[6] > 0, top=lambda r: r[10] == 1,
                   V=lambda r: r[12] > 0.02, pipe=lambda r: r[7] > 0, cond=lambda r: r[8] > 0 or hd(r), neckL=lambda r: r[9] > 0, C=lambda r: r[13] > 0.02, R=lambda r: r[14] > 0.02, RD=lambda r: r[15] > 0,
-                  seal=lambda r: r[16] >= hold * 0.999, txR=lambda r: (_xnum(r[18]) or 0) > 0.05)
+                  seal=lambda r: r[16] >= hold * 0.999, txR=lambda r: (_xnum(r[18]) or 0) > 0.05, rfx=lambda r: len(r) > 20 and (r[20] or 0) > 0)   # rfx136
         ix = {k: I(c) for k, c in cs.items()}; ev = {k: (None if i is None else lg[i][0]) for k, i in ix.items()}
         hasH = any(len(r) > 19 for r in lg); cvis, chd = F(lambda r: r[8] > 0), (F(hd) if hasH else "기록 없음")
         nm = dict(boil="끓음", bub="기포", tank="정제기 위", neck="목관", colLow="컬럼 아래", colUp="컬럼 위", top="꼭대기 넘음", V="증기관 채움", pipe="증기 배관 점", cond="응축기 점")
@@ -1057,8 +1057,9 @@ def _xj_onset(g, add):   # (C · D) 끓기 시작
         add("X22", f"끓기 시작: 기포 → 증기가 올라가는 순서 — {L3}: 첫 시각이 끓음 ≤ 기포 ≤ 정제기 위 증기 점 ≤ 목관 ≤ 컬럼 아래 ≤ 컬럼 위 ≤ 꼭대기 넘음 ≤ 증기관 채움 ≤ 증기 배관 점 ≤ 응축기 점. 뒤바뀐 곳 0. 한 기록(화면 0.1 s) 안의 앞뒤는 같은 때로 본다(꼭대기 넘음 · 증기관 채움은 점이 증기관에 든 뒤 켜져 한 기록 갈릴 수 있음). 응축기 점은 점 앞머리가 응축기에 닿은 때도 셈", okc,
             " → ".join(f"{nm[k]} {ev[k]}" for k in ch) + " (공정 분)" + f" · 한 기록 차로 같은 때로 본 곳 {one or '없음'}", "순서대로(한 기록 차는 같은 때)")
         pairs = [("neck", "neckL", "목관 증기 점 → 목관 액 점"), ("cond", "C", "응축기 증기 점 → 응축액 관"), ("C", "R", "응축액 관 → 환류 관"), ("C", "txR", "응축액 관 → 환류 값"), ("seal", "RD", "U자 가득 → 분배 줄기")]
-        bad = [n for a, b, n in pairs if ev[b] is not None and (ev[a] is None or ev[b] < ev[a])]
-        add("X24", f"액이 증기보다 먼저 나오지 않음 — {L3}: 목관 액 점은 목관 증기 점 뒤, 응축액 관은 응축기 증기 점 뒤, 환류 관 · 환류 값은 응축액 관 뒤, 분배 줄기는 U자가 찬 뒤. 먼저 나온 곳 0건. 응축기 증기 점은 보인 점의 첫 기록과 점 앞머리(VF.head)가 응축기에 닿은 첫 기록 중 이른 쪽(응축기 안 점은 짧게만 보여 0.1 s 기록 사이에 빠질 수 있음)", not bad,
+        pre = lambda a, b: min([x for x in (ev[a], ev.get("rfx") if (a, b) == ("C", "R") else None) if x is not None], default=None)   # v136 사본: 환류 관(U자 고인 액)은 응축액 관 또는 빈 환류관 관 벽 응축(계산 PR.rfx.condTot > 0) 뒤
+        bad = [n for a, b, n in pairs if ev[b] is not None and (pre(a, b) is None or ev[b] < pre(a, b))]
+        add("X24", f"액이 증기보다 먼저 나오지 않음 — {L3}: 목관 액 점은 목관 증기 점 뒤, 응축액 관은 응축기 증기 점 뒤, 환류 관은 응축액 관 또는 빈 환류관 관 벽 응축(계산 쪽 v135c, 첫 {ev.get('rfx')}분) 뒤, 환류 값은 응축액 관 뒤, 분배 줄기는 U자가 찬 뒤. 먼저 나온 곳 0건. 응축기 증기 점은 보인 점의 첫 기록과 점 앞머리(VF.head)가 응축기에 닿은 첫 기록 중 이른 쪽(응축기 안 점은 짧게만 보여 0.1 s 기록 사이에 빠질 수 있음)", not bad,
             " · ".join(f"{n} {ev[a]} → {ev[b]}" for a, b, n in pairs) + f" · 응축기 증기 점: 보인 점 {cvis} · 앞머리 {chd} · 먼저 나온 곳 {bad or '0건'}", "0건")
         pre = [r for r in lg if r[16] < hold * 0.999 and r[1] > 1]; vio = [r for r in pre if r[15] > 0 or (_xnum(r[18]) or 0) > 0.05]
         ts = ev["seal"]; post = None if ts is None else next((r[0] for r in lg if r[0] >= ts and r[15] > 0 and (_xnum(r[18]) or 0) > 0.05), None)
@@ -1161,9 +1162,10 @@ def _xd_boil(g, add):   # N1 · N2 · N8
     add("X22", f"{DS3} 증기관 김 앞머리 = 지금 장면의 증기 앞머리(VF.headLenV ÷ VF.lenV)(N2)", bool(dif) and max(dif) <= 0.03, f"0.5 s마다 {len(dif)}표본 · 차 최대 {round(max(dif), 4) if dif else '–'}", "차 ≤ 0.03(관 길이 비)")
     pairs = [("l.C", "v.tub"), ("l.C", "vpCond"), ("c1film", "v.tub"), ("pool", "v.tub"), ("c1str", "c1film"), ("l.R", "l.C"), ("RD", "l.R"), ("filmR", "RD"), ("filmC", "v.col"), ("neck", "v.col"), ("l.P", "l.C"), ("l.F", "l.P"), ("l.FL", "l.F"), ("foreStream", "l.FL"), ("vpDrops", "v.col")]
     nm = {"l.C": "응축액 관", "v.tub": "응축기 관 김", "vpCond": "응축 시작", "c1film": "응축기 관 액막", "pool": "응축기 바닥 고임", "c1str": "관 끝 줄기", "l.R": "환류 관", "RD": "분배 줄기", "filmR": "충전층 적심", "filmC": "컬럼 맺힌 액막", "v.col": "컬럼 김", "neck": "목관 줄기", "l.P": "유출 관", "l.F": "초류 가지", "l.FL": "초류 입구 관", "foreStream": "초류 줄기", "vpDrops": "떨어지는 방울"}
-    bad = [f"{nm[a]}({m(a)}) < {nm[c]}({m(c)})" for a, c in pairs if f.get(a) is not None and (f.get(c) is None or f[a] < f[c] - 0.05)]; seen = [a for a, c in pairs if f.get(a) is not None]
+    pc = lambda a, c: min([x for x in (f.get(c), f.get("rfx") if (a, c) == ("l.R", "l.C") else None) if x is not None], default=None)   # rfx136 v136 사본: 환류 관(U자 고인 액)은 응축액 관 또는 빈 환류관 관 벽 응축(PR.rfx.condTot > 0) 뒤
+    bad = [f"{nm[a]}({m(a)}) < {nm[c]}({m(c)})" for a, c in pairs if f.get(a) is not None and (pc(a, c) is None or f[a] < pc(a, c) - 0.05)]; seen = [a for a, c in pairs if f.get(a) is not None]
     add("X24", f"{DS3} 액이 증기보다 먼저 나오지 않음 — 응축기 관 액막 · 응축액 관 · 환류 관 · 분배 줄기 · 충전층 적심 · 유출 관 → 초류 가지 → 입구 관 → 초류 줄기가 각각 앞(김 또는 윗관) 뒤에 나온다(N8 · X6)",
-        len(seen) >= 12 and not bad, f"확인한 짝 {len(seen)}/{len(pairs)} · 어긋남 {bad or '없음'} · " + " · ".join(f"{nm[k]} {m(k)}" for k in ["v.tub", "c1film", "l.C", "l.R", "RD", "filmR", "l.P", "l.F", "l.FL", "foreStream"] if f.get(k) is not None) + " (공정 분)",
+        len(seen) >= 12 and not bad, f"확인한 짝 {len(seen)}/{len(pairs)} · 어긋남 {bad or '없음'} · 빈 환류관 관 벽 응축 첫 {m('rfx')} · " + " · ".join(f"{nm[k]} {m(k)}" for k in ["v.tub", "c1film", "l.C", "l.R", "RD", "filmR", "l.P", "l.F", "l.FL", "foreStream"] if f.get(k) is not None) + " (공정 분)",
         "짝마다 액의 첫 보인 시각 ≥ 앞의 첫 보인 시각(0.05 s 여유), 확인한 짝 12개 넘게")
 
 DS_GATE = ("V", "bon", "tub", "T2", "C2")   # 앞머리 규칙이 있는 구간(dsflow.js): 증기관 = 꼭대기 넘음 뒤, 뚜껑 = 증기관이 다 찬 뒤, 관 = 뚜껑이 다 찬 뒤, 배기관 · 2차 = 응축 시작 뒤에 켜짐(N1 차례)

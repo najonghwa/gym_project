@@ -210,7 +210,7 @@ XPOLL_LAH = r"""(()=>{const D=window.__dt,H=window.__xh;window.__lg=[];let last=
  window.__lg.push([+(performance.now()/1000).toFixed(2),+P.t.toFixed(1),+(P.ves.fore.A+P.ves.fore.B).toFixed(4),D.VLV.F?1:0,H.btn('F'),H.vcol('F'),P.lah.fore,+(P.spill.fore||0).toFixed(4),FX.lah&&FX.lah.fore&&FX.lah.fore.visible?1:0,FX.spill&&FX.spill.fore&&FX.spill.fore.visible?1:0,FX.pud&&FX.pud.fore&&FX.pud.fore.visible?1:0,+(P.Dkg||0).toFixed(3),P.rcp?P.rcp.st:null])},100);return 1})()"""
 # 0.1초마다: 끓기 시작(3D) — 기포 · 구간별 증기 점 · 목관 액 점 · 관 채움 · U자 · 환류 값 상자(X6 · X22 · X24) · 끝 열 = 증기 점 앞머리 VF.head(11-22 더함: 응축기 안 점이 기록 사이에 빠지는 시각 경합)
 XPOLL_ON3 = r"""(()=>{const D=window.__dt,H=window.__xh;window.__lg=[];let last=-1;if(window.__pi)clearInterval(window.__pi);window.__pi=setInterval(()=>{const P=D.PR;if(!P||P.t===last)return;last=P.t;let s=null;try{s=D.vaporStats()}catch(e){}const F=D.FILL,fr=(k)=>F[k]?+(F[k].head/F[k].Ltot).toFixed(3):0;
- window.__lg.push([+(P.t/60).toFixed(3),+P.vdot.toFixed(3),H.bub(),s?s.sec.tank.n:0,s?s.sec.neck.n:0,s?s.sec.colLow.n:0,s?s.sec.colUp.n:0,s?s.sec.pipe.n:0,s?s.sec.cond.n:0,s?s.nNeckLiq:0,P.vpTop?1:0,P.vpCond?1:0,fr('V'),fr('C'),fr('R'),F.RD?F.RD.segs.filter(x=>x.ov.visible).length:0,+(P.sealM||0).toFixed(4),+(P.Rkg||0).toFixed(2),H.tagv('FICH073 환류'),s?s.head:null])},100);return 1})()"""
+ window.__lg.push([+(P.t/60).toFixed(3),+P.vdot.toFixed(3),H.bub(),s?s.sec.tank.n:0,s?s.sec.neck.n:0,s?s.sec.colLow.n:0,s?s.sec.colUp.n:0,s?s.sec.pipe.n:0,s?s.sec.cond.n:0,s?s.nNeckLiq:0,P.vpTop?1:0,P.vpCond?1:0,fr('V'),fr('C'),fr('R'),F.RD?F.RD.segs.filter(x=>x.ov.visible).length:0,+(P.sealM||0).toFixed(4),+(P.Rkg||0).toFixed(2),H.tagv('FICH073 환류'),s?s.head:null,P.rfx?+(P.rfx.condTot||0).toFixed(5):0/*rfxc136*/])},100);return 1})()"""
 # 0.1초마다: 끓기 시작(도면) — 켜진 흐름 점 · 도면 환류 값(X6 · X22 · X24)
 XPOLL_ON2 = r"""(()=>{const D=window.__dt;window.__lg=[];let last=-1;if(window.__pi)clearInterval(window.__pi);window.__pi=setInterval(()=>{const P=D.PR,Q=D.PID2;if(!P||P.t===last)return;last=P.t;const on={};if(Q&&Q.flows&&!Q.root.hidden){for(const f of Q.flows){if(f.el.classList.contains('on'))on[f.k]=(on[f.k]||0)+1}}
  window.__lg.push([+(P.t/60).toFixed(3),+P.vdot.toFixed(3),+(P.sealM||0).toFixed(4),+(P.Rkg||0).toFixed(2),Q&&Q.vals&&Q.vals.FICH073?Q.vals.FICH073.textContent:null,P.vpTop?1:0,P.vpCond?1:0,on])},100);return 1})()"""
@@ -377,7 +377,7 @@ XDS_PROBE = r"""(()=>{const D=window.__dt,X=window.__xd;const p=D.dsfProbe?D.dsf
 XDS_REC_BOIL = r"""(()=>{const D=window.__dt,X=window.__xd;if(window.__xr&&window.__xr.iv)clearInterval(window.__xr.iv);const R=window.__xr={first:{},vs:[],n3:[],k:0};
 const LK=['C','R','P','M','F','FL','L2','T2'];
 R.iv=setInterval(()=>{const P=D.PR;if(!P||!D.dsfProbe)return;const pr=D.dsfProbe(),v=pr.vap||{},l=pr.liq||{},t=P.t,fs=(k,c)=>{if(c&&R.first[k]==null)R.first[k]=t};
- fs('boil',(P.vdot||0)>1&&!P.stopped);fs('vpTop',P.vpTop);fs('vpCond',P.vpCond);fs('cond',(P.condKg||0)>0.3);fs('Rkg',(P.Rkg||0)>0.3);fs('Dkg',(P.Dkg||0)>0.3);
+ fs('boil',(P.vdot||0)>1&&!P.stopped);fs('rfx',!!(P.rfx&&(P.rfx.condTot||0)>0));fs('vpTop',P.vpTop);fs('vpCond',P.vpCond);fs('cond',(P.condKg||0)>0.3);fs('Rkg',(P.Rkg||0)>0.3);fs('Dkg',(P.Dkg||0)>0.3);
  for(const k of X.VK)if(v[k])fs('v.'+k,v[k].vis);
  for(const k of LK){const e=l[k];if(e)fs('l.'+k,(e.a[1]>e.a[0])||(e.b[1]>e.b[0]))}
  fs('RD',l.RD&&l.RD.on);fs('filmR',l.film&&l.film.r>0.01);fs('filmC',l.film&&l.film.c>0.01);fs('neck',l.neck&&l.neck.on);fs('mainStream',l.mainStream&&l.mainStream.on);fs('foreStream',l.foreStream&&l.foreStream.on);
