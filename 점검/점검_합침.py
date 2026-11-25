@@ -18,7 +18,7 @@ PRESET = {"T": 700, "bottom": "ell", "Hs": 800, "wallMat": "sus", "tw": 8, "tIns
 # 추가 점검 문서(설비pnid.pdf, 2026-11-18): 자켓 높이는 사내망 오독(855)을 바로잡은 635, 컬럼은 조립도 H-VP-ME-C-H081-001(태그 칸 C-H071) 값
 PRESET_GA = {"Hj": 635, "Dcol": 155.2, "packFill": 26, "pack": "pall25"}
 # 운전 개념(사용자 2026-11-18): 환류 4 kg/h 고정, 유출 초류 2 · 본류 6 → 정제기에 약 70 kg 남으면 5, 투입 350 · 초류 30 · 후류 30 kg
-PRESET_OP = {"H": 350, "rcpForeKg": 30, "swM": 30, "rcpForeR": 4, "rcpForeD": 2, "rcpMainR": 4, "rcpMainD": 6, "rcpLateKg": 70, "rcpLateD": 5, "rcpTailKg": 30, "rcpMainKg": 0}
+PRESET_OP = {"H": 350, "rcpForeKg": 30, "swM": 30, "rcpForeR": 4, "rcpForeD": 2, "rcpMainR": 4, "rcpMainD": 6, "rcpLateKg": 70, "rcpLateD": 5, "rcpTailKg": 30, "rcpMainKg": 0, "splitMode": "D"}   # v142 분배: 유출 FICH072 고정 · 나머지 환류(사용자 2026-11-25)
 TAGS = ["TICH071 탱크 내부", "WIH071 정제기 무게", "TIH074 자켓", "TICH071 스팀 밸브 개도", "TIH075 탑 온도", "PICH071 탱크 압력", "TICH071D 응축액 출구",
         "FICH073 환류", "FICH072 유출", "WIH072 초류 무게", "WIH073 본류 무게"]   # SICAH071 교반은 값 상자에서 빼 둔 설정값(DCS_SKIP)
 OLD = ["FIC-072", "FIC-073", "FCV-072", "FCV-073", "유출 FT-H073", "고점 FT-H073", "FT-H073 0", "TIC-H071D 응축액", "(TIC-H071D)", "TI-H075 탑"]   # 옛 번호와 옛 이름표 쓰임. P&ID 표기(FT/FIQC-H073 = 환류 유량계, TE/TIC-H071D, TE/TI-H075)는 설비 설명에 남는다
@@ -299,7 +299,7 @@ def judge(g, add):
         b1 = diff({"Hj": 635}); add("N1", "자켓 높이 635 mm(GA-071: 경판 175 + S.T.L → 덮개판 460. 855는 오독)", not b1, "635" if not b1 else ", ".join(b1), "635")
         b2 = diff({k: v for k, v in PRESET_GA.items() if k != "Hj"}); add("N2", "컬럼 조립도 값: 1인치 폴 링 · 내경 155.2 mm · 충전율 26 %", not b2, "pall25 · 155.2 · 26" if not b2 else ", ".join(b2), "모두 일치")
         b3 = diff(PRESET_OP); bs = d.get("bs") or {}
-        add("N4", "기본값: 투입 350 kg · 초류 30 kg · 후류 30 kg, 환류 4 · 유출 2 → 6 → 5 kg/h(정제기 70 kg부터)", not b3 and abs(d["m0"] - 350) < 0.5, f"{len(PRESET_OP) - len(b3)}/{len(PRESET_OP)}칸 일치 · 투입 {d['m0']:.1f} kg" + (" · 다름 " + ", ".join(b3) if b3 else ""), "모두 일치")
+        add("N4", "기본값: 투입 350 kg · 초류 30 kg · 후류 30 kg, 환류 4 · 유출 2 → 6 → 5 kg/h(정제기 70 kg부터) · 분배 방식 유출 고정(FICH072, v142)", not b3 and abs(d["m0"] - 350) < 0.5, f"{len(PRESET_OP) - len(b3)}/{len(PRESET_OP)}칸 일치 · 투입 {d['m0']:.1f} kg" + (" · 다름 " + ", ".join(b3) if b3 else ""), "모두 일치")
         add("N5", "배치 시트에 후류 줄(투입 · 초류 컷 · 본류 컷 · 후류)", bool(bs.get("tail")) and str(bs.get("tailV")) == "30" and str(bs.get("foreV")) == "30" and str(bs.get("chargeV")) == "350", f"후류 칸 {'있음' if bs.get('tail') else '없음'} · 투입 {bs.get('chargeV')} · 초류 {bs.get('foreV')} · 후류 {bs.get('tailV')}", "350 · 30 · 30")
         miss = [t for t in TAGS if t not in d["tags"]]
         add("M2", "값 상자 이름 = PIMS 태그(TICH071·WIH071·TIH074·TIH075·PICH071·TICH071D·FICH073·FICH072·WIH072·WIH073)", not miss and "FICH073 환류" in d["act"], ("모두 있음" if not miss else "없음: " + ", ".join(miss)) + f" · 누르면 조절 표시 {d['act']}", "11개 모두 · 환류 상자에 조절 표시")
@@ -379,12 +379,12 @@ def judge(g, add):
         add("M21", "가열 정지 액위(앵커 = 가로 막대 윗면): 식 값과 그 액위의 남은 양이 후류 30 kg보다 아래", abs(z["hMin"] - hmin) < 1e-6 and mi < 30 and z["m"] / z["m0"] < 0.12,
             f"액위 {z['hMin'] * 1000:.1f} mm(따로 {hmin * 1000:.1f}) = {mi:.1f} kg · 배치는 {z['m']:.1f} kg(투입의 {z['m'] / z['m0'] * 100:.0f} %)까지 감", "식 같음 · 30 kg 아래 · 투입의 12 % 아래까지")
         f2 = lambda x: "–" if x is None else f"{x:.2f}"
-        okF = z["Rfore"] is not None and abs(z["Rfore"] - 4) < 0.2 and z["Rmain"] is not None and abs(z["Rmain"] - 4) < 0.2 and z["Rlate"] is not None and abs(z["Rlate"] - 4) < 0.2
-        okD = z["Dmain"] is not None and abs(z["Dmain"] - 6) < 0.4 and z["Dlate"] is not None and abs(z["Dlate"] - 5) < 0.4 and z["late"] and z["lateAt"] is not None and abs(z["lateAt"] - 70) < 1.5
-        add("N3", "운전 개념: 환류 4 kg/h 고정(초류·본류), 본류 유출 6 → 정제기 70 kg부터 5 kg/h — v139부터 스팀이 레시피 개도(고정)라 유출은 '증발 − 환류'로 정해져 설정을 따르지 않는다(환류 고정 · 유출 고정 가운데 어느 쪽인지 사용자 판단 대기)", okF and okD,
-            f"환류 초류 {f2(z['Rfore'])} · 본류 {f2(z['Rmain'])} · 끝 무렵 {f2(z['Rlate'])} kg/h · 유출 본류 {f2(z['Dmain'])} → {f2(z['Dlate'])} kg/h(정제기 {f2(z['lateAt'])} kg에서 바꿈, {f2(z['tLate'])} h)", "환류 4 ± 0.2 · 유출 6 ± 0.4 → 5 ± 0.4 · 70 ± 1.5 kg")
-        add("N3", "운전 개념: 초류 유출 2 kg/h(참고 — 스팀 밸브 가정값의 하한 열량이 초류에 필요한 열과 거의 같아, 전환류에서 데워진 액이 식는 동안 설정보다 많다)", None,
-            f"초류 유출 평균 {f2(z['Dfore'])} kg/h(설정 2) · 스팀 개도 평균 초류 {f2(z['mvFore'])} % · 본류 {f2(z['mvMain'])} %", "참고(스팀 밸브 식을 현장 스팀 유량·개도로 맞춘 뒤 판정)")
+        okD = all(z.get(k) is not None for k in ("Dfore", "Dmain", "Dlate")) and abs(z["Dfore"] - 2) < 0.2 and abs(z["Dmain"] - 6) < 0.2 and abs(z["Dlate"] - 5) < 0.2 and z["late"] and z["lateAt"] is not None and abs(z["lateAt"] - 70) < 1.5
+        okR = all(z.get(k) is not None and z[k] > 0.3 for k in ("Rfore", "Rmain", "Rlate"))   # v142: 환류는 나머지(응축액 − 유출) — 흐르고 있으면 된다
+        add("N3", "운전 개념(v142 분배 — 사용자 결정 2026-11-25): 유출 FICH072 고정 초류 2 · 본류 6 → 정제기 70 kg부터 5 kg/h, 환류는 나머지(스팀이 레시피 개도라 증발이 개도로 정해진다)", okD and okR,
+            f"유출 초류 {f2(z['Dfore'])} · 본류 {f2(z['Dmain'])} → {f2(z['Dlate'])} kg/h(정제기 {f2(z['lateAt'])} kg에서 바꿈, {f2(z['tLate'])} h) · 환류(나머지) 초류 {f2(z['Rfore'])} · 본류 {f2(z['Rmain'])} · 끝 무렵 {f2(z['Rlate'])} kg/h", "유출 2 · 6 → 5 ± 0.2 · 70 ± 1.5 kg · 환류 > 0.3")
+        add("N3", "운전 개념: 참고 — 환류(나머지)와 스팀 개도 · 내부 온도(초류 · 본류 구간 평균)", None,
+            f"환류 초류 {f2(z['Rfore'])} · 본류 {f2(z['Rmain'])} kg/h(운전 개념의 환류 4는 설정 칸에만 남음) · 스팀 개도 초류 {f2(z['mvFore'])} · 본류 {f2(z['mvMain'])} % · 내부 초류 {f2(z.get('Tfore'))} · 본류 {f2(z.get('Tmain'))} ℃", "참고")
         left = z["m0"] - z["fore"] - z["main"]; byTail = "후류" in z["why"]; byStop = "액위 하한" in z["why"]
         add("P8", "배치 끝 = 후류(기본 조건): 투입 − 초류 − 본류 = 후류 30 kg(사용자 11-19 '300 · 초류 30 · 후류 30이면 본류 240'), 초류 30 kg", z["stopped"] and (byTail or byStop) and abs(left - 30) < 0.5 and abs(z["fore"] - 30) < 1.0,
             f"{z['t']:.1f} h에 끝 · 초류 {z['fore']:.1f} · 본류 {z['main']:.1f} kg → 투입 − 초류 − 본류 = {left:.1f} kg(끝난 뒤 정제기 {z['m']:.1f} kg) · 사유 '{z['why'][:70]}'",
@@ -731,7 +731,7 @@ def _xrim(imgs, x, e):   # 정제기 액면 테두리: 세로 11줄 가운데 �
     bg = [_xmed([P[r][c] for r in range(int(e) - 30, int(e) - 17)]) for c in range(3)]
     dev = lambda r: max(abs(P[r][c] - bg[c]) for c in range(3)) > 20
     for r in range(int(e) - 16, int(e) + 26):
-        if all(dev(r + k) for k in range(4)): return r
+        if all(dev(r + k) for k in range(6)): return r   # v142: 4 → 6줄 — 자켓 아래 테두리 반사(흰 줄 4줄)가 액면 바로 위에 올 때(50 h 115 kg) 그 줄을 액면으로 골랐다. 액 몸통은 20줄 넘게 이어진다
     return None
 def _xfirst(lg, cond, key=0):
     for r in lg:
@@ -1207,7 +1207,7 @@ def _xd_n3(g, add):   # N3: 김 진하기 규칙 · 흐름 0이면 0(모든 새 
                 (pre if k in DS_GATE and (i0 == 0 or st[i0 - 1] != 1) and i < len(st) and st[i] == 1 else badpre).append(r)
     if not used: return
     pres = " · ".join(f"{a} {VN_DS[k]} {n}" for a, k, _, n in pre)
-    add("X32", f"{DS3} 김 진하기 ∝ 증발량 — 목표 진하기 = 0.9 × (계산 유량 ÷ 25 kg/h)^0.6, 증기 김(정제기 위 ~ 진공 라인)과 스팀 관(N3). 증기관 · 뚜껑 · 관 · 배기관 · 2차는 앞머리가 닿은 뒤의 표본으로 잰다(N1 차례 — 앞머리 전 표본은 켜지기 바로 앞에만). 자켓 김은 그 0.35배 규칙(dsflow.js)이라 따로 적는다",
+    add("X32", f"{DS3} 김 진하기 ∝ 증발량 — 목표 진하기 = 0.9 × (계산 유량 ÷ 25 kg/h)^0.6, 증기 김(정제기 위 ~ 진공 라인)과 스팀 관(N3). 증기관 · 뚜껑 · 관 · 배기관 · 2차는 앞머리가 닿은 뒤의 표본으로 잰다(N1 차례 — 앞머리 전 표본은 켜지기 바로 앞에만). 자켓 안 김 띠는 v142에서 뺐다(Y17 — 액 속 김처럼 보임)",
         bool(rat) and min(rat) >= 0.995 and max(rat) <= 1.005 and not badpre,
         f"장면 {used} · 목표 ÷ 규칙값 {round(min(rat), 4) if rat else '–'} ~ {round(max(rat), 4) if rat else '–'}({len(rat)}표본, 켜진 구간) · 앞머리 전 표본 {sum(r[3] for r in pre)}개({pres or '없음'} — 모두 켜지기 바로 앞) · 그 밖에 유량 > 0.05인데 목표 0인 표본 {sum(r[3] for r in badpre)}개"
         + (f"({' · '.join(f'{a} {VN_DS[k]} {m}분부터 {n}' for a, k, m, n in badpre[:4])})" if badpre else "") + f" · 자켓 ÷ (0.35 × 규칙값) {round(min(jk), 4) if jk else '–'} ~ {round(max(jk), 4) if jk else '–'}",
@@ -1511,10 +1511,87 @@ def _xd_usoff(g, add):   # v141 Y13: 스팀을 끈 뒤 U자 액봉 — 넘침 �
     add("Y13", f"{DS3} U자 액봉 — 화면에서 응축액 흐름이 꺼지면(증발 1 kg/h 아래) 넘침 층 · 줄기 · 데드 레그도 비고 액봉은 넘침 높이까지 찬 채 남는다", okB if offb else None,
         f"{sb.get('t')} h: 증발 {sb.get('V')} · 계산 환류 {sb.get('R')} kg/h · 응축기 김 닿음 {sb.get('vc')} · 응축액 관 흐름 표시 {sb.get('cw')} · 응축액 관 그린 구간 {sb.get('C')} · 넘침 {qb.get('ovOn')} · 층 두께 {qb.get('ho')} · 줄기 {qb.get('inflow')} · 데드 레그 {qb.get('pl')} · 액봉 {qb.get('m')} kg(다 찬 값 {mF}) · 컬럼 쪽 액면 {qb.get('Yout')}(넘침 높이 {qb.get('inv')})",
         "흐름 표시가 꺼진 때: 넘침 0 · 층 ≤ 0.05 × 관 반지름 · 줄기 0 · 데드 레그 ≤ 0.02 · 응축액 관 빔 · 액봉 다 참 · 컬럼 쪽 액면 = 넘침 높이" if offb else "(이 시각에 흐름 표시가 아직 켜져 있어 판정하지 않음 — 장면 시각을 늦춘다)")
+def _xd_tee(g, add):   # v142 Y15: 응축기 하부 분배기(티) — 줄기 굵기가 액면에서 이어지고, 고인 액 · 환류 액봉도 줄기와 같은 빠르기로 흐르며(사용자 11-25 둘째 지적), 무늬는 아래로 · 가로 갈래 겹침 지움
+    sn = "새디자인 6 h 밸브"; a, b = g(sn, "ds_tee0"), g(sn, "ds_tee1")
+    if not a or a.get("none"): return
+    r = lambda x, n=4: None if x is None else round(x, n); near = lambda x, y, t: x is not None and y is not None and y > 0 and abs(x - y) <= t * y
+    down = a.get("y0") is not None and a.get("y1") is not None and a["y0"] > a["y1"]; flow = a.get("vp") == 1 and (a.get("dk") or 0) > 0.05
+    okS = flow and near(a.get("spd"), a.get("pspd"), 0.05) and (not a.get("ov") or near(a.get("rspd"), a.get("rsp"), 0.05))
+    okJ = a.get("ys") is not None and a.get("yT") is not None and abs(a["ys"] - a["yT"]) <= 1e-4 and near(a.get("flL"), 2 * (a.get("riT") or 0), 0.01)
+    ok = bool(down and okS and okJ and a.get("own") and (a.get("pc") or 0) > 0.5 and a.get("isT") == 1 and a.get("rt") is not None and abs(a["rt"] - a["riT"]) <= 0.002 * a["riT"] and a.get("vis"))
+    add("Y15", f"{DS3} 응축기 하부 분배기(티): 응축액 관 줄기 굵기가 액면 위 관 지름 1배 구간에서 관 굵기로 이어지고, 티 아래 고인 액(유출 줄기 빠르기) · 환류 액봉(환류 줄기 빠르기)이 흐르며 무늬는 아래로(위 → 아래로 그림), 잠긴 줄기 · 가로 갈래 겹침 지움", ok,
+        f"그린 방향 위 {r(a.get('y0'))} → 아래 {r(a.get('y1'))} · 유출 {r(a.get('dk'), 2)} kg/h · 티 무늬 {r(a.get('spd'))}(유출 줄기 {r(a.get('pspd'))}) · 환류 액봉 무늬 {r(a.get('rspd'))}(환류 줄기 {r(a.get('rsp'))}, 넘침 {a.get('ov')}) · 굵기 이음 액면 {r(a.get('ys'))}(티 액면 {r(a.get('yT'))}) · 길이 {r(a.get('flL'))}(관 지름 {r(2 * (a.get('riT') or 0))}) · 잠긴 줄기 {r(a.get('pc'), 2)} · 지우는 원기둥 {a.get('rt')}(티 관 {a.get('riT')})",
+        "위 → 아래 · 무늬 = 줄기 빠르기 ± 5 % · 이음 액면 = 티 액면 · 길이 = 관 지름 · 잠긴 줄기 > 0.5 · 원기둥 = 티 관")
+    if b and not b.get("none"):
+        add("Y15", f"{DS3} 응축기 하부 분배기(티): 유출 밸브를 닫으면 티 아래 고인 액 무늬가 멈춘다", b.get("vp") == 0 and (b.get("spd") or 0) == 0, f"유출 밸브 {b.get('vp')} · 무늬 빠르기 {b.get('spd')}", "닫힘 · 0")
+def _xd_walk(g, add):   # v142 Y16: 액(김)이 지나가는 길 둘러보기(사용자 11-25) — 김 띠 무늬에 각진 조각 없음 · 초류를 받는 동안 본류 쪽 막힌 다리가 참
+    sn = "새디자인 6 h 밸브"; v = g(sn, "ds_vap"); d = g(sn, "ds_dl")
+    if v and not v.get("none"):
+        res = []
+        for nm in ("x_ds_vap_a.png", "x_ds_vap_b.png"):
+            img = _xpng(nm)
+            if not img: res.append(None); continue
+            w, h, bpp, rows = img; L = [[(r[x * bpp] * 299 + r[x * bpp + 1] * 587 + r[x * bpp + 2] * 114) // 1000 for x in range(w)] for r in rows]
+            n6 = mx = s = s2 = 0
+            for yy in range(h):
+                row = L[yy]; nx = L[yy + 1] if yy + 1 < h else None
+                for x in range(w):
+                    a = row[x]; s += a; s2 += a * a
+                    if x + 1 < w:
+                        dd = abs(row[x + 1] - a); mx = max(mx, dd); n6 += dd >= 6
+                    if nx is not None:
+                        dd = abs(nx[x] - a); mx = max(mx, dd); n6 += dd >= 6
+            N = w * h; sd = max(0.0, s2 / N - (s / N) ** 2) ** 0.5
+            res.append((n6, mx, round(sd, 1), w, h))
+        ok = len(res) == 2 and all(r is not None and r[0] <= 20 and r[2] >= 3 and r[3] >= 40 and r[4] >= 40 for r in res) and v.get("vis") and (v.get("d") or 0) > 0.05
+        add("Y16", f"{DS3} 둘러보기 — 김 띠 무늬에 각진 조각이 없다(목관 김만 남긴 확대 화면 2장의 이웃 화소 밝기 차. 잡음 격자 꼭짓점 값이 이웃 칸에서 어긋나면 곧은 모서리 조각이 생겼다)", bool(ok),
+            " · ".join((f"그림 {i + 1}: {r[3]}×{r[4]} px, 밝기 차 6 이상 {r[0]}쌍, 최대 {r[1]}, 밝기 표준편차 {r[2]}" if r else f"그림 {i + 1} 없음") for i, r in enumerate(res)) + f" · 김 진하기 {v.get('d')} · 무늬 자리 {v.get('phK')} · 끈 재질 {v.get('hid')}",
+            "그림마다 밝기 차 6 이상 ≤ 20쌍 · 표준편차 ≥ 3(무늬가 보임)")
+    if d and not d.get("none"):
+        flow = d.get("M") == 0 and d.get("F") == 1 and d.get("P") == 1 and (d.get("Dk") or 0) > 0.05; bs = d.get("bs") or []; vm = d.get("vMr")
+        leg = vm is not None and any(len(x) > 2 and x[2] in (1, -1) and x[0] <= 0.001 and abs(x[1] - vm) <= 0.002 for x in bs)   # 1 = 채우는 중 · -1 = 닫힌 밸브 앞에 고인 액(남겨 둔 끝 규칙이 같은 구간을 넘겨받는다)
+        add("Y16", f"{DS3} 둘러보기 — 초류를 받는 동안 본류 쪽 막힌 다리(갈림 티 → 닫힌 본류 밸브)가 액으로 찬다(표시 규칙 0.8 s, 계산에 이 부피는 없다)", bool(flow and (d.get("dl") or 0) >= 0.999 and leg),
+            f"본류 밸브 {d.get('M')} · 초류 밸브 {d.get('F')} · 유출 {d.get('Dk')} kg/h · 채움 {d.get('dl')} · 그린 구간 {bs} · 밸브 자리 {vm}", "닫힘 · 열림 · 유출 > 0.05 · 채움 1 · 관 시작 ~ 밸브 구간")
+
+def _xd_warm(g, add):   # v142 Y17: 승온 중(끓기 전) 정제기 액 속에 김이 없고, 액 속 기체는 끓을 때만 기포로(사용자 11-25)
+    pre = [x for x in (g("새디자인 승온", "ds_warm0"), g("새디자인 승온", "ds_warm1")) if x]; b = g("새디자인 6 h 밸브", "ds_warm6")
+    if pre:
+        cond = all((x.get("steam") or 0) > 1 and x.get("J") == 1 and (x.get("vdot") or 0) <= 1 and (x.get("Tm") or 0) < (x.get("Tb") or 0) for x in pre)
+        ok = cond and all(x.get("jk") == 0 and x.get("head") == 0 and x.get("neck") == 0 and (x.get("bub") or 0) == 0 and not x.get("inL") for x in pre)
+        add("Y17", f"{DS3} 승온 중(스팀 켜짐 · 끓기 전) 정제기 액 속에 김이 없다 — 자켓 안 김 띠를 그리지 않고(스팀은 투명한 기체), 정제기 위 · 목관 김과 기포 0, 액과 겹친 김 띠 없음", bool(ok),
+            " · ".join(f"{x.get('t')} h: 내부 {x.get('Tm')} ℃(끓는점 {x.get('Tb')}) · 증발 {x.get('vdot')} · 스팀 {x.get('steam')} kg/h · 자켓 김 띠 {x.get('jk')} · 정제기 위 {x.get('head')} · 목관 {x.get('neck')} · 기포 {x.get('bub')} · 액과 겹친 김 {x.get('inL')}" for x in pre),
+            "스팀 > 1 kg/h · 증발 ≤ 1 · 내부 < 끓는점에서 자켓 김 띠 없음 · 김 0 · 기포 0 · 액과 겹친 김 없음")
+    if b:
+        add("Y17", f"{DS3} 끓는 동안 액 속 기체는 기포로 그린다(그 깊이 끓는점 이상인 자리 · 액면 증발 — 지금 장면 규칙 13), 자켓 안 김 띠는 없다", bool((b.get("vdot") or 0) > 1 and (b.get("bub") or 0) > 0 and b.get("jk") == 0),
+            f"{b.get('t')} h: 증발 {b.get('vdot')} kg/h · 기포 {b.get('bub')} · 터지는 기포 {b.get('dome')} · 자켓 김 띠 {b.get('jk')}", "증발 > 1 · 기포 > 0 · 자켓 김 띠 없음")
+
+def _xd_v142pm(g, add):   # v142 Y18 · Y19 · Y20(사용자 11-25 오후): U자 액봉은 환류 몫으로 · 밸브 몸통과 색 · 정제기 위 김 깔때기
+    sp = g("새디자인 U자 액봉 유출 열림", "ds_sp")
+    if sp and sp.get("s"):
+        S = sp["s"]; mS = sp.get("seal") or 0.55; fil = [r for r in S if r[2] is not None and r[2] < 0.99 * mS and (r[3] or 0) > 0.5 and r[4] == 1]
+        flow = [r for r in fil if (r[1] or 0) > 0.05]; full = any(r[2] is not None and r[2] >= 0.999 * mS for r in S)
+        ok = len(fil) >= 3 and len(flow) == len(fil) and full
+        add("Y18", f"{DS3} 유출 밸브를 연 채 응축이 시작되면 U자 액봉이 차는 동안에도 유출이 흐른다 — U자는 환류 쪽(FCV-H073 뒤)이라 환류 몫으로만 찬다(전: U자가 다 찰 때까지 유출 0)", bool(ok),
+            f"U자가 차는 표본 {len(fil)}개 가운데 유출 > 0.05 kg/h {len(flow)}개 · 그때 유출 {min((r[1] for r in fil), default=None)} ~ {max((r[1] for r in fil), default=None)} kg/h · 환류 {min((r[5] for r in fil), default=None)} ~ {max((r[5] for r in fil), default=None)} · U자 다 참 {full}(액봉 {mS} kg)",
+            "차는 표본 ≥ 3 · 모두 유출 > 0.05 · 결국 다 참")
+    vl = g("새디자인 6 h 밸브", "ds_vlv")
+    if vl and vl.get("v") is not None:
+        V = vl["v"]; badS = [x[0] for x in V if x[2] is not None and x[1] != x[2]]; badC = [x[0] for x in V if x[4]]; badB = [x[0] for x in V if x[5] is None or x[5] < 0.5]
+        ok = bool(V) and not badS and not badC and not badB and vl.get("drainOpen") == 0 and (vl.get("drainShut") or 0) > 0 and (vl.get("eo") or 0) >= 1.5 and (vl.get("es") or 0) >= 1.5
+        add("Y19", f"{DS3} 밸브는 닫힘 빨강 · 열림 초록으로 몸통 전체를 칠하고, 관보다 굵은 몸통이 관 속 액을 가린다. 이름 없는 수동 밸브(탱크 배수)는 닫힘. 색은 자체 발광이 내 빛 받는 면 · 그늘진 면이 같은 색", ok,
+            f"밸브 {len(V)}개 · 상태와 다른 그림 {badS or 0} · 색이 상태와 다른 밸브 {badC or 0} · 몸통 ÷ 원뿔 반지름 {sorted(set(x[5] for x in V))}(관 1.0 ÷ 2.05 = 0.49 넘으면 관을 가림, 모자란 밸브 {badB or 0}) · 배수 밸브 초록 {vl.get('drainOpen')} · 빨강 {vl.get('drainShut')} · 자체 발광 ÷ 바탕색 밝기 초록 {vl.get('eo')} · 빨강 {vl.get('es')}",
+            "상태 일치 · 색 일치 · 몸통 ≥ 0.5 · 배수 밸브 모두 빨강 · 자체 발광 ÷ 바탕색 ≥ 1.5")
+    fu = g("새디자인 6 h 밸브", "ds_fun")
+    if fu and not fu.get("none"):
+        P = fu.get("parts") or []; ok = bool(P) and all((p.get("K") or 0) >= 2 and p.get("aX") and p.get("fun") == 1 and (p.get("vr") or 0) >= 2 and (p.get("rad") or 9) <= 2 for p in P) and any(p.get("vis") for p in P)
+        add("Y20", f"{DS3} 정제기 위 김은 액면에서 곧게 오르다 노즐 가까이에서 휘어 모이는 깔때기이고, 단면이 좁아지는 만큼 무늬가 빨라진다(실제 속도 ∝ 1/r², 보이는 빠르기는 김 규칙 세제곱근 ∝ r^(−2/3)). 둘레 무늬 결은 높이 방향과 비슷하게(곧은 빛살 줄 없음)", bool(ok),
+            " · ".join(f"띠 {i + 1}: 모이는 정도 η^{p.get('K')} · 노즐 쪽 무늬 빠르기 ÷ 액면 {p.get('vr')}배(무늬 자리 끝 {p.get('top')} — 높이 1) · 무늬 자리 속성 {p.get('aX')} · 깔때기 무늬 {p.get('fun')} · 둘레 결 rad {p.get('rad')} · 보임 {p.get('vis')}" for i, p in enumerate(P)) + f" · 진하기 {fu.get('d')}",
+            "K ≥ 2 · 노즐 쪽 무늬 빠르기 ÷ 액면 ≥ 2 · 깔때기 무늬 · rad ≤ 2 · 보임")
+
 def judge_ds(g, add):
     """새 디자인 판정 줄 — 장면마다 따로 판정하고, 판정 계산에서 오류가 나면 그 장면만 'X0' 줄로 남긴다."""
     import traceback
-    for nm, fn in (("끓기 시작", _xd_boil), ("김 진하기 규칙", _xd_n3), ("6 h 밸브", _xd_valve), ("U자 액봉", _xd_useal), ("U자 액봉 스팀 끔", _xd_usoff), ("1차 냉매 95도", _xd_c1hot), ("진공 펌프 정지", _xd_pstop), ("배치 끝", _xd_end), ("이상 상황", _xd_ab), ("범람", _xd_flood), ("받는 탱크 고액위", _xd_lah), ("기본 표현", _xd_default)):
+    for nm, fn in (("끓기 시작", _xd_boil), ("김 진하기 규칙", _xd_n3), ("6 h 밸브", _xd_valve), ("U자 액봉", _xd_useal), ("U자 액봉 스팀 끔", _xd_usoff), ("티 고인 액", _xd_tee), ("둘러보기", _xd_walk), ("승온", _xd_warm), ("v142 오후", _xd_v142pm), ("1차 냉매 95도", _xd_c1hot), ("진공 펌프 정지", _xd_pstop), ("배치 끝", _xd_end), ("이상 상황", _xd_ab), ("범람", _xd_flood), ("받는 탱크 고액위", _xd_lah), ("기본 표현", _xd_default)):
         try: fn(g, add)
         except Exception as e: add("X0", f"새 디자인 판정 계산 오류 — {nm}", False, f"{type(e).__name__}: {e} · {traceback.format_exc(limit=3)[-400:]}", "오류 0")
 # <<< 새 디자인 판정 끝

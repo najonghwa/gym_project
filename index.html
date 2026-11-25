@@ -920,7 +920,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v141 · 11-24 22:49</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v142 · 11-25 22:35</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -994,10 +994,10 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
       <div class="row"><label for="rcpStabT">② 탑 온도 허용 <small>±℃</small></label><input id="rcpStabT" type="number" min="0.05" max="5" step="0.05" value="0.3"></div>
       <div class="row"><label for="rcpStabR">② 환류 허용 <small>±% · 목표 대비</small></label><input id="rcpStabR" type="number" min="1" max="100" step="1" value="10"></div>
       <div class="row"><label for="rcpStabMax">② 안정 판정 최대 시간 <small>분 · 넘으면 알림과 함께 ③으로</small></label><input id="rcpStabMax" type="number" min="1" max="6000" step="5" value="120"></div>
-      <div class="row"><label for="rcpForeR">③ 초류 환류 <small>kg/h</small></label><input id="rcpForeR" type="number" min="0" max="5000" step="0.5" value="4"></div>
+      <div class="row"><label for="rcpForeR">③ 초류 환류 <small>kg/h · 유출 고정 + 레시피 개도면 나머지</small></label><input id="rcpForeR" type="number" min="0" max="5000" step="0.5" value="4"></div>
       <div class="row"><label for="rcpForeD">③ 초류 유출 <small>kg/h · FIC</small></label><input id="rcpForeD" type="number" min="0" max="5000" step="0.5" value="2"></div>
       <div class="row"><label for="rcpForeKg">③ 초류 목표 무게 <small>kg · 닿으면 ④로(초류 전환 설정이 '탑 온도'면 그 온도도)</small></label><input id="rcpForeKg" type="number" min="0" max="100000" step="1" value="40"></div>
-      <div class="row"><label for="rcpMainR">④ 본류 환류 <small>kg/h</small></label><input id="rcpMainR" type="number" min="0" max="5000" step="0.5" value="4"></div>
+      <div class="row"><label for="rcpMainR">④ 본류 환류 <small>kg/h · 유출 고정 + 레시피 개도면 나머지</small></label><input id="rcpMainR" type="number" min="0" max="5000" step="0.5" value="4"></div>
       <div class="row"><label for="rcpMainD">④ 본류 유출 <small>kg/h · FIC</small></label><input id="rcpMainD" type="number" min="0" max="5000" step="0.5" value="6"></div>
       <div class="row"><label for="rcpMainKg">④ 본류 목표 무게 <small>kg · 0이면 후류(아래 칸)나 액위 하한까지</small></label><input id="rcpMainKg" type="number" min="0" max="100000" step="1" value="0"></div>
       <div class="row"><label for="rcpLateKg">④ 유출을 줄이는 정제기 잔량 <small>kg · 정제기 무게(WIH071)가 이 아래로 내려가면 아래 유량으로 · 0이면 안 씀</small></label><input id="rcpLateKg" type="number" min="0" max="100000" step="1" value="0"></div>
@@ -1132,7 +1132,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
       <div class="row"><label for="capF">초류 탱크 용량 <small>L · 0 = 초기 액의 40%</small></label><input id="capF" type="number" min="0" max="1000000" step="10" value="0"></div>
       <div class="row"><label for="capM">본류 탱크 용량 <small>L · 0 = 초기 액 부피</small></label><input id="capM" type="number" min="0" max="1000000" step="10" value="0"></div>
       <h3 class="subh" id="glHead">분배 방식 · 유출관 막힘 <small>가정값 · P&amp;ID 아이소 도면 높이로 바꿔 넣는다</small></h3>
-      <div class="row"><label for="splitMode">분배 방식 <small>레시피·수동 운전에서 응축액을 나누는 방식</small></label><select id="splitMode"><option value="R" selected>환류 유량 고정(FICH073) · 유출 밸브 100 % (현장 방식)</option><option value="D">유출 유량 고정(FICH072) · 나머지 환류</option></select></div>
+      <div class="row"><label for="splitMode">분배 방식 <small>레시피·수동 운전에서 응축액을 나누는 방식</small></label><select id="splitMode"><option value="R" selected>환류 유량 고정(FICH073) · 유출 밸브 100 %</option><option value="D">유출 유량 고정(FICH072) · 나머지 환류(CpHf 조건)</option></select></div>
       <div class="row"><label for="rficMode">환류 FICH073 <small>자동 = 환류가 설정값으로 고정(남는 응축액은 응축기 아래에 쌓인다) · 수동 = 밸브 개도 고정이라 쌓인 액 높이의 √에 비례해 환류가 는다(추정)</small></label><select id="rficMode"><option value="auto" selected>자동 (유량 고정)</option><option value="man">수동 (개도 고정)</option></select></div>
       <div class="row"><label for="glOn">유출관 높이로 막힘 계산 <small>기본 꺼짐 · 아래 높이(z_c, h_u, h_d, H_max)를 P&amp;ID 아이소 도면 값으로 넣었을 때만 켠다. 꺼 두면 유출은 보통 중력 배출(환류비 모드와 같음)이고 막힘 알림도 없다</small></label><input id="glOn" type="checkbox"></div>
       <div class="row"><label for="glZc">분기점 → 유출관 고점 높이 z_c <small>m · 가정값 +0.05 · 고점 = FICH072·FCV-H072. 양수 = 분기점보다 위. 진공에서는 사이펀이 거의 안 되므로 응축기 아래 액이 이 높이까지 차올라야 넘어간다</small></label><input id="glZc" type="number" min="-1" max="2" step="0.01" value="0.05"></div>
@@ -2882,8 +2882,8 @@ function dsInit() {
   M.jacket = Std({ color: 0xe08a52, metalness: 0.1, roughness: 0.25, transparent: true, opacity: 0.14, depthWrite: false, side: THREE.DoubleSide });
   M.coolant = Std({ color: 0x4aa3e6, metalness: 0, roughness: 0.2, transparent: true, opacity: 0.10, depthWrite: false });
   M.floor = Std({ color: 0x39434d, metalness: 0.2, roughness: 0.75, envMapIntensity: 0.5 });
-  M.vOpen = Std({ color: 0x2fd67c, metalness: 0.2, roughness: 0.35, emissive: 0x0f6b3a });    // 열림 = 초록
-  M.vShut = Std({ color: 0xe5483c, metalness: 0.2, roughness: 0.35, emissive: 0x74170f });    // 닫힘 = 빨강
+  M.vOpen = Std({ color: 0x104b2b, metalness: 0.05, roughness: 0.6, emissive: 0x26ab63 });   /* v142: 색은 자체 발광(옛 바탕색 0x2fd67c의 0.8배)이 내고 빛 반사는 0.35배만 — 아래를 향한 면(위 원뿔)과 빛 받는 몸통이 같은 초록(전: 초록 · 연초록으로 갈라 보였다) */    // 열림 = 초록
+  M.vShut = Std({ color: 0x501915, metalness: 0.05, roughness: 0.6, emissive: 0xb73a30 });   /* v142: 같은 까닭(빨강 · 연분홍) — 옛 바탕색 0xe5483c */    // 닫힘 = 빨강
   M.liqBody = Std({ color: 0x1a7fb0, metalness: 0, roughness: 0.12, transparent: true, opacity: 0.68, depthWrite: false, envMapIntensity: 0.9 });
   M.liqPool = Std({ color: 0x2494cc, metalness: 0, roughness: 0.1, transparent: true, opacity: 0.82, depthWrite: false, envMapIntensity: 0.7, emissive: 0x06283a });
   M.shadow = new THREE.ShadowMaterial({ opacity: 0.28 });
@@ -2903,7 +2903,7 @@ function dsInit() {
   for (const k in M) { const mt = M[k]; if (mt && mt.color && !mt.isShaderMaterial && !mt.userData.lin) { mt.color.convertSRGBToLinear(); if (mt.emissive) mt.emissive.convertSRGBToLinear(); mt.userData.lin = 1; } }
   // ----- 직접 쓴 셰이더(시안 그대로): 유리 테두리 · 액면 -----
   const NOISE = [
-    "float hash(vec3 p){ p=fract(p*0.3183099+0.1); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }",
+    "float hash(vec3 p){ p=p-289.0*floor((p+0.5)/289.0); p=fract(p*0.3183099+0.1); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }",   /* v142: 격자 꼭짓점을 289 주기로 접어 작은 정수로 — 무늬 자리가 커지면 이웃 칸이 같은 꼭짓점 값을 다르게 계산해 김 · 액 무늬에 각진 조각이 생기던 것(사용자 11-25 둘러보기) */
     "float vnoise(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.0-2.0*f);",
     "  return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),",
     "             mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z); }"].join("\n");
@@ -2982,6 +2982,7 @@ function dsBuild(m) {
     const gm = (geo, mat, pos, qq) => { const o = new THREE.Mesh(geo, mat); o.position.copy(pos); if (qq) o.quaternion.copy(qq); o.castShadow = true; g.add(o); return o; };
     for (const s of [-1, 1]) { const c = new THREE.Mesh(new THREE.ConeGeometry(Rv * 2.05, Rv * 2.7, 24), M.vOpen); c.quaternion.setFromUnitVectors(UP, d.clone().multiplyScalar(-s)); c.position.copy(d).multiplyScalar(s * Rv * 1.35); c.castShadow = true; g.add(c); col.push(c);
       gm(new THREE.CylinderGeometry(Rv * 2.1, Rv * 2.1, Rv * 0.45, 24), M.steel, d.clone().multiplyScalar(s * Rv * 2.9), qd); }
+    { const bd = new THREE.Mesh(new THREE.CylinderGeometry(Rv * 1.08, Rv * 1.08, Rv * 2.9, 24), M.vOpen); bd.quaternion.copy(qd); bd.castShadow = true; g.add(bd); col.push(bd); }   /* v142: 몸통 — 두 원뿔이 맞닿는 허리가 관보다 가늘어 관 속 액이 비쳐 보였다(사용자 11-25 "밸브들이 중간에 액이 표시되는것도 이상함"). 관(반지름 Rv)보다 굵게 · 밸브 색 */
     const up = upv ? new THREE.Vector3(upv[0], upv[1], upv[2]).normalize() : Math.abs(d.y) > 0.5 ? new THREE.Vector3(1, 0, 0) : UP.clone(),   /* v134: 세로 관 밸브의 구동기도 화면 평면 안(옆)으로 — P&ID처럼 정면에서 몸통 + 구동기 머리가 다 보이게(전: 화면 앞(z)으로 나와 위에서 내려다본 모양) */ qu = new THREE.Quaternion().setFromUnitVectors(UP, up), P = (a, l) => up.clone().multiplyScalar(a * Rv).addScaledVector(d, (l || 0) * Rv);
     gm(new THREE.SphereGeometry(Rv * 0.75, 14, 10), M.steel, P(0)); gm(new THREE.CylinderGeometry(Rv * 0.26, Rv * 0.26, Rv * 3.0, 8), M.steelSoft, P(1.6), qu);
     if (type === "ctl") {
@@ -2997,7 +2998,7 @@ function dsBuild(m) {
     const sd = new THREE.Vector3().crossVectors(d, up), ext = type === "ctl" ? 7.0 : type === "on" ? 5.6 : 3.6, lat = type === "ctl" ? 2.8 : 2.2, bb = [1e9, -1e9, 1e9, -1e9, 0];   // 화면에서 차지하는 자리(값 상자가 피한다)
     for (const a of [-3.2, 3.2]) for (const b of [-2.2, ext]) for (const c of [-lat, lat]) { const px = x + (d.x * a + up.x * b + sd.x * c) * Rv, py = y + (d.y * a + up.y * b + sd.y * c) * Rv, pz = z + (d.z * a + up.z * b + sd.z * c) * Rv; bb[0] = Math.min(bb[0], px); bb[1] = Math.max(bb[1], px); bb[2] = Math.min(bb[2], py); bb[3] = Math.max(bb[3], py); bb[4] = Math.max(bb[4], Math.abs(pz)); }
     root.add(g); const v = { key, g, box: bb, open: null, set: (open) => { open = !!open; if (v.open === open) return; v.open = open; const mt = open ? M.vOpen : M.vShut; for (const o of col) o.material = mt; } };
-    if (key) { v.set(valveShownOpen(key)); DS.valves.push(v); } return v; };
+    if (key) { v.set(valveShownOpen(key)); DS.valves.push(v); } else v.set(false);   /* v142: 이름 없는 수동 밸브(탱크 배수)는 닫힘 — 전: 상태가 없어 늘 초록(열림)으로 그렸다 */ return v; };
   const latheRing = (pts, x, y, mat) => { const o = new THREE.Mesh(new THREE.LatheGeometry(pts.map((a) => new THREE.Vector2(a[0], a[1])), 72), mat); o.position.set(x, y, 0); return add(o, true); };
   const girth = (x, y, r) => {   // 거스 플랜지: 몸통 쪽 · 경판 쪽 플랜지(목 달림) 두 장 + 가스켓 + 둘레 볼트
     const tt = 0.013 * u, w = 0.03 * u, g = 0.002 * u, e1 = 0.001 * u, e3 = 0.003 * u, e11 = 0.011 * u;
@@ -3290,13 +3291,13 @@ const dsfStreamW = (q, n, kS) => (q > 0.05 ? n * 2 * dsfRO(q / n) * kS : 0);   /
 function dsfVapMat(o) {   /* v136 F: 만든 재질은 DSF.phMats에(빠르기 적분) */
   const S = DS.sh, u = o.u || 1, mt = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, defines: { FBM_N: SW_GL || LQ_SET ? 2 : 4 },
     uniforms: { uTime: { value: 0 }, uPh: { value: 0 }, uLen: { value: o.len }, uRad: { value: o.rad }, uDens: { value: 0 }, uSpeed: { value: 1 }, uFront: { value: 0 }, uEdge: { value: 0.16 * u }, uK: { value: (o.kf || 5) / u }, uClip: { value: 0 }, uYc: { value: 0 }, uYr: { value: 0 }, uRr: { value: 1 }, uAxis: { value: o.axis || 0 }, uRev: { value: o.rev ? 1 : 0 },
-      uFade: { value: 0 }, uF0: { value: 0.15 }, uF1: { value: 0.95 }, uSeed: { value: o.seed || 0 }, uCol: { value: new THREE.Color(o.col || 0xeef4fa).convertSRGBToLinear() } },
-    vertexShader: S.VSTD.replace("void main(){", "varying vec3 vW; void main(){ vW=(modelMatrix*vec4(position,1.0)).xyz;"),   /* v138: 월드 자리(액면 아래 버리기) */
-    fragmentShader: ["uniform float uTime,uPh,uLen,uRad,uDens,uSpeed,uFront,uEdge,uAxis,uRev,uFade,uF0,uF1,uSeed,uK,uClip,uYc,uYr,uRr; uniform vec3 uCol; varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vW;", S.NOISE, DSF_FBM,
+      uFade: { value: 0 }, uF0: { value: 0.15 }, uF1: { value: 0.95 }, uSeed: { value: o.seed || 0 }, uFun: { value: o.funnel ? 1 : 0 }, uCol: { value: new THREE.Color(o.col || 0xeef4fa).convertSRGBToLinear() } },
+    vertexShader: S.VSTD.replace("void main(){", "varying vec3 vW; attribute float aX; varying float vX; void main(){ vX=aX; vW=(modelMatrix*vec4(position,1.0)).xyz;"),   /* v142: aX = 깔때기의 흐름 방향 무늬 자리(정제기 위 김만, uFun 1) */   /* v138: 월드 자리(액면 아래 버리기) */
+    fragmentShader: ["uniform float uTime,uPh,uLen,uRad,uDens,uSpeed,uFront,uEdge,uAxis,uRev,uFade,uF0,uF1,uSeed,uK,uClip,uYc,uYr,uRr,uFun; uniform vec3 uCol; varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vW; varying float vX;", S.NOISE, DSF_FBM,
       "void main(){ if(uDens<0.002) discard; if(uClip>0.5){ float rr=length(vW.xz)/uRr; if(vW.y<max(uYc+(uYr-uYc)*rr*rr,uYr)) discard; }",   /* v138: 정제기 위 김 띠는 소용돌이 액면(포물면 — 가운데 yc, 반지름 0.86 R에서 yr) 위에서만 */
       "  float s=mix(vUv.x,vUv.y,uAxis)*uLen; float a=mix(vUv.y,vUv.x,uAxis)*6.2831853;",
       "  if(uRev>0.5) s=uLen-s;",
-      "  float a9=a+0.55*sin(s*uK*0.33+uTime*0.35)+0.35*sin(s*uK*0.11-uTime*0.21); vec3 p=vec3(s*uK-uPh*uK, cos(a9)*uRad, sin(a9)*uRad)+uSeed;",   /* v136 F: 빠르기 적분 */
+      "  float sx=mix(s,vX*uLen,uFun); float a9=a+0.55*sin(sx*uK*0.33+uTime*0.35)+0.35*sin(sx*uK*0.11-uTime*0.21); vec3 p=vec3(sx*uK-uPh*uK, cos(a9)*uRad, sin(a9)*uRad)+uSeed;",   /* v136 F: 빠르기 적분 */
       "  vec3 q=p+1.7*vec3(vnoise(p*0.5+3.1+uTime*0.06)-0.5, vnoise(p*0.5+7.7-uTime*0.05)-0.5, vnoise(p*0.5+1.3)-0.5);",
       "  float n=fbm(q+vec3(0.0,uTime*0.07,uTime*0.13));",
       "  float w=smoothstep(0.34,0.66,n);",
@@ -3323,8 +3324,8 @@ function dsfBuild(m) {
   const VM = (o) => dsfVapMat(Object.assign({ u }, o));
   // ---- 2단계: 김 ----
   { // 정제기 위 공간: 액면 전체에서 올라와 노즐(목관) 쪽으로 모인다(사용자가 정한 것 9). 높이 1짜리를 걸음마다 액면 ~ 노즐로 늘린다
-    const mA = VM({ len: 1, rad: 3.6, seed: 3, kf: 3.2, axis: 1 }), mB = VM({ len: 1, rad: 2.6, seed: 8, kf: 2.8, axis: 1 });   /* v140: 무늬를 덩어리지게(줄무늬처럼 곧게 올라가 보이던 것) */   /* v134: axis 1 = 높이 방향(전: 둘레 방향 — 무늬가 위로 안 흐르고 둘레로 늘어나 매끈한 띠로 보였다) */
-    const a = dsfAddMesh(dsfCone(0.86 * R, 1.25 * rn, 0, 0, { seg: 40, dx: xc }), mA), b = dsfAddMesh(dsfCone(0.49 * R, 0.67 * rn, 0, 0, { seg: 28, dx: xc - 0.03 * u }), mB); b.position.x = 0.03 * u;
+    const mA = VM({ len: 1, rad: 1.6, seed: 3, kf: 3.2, axis: 1, funnel: true }), mB = VM({ len: 1, rad: 1.2, seed: 8, kf: 2.8, axis: 1, funnel: true });   /* v142: 둘레 · 높이 무늬 결을 비슷하게(전 rad 3.6 · 2.6 — 둘레가 약 4배 촘촘해 곧은 빛살처럼 보였다) */   /* v140: 무늬를 덩어리지게(줄무늬처럼 곧게 올라가 보이던 것) */   /* v134: axis 1 = 높이 방향(전: 둘레 방향 — 무늬가 위로 안 흐르고 둘레로 늘어나 매끈한 띠로 보였다) */
+    const a = dsfAddMesh(dsfFunnel(0.86 * R, 1.25 * rn, xc, 40), mA), b = dsfAddMesh(dsfFunnel(0.49 * R, 0.67 * rn, xc - 0.03 * u, 28), mB); b.position.x = 0.03 * u;   /* v142: 곧은 원뿔 → 깔때기(사용자 11-25 "기체들이 너무 직선적이고") — dsseal_add.js의 dsfFunnel */
     dsfVapEl("head", 1, [{ ms: a, mt: mA, kd: 0.55, ks: 0.7 }, { ms: b, mt: mB, kd: 0.5, ks: 1 }]); DSF.headTop = q.yNz; }
   { const L = q.colBase - q.yNz, mt = VM({ len: L, rad: 0.9, seed: 2, kf: 9, axis: 1 }); const ms = dsfAddMesh(new THREE.CylinderGeometry(0.83 * rn, 0.83 * rn, L, 24, 1, true), mt, xc, (q.yNz + q.colBase) / 2, 0);
     dsfVapEl("neck", L, [{ ms, mt, kd: 0.9, ks: 1 }]); }
@@ -3348,10 +3349,10 @@ function dsfBuild(m) {
     dsfVapEl("C2", L, [{ ms, mt, kd: 0.95, ks: 1 }]); }
   if (DS.P.S) { const P = DS.P.S, a = tube(P, 0.7, 23); dsfVapEl("S", P.len, [Object.assign(a, { kd: 0.75, ks: 1 })]); }
   if (DS.P.J) { const P = DS.P.J, mt = VM({ len: P.len, rad: 1.0, seed: 29, kf: 11, col: 0xfff0e2 }), ms = dsfAddMesh(new THREE.TubeGeometry(P.path, P.segs, P.R * 0.65, 12, false), mt); dsfVapEl("J", P.len, [{ ms, mt, kd: 0.8, ks: 1 }]); }
-  { const Hj = Math.min(Math.max(p.Hj, 0), Hs); if (Hj > hh + 0.01 * u) { const L = Hj - hh, rr = (R + Rj) / 2 + 0.002 * u, mt = VM({ len: L, rad: 3.0, seed: 11, kf: 5, axis: 1, col: 0xffe6d2 }), ms = dsfAddMesh(new THREE.CylinderGeometry(rr, rr, L, 48, 1, true), mt, 0, hh + L / 2, 0, 25);
-    dsfVapEl("jk", L, [{ ms, mt, kd: 1, ks: 1 }]); } }
+  /* v142: 자켓 안 김(jk)은 그리지 않는다 — 스팀은 투명한 기체라 보이지 않고, 자켓이 액을 감싸 앞에서 보면 액 속 김처럼 보였다(사용자 11-25 "내부온도가 낮음에도 불구하고 스팀만들어가면 정제기 내부 액 안에 증기모양으로 김이 계속 생기는데"). 가열은 자켓 붉은 기 · TI 자켓 값으로 보인다. 액 속 기체는 끓을 때 그 깊이의 끓는점 이상인 자리에서만 기포로 생긴다(지금 장면 규칙 13) */
   dsfBuildLiq(m);   // 3단계
   dsfBuild4(m);     // 4단계
+  dsfSplitSides();   /* v142: 반투명 원통을 뒷면 → 앞면 두 번에(각진 조각 없앰) */
   dspBuild(m);   /* v136 D */
   DSF.built++;
 }
@@ -3416,9 +3417,9 @@ function dsfLiqHex() { const sel = ($("liqCol") || {}).value || "mint"; return s
 /* 관 속 액(TUBE: 가로 구간은 바닥에 깔리고 세로 구간은 가운데 줄기) · 떨어지는 물줄기(원기둥). 두 구간: 흐르는 액 [uTail, uHead] · 남는 액 [uH0, uH1](닫힌 밸브 앞 · U자 액봉, 멈춰 있음) */
 function dsfLiqMat(o) {
   const S = DS.sh, mt = new THREE.ShaderMaterial({ transparent: true, depthWrite: !!(o.tube || o.seal), side: THREE.DoubleSide, defines: o.seal ? { SEAL: 1 } : o.tube ? { TUBE: 1 } : {},
-    uniforms: { uTime: { value: 0 }, uPh: { value: 0 }, uLen: { value: o.len }, uR: { value: o.R || 1 }, uFill: { value: 0 }, uFillB: { value: 1 }, uSpeed: { value: 1 }, uHead: { value: 0 }, uTail: { value: 0 }, uH0: { value: 0 }, uH1: { value: 0 }, uE: { value: o.u || 1 }, uOff: { value: o.off || 0 }, uBv: { value: 1 }, uYin: { value: -1e9 }, uYout: { value: -1e9 }, uYup: { value: -1e9 }, uXm: { value: 0 }, uXv: { value: 1e9 }, uXo: { value: -1e9 }, uXh: { value: -1e9 }, uWd: { value: 0.05 }, uYinv: { value: 0 }, uXt: { value: 1e9 }, uYt: { value: -1e9 },
+    uniforms: { uTime: { value: 0 }, uPh: { value: 0 }, uLen: { value: o.len }, uR: { value: o.R || 1 }, uFill: { value: 0 }, uFillB: { value: 1 }, uSpeed: { value: 1 }, uHead: { value: 0 }, uTail: { value: 0 }, uH0: { value: 0 }, uH1: { value: 0 }, uE: { value: o.u || 1 }, uOff: { value: o.off || 0 }, uBv: { value: 1 }, uYin: { value: -1e9 }, uYout: { value: -1e9 }, uYup: { value: -1e9 }, uXm: { value: 0 }, uXv: { value: 1e9 }, uXo: { value: -1e9 }, uXh: { value: -1e9 }, uWd: { value: 0.05 }, uYinv: { value: 0 }, uXt: { value: 1e9 }, uYt: { value: -1e9 }, uIsT: { value: 0 }, uXc: { value: 0 }, uZc: { value: 0 }, uRt: { value: 0 }, uPr: { value: 0 }, uPd: { value: 0 }, uPhC: { value: 0 }, uPc: { value: 0 }, uPhL: { value: -9 }, uYs: { value: -1e9 }, uFlL: { value: 0.04 },
       uCol: { value: new THREE.Color(DSF.liqHex || 0x2f9cc8).convertSRGBToLinear() }, uSky: { value: S.SKY.clone() } },
-    vertexShader: ["attribute float aH; uniform float uLen,uR,uFill,uFillB,uHead,uTail,uH0,uH1,uTime,uE,uOff,uBv; varying vec3 vW; varying float vSp; varying float vS; varying float vA; varying float vB; varying float vFl; varying float vFF; varying vec3 vN; varying vec3 vV;",
+    vertexShader: ["attribute float aH; uniform float uLen,uR,uFill,uFillB,uHead,uTail,uH0,uH1,uTime,uE,uOff,uBv,uYs,uFlL; varying vec3 vW; varying float vSp; varying float vS; varying float vA; varying float vB; varying float vFl; varying float vFF; varying vec3 vN; varying vec3 vV;",
       "void main(){ vec3 p=position; vec3 n=normal;",
       "#ifdef SEAL",
       "  vS=uOff+uv.x*uLen; vA=uv.y; vB=uBv; vFl=0.0; vFF=1.0;",   /* v141: U자 액봉 = 관 전체 굵기, 액면 위는 조각 셰이더가 버린다 */
@@ -3429,6 +3430,7 @@ function dsfLiqMat(o) {
       "  float ff=clamp(mix(uFill,uFillB,inB),0.0,1.0); float rs=uR*sqrt(ff);",
       "  rs*=mix(max(smoothstep(0.0,0.07*uE,uHead-vS),step(uLen-0.004*uE,uHead))*smoothstep(0.0,0.05*uE,vS-uTail+0.05*uE),1.0,inB);",   /* v140 고침 9: 앞머리가 토막 끝에 닿았으면 끝을 가늘게 하지 않는다(분배기 바닥의 뾰족한 끝) */
       "  rs*=1.0+0.07*sin(vS*46.0/uE-uTime*9.0)*(1.0-aH)*(1.0-ff)*(1.0-inB)*aH;",
+      "  if(uYs>-1e8){ float cy9=(position-normal*uR).y, t9=clamp(1.0-(cy9-uYs)/max(1e-5,uFlL),0.0,1.0); rs=mix(rs,uR*0.995,t9*t9*(3.0-2.0*t9)); }",   /* v142: 줄기가 고인 액면에 닿는 자리 — 액면 위 uFlL 구간에서 관 굵기로 매끄럽게 넓어진다(표시 규칙) */
       "  float vf=0.0; vFl=0.0; vFF=ff;",   /* v137: 세로 관 = 벽 액막 */
       "  vec3 c=position-normal*uR; float flat_=mix(1.0,mix(0.62,1.0,ff*ff),aH), wide=mix(1.0,mix(1.45,1.0,ff),aH);",
       "  c.y-=(uR-rs*flat_)*aH*0.96;",
@@ -3445,22 +3447,29 @@ function dsfLiqMat(o) {
       "  vSp+=uOff;",   /* v141: 무늬 자리는 사슬 길이로 — 관 토막 경계에서 무늬가 끊겨 보이던 것 */
       "#endif",
       "  vW=(modelMatrix*vec4(p,1.0)).xyz; vec4 mv=modelViewMatrix*vec4(p,1.0); vN=normalMatrix*n; vV=-mv.xyz; gl_Position=projectionMatrix*mv; }"].join("\n"),
-    fragmentShader: ["uniform float uTime,uPh,uLen,uSpeed,uHead,uTail,uH0,uH1,uE,uYin,uYout,uYup,uXm,uXv,uXo,uXh,uWd,uYinv,uXt,uYt; uniform vec3 uCol,uSky; varying vec3 vW; varying float vSp; varying float vS; varying float vA; varying float vB; varying float vFl; varying float vFF; varying vec3 vN; varying vec3 vV;", S.NOISE,
+    fragmentShader: ["uniform float uTime,uPh,uLen,uSpeed,uHead,uTail,uH0,uH1,uE,uYin,uYout,uYup,uXm,uXv,uXo,uXh,uWd,uYinv,uXt,uYt,uIsT,uXc,uZc,uRt,uPr,uPd,uPhC,uPc,uPhL; uniform vec3 uCol,uSky; varying vec3 vW; varying float vSp; varying float vS; varying float vA; varying float vB; varying float vFl; varying float vFF; varying vec3 vN; varying vec3 vV;", S.NOISE,
       "void main(){",
       "#ifdef TUBE",
       "  bool inA=uHead>uTail&&vS<=uHead&&vS>=uTail; if(!inA&&vB<0.5) discard;",
       "#endif",
       "#ifdef SEAL",
-      "  { float yl=vW.x<uXm?uYout:(vW.x<uXv?uYin:uYup); if(vW.x<uXo){ if(vW.x<uXh) discard; yl=min(yl,uYinv+(uYout-uYinv)*smoothstep(uXh,uXh+uWd,vW.x)); } if(vW.x>=uXt) yl=uYt; if(vW.y>yl) discard; }",   /* 액면: 컬럼 쪽 · 응축기 쪽 · 닫힌 밸브 앞 · 티의 세로 관, 넘침 층 앞머리 */
+      "  { float yl=vW.x<uXm?uYout:(vW.x<uXv?uYin:uYup); if(vW.x<uXo){ if(vW.x<uXh) discard; yl=min(yl,uYinv+(uYout-uYinv)*smoothstep(uXh,uXh+uWd,vW.x)); } if(uIsT<0.5&&(vW.x-uXc)*(vW.x-uXc)+(vW.z-uZc)*(vW.z-uZc)<uRt*uRt) discard; if(vW.x>=uXt) yl=uYt; if(vW.y>yl) discard; }",   /* 액면: 컬럼 쪽 · 응축기 쪽 · 닫힌 밸브 앞 · 티의 세로 관, 넘침 층 앞머리 */
       "#endif",
       "  vec3 N=normalize(vN), V=normalize(vV); if(!gl_FrontFacing) N=-N;",
-      "  float fr=pow(1.0-max(dot(N,V),0.0),2.2); float A=vA*6.2831853; float ph=uPh*(1.0-vB);",   /* v136 F */
+      "  float fr=pow(1.0-max(dot(N,V),0.0),2.2); float A=vA*6.2831853; float ph=uPh*(1.0-vB); float vb9=vB;",
+      "#ifdef SEAL",
+      "  if(uIsT<0.5&&vW.x<uXo&&uPhL>-1.0){ ph=uPhL; vb9=0.0; }",   /* v142: 컬럼 쪽 가로 관의 넘침 층 = 흐르는 줄기(무늬 위치 · 진하기), 관 전체가 찬 액봉은 느리고 옅게 */
+      "#endif",   /* v136 F */
       "  float st=vnoise(vec3(vSp*16.0/uE-ph*16.0/uE, cos(A)*1.6, sin(A)*1.6)); st=smoothstep(0.42,0.85,st);",
       "  float st2=vnoise(vec3(vSp*42.0/uE-ph*30.0/uE, cos(A)*3.0, sin(A)*3.0)); st2=smoothstep(0.7,0.95,st2);",
       "  vec3 L=normalize(vec3(0.45,0.8,0.5)); float spc=pow(max(dot(reflect(-L,N),V),0.0),60.0);",
-      "  float fl9=1.0-0.75*vB; vec3 col=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*fl9*(1.0-st))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+(st*0.5+st2*0.55)*fl9); { float bd9=pow(0.5+0.5*sin(6.2831853*(vSp-ph)*2.4/uE),6.0); col+=vec3(0.26,0.33,0.40)*bd9*fl9; }",
+      "  float fl9=1.0-0.75*vb9; vec3 col=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*fl9*(1.0-st))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+(st*0.5+st2*0.55)*fl9); { float bd9=pow(0.5+0.5*sin(6.2831853*(vSp-ph)*2.4/uE),6.0); col+=vec3(0.26,0.33,0.40)*bd9*fl9; }",
       "#ifdef SEAL",
-      "  if(!gl_FrontFacing) col=uCol*0.9+uSky*0.24+vec3(1.0)*0.08*st;",   /* 잘린 관 안쪽 면 = 액면처럼(위에서 내려다볼 때) */
+      "  if(!gl_FrontFacing) col=uCol*0.9+uSky*0.24+vec3(1.0)*0.08*st;",
+      "  if(uIsT>0.5&&uPc>0.001&&gl_FrontFacing){ float dx9=abs(vW.x-uXc)/max(1e-5,uPr), dd9=(uYt-vW.y)/max(1e-5,uPd);",
+      "    if(dx9<1.0&&dd9>=0.0&&dd9<1.0){ float w9=uPc*(1.0-dd9)*(1.0-dd9)*(1.0-dx9*dx9); float s9=smoothstep(0.42,0.85,vnoise(vec3(vSp*16.0/uE-uPhC*16.0/uE, cos(A)*1.6, sin(A)*1.6)));",
+      "      vec3 cj=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*(1.0-s9))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+s9*0.5)+vec3(0.26,0.33,0.40)*pow(0.5+0.5*sin(6.2831853*(vSp-uPhC)*2.4/uE),6.0);",
+      "      col=mix(col,cj,w9); } }",   /* v142: 잠긴 줄기 — 떨어지는 줄기가 고인 액으로 들어가 관 지름 1배 깊이 안에서 옅어진다(표시 규칙). 무늬 자리 · 위치 = 응축액 관 줄기와 같아 수면에서 이어진다 */   /* 잘린 관 안쪽 면 = 액면처럼(위에서 내려다볼 때) */
       "#endif",
       "#if defined(TUBE) || defined(SEAL)",
       "  gl_FragColor=vec4(col,1.0);",   /* v141: 관 속 액은 불투명하게 — 반투명 양면 그리기에서 관 마디마다 가로 줄이 비쳐 보이던 것 */
@@ -3564,6 +3573,9 @@ function dsfLiqFrame(dt) {
       if (want) { A1 = S.was ? Math.max(A1, S.hi || 0) : A1; A0 = 0; S.hi = A1; } else S.hi = 0;   // X26: 흐르는 동안 앞머리는 물러나지 않는다. v135 X24 ②: 다시 흐르기 시작하면 관 채움 앞머리 그대로(전: 지난 걸음 고인 액 끝(S.pb)까지 한 번에 — 막힌 유출 관 끝에 모인 액이 있으면 관 전체가 한 걸음에 참)
       if (k === "R" && want && DSF.ugD && fr < 0.999) { const p = Bs[0], cap = p ? Math.max(DSF.ugD.b0, p[1]) : DSF.ugD.b0; if (A1 > cap) { A1 = cap; S.hi = cap; } }   // v134: U자가 차는 동안 가는 액은 U자에 고인 액까지
       if (k === "C") { const qc = live && P.vdot > 1 ? (P.c1 != null ? dsfC01(P.c1) : 1) * Math.max(0, P.vpass || 0) : 1; if (want && qc < 0.05 && A1 > A0) { S.cdr = Math.min(A1, (S.cdr == null ? A0 : S.cdr) + L.len * dt / 2.5); A0 = S.cdr; if (A0 >= A1 - 1e-6) A0 = A1 = 0; } else S.cdr = null; } }   // X45: 1차 응축이 0이면 응축액 관은 비어 간다
+    if (k === "M" && DSF.vS && DSF.vS.M != null) { const vM = DSF.vS.M, LP8 = DSF.L.P, SP8 = DSF.Ls.P, pArr = live && VLV.P !== false && !!SP8 && !!LP8 && (SP8.hq != null ? SP8.hq >= (SP8.a1t || LP8.len) - 1e-3 && (SP8.a1t || 0) >= LP8.len - 1e-3 : (SP8.pa || 0) >= LP8.len - 1e-3);   /* v142: 초류를 받는 동안 본류 쪽 다리(갈림 티 → 닫힌 XV-H077)는 곧게 내려간 막힌 다리 — 위에서 떨어진 유출이 먼저 밸브에서부터 채운 뒤 초류 쪽으로 넘어간다(표시 규칙 0.8 s · 계산에 이 부피가 없다, 약 50 g) */
+      if (VLV.M === false) { S.dl = DSF.jmp ? (pArr && VLV.F !== false ? 1 : 0) : Math.min(1, (S.dl || 0) + (pArr && VLV.F !== false ? (dt || 0) / 0.8 : 0)); if (S.dl > 1e-3) { Bs.push([vM * (1 - S.dl), vM, 1]); B0 = Math.min.apply(null, Bs.map((x) => x[0])); B1 = Math.max.apply(null, Bs.map((x) => x[1])); } }
+      else if ((S.dl || 0) >= 1 - 1e-6) { S.kUv = vM; S.kq = vM; S.dl = 0; } else S.dl = 0; }   // 본류 밸브를 열면 찬 다리에서 그대로 이어 흐른다(남겨 둔 끝 — X26과 같은 규칙)
     { const dead5 = k === "P" && VLV.P !== false && typeof cutState === "function" && cutState() === "none", vS5 = dead5 ? L.len : ((k === "R" || k === "P" || k === "F" || k === "M") && VLV[k] === false && DSF.vS && DSF.vS[k] != null ? DSF.vS[k] : null);
       if (iv && !want && vS5 != null && vS5 > 1e-4 && (S.kU || (S.kUv != null && (S.kgn || 0) > 0) || (A1 > A0 + 1e-6 && A0 < vS5 - 1e-4))) { S.kU = true; S.kUv = vS5; S.kq = vS5; S.kg = 0; S.kgn = 0; for (let i5 = Bs.length - 1; i5 >= 0; i5--) if (Bs[i5][2] === 1 && Math.abs(Bs[i5][1] - vS5) < 1e-6) Bs.splice(i5, 1); Bs.push([0, vS5, -1]);
         if (A1 > A0) { A0 = Math.max(A0, vS5); if (A1 <= A0 + 1e-6) { A0 = 0; A1 = 0; } } B0 = Math.min.apply(null, Bs.map((x) => x[0])); B1 = Math.max.apply(null, Bs.map((x) => x[1])); }
@@ -3587,7 +3599,7 @@ function dsfLiqFrame(dt) {
         const gate8 = !u8 || (u8.hq == null ? (u8.pa || 0) > 0 || !u8.was : u8.hq >= (u8.a1t || 0) - 1e-3); S.hq = Math.min(A1, S.hq + (gate8 ? Math.max(L.len / 1.2, 0.7 * (DSF.u || 1)) * dt : 0)); A1 = S.hq;   /* 고침 10 ④ */ if (A1 <= A0 + 1e-6) { A0 = 0; A1 = 0; } }
       else if (!want) { S.hq = null; S.a1t = 0; } }
     if (k === "R" && DSF.sU) { if (CUR && CUR.holdC > 1e-6) { try { const o9 = dsfSealStep(dt, L, S, live, kS); A0 = o9.a0; A1 = o9.a1; Bs.length = 0; B0 = 0; B1 = 0; want = o9.flow; qOf.R = Math.max(qOf.R || 0, o9.q || 0); } catch (e9) { if (!DSF.sUerr) { DSF.sUerr = String(e9 && e9.stack || e9); console.error("dsfSealStep", e9); } } }
-      else if (DSF.sU.on !== false) { DSF.sU.on = false; DSF.sU.ps = 0; for (const m9 of DSF.sU.ms) m9.visible = false; } }   /* v141: U자 액봉 — 가는 줄기는 고인 액면까지, 고인 액은 dsfSealStep이 그린다. 액봉 부피 입력(holdC)이 0인 조건(일반 예시)은 계산에 액봉이 없어 전처럼 가는 줄기로만 */
+      else if (DSF.sU.on !== false) { DSF.sU.on = false; DSF.sU.ps = 0; for (const m9 of DSF.sU.ms) m9.visible = false; for (const p9 of (DSF.L.C ? DSF.L.C.parts : [])) if (p9.mt.uniforms.uYs) p9.mt.uniforms.uYs.value = -1e9; } }   /* v141: U자 액봉 — 가는 줄기는 고인 액면까지, 고인 액은 dsfSealStep이 그린다. 액봉 부피 입력(holdC)이 0인 조건(일반 예시)은 계산에 액봉이 없어 전처럼 가는 줄기로만 */
     if (k === "P" && DSF.sU && DSF.sU.on && (DSF.sU.ps || 0) > 1e-6 && Bs.length === 0 && !(A1 > A0 + 1e-6)) { A0 = 0; A1 = DSF.sU.ps; }   /* v141: 유출 관에 다른 액이 없을 때만 — 티에서 유출 밸브까지 내려가는 가는 줄기(데드 레그가 차는 동안). 남겨 둔 액(닫힌 받는 탱크 밸브 앞 등)이 있으면 건드리지 않는다(다시 열 때 이어 흐름) */
     S.was = want; S.pa = A1 > A0 ? A1 : 0; S.pb = B1 > B0 ? B1 : 0; { const lo = Math.min(A1 > A0 ? A0 : 1e9, B1 > B0 ? B0 : 1e9), hi = Math.max(A1 > A0 ? A1 : 0, B1 > B0 ? B1 : 0); S.d0 = lo < 1e8 ? lo : 0; S.d1 = hi; S.dx = Math.max(0, A1 - A0) + Math.max(0, B1 - B0); }
     const qk = qOf[k] || 0, flowing = want && A1 > A0 + 1e-6 && qk > 0.3; if (flowing) S.sp = 0.8 * T * Math.max(0.5, Math.min(2, qk / 10));
@@ -3800,9 +3812,11 @@ function dsfSealBuild(q, u) {
   let teeMs = null, yVp = null, sVp = null, RiT = Ri, yTee = null, yCt = null; const Lc = DSF.L.C, Pp = DS.P.P;
   if (DS.PCS && Lc && Pp && DSF.vS && DSF.vS.P != null) { RiT = Lc.parts[Lc.parts.length - 1].Ri; sVp = DSF.vS.P; yVp = Pp.path.getPointAt(Math.max(0, Math.min(1, sVp / Pp.len))).y; yTee = q.ySpl + 0.6 * q.sSpl;
     const p0 = DS.P.C ? DS.P.C.path.getPointAt(0) : null; yCt = p0 && Math.abs(p0.x - q.xSpl) < 1e-3 * u && p0.y > yTee ? p0.y : yTee;   // 응축액 관(응축기 아래 노즐)까지 — 계산이 분배기 위로 고였다고 할 때(PR.splFrac · cPipeFrac) 그 높이까지 보이게
-    if (yCt > yVp + 0.01 * u) teeMs = add(new THREE.LineCurve3(new THREE.Vector3(q.xSpl, yVp, 0), new THREE.Vector3(q.xSpl, yCt, 0)), yCt - yVp, 0, 20, RiT * 0.997); else { yVp = null; sVp = null; } }
+    if (yCt > yVp + 0.01 * u) { teeMs = add(new THREE.LineCurve3(new THREE.Vector3(q.xSpl, yCt, 0), new THREE.Vector3(q.xSpl, yVp, 0)), yCt - yVp, 0, 20, RiT * 0.997);   /* v142: 위 → 아래로 그린다 — 무늬가 흐름 쪽(아래)으로 움직인다(전: 아래 → 위라 무늬가 위로 갔다). 무늬 자리 = 응축액 관 사슬과 같은 높이 좌표(yCt − y) */
+      const tm9 = teeMs.material; tm9.uniforms = Object.assign({}, tm9.uniforms, { uSpeed: { value: 0 }, uPh: { value: 0 }, uBv: { value: 1 }, uIsT: { value: 1 }, uPc: { value: 0 }, uPhC: { value: 0 }, uPr: { value: 0 }, uPd: { value: 0 } }); (DSF.phMats || (DSF.phMats = [])).push(tm9); }   /* 빠르기 · 무늬 위치는 환류 관 액봉과 따로 — 유출이 흐를 때만 움직인다, 잠긴 줄기 값(dsfSealStep) */
+    else { yVp = null; sVp = null; } }
   let xV = null; if (DSF.vS && DSF.vS.R != null) { let bi = 0, bd = 1e9; for (let i = 0; i < n; i++) { const d = Math.abs(tb[i][0] - DSF.vS.R); if (d < bd) { bd = d; bi = i; } } xV = tb[bi][1]; }
-  const xe = tb[n - 1][1], un = base.uniforms; un.uXm.value = (q.xU1 + q.xRf) / 2; un.uXo.value = q.xRf - Ri; un.uWd.value = 4 * Ri; un.uYinv.value = q.yRf - Ri; un.uXt.value = teeMs ? q.xSpl - RiT : 1e9;
+  const xe = tb[n - 1][1], un = base.uniforms; un.uXm.value = (q.xU1 + q.xRf) / 2; un.uXo.value = q.xRf - Ri; un.uWd.value = 4 * Ri; un.uYinv.value = q.yRf - Ri; un.uXt.value = teeMs ? q.xSpl - RiT : 1e9; un.uXc.value = q.xSpl; un.uZc.value = 0; un.uRt.value = teeMs ? RiT * 0.999 : 0;   /* v142: 티 세로 관 원기둥(가로 갈래 액봉 관은 그 안쪽을 그리지 않는다 — 장면 좌표 = 세계 좌표) */
   DSF.sU = { teeMs, yVp, sVp, RiT, yTee, yCt, tb, n, iTop, iB0, iB1, sTop: tb[iTop][0], sB0: tb[iB0][0], sB1: tb[iB1][0], Ri, ms, mt: base, un, xV, sV: DSF.vS ? DSF.vS.R : null, xo: q.xRf - Ri, xe, mD: 0, hq: 0, tl: 0, d: 0, ho: 0, xh: q.xRf - Ri, yupF: null, pt: null, arr: false, pl: teeMs ? 0 : 1, ps: 0 };
   { const K9 = DSF.sKeep; if (K9 && typeof PR !== "undefined" && PR && Math.abs((PR.t || 0) - K9.t) < 120) { DSF.sU.yupF = K9.yupF; if (teeMs) DSF.sU.pl = K9.pl; DSF.sU.kept = true; } }   // 같은 배치의 이어진 시각이면 앞 장면의 값을 넘겨받는다
 }
@@ -3857,13 +3871,36 @@ function dsfSealStep(dt, L, S, live, kS) {
   const sf = Math.max(0, P.splFrac || 0), cf = Math.max(0, P.cPipeFrac || 0), yTc = live && sf > 0.002 && U.yTee != null ? (sf < 1 ? invIn + sf * (U.yTee - invIn) : U.yTee + cf * (U.yCt - U.yTee)) : -1e9; if (yTc > -1e8 && U.teeMs) U.pl = 1;
   const yupNow = Math.max(U.yupF != null ? U.yupF : Yin, U.yupF != null ? yTc : -1e9), yT = U.pl < 1 ? (U.yVp != null ? U.yVp + U.pl * (invIn - U.yVp) : -1e9) : Math.max(invIn + (inflow ? 0.5 * hS : 0), yupNow, yTc);
   un.uYin.value = Yin; un.uYout.value = Yout; un.uYup.value = yupNow; un.uXv.value = U.yupF != null ? U.xV : 1e9; un.uXh.value = U.xh; un.uYt.value = yT;
-  un.uBv.value = ovOn ? 0.6 : 1; un.uSpeed.value = ovOn ? (S.sp || 0.3) : 0;   // 단면이 가득 차 느리게 흐른다(무늬 빠르기 0.4배)
+  { const spR = S.sp || 0.3;   /* v142(사용자 11-25 "리플럭스쪽이랑 분배기쪽은 거의 멈춰잇듯이"): 관 전체가 찬 액봉 · 넘침 층 모두 환류 줄기와 같은 빠르기(표시 규칙 — 줄기 빠르기는 유량에 따른다). 무늬 진하기: 액봉 0.55 · 넘침 층 1, 무늬 위치는 하나로 이어진다. 실제 관 전체 단면의 유속은 줄기보다 훨씬 느리다(수 mm/s) */
+    un.uBv.value = ovOn ? 0.6 : 1; un.uSpeed.value = ovOn ? spR / 0.4 : 0; un.uPhL.value = un.uPh.value * (1 - un.uBv.value); }
+  { const Lc8 = DSF.L.C, ys8 = U.teeMs && U.pl > 1e-3 && yT > -1e8 ? yT : -1e9; if (Lc8) for (const p8 of Lc8.parts) { const u8 = p8.mt.uniforms; if (u8.uYs) { u8.uYs.value = ys8; u8.uFlL.value = 2 * (U.RiT || Ri); } } }   /* v142(사용자 "응축기하부단관 물 너비와 분배기쪽 너비가 선으로긋듯이 분리"): 응축액 관 줄기가 분배기 고인 액면 위 관 지름 1배 구간에서 관 굵기로 넓어진다(표시 규칙) */
+  if (U.teeMs) { const tu = U.teeMs.material.uniforms, SP9 = DSF.Ls.P, pF = live && U.pl >= 1 && (typeof outOpen === "function" ? outOpen() : VLV.P !== false) && (P.Dkg || 0) > 0.05;   /* v142: 티 세로 관(유출 밸브까지)에 고인 액 — 유출이 흐를 때 아래로 움직인다 */
+    tu.uBv.value = pF ? 0.6 : 1; tu.uSpeed.value = pF ? (SP9 && SP9.sp > 0 ? SP9.sp : 0.3) / 0.4 : 0;   // 빠르기 = 유출 줄기 빠르기(표시 규칙, 무늬 위치 = uPh × (1 − 0.6)이라 0.4로 나눈다) · 무늬 진하기 0.55
+    const Lc9 = DSF.L.C, cPt = Lc9 && Lc9.parts[Lc9.parts.length - 1], cU = cPt ? cPt.mt.uniforms : null, fC9 = cU ? Math.max(0.05, Math.min(1, cU.uFill.value || 0.33)) : 0.33, pcT = live && cArr && qc9 > 0.05 && U.pl > 1e-3 ? 1 : 0;   /* 잠긴 줄기: 응축액이 고인 액으로 떨어지는 동안 */
+    U.pc = jump || U.pc == null ? pcT : U.pc + (pcT - U.pc) * (1 - Math.exp(-h / 0.3));
+    tu.uPc.value = U.pc; tu.uPhC.value = cU ? cU.uPh.value : 0; tu.uPr.value = (cPt ? cPt.Ri : U.RiT) * Math.sqrt(fC9); tu.uPd.value = 2 * U.RiT; }   // 줄기 반지름(응축액 관 줄기 = Ri × √단면 몫) · 깊이 = 관 지름 1배(표시 규칙)
   const vis = U.mD > 1e-6 || (U.yupF != null && U.yupF > invIn); for (const m of U.ms) m.visible = m === U.teeMs ? U.pl > 1e-3 : vis;
   U.Yin = Yin; U.Yout = Yout; DSF.sKeep = { t: tNow, yupF: U.yupF, pl: U.pl };   // 장면을 새로 만들어도(도면을 다녀옴) 이어 가게: 닫힌 밸브 앞 층 높이 · 데드 레그 채움
   DSF.pr.liq.seal = { m: +U.mD.toFixed(4), mCalc: +mCalc.toFixed(4), mSeal: +mSeal.toFixed(4), Yin: +Yin.toFixed(4), Yout: +Yout.toFixed(4), inv: +inv.toFixed(4), dP: +(U.dP || 0).toFixed(3), d: +U.d.toFixed(4), ho: +U.ho.toFixed(4), xh: +U.xh.toFixed(4), hq: +(U.hq || 0).toFixed(4), sSurf: +sSurf.toFixed(4), inflow, ovOn, arr: U.arr, full, yup: U.yupF, pl: +U.pl.toFixed(3), ps: +(U.ps || 0).toFixed(4), yT: +yT.toFixed(4), vis,
     geo: U.geo || (U.geo = { yB0: +yB0.toFixed(5), yB1: +yB1.toFixed(5), inv: +inv.toFixed(5), invIn: +invIn.toFixed(5), Ri: +Ri.toFixed(5), xo: +U.xo.toFixed(5), xe: +U.xe.toFixed(5), yTee: U.yTee, yCt: U.yCt, yVp: U.yVp, xU1: q.xU1, xRf: q.xRf, xSpl: q.xSpl, mFull: +mFull.toFixed(4), Dr: (CUR && CUR.DpipeR) || 25, sB1: +U.sB1.toFixed(4), sV: U.sV, len: +L.len.toFixed(4) }), hS: +hS.toFixed(5), rho: P.mix && P.mix.rho > 0 ? +P.mix.rho.toFixed(1) : 1500 };   // geo: 점검기가 액면 식을 따로 계산해 견줄 때 쓰는 자리 값
   return { a0, a1, flow: inflow, q: qIn };
 }
+function dsfSplitSides() {   /* v142(사용자 11-25 "실제 유체가 되어서 … 어색한 부분이 있는지"): 앞뒤 면을 한 번에 그리던 반투명 원통(김 띠 · 벽 액막)을 뒷면 → 앞면 두 번에 그린다.
+   한 번에 그리면 삼각형 순서대로 겹쳐 그려져 원통 마디마다 각진 조각 · 네모가 생겼다(자연에 없는 모양). 뒷면 그림은 원래 그림의 자식이라 보임 · 자리 · 값(uniforms)이 그대로 따라간다 */
+  if (!DS.root) return 0; const list = [];
+  DS.root.traverse((o) => { const mt = o.material; if (o.isMesh && !o.isInstancedMesh && !o.userData.sideSplit && mt && mt.isShaderMaterial && mt.transparent && mt.side === THREE.DoubleSide && mt.uniforms && (mt.uniforms.uDens || mt.uniforms.uAmt)) list.push(o); });
+  for (const o of list) { const mt = o.material, mb = mt.clone(); mb.uniforms = mt.uniforms; mb.side = THREE.BackSide; mt.side = THREE.FrontSide; mt.needsUpdate = true;
+    const b = new THREE.Mesh(o.geometry, mb); b.renderOrder = -Math.abs(o.renderOrder || 0) - 1; b.frustumCulled = o.frustumCulled; b.userData.noFit = true; b.userData.sideSplit = true; o.add(b); o.userData.sideSplit = true; DS.tmp.push(mb); }
+  DSF.nSplit = list.length; return list.length; }   // 바깥 원통(그리는 차례 값이 큰 것)의 뒷면이 먼저 — 뒷면은 모두 앞면보다 먼저 그린다
+
+/* v142: 정제기 위 김 — 액면에서는 곧게 오르고 노즐 가까이에서 휘어 모이는 깔때기(사용자 11-25 "정제기에서 기체가 컬럼쪽배관으로 빨리는부분이 좀 부자연스러워 기체들이 너무 직선적이고").
+   높이 1(y −0.5 ~ 0.5) · 위로 갈수록 반지름 r0 → r1, 가운데가 옆으로 dx만큼 쏠린다 — 모이는 정도 f(η) = η^2.4(전 dsfCone: f = η, 곧은 원뿔).
+   aX = 흐름 방향 무늬 자리(높이 1 기준): 단면이 좁아지는 만큼 빨라진다. 실제 속도 ∝ 1/r²(연속식)이고 보이는 빠르기는 김 규칙(세제곱근, vSpeeds의 kU)이라 ∝ r^(−2/3) → aX(η) = ∫₀^η (r/r0)^(2/3) dη. */
+function dsfFunnel(r0, r1, dx, seg) {
+  const nH = 32, K = 2.4, g = new THREE.CylinderGeometry(1, 1, 1, seg, nH, true), ps = g.attributes.position, n = ps.count, aX = new Float32Array(n), rf = (e) => r0 + (r1 - r0) * Math.pow(e, K), N = 200, tab = [0];
+  for (let i = 1; i <= N; i++) tab.push(tab[i - 1] + Math.pow(rf((i - 0.5) / N) / r0, 2 / 3) / N);
+  for (let i = 0; i < n; i++) { const x = ps.getX(i), y = ps.getY(i), z = ps.getZ(i), e = Math.max(0, Math.min(1, y + 0.5)), r = rf(e), k = e * N, k0 = Math.min(N - 1, Math.floor(k)); ps.setXYZ(i, x * r + dx * Math.pow(e, K), y, z * r); aX[i] = tab[k0] + (tab[k0 + 1] - tab[k0]) * (k - k0); }
+  g.setAttribute("aX", new THREE.BufferAttribute(aX, 1)); g.computeVertexNormals(); g.userData.funnel = { r0, r1, dx, K, top: tab[N] }; return g; }
 /* ===== v136 D · E: 김 입자(새 디자인) — 교반조 시뮬레이터(교반조_유동_시뮬레이터.html stepParticles · writeParticles)처럼 흐름을 따라 움직이는 입자 + 꼬리 선 =====
   근거(계산값 · 식) — 표시 규칙은 따로 밝힌다:
   - 내는 양: 정제기 액면에서 초당 kP × 증발량(kg/h)개(kP = 6, 표시 규칙). 어느 구간이든 지나가는 입자 수(초당)는 그 구간 김 질량 유량에 비례한다(같은 김은 같은 식).
@@ -6551,17 +6588,17 @@ function rfxStep(p, Wt, Mv, Tv, dtp) {   /* 걸음마다: Wt = 컬럼 꼭대기�
   S.on = Wsum > 0; S.Wv = Wsum / dtp * 3600; S.cond = Bsum / dtp * 3600; S.u = Wsum > 0 ? us / dtp : 0; S.share = Wt > 0 ? Wsum / dtp / Wt : 0; S.Lfront = Lfs; S.xFront = G.Lph > 0 ? Math.min(1, Lfs / G.Lph) : 0; S.block = !!S.blocked;
   if (S.tFull == null && (PR.sealM || 0) >= seal - 1e-9) { S.tFull = PR.t; S.TwFull = S.Tw; }
   return out; }
-function rfxDown(p, avail, dtp) {   /* 응축기 쪽에서 U자로 내려가는 응축액(kg, 이번 걸음). 증기가 환류관을 끝까지 지날 때(thru)만 Wallis 역류 한계 · 액 기둥 막힘(model.js 그대로). 아니면 그대로 { toU: avail, dAcc: 0 } */
-  const S = PR.rfx; if (!S || !p.rfx || !(S.mode === "thru" || S.accC > 0 || S.accL > 0) || !(dtp > 0)) return { toU: avail, dAcc: 0 };
+function rfxDown(p, avail, dtp, kD) {   /* 응축기 쪽에서 U자로 내려가는 응축액(kg, 이번 걸음). 증기가 환류관을 끝까지 지날 때(thru)만 Wallis 역류 한계 · 액 기둥 막힘(model.js 그대로). 아니면 그대로 { toU: avail, dAcc: 0 } */   /* v142: kD = 유출 몫(kg, 이번 걸음) — 티에 닿은 액은 먼저 곧장 아래 유출 관으로 그 몫까지, 나머지만 환류 쪽(FCV-H073 → U자) 다리로. toD = 유출 관으로 간 양 */
+  const S = PR.rfx, tD0 = Math.max(0, Math.min(kD || 0, avail)); if (!S || !p.rfx || !(S.mode === "thru" || S.accC > 0 || S.accL > 0) || !(dtp > 0)) return { toU: avail - tD0, dAcc: 0, toD: tD0 };
   const G = rfxGeo(p), e = { RT: S.RT, Mk: S.Mk, rhoL: S.rhoL }, Bthru = S.mode === "thru" ? S.Bthru : 0, was = S.blocked, mm = 133.322; let block = false;
   const wc = rfxWallis(Bthru, (S.Pd + S.Pc) / 2, G.Dc, e, G.c.Cw), supC = avail + S.accC, downC = was ? supC : Math.min(supC, wc.Lmax * dtp), accC = supC - downC;   // 응축기 하부 → 티(40A)
   if (accC >= Math.max(1e-6, (S.Pd - S.Pc) * mm * G.Ac / 9.81)) block = true;
-  const wl = rfxWallis(Bthru, S.Pd, G.Dr, e, G.c.Cw), supL = downC + S.accL, toU = was ? supL : Math.min(supL, wl.Lmax * dtp), accL = supL - toU;   // 티 → U자 쪽 다리(15A)
+  const toD = Math.min(Math.max(0, kD || 0), downC), wl = rfxWallis(Bthru, S.Pd, G.Dr, e, G.c.Cw), supL = downC - toD + S.accL, toU = was ? supL : Math.min(supL, wl.Lmax * dtp), accL = supL - toU;   /* v142: 티에서 유출 몫이 먼저 아래로(유출 관은 증기가 지나지 않는다) */   // 티 → U자 쪽 다리(15A)
   if (accL >= Math.max(1e-6, (S.Pt - S.Pd) * mm * G.Ar / 9.81)) block = true;
   if (Bthru > 0 && (accC > 1e-7 || accL > 1e-7)) S.tFlood += dtp;
   if (block && !was) S.nBlock++;
   const dAcc = accC + accL - S.accC - S.accL; S.accC = accC; S.accL = accL; S.blocked = block; S.block = block; S.jgsC = wc.jgs; S.jgsL = wl.jgs;
-  return { toU, dAcc }; }
+  return { toU, dAcc, toD }; }
 function rfxMark(p, d, dtp) {   /* 응축기 쪽에서 U자로 들어간 응축액(kg, 이번 걸음) 기록 · U자 바닥이 찬 때 · 다 찬 때 */
   const S = PR.rfx; if (!S || !(dtp > 0)) return; S.toU = d / dtp * 3600; const G = rfxGeo(p);
   if (S.t0 != null && S.tSeal == null && (PR.sealM || 0) >= G.mSeal - 1e-9) S.tSeal = PR.t;
@@ -6857,7 +6894,7 @@ function processStep(p) {
     if ((!VLV.V || !VLV.S) && flows.nSeal > 0) { const Vh = PR.Vhead || 0.1, nMax = Math.max(20, 0.15 * PR.Pstill) * 133.322 * Vh / (R_GAS * (PR.Tbub + 273.15));   // v43: 쌓이는 속도 제한
       if (flows.nSeal > nMax) { const ex = flows.nSeal - nMax, E = ex * L; flows.nSeal = nMax; nv -= ex; vm = nv * Mv / 1000; PR.Elat -= E; PR.Ercd += E; PR.Tadd = (PR.Tadd || 0) + E / (PR.m * PR.mix.cp); dExUse -= E; } }
     { const condL = Math.max(0, flows.nL - flows.nBack - (flows.nSub || 0)), avail = (flows.nD + condL) * Mv / 1000, seal = Math.max(0, p.holdC || 0);   // v86: 응축액은 생기는 즉시 흐른다(관 벽·바닥에 묻는 동적 홀드업 τ 25 s) · 실 루프만 먼저 찬다
-      if ((PR.sealM || 0) < seal - 1e-9 && avail > 0 && VLV.R) {   /* v128: U자는 FCV-H073 뒤 — 환류 밸브가 닫혀 있으면 차지 않는다 */ const wd = rfxDown(p, avail, dtp), d = Math.min(seal - (PR.sealM || 0), wd.toU), fac = 1 - (d + wd.dAcc) / avail; PR.sealM = (PR.sealM || 0) + d; PR.mHeldC = (PR.mHeldC || 0) + d + wd.dAcc; flows.nD *= fac; flows.nL = flows.nBack + (flows.nSub || 0) + condL * fac; flows.nHeldC = (d + wd.dAcc) / Mv * 1000; if (PR.rfx) rfxMark(p, d, dtp); }   /* v135 J: wd = 응축기 쪽에서 U자에 닿는 액 · 붙잡힌 액(증기가 끝까지 지날 때만) */
+      if ((PR.sealM || 0) < seal - 1e-9 && avail > 0 && VLV.R) {   /* v128: U자는 FCV-H073 뒤 — 환류 밸브가 닫혀 있으면 차지 않는다 */ const kD = flows.nD * Mv / 1000, wd = rfxDown(p, avail, dtp, kD), d = Math.min(seal - (PR.sealM || 0), wd.toU), ovU = Math.max(0, wd.toU - d); PR.sealM = (PR.sealM || 0) + d; PR.mHeldC = (PR.mHeldC || 0) + d + wd.dAcc; flows.nD = kD > 1e-12 ? flows.nD * Math.min(1, wd.toD / kD) : 0; flows.nL = flows.nBack + (flows.nSub || 0) + ovU / Mv * 1000; flows.nHeldC = (d + wd.dAcc) / Mv * 1000;   /* v142: U자는 환류 쪽(FCV-H073 뒤)이라 환류 몫으로만 찬다 — 유출은 분배대로 처음부터 흐르고, 컬럼으로 가는 환류 = U자에 닿은 액 − U자를 채운 액(넘친 만큼). 전: 유출 · 환류를 같은 비율로 줄여 U자가 다 찰 때까지 유출이 0 */ if (PR.rfx) rfxMark(p, d, dtp); }   /* v135 J: wd = 응축기 쪽에서 U자에 닿는 액 · 붙잡힌 액(증기가 끝까지 지날 때만) */
       else { const tau = 25, M0 = Math.max(0, (PR.mHeldC || 0) - (PR.sealM || 0)), k = Math.exp(-dtp / tau), M1 = M0 * k + avail * (tau / Math.max(1e-6, dtp)) * (1 - k), out = Math.max(0, M0 + avail - M1);
         const pass = avail > 1e-12 ? Math.min(out, avail) : 0, extra = out - pass;
         if (avail > 1e-12) { const fac = pass / avail; flows.nD *= fac; flows.nL = flows.nBack + (flows.nSub || 0) + condL * fac; flows.nHeldC = Math.max(0, avail - pass) / Mv * 1000; PR.mHeldC = (PR.sealM || 0) + M1; }
@@ -7534,7 +7571,7 @@ $("btnCpHf").addEventListener("click", () => { GL_DEMO = null; BS.init = false; 
   set("subA", "tdmahf"); set("subB", "cphf"); set("wA", 0.3); set("wC", 0.2); set("aA", 1.5); set("Tlim", 120);
   set("fillMode", "kg"); set("H", 350); set("valveChar", "eq"); set("valveR", 50); set("mSteamMax", 45);   /* v76: 임시 가정값 */ set("P", 0.1); set("leak", 0.05); set("Tj", 133); set("jOpen", 25); set("rpm", 80); set("type", "anchor"); set("D", 390); set("C", 90);   /* 사내망 v121·v122: 자켓 133 ℃(GA-071), A-H071 2-세미 앵커 */
   set("valveR", 1800); set("mSteamMax", 300); set("Cmetal", 494); set("rcpSteam", "mv"); set("rcpHeatMV", 70); set("rcpHeatEndT", 95); set("rcpTRMV", 26); set("rcpForeMV", 24.5); set("rcpMainMV", 26); set("pvA", 12.41);   /* v138s: 현장 DB 스팀 개도 레시피 · 밸브 맞춤(등비 R · 100 % 유량, 겉보기 값) · 금속 열용량(승온 회귀 절편) — 맞춤 근거는 사내 문서 */
-  set("swMode", "M"); set("startTR", true); set("Rr", 1); /* v107: 배속은 사용자가 고른 그대로 */ set("splitMode", "R"); set("rficMode", "auto");   /* v98: 현장 분배 방식 */
+  set("swMode", "M"); set("startTR", true); set("Rr", 1); /* v107: 배속은 사용자가 고른 그대로 */ set("splitMode", "D"); set("rficMode", "auto");   /* v142: 유출 유량 고정(FICH072) · 나머지 환류 — 사용자 결정 2026-11-25(스팀이 레시피 개도면 증발이 정해져 환류 · 유출을 둘 다 설정값으로 둘 수 없다). 전 v98 ~ v141: 환류 고정(R) */
   set("Tcw", 50); set("Tcw2", -22.6);   /* 1차 N-Brine 50 ℃(범례 PCH-PID-H100A NBRS · PIMS TICH364), 2차 L-Brine -22.6 ℃(PIMS TIH353) */
   set("T", 700); set("bottom", "ell"); set("Hs", 800); set("Hj", 635); set("wallMat", "sus"); set("tw", 8); set("tIns", 100);
   set("Dcol", 155.2); set("Hpack", 0.3); set("packFill", 26); set("pack", "pall25");
@@ -7560,7 +7597,7 @@ $("btnGasLock").addEventListener("click", () => {   // v97: 유출관 가스 록
   set("glHc", 0.2); set("glP0F", 0); set("glP0M", 0); set("glLeakF", 0); set("glLeakM", 0); set("glTv", 60);
   VLV.EQV = true; syncValveUI();   /* v98: 현장 — 균압 열림 */ GL_DEMO = { slowed: false }; if (!OP.recipe && typeof opSetMode === "function") opSetMode("recipe");
   $("jOpenV").textContent = "25%"; lastFill = "kg"; BUSY_UNTIL = performance.now() + 1200; syncOutputs(); $("btnRestart").click();
-  $("viewhint").textContent = "유출관 막힘 재현(현장 방식): CpHf 350 kg · 0.1 torr · 균압 열림 · 환류 FICH073 자동 · 유출 FCV-H072 100 % · 두 액봉에 액 남음(사이에 가스) · 고점 +5 cm + 하류 액봉 30 cm = 필요 액위 35 cm > 응축기 옆 노즐 30 cm. 시연용으로 80 ℃에서 시작해 ③까지 1000배속, ③에서 30배속으로 낮춘다";
+  $("viewhint").textContent = "유출관 막힘 재현(환류 고정 분배): CpHf 350 kg · 0.1 torr · 균압 열림 · 환류 FICH073 자동 · 유출 FCV-H072 100 % · 두 액봉에 액 남음(사이에 가스) · 고점 +5 cm + 하류 액봉 30 cm = 필요 액위 35 cm > 응축기 옆 노즐 30 cm. 시연용으로 80 ℃에서 시작해 ③까지 1000배속, ③에서 30배속으로 낮춘다";
 });
 $("btnTrend").addEventListener("click", () => { const c = $("trend").classList.toggle("closed"); $("btnTrend").textContent = c ? "펼치기" : "접기"; store.set("dt.trend", c ? "0" : "1"); });
 document.querySelectorAll("#btnTrend, .trend .tt[data-t]").forEach((el) => el.addEventListener("click", () => { DS.trendSet = true; }));   /* v132: 트렌드를 직접 만지면 dsTrend가 더 손대지 않는다 */
@@ -7838,7 +7875,7 @@ function opRecipe(p, dtp) {   // v74: 레시피 단계 + 스팀 PI · v138s: 스
   else if (R.st === 4) { const lateKg = rv("rcpLateKg", 0); if (!R.late && lateKg > 0 && PR.m <= lateKg) { R.late = true; R.lateAt = PR.m; opLog(`레시피 ④ 정제기 ${fmt(PR.m, 0)} kg(설정 ${lateKg} kg 아래) · 유출 ${rv("rcpLateD", 5)} kg/h로`); }   /* v125: 운전 개념 — 본류 6으로 받다가 정제기에 약 70 kg 남으면 5 */
     rT = rv("rcpMainR", 4); dT = R.late ? rv("rcpLateD", 5) : rv("rcpMainD", 6); setV("R", true); setV("F", false); setV("M", true); setV("P", true); }
   if (R.st >= 2) {
-    OP.fic.sv = dT; OP.rfic.sv = rT;   // v98: 현장 방식이면 환류 목표가 FICH073 설정, 유출은 나머지
+    OP.fic.sv = dT; OP.rfic.sv = rT;   // v98: 분배 방식 R이면 환류 목표가 FICH073 설정 · 유출은 나머지, D(v142 CpHf 기본)면 유출 목표가 FICH072 설정 · 환류는 나머지
     const y0 = (PR.Rkg || 0) + (PR.Dkg || 0); R.yf = R.yf == null ? y0 : R.yf + (y0 - R.yf) * (1 - Math.exp(-dtp / 45)); const y = R.yf, sp = rT + dT, e = sp - y;   // v76: 측정 필터 45 s
     if (mvRule) { const mvS = R.st === 2 ? rv("rcpTRMV", 26) : R.st === 3 ? rv("rcpForeMV", 24.5) : rv("rcpMainMV", 26), mv = OP.hold.J ? (p.jOpen || 0) * 100 : Math.max(0, Math.min(100, mvS));   /* v138s: 레시피 개도 — 단계마다 입력한 개도(사용자가 잡으면 그 개도). 증발 · 온도는 그 결과 */
       if (!OP.hold.J) p.jOpen = mv / 100; if (R.st === 2 && !R.warmed && (PR.Rkg || 0) > 0.5) { R.warmed = true; R.t0w = PR.t; } PR.rcpWarn = ""; R.I = null; R.y = y; R.sp = sp; R.rT = rT; R.dT = dT; R.mv = mv; }
@@ -8191,10 +8228,10 @@ const KIND = {
   rcpStabT: ["op", "안정 판정 탑 온도 허용폭. 현장 관행 값."],
   rcpStabR: ["op", "안정 판정 환류 허용폭. 10 %는 예시."],
   rcpStabMax: ["op", "안정이 안 돼도 넘어가는 최대 시간. 120분은 예시."],
-  rcpForeR: ["op", "초류 단계 환류(FICH073 설정). CpHf 조건 4 kg/h = 운전 개념(초류·본류 고정, 사용자 2026-11-18). PIMS 화면 한 장에는 설정 5.00 · 흐름 3.79 kg/h."],
+  rcpForeR: ["op", "초류 단계 환류(FICH073 설정). 분배 방식이 유출 고정(CpHf 조건)이고 스팀이 레시피 개도면 쓰이지 않는다 — 환류 = 응축액 − 유출(나머지). 스팀이 응축량 맞춤이면 목표 합(환류 + 유출)에 들어간다. 운전 개념 값 4 kg/h(사용자 2026-11-18). PIMS 화면 한 장에는 설정 5.00 · 흐름 3.79 kg/h."],
   rcpForeD: ["op", "초류 단계 유출 목표(FICH072 설정). CpHf 조건 2 kg/h = 운전 개념(사용자 2026-11-18). PIMS 화면 한 장에는 설정 2.00 · 흐름 1.46 kg/h."],
   rcpForeKg: ["op", "초류 컷 무게. 배치 시트의 '초류 컷'과 같은 칸. CpHf 조건 30 kg = 운전 개념(사용자 2026-11-18)."],
-  rcpMainR: ["op", "본류 단계 환류(FICH073 설정). CpHf 조건 4 kg/h = 운전 개념(초류·본류 고정)."],
+  rcpMainR: ["op", "본류 단계 환류(FICH073 설정). 분배 방식이 유출 고정(CpHf 조건)이고 스팀이 레시피 개도면 쓰이지 않는다 — 환류 = 응축액 − 유출(나머지). 스팀이 응축량 맞춤이면 목표 합(환류 + 유출)에 들어간다. 운전 개념 값 4 kg/h."],
   rcpMainD: ["op", "본류 단계 유출 목표(FICH072 설정). CpHf 조건 6 kg/h = 운전 개념. 정제기 잔량이 적어지면 아래 칸의 값으로 줄인다."],
   rcpMainKg: ["op", "본류 컷 무게. 배치 시트의 '본류 컷'과 같은 칸. 0이면 후류나 액위 하한까지."],
   rcpLateKg: ["op", "본류 끝 무렵 유출을 줄이기 시작하는 정제기 잔량. CpHf 조건 70 kg = 운전 개념(사용자 2026-11-18: 한 70 kg쯤 남았을 때부터 5로). 정제기 무게(WIH071) 기준으로 넣었다."],
@@ -8265,7 +8302,7 @@ const KIND = {
   swM: ["op", "전환할 초류량. CpHf 조건 30 kg = PIMS 2차정제 화면의 초류 무게."],
   capF: ["dwg", "초류 탱크 용량. CpHf 조건 69 L = 장치 조립도 GA-072(T-H072 0.069 m³). 0이면 초기 액의 40 %로 어림(가정)."],
   capM: ["dwg", "본류 탱크 용량. CpHf 조건 398 L = 장치 조립도 GA-073(T-H073 0.398 m³). 0이면 초기 액 부피로 어림(가정)."],
-  splitMode: ["op", "응축액을 나누는 방식. 현장은 환류 FICH073 고정 · 유출 밸브 100 %."],
+  splitMode: ["op", "응축액을 나누는 방식. CpHf 조건은 유출 FICH072 고정 · 나머지 환류(사용자 결정 2026-11-25 — 스팀이 레시피 개도면 증발이 개도로 정해져 환류와 유출을 둘 다 설정값으로 둘 수 없다. 현장 기록의 초류는 유출이 설정 근처이고 환류가 나머지). 환류 고정은 v98 ~ v141 CpHf 기본이었고 지금은 '유출관 가스 록' 시연에서 쓴다."],
   rficMode: ["op", "환류 FICH073 자동(유량 고정)·수동(개도 고정)."],
   glOn: ["est", "유출관 막힘 계산. 아래 높이들은 모두 가정값이라 기본은 끔. 아이소 도면 높이를 넣을 때만 켠다."],
   glZc: ["est", "분기점 → 유출관 고점 높이. 도면을 못 봐서 넣은 가정값. 막힘 계산을 켤 때만 쓴다."],
@@ -8332,8 +8369,10 @@ function vGauge(e, k) {
   else if (OP.recipe && (k === "R" || k === "P")) {   /* v139: 레시피 운전 — 지금 단계의 환류 · 유출 설정 유량을 바로 바꾼다(운전 패널의 레시피 값과 같은 칸) */
     const st = PR && PR.rcp ? PR.rcp.st : 0, late = !!(PR && PR.rcp && PR.rcp.late), id = k === "R" ? (st <= 2 ? "rcpTRL" : st === 4 ? "rcpMainR" : "rcpForeR") : (st === 4 ? (late ? "rcpLateD" : "rcpMainD") : "rcpForeD"), el = $(id), v = parseFloat(el.value) || 0;
     const stN = k === "R" ? (st <= 2 ? "전환류" : st === 4 ? "본류" : "초류") : (st === 4 ? "본류" : "초류"), nm = k === "R" ? "환류 FICH073" : "유출 FICH072", note = k === "P" && st <= 2 ? " · 지금은 전환류라 초류부터 쓰인다" : "";
-    g.innerHTML = `<b>${nm} 설정 유량</b><div class="vg-row"><input type="range" min="0" max="20" step="0.5" value="${Math.min(20, v)}"><output>${v} kg/h</output></div><small>레시피 ${stN} 단계의 ${k === "R" ? "환류" : "유출"} 설정 · 움직이면 바로 반영${note}</small><div class="vg-btn"><button type="button" data-a="x">닫기</button></div>`;
-    const r = g.querySelector("input"), o = g.querySelector("output"); r.addEventListener("input", () => { o.textContent = r.value + " kg/h"; el.value = r.value; }); r.addEventListener("change", () => { el.value = r.value; opLog(`레시피 ${stN} ${k === "R" ? "환류" : "유출"} 설정 ${r.value} kg/h`); }); }
+    const mv9 = steamRule() === "mv", dS9 = !CUR || CUR.splitMode !== "R", rem9 = mv9 && (k === "R" ? (st <= 2 || dS9) : (st >= 3 && !dS9));   /* v142: 레시피 개도면 증발이 개도로 정해져 한쪽만 설정 — 고정한 쪽이 아니면 나머지(설정 없음) */
+    if (rem9) g.innerHTML = `<b>${nm}</b><small>${k === "R" && st <= 2 ? "전환류 — 응축액이 전부 환류로 간다" : k === "R" ? "유출 유량 고정 · 환류 = 응축액 − 유출(나머지). 유출 설정이나 스팀 개도를 바꾸면 따라 바뀐다" : "환류 유량 고정 · 유출 = 응축액 − 환류(나머지). 환류 설정이나 스팀 개도를 바꾸면 따라 바뀐다"}</small><div class="vg-btn"><button type="button" data-a="x">닫기</button></div>`;
+    else { g.innerHTML = `<b>${nm} 설정 유량</b><div class="vg-row"><input type="range" min="0" max="20" step="0.5" value="${Math.min(20, v)}"><output>${v} kg/h</output></div><small>레시피 ${stN} 단계의 ${k === "R" ? "환류" : "유출"} 설정 · 움직이면 바로 반영${note}</small><div class="vg-btn"><button type="button" data-a="x">닫기</button></div>`;
+    const r = g.querySelector("input"), o = g.querySelector("output"); r.addEventListener("input", () => { o.textContent = r.value + " kg/h"; el.value = r.value; }); r.addEventListener("change", () => { el.value = r.value; opLog(`레시피 ${stN} ${k === "R" ? "환류" : "유출"} 설정 ${r.value} kg/h`); }); } }
   else if (k === "P") {   /* v139: 수동(유출 FIC)이면 설정 유량, 환류비 운전이면 운전 패널 값 */
     const man = OP.manual && !OP.free, sv = Math.max(0, (OP.fic && OP.fic.sv) || 0);
     g.innerHTML = `<b>유출 FICH072</b>${man ? `<div class="vg-row"><input type="range" min="0" max="20" step="0.5" value="${Math.min(20, sv)}"><output>${sv} kg/h</output></div><small>유출 유량 설정 · 움직이면 바로 반영</small>` : `<small>환류비 운전에서는 운전 패널의 환류비가 정한다</small>`}<div class="vg-btn"><button type="button" data-a="x">닫기</button></div>`;
@@ -8429,11 +8468,12 @@ const abFire = (el, type) => el.dispatchEvent(new Event(type, { bubbles: true })
 function abIn(id, v) { const el = $(id); if (!el) return null; const old = el.value; el.value = String(v); abFire(el, "input"); abFire(el, "change"); return () => { el.value = old; abFire(el, "input"); abFire(el, "change"); }; }
 function abSteam(mv) { const j = $("jOpen"), old = j.value, had = !!OP.hold.J, auto = OP.recipe || !OP.manual; j.value = String(mv); abFire(j, "input"); abFire(j, "change");
   return () => { if (auto && !had) { delete OP.hold.J; opRender(true); } else { j.value = old; abFire(j, "input"); abFire(j, "change"); } }; }
-function abReflux(f) { const un = [], mul = (id) => { const el = $(id); if (!el) return; const u = abIn(id, +Math.max(0, (parseFloat(el.value) || 0) * f).toFixed(2)); if (u) un.push(u); };
-  if (OP.recipe) { mul("rcpForeR"); mul("rcpMainR"); }
+function abReflux(f, fD) {   /* v142: 분배 방식이 유출 고정(D — CpHf 기본)이면 환류 설정은 쓰이지 않는다(환류 = 응축액 − 유출, 나머지). 그때는 유출 설정을 fD배로 — 유출을 덜 빼면 환류가 과다, 더 빼면 환류가 부족해진다(유출 FIC 설정 · 유량계 오차와 같은 증상) */
+  const un = [], dS = fD != null && !!CUR && CUR.splitMode !== "R", mul = (id, k) => { const el = $(id); if (!el) return; const u = abIn(id, +Math.max(0, (parseFloat(el.value) || 0) * k).toFixed(2)); if (u) un.push(u); };
+  if (OP.recipe) { if (dS) { mul("rcpForeD", fD); mul("rcpMainD", fD); mul("rcpLateD", fD); } else { mul("rcpForeR", f); mul("rcpMainR", f); } }
   else if (OP.free) { const old = OP.rOpen; OP.rOpen = Math.max(0, Math.min(100, old * f)); setValve("R", OP.rOpen > 0); un.push(() => { OP.rOpen = old; setValve("R", old > 0); }); }
-  else if (OP.manual) { const old = (OP.rfic && OP.rfic.sv) || 0, e = $("rficsv"); OP.rfic.sv = +(old * f).toFixed(2); if (e) e.value = OP.rfic.sv; un.push(() => { OP.rfic.sv = old; const e2 = $("rficsv"); if (e2) e2.value = old; }); }
-  else mul("Rr");
+  else if (OP.manual) { if (dS) { const old = (OP.fic && OP.fic.sv) || 0, e = $("ficsv"); OP.fic.sv = +(old * fD).toFixed(2); if (e) e.value = OP.fic.sv; un.push(() => { OP.fic.sv = old; const e2 = $("ficsv"); if (e2) e2.value = old; }); } else { const old = (OP.rfic && OP.rfic.sv) || 0, e = $("rficsv"); OP.rfic.sv = +(old * f).toFixed(2); if (e) e.value = OP.rfic.sv; un.push(() => { OP.rfic.sv = old; const e2 = $("rficsv"); if (e2) e2.value = old; }); } }
+  else mul("Rr", f);
   return () => un.forEach((u) => u()); }
 function abPcv(v) { const so = $("sOpen"), old = so.value, wasMan = PCV.man; so.value = String(v); abFire(so, "input"); abFire(so, "change"); return () => { if (!wasMan) { const a = $("sAuto"); if (a) a.click(); } else { so.value = old; abFire(so, "input"); abFire(so, "change"); } }; }
 const AB_LIST = [
@@ -8442,8 +8482,8 @@ const AB_LIST = [
   { k: "c2hot", g: "c2", t: "2차 L-Brine 온도 상승", d: "L-Brine 입구 40 ℃", ap: () => abIn("Tcw2", 40) },
   { k: "cwlow", g: "cw", t: "냉매 유량 부족", d: "냉매 유량 5 kg/h", ap: () => abIn("mcw", 5) },
   { k: "steam", g: "j", t: "스팀 개도 과다", d: "스팀 밸브 70 % 고정", ap: () => abSteam(70) },
-  { k: "rhigh", g: "r", t: "환류 과다", d: "환류 설정 2.5배", ap: () => abReflux(2.5) },
-  { k: "rlow", g: "r", t: "환류 부족", d: "환류 설정 0.2배", ap: () => abReflux(0.2) },
+  { k: "rhigh", g: "r", t: "환류 과다", d: "환류 설정 2.5배 · 유출 고정이면 유출 설정 0.2배", ap: () => abReflux(2.5, 0.2) },   /* v142: 유출 고정이면 유출을 덜 빼서 나머지 환류가 과다 */
+  { k: "rlow", g: "r", t: "환류 부족", d: "환류 설정 0.2배 · 유출 고정이면 유출 설정 3배", ap: () => abReflux(0.2, 3) },   /* v142: 유출 고정이면 유출을 더 빼서 나머지 환류가 부족 */
   { k: "leak", g: "lk", t: "진공 리크 증가", d: "리크 5 mmHg/min", ap: () => abIn("leak", 5) },
   { k: "pump", g: "pv", t: "진공 배기 능력 저하", d: "진공 PCV 3 %", ap: () => abPcv(3) },
   { k: "pstop", g: "pv", t: "진공 펌프 정지", d: "진공 PCV 0 %(닫힘)", ap: () => abPcv(0) },
