@@ -12,7 +12,7 @@ sed -i "s/^현재 판: .*/현재 판: ${VER}/" README.md
 K="../정제탱크/점검"
 mkdir -p 점검/회귀 점검/도구
 cp "$K/CLAUDE_저장소용.md" CLAUDE.md
-cp "$K/점검.py" "$K/점검_공식.py" "$K/점검_합침.py" 점검/
+cp "$K/점검.py" "$K/점검_공식.py" "$K/점검_합침.py" "$K/점검_스팀.py" 점검/   # 점검_스팀.py: v139~ 스팀 개도 레시피 판정(점검.py가 불러 쓴다)
 cp "$K"/회귀/*.json "$K"/회귀/기준_*.txt "$K/회귀/회귀.py" "$K/회귀/회귀_표현.py" 점검/회귀/   # 회귀_표현.py: v132부터 기본 표현이 새 디자인이라 표현(lite · design)을 정해 돌린다
 cp "$K"/도구/drive.mjs "$K"/도구/chrome-port.mjs "$K"/도구/line-ends.mjs "$K"/도구/LICENSE "$K"/도구/출처.md 점검/도구/
 if [ "${WITH_DOCS:-1}" = "1" ]; then cp "../정제탱크/적용_공식_정리.md" "../정제탱크/현장_데이터_맞춤_안내.md" "../정제탱크/사내망_합침_내역_v125.md" .; cp "$K/요구목록.md" "$K/요구현황.json" 점검/; echo "문서 포함"; fi

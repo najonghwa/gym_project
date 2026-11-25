@@ -13,7 +13,7 @@ import json, math, re
 # v126(사용자 2026-11-19 현장 배관): 증기관 직관 4.1 → 4.7 m(위 3 + 오른쪽 1.2 + 아래 0.5), U자 액봉 0.45 → 0.55 kg(0.6 + 0.3 + 0.6 m × 15A × 1530 kg/m³)
 PRESET = {"T": 700, "bottom": "ell", "Hs": 800, "wallMat": "sus", "tw": 8, "tIns": 100, "Tj": 133, "Hpack": 0.3,
           "Dpipe": 83.1, "Lpipe": 4.7, "nElb": 2, "nTee": 0, "nTeeR": 1, "nVg": 0, "nVgl": 0, "DpipeC": 43, "DpipeR": 17.5, "DpipeP": 17.5,
-          "UAmode": "area", "A1": 21.71, "A2": 2.0, "capF": 69, "capM": 398, "holdC": 0.55, "Tcw": 50, "Tcw2": -22.6,
+          "UAmode": "design", "Q1des": 2050, "Q2des": 700, "Tdes": 86, "f2": 0.1, "A1": 21.71, "A2": 2.0, "capF": 69, "capM": 398, "holdC": 0.55, "Tcw": 50, "Tcw2": -22.6,
           "type": "anchor", "D": 390, "C": 90}
 # 추가 점검 문서(설비pnid.pdf, 2026-11-18): 자켓 높이는 사내망 오독(855)을 바로잡은 635, 컬럼은 조립도 H-VP-ME-C-H081-001(태그 칸 C-H071) 값
 PRESET_GA = {"Hj": 635, "Dcol": 155.2, "packFill": 26, "pack": "pall25"}
@@ -24,7 +24,7 @@ TAGS = ["TICH071 탱크 내부", "WIH071 정제기 무게", "TIH074 자켓", "TI
 OLD = ["FIC-072", "FIC-073", "FCV-072", "FCV-073", "유출 FT-H073", "고점 FT-H073", "FT-H073 0", "TIC-H071D 응축액", "(TIC-H071D)", "TI-H075 탑"]   # 옛 번호와 옛 이름표 쓰임. P&ID 표기(FT/FIQC-H073 = 환류 유량계, TE/TIC-H071D, TE/TI-H075)는 설비 설명에 남는다
 PID_WORDS = ["80A-CCH-H0709", "80A-CCH-H0701", "15A-CCH-H0704", "15A-CCH-H0710", "15A-CCH-H0703", "15A-CCH-H0706", "50A-CCH-H0702", "P&ID T-H071", "P&ID C-H071", "P&ID E-H071", "P&ID E-H072",
              "P&ID T-H072", "P&ID T-H073", "VP-H093", "PCV-H093", "TCV-H072", "XV-H074", "XV-H077", "MIN. 300 mm"]
-KIND_EXPECT = {"Dpipe": "dwg", "DpipeR": "dwg", "DpipeP": "dwg", "DpipeC": "dwg", "T": "dwg", "Hs": "dwg", "Hj": "dwg", "tw": "dwg", "tIns": "dwg", "A1": "dwg", "A2": "dwg", "capF": "dwg", "capM": "dwg",
+KIND_EXPECT = {"Q1des": "dwg", "Q2des": "dwg", "Tdes": "est", "f2": "meas", "Dpipe": "dwg", "DpipeR": "dwg", "DpipeP": "dwg", "DpipeC": "dwg", "T": "dwg", "Hs": "dwg", "Hj": "dwg", "tw": "dwg", "tIns": "dwg", "A1": "dwg", "A2": "dwg", "capF": "dwg", "capM": "dwg",
                "holdC": "dwg", "type": "dwg", "Tcw": "meas", "Tcw2": "meas", "pack": "dwg", "D": "est", "C": "est", "Lpipe": "dwg", "nElb": "dwg", "nTeeR": "est", "hqMode": "view",
                "rcpLateKg": "op", "rcpLateD": "op", "rcpTailKg": "op"}
 
@@ -176,7 +176,7 @@ const at=rb?document.elementFromPoint(rb.left+rb.width*0.5,rb.top+rb.height/2):n
 return JSON.stringify({iso:D.STYLE==='iso',el:!!el,txt:el?el.children[1].textContent:null,rv:r?+r.value:null,dis:r?r.disabled:null,mode:t?t.textContent:null,chip:a?!a.hidden:null,held:el?el.classList.contains('held'):null,box:bb?[bb.left,bb.top,bb.width,bb.height]:null,valve:vx,reach:!!at&&at===r,
 j:+document.getElementById('jOpen').value,mv:D.CUR.jOpen*100,hold:!!D.OP.hold.J,recipe:!!D.OP.recipe,vdot:D.PR.vdot,lock:D.steamLock(),
 g2:G?{cx:+G.th.getAttribute('cx'),w:+G.fill.getAttribute('width'),auto:G.auto.getAttribute('display')!=='none',x0:G.x0,x1:G.x1,num:P.vals.jOpen.textContent,mode:G.mode.textContent,held:G.g.classList.contains('held'),view:P.view?P.view.join(','):null,box:gr?[gr.width,gr.height]:null,hit:hr?[hr.width,hr.height]:null}:null,
-pop:(()=>{const g=document.getElementById('vGauge');return !!(g&&!g.hidden)})(),log:(D.PR.ops||[]).slice(-4).map(o=>o.text)})})()"""
+pop:(()=>{const g=document.getElementById('vGauge');return !!(g&&!g.hidden)})(),log:(D.PR.ops||[]).slice(-4).map(o=>o.text),rule:(document.getElementById('rcpSteam')||{}).value||null})})()"""   # v138s: 스팀 개도 정하는 법
 JS_GTOUCH = r"""(()=>{const h=document.querySelector('.p2-ghit'),r=h.getBoundingClientRect(),y=r.top+r.height/2,ev=(t,f)=>h.dispatchEvent(new PointerEvent(t,{pointerType:'touch',pointerId:7,isPrimary:true,button:0,buttons:t==='pointerup'?0:1,clientX:r.left+r.width*f,clientY:y,bubbles:true,cancelable:true}));ev('pointerdown',0.3);ev('pointermove',0.5);ev('pointermove',0.8);ev('pointerup',0.8);return JSON.stringify({ok:1})})()"""
 # 3D 값 상자가 설비 몸통(정면 윤곽 사각형) · 화살촉을 가리는지, 게이지가 스팀 밸브에서 얼마나 떨어졌는지(JS_DCS에 없는 것)
 JS_VEQ = r"""(()=>{const D=window.__dt,M=D.M,q=M.pipe,cam=D.camera,cv=D.canvas,W=cv.clientWidth,H=cv.clientHeight,Rj=q.Rj||M.R,V=cam.position.constructor,v=new V(),g=D.PIPES.V[0].parent;
@@ -261,15 +261,18 @@ def scenarios(scen, tag, BOOT, jump, SHOTS):
                                     ["eval", "window.__dt.setValve('P',true);window.__dt.setValve('M',true);window.__dt.setValve('F',false);1"], ["wait", 9000], tag("mv0", JS_US), ["eval", "window.__dt.setValve('M',false);1"], ["wait", 350], tag("mvA", JS_US), ["wait", 6000], tag("mv1", JS_US),
                                     ["shot", str(SHOTS / "v130_본류밸브_닫음.png"), "#stage", 3, [560, 300, 200, 130]], ["eval", "window.__dt.setValve('M',true);1"], ["wait", 6000], ["eval", "window.__dt.setValve('P',false);1"], ["wait", 7000], tag("pv1", JS_US),
                                     ["eval", "window.__dt.setValve('P',true);1"], ["wait", 3000], tag("fade", JS_2DFADE)]),
-         scen("v129 열 퍼짐", rec + jump(1.3) + [["wait", 3000], tag("z0", JS_ZH), ["shot", str(SHOTS / "v129_강조_교반중.png"), "#stage", 3, [380, 300, 170, 230]], ["eval", "document.getElementById('heatEm').click();1"], ["wait", 1500], tag("z1", JS_ZH),
+         scen("v129 열 퍼짐", rec + jump(0.3) + [["wait", 3000], tag("z0", JS_ZH),   # v141f: 승온 중(스팀 개도 70 %)인 0.3 h. 전 1.3 h는 v139부터 승온이 끝난 뒤(개도 26 %)라 벽 막 온도 차가 3 ℃뿐이다
+                                    ["shot", str(SHOTS / "v129_강조_교반중.png"), "#stage", 3, [380, 300, 170, 230]], ["eval", "document.getElementById('heatEm').click();1"], ["wait", 1500], tag("z1", JS_ZH),
                                    ["eval", "document.getElementById('heatEm').click();1"], ["wait", 6000], tag("z2", JS_ZH), ["eval", JS_RPM(0)], ["wait", 25000], tag("z3", JS_ZH), ["shot", str(SHOTS / "v129_교반_정지.png"), "#stage", 3, [380, 300, 170, 230]],
                                    ["eval", JS_RPM(80)], ["wait", 3000], tag("z4", JS_ZH)]),
-         scen("v126 화면", rec + [tag("geo", JS_GEO)] + jump(1.25) + [tag("v6a", JS_V6A), ["wait", 1500], ["shot", str(SHOTS / "v126_예열_3D.png")]] + jump(6) + [["wait", 3000], tag("v6b", JS_V6B), tag("v7", JS_V7)])]
+         scen("v126 화면", rec + [tag("geo", JS_GEO)] + jump(0.74) + [["until", "(()=>{const D=window.__dt,P=D.PR,s=D.vaporStats();return (P.vdot>1&&!P.vpTop&&s.front>=0.3)||!!P.vpTop||P.t>3600*1.3})()", 120000], tag("v6a", JS_V6A),   # v141f: 예열 중(끓기 시작 ~ 꼭대기 넘기 전)이 0.64 ~ 0.96 h로 당겨졌다(전 jump(1.25))
+                           ["wait", 1500], ["shot", str(SHOTS / "v126_예열_3D.png")]] + jump(6) + [["wait", 3000], tag("v6b", JS_V6B), tag("v7", JS_V7)])]
     st4 = lambda name: ["shot", str(SHOTS / name), "#stage"]   # v131: 스테이지만(자리 = 화소) — 화살촉이 실제로 찍혔는지 그림에서 센다
     S += [scen("v131 진공 흐름", rec + jump(0.3) + [["wait", 3000], tag("p0", JS_VAC), V_ON, ["wait", 3500], tag("p1", JS_VAC), st4("v131_진공흐름_예열_3D.png")] + jump(6) + [["wait", 5000], tag("n3", JS_VAC), st4("v131_진공흐름_정상_3D.png"), tag("n3eq", JS_VEQ),
                                     V_2D, ["wait", 3500], tag("n2", JS_VAC), st4("v131_진공흐름_정상_2D.png"), tag("n2ov", JS_P2OV), tag("n2arr", JS_P2ARR), V_OFF, ["wait", 1500], st4("v131_진공흐름_정상_2D_끔.png"), V_3D, ["wait", 3000], st4("v131_진공흐름_정상_3D_끔.png"), tag("off", JS_VAC),
                                     V_ON, ["eval", "window.__dt.ab('pstop');1"]] + jump(6.6) + [["wait", 5000], tag("s3", JS_VAC), st4("v131_진공흐름_펌프정지_3D.png"), V_2D, ["wait", 3500], tag("s2", JS_VAC), st4("v131_진공흐름_펌프정지_2D.png")]),
-          scen("v131 진공 흐름 리크", rec + [V_ON] + jump(6) + [["eval", "window.__dt.ab('leak');1"]] + jump(7.3) + [["wait", 5000], tag("l3", JS_VAC), st4("v131_진공흐름_리크_3D.png"), V_2D, ["wait", 3500], tag("l2", JS_VAC), st4("v131_진공흐름_리크_2D.png")]),
+          scen("v131 진공 흐름 리크", rec + [V_ON] + jump(6) + [["eval", "window.__dt.ab('leak');1"]] + jump(10) +   # v141f: 전 jump(7.3) — 스팀 개도가 고정이라 리크 뒤 끓음이 1시간 반쯤 멈춘다
+                                          [["wait", 5000], tag("l3", JS_VAC), st4("v131_진공흐름_리크_3D.png"), V_2D, ["wait", 3500], tag("l2", JS_VAC), st4("v131_진공흐름_리크_2D.png")]),
           scen("v131 2차 부하", rec + jump(6) + [["wait", 4000], tag("c0", JS_VAC), V_ON, ["eval", "window.__dt.ab('c1hot');1"]] + jump(6.5) + [["wait", 5000], tag("c1", JS_VAC), st4("v131_2차부하_1차냉매95도_3D.png"), V_2D, ["wait", 3500], tag("c2", JS_VAC), st4("v131_2차부하_1차냉매95도_2D.png"),
                                   V_GL(True), ["wait", 5000], tag("t2", JS_VAC), V_3D, ["wait", 3000], tag("t3", JS_VAC), st4("v131_진공흐름_막힘계산_3D.png"), V_GL(False), ["wait", 4000], tag("t0", JS_VAC)]),
           scen("v131 스팀 게이지", rec + jump(6) + [["wait", 5000], tag("g0", JS_GA), st4("v131_스팀게이지_3D_자동.png"), ["click", ".dcs-tag.gauge .dg-r", 0.5, 0.5], ["wait", 1500], tag("g1", JS_GA), ["wait", 5000], tag("g2", JS_GA), st4("v131_스팀게이지_3D_수동.png"),
@@ -307,7 +310,7 @@ def judge(g, add):
         add("M5", "증기관 부속 상당 길이 = 내경 × (엘보 30 + 티 분기 60 + 티 직진 20 + 게이트 8 + 글로브 340)", abs(d["Lfit"] / Lf - 1) < 1e-6 and c["nTeeR"] == 1, f"시뮬 {d['Lfit']:.4f} m · 따로 {Lf:.4f} m(직진 티 {c['nTeeR']}개)", "같음(직진 티 1개 포함)")
         r = d["rev"]
         if r:
-            tb = r["B"] / (r["A"] - math.log10(0.1)) - r["C"]; ratio = 10 ** (r["A"] - r["B"] / (85 + r["C"])) / 10 ** (11.87 - 4597 / (85 + 273.15))
+            tb = r["B"] / (r["A"] - math.log10(0.1)) - r["C"]; ratio = 10 ** (r["A"] - r["B"] / (85 + r["C"])) / 10 ** (12.41 - 4597 / (85 + 273.15))   # v141f: CpHf 상수 A 12.41(사용자 결정 2026-11-24, 전 11.87)
             ok = abs(r["A"] - 11.89) < 1e-9 and abs(r["B"] - 4141) < 1e-9 and abs(d["revTb"] - tb) < 0.05 and abs(d["revP85"] / d["cpP85"] / ratio - 1) < 0.01 and "tdmahf_rev" in d["subOpts"] and "tdmahf" in d["subOpts"]
             add("M6", "비교용 물질 'TDMAHf 검토서 증기압'(A 11.89 · B 4141), 기본 TDMAHf는 그대로", ok, f"0.1 torr 끓는점 {d['revTb']:.2f} ℃(따로 {tb:.2f}) · 85 ℃ 증기압 ÷ CpHf = {d['revP85'] / d['cpP85']:.1f}배(따로 {ratio:.1f})", "식 직접 계산과 같음")
         else: add("M6", "비교용 물질 'TDMAHf 검토서 증기압'", False, "물질 표에 없음", "있음")
@@ -335,10 +338,10 @@ def judge(g, add):
             f"노즐 − 바닥 {(q['yRf'] - q['yU']) * 1000:.0f} mm · 관 조각 {len(seg)}개(바닥 {len(low)}개) · 밸브 자리 {[round(v, 2) for v in vr] if vr else None}(티 다음 구간 가운데 {round((q['xSpl'] + q['xU1']) / 2, 2)}, 높이 {round(q['ySpl'], 2)}) · 실 루프 {d['inp']['holdC']} kg", "300 mm · 5개 · 밸브는 티 다음 구간 · 0.55 kg")
     o = g("합침 운전 패널", "op")
     if o:
-        okp = bool(o.get("op") and o.get("sel") and o.get("dock")) and not o["closed"] and o["warnH"] > 0 and o["sel"][3] <= o["dock"][1] and o["op"][3] <= o["dock"][1]
+        okp = bool(o.get("op") and o.get("sel") and o.get("dock")) and not o["closed"] and (o["warnH"] > 0 or not o["warn"]) and o["sel"][3] <= o["dock"][1] and o["op"][3] <= o["dock"][1]
         add("C1", "운전 패널을 폈을 때(초류 경고 글이 뜬 채) 그 아래 이름표 선택 상자가 밸브 줄을 가리지 않음", okp,
-            f"패널 아래 끝 {o['op'][3] if o.get('op') else '–'} · 선택 상자 아래 끝 {o['sel'][3] if o.get('sel') else '–'} · 밸브 줄 위 {o['dock'][1] if o.get('dock') else '–'} px(경고 글 높이 {o['warnH']} px)", "둘 다 밸브 줄 위 · 경고 글 있음")
-        add("N7", "스팀 하한 경고 글이 원인을 스팀 밸브 가정값으로 밝힘(운전 설정 탓으로 적지 않음)", "가정" in o["warn"] and "목표가 너무 작음" not in o["warn"], o["warn"][:160], "'가정' 있음 · '목표가 너무 작음' 없음")
+            f"패널 아래 끝 {o['op'][3] if o.get('op') else '–'} · 선택 상자 아래 끝 {o['sel'][3] if o.get('sel') else '–'} · 밸브 줄 위 {o['dock'][1] if o.get('dock') else '–'} px(경고 글 높이 {o['warnH']} px)", "둘 다 밸브 줄 위(경고 글이 있으면 그 높이까지 — 레시피 개도면 스팀 하한 경고가 없다)")   # v138s-C1
+        add("N7", "스팀 하한 경고 글이 원인을 스팀 밸브 가정값으로 밝힘(운전 설정 탓으로 적지 않음) — 레시피 개도(CpHf 첫 화면)는 PI가 없어 경고 자체가 없다", (not o["warn"]) or ("가정" in o["warn"] and "목표가 너무 작음" not in o["warn"]), o["warn"][:160] or "경고 없음", "경고가 있으면 '가정' 있음 · '목표가 너무 작음' 없음")   # v138s-C1
     e = g("합침 2D 도면", "m2")
     if e:
         p0 = e["pre"]
@@ -378,7 +381,7 @@ def judge(g, add):
         f2 = lambda x: "–" if x is None else f"{x:.2f}"
         okF = z["Rfore"] is not None and abs(z["Rfore"] - 4) < 0.2 and z["Rmain"] is not None and abs(z["Rmain"] - 4) < 0.2 and z["Rlate"] is not None and abs(z["Rlate"] - 4) < 0.2
         okD = z["Dmain"] is not None and abs(z["Dmain"] - 6) < 0.4 and z["Dlate"] is not None and abs(z["Dlate"] - 5) < 0.4 and z["late"] and z["lateAt"] is not None and abs(z["lateAt"] - 70) < 1.5
-        add("N3", "운전 개념: 환류 4 kg/h 고정(초류·본류), 본류 유출 6 → 정제기 70 kg부터 5 kg/h", okF and okD,
+        add("N3", "운전 개념: 환류 4 kg/h 고정(초류·본류), 본류 유출 6 → 정제기 70 kg부터 5 kg/h — v139부터 스팀이 레시피 개도(고정)라 유출은 '증발 − 환류'로 정해져 설정을 따르지 않는다(환류 고정 · 유출 고정 가운데 어느 쪽인지 사용자 판단 대기)", okF and okD,
             f"환류 초류 {f2(z['Rfore'])} · 본류 {f2(z['Rmain'])} · 끝 무렵 {f2(z['Rlate'])} kg/h · 유출 본류 {f2(z['Dmain'])} → {f2(z['Dlate'])} kg/h(정제기 {f2(z['lateAt'])} kg에서 바꿈, {f2(z['tLate'])} h)", "환류 4 ± 0.2 · 유출 6 ± 0.4 → 5 ± 0.4 · 70 ± 1.5 kg")
         add("N3", "운전 개념: 초류 유출 2 kg/h(참고 — 스팀 밸브 가정값의 하한 열량이 초류에 필요한 열과 거의 같아, 전환류에서 데워진 액이 식는 동안 설정보다 많다)", None,
             f"초류 유출 평균 {f2(z['Dfore'])} kg/h(설정 2) · 스팀 개도 평균 초류 {f2(z['mvFore'])} % · 본류 {f2(z['mvMain'])} %", "참고(스팀 밸브 식을 현장 스팀 유량·개도로 맞춘 뒤 판정)")
@@ -613,7 +616,7 @@ def judge131(g, add):
     l3, l2 = g("v131 진공 흐름 리크", "l3"), g("v131 진공 흐름 리크", "l2")
     if l3 and l2 and n3:
         c = chain(l3); c0 = chain(n3); w, dd, fl = want(l3); bad = arrows_bad(l3, False) + arrows_bad(l2, True) + vals_bad(l3) + vals_bad(l2); a = {x["id"]: (x["on"], x["hollow"]) for x in l3["arr"]}
-        add("V9", "이상 상황에서 숫자 · 화살촉이 계산값대로 바뀐다(진공 리크 증가 5 mmHg/min, 78분 뒤): 펌프 쪽 압력이 올라 증기 배관 출구가 초킹되지 않으면 출구 압력 = 응축기 압력이 되고 그 구간 화살촉은 빈 것(방향만), 충전층 · 배관 구간은 채운 화살촉. 3D = 도면 = 계산값",
+        add("V9", "이상 상황에서 숫자 · 화살촉이 계산값대로 바뀐다(진공 리크 증가 5 mmHg/min, 4시간 뒤 — 스팀 개도가 고정이라 끓음이 한동안 멈췄다가 액이 새 끓는점까지 데워져 다시 끓은 때): 펌프 쪽 압력이 올라 증기 배관 출구가 초킹되지 않으면 출구 압력 = 응축기 압력이 되고 그 구간 화살촉은 빈 것(방향만), 충전층 · 배관 구간은 채운 화살촉. 3D = 도면 = 계산값",
             bool(not bad and c["cond"] > 5 * c0["cond"] and fl["vp"] > 1 and abs(c["exit"] - c["cond"]) <= fl["thr"] and a["in"] == (True, True) and a["neck"] == (True, False) and a["run"] == (True, False) and dd["BC"] < chain(n3)["top"] - chain(n3)["exit"]),
             f"응축기 {c0['cond']:.2f} → {c['cond']:.2f} mmHg · 정제기 {c['still']:.2f} · 상부 {c['top']:.2f} · 출구 {c['exit']:.2f} · 증기 {fl['vp']:.1f} kg/h · 마하 {l3['raw']['Mach']:.2f} · 화살촉(보임, 빈 것) {a} · 3D 값 {[l3['tags'].get(k) for k in VT]} · 도면 값 {[l2['p2']['vals'][k] for k in ('Ptop', 'Pexit', 'Pcond')]} · 어긋남 {bad or '없음'}",
             "출구 = 응축기 → 빈 화살촉 · 나머지 채운 화살촉 · 어긋남 없음")
@@ -622,10 +625,10 @@ def judge131(g, add):
         def ld2(d):
             r = d["raw"]; return None if not (r["cap2"] and r["cap2"] > 0) or r["stopped"] else 100 * r["Qv1"] * (1 - min(1, max(0, r["c1"]))) / r["cap2"]
         fmt = lambda v: "–" if v is None else (f"{v:.1f}" if v < 10 else f"{v:.0f}"); a, b1, b2 = ld2(c0), ld2(c1), ld2(c2); N2 = "E-H072 응축 부하(계산)"; t0, t1 = c0["tags"].get(N2), c1["tags"].get(N2); r1 = c1["raw"]; d2 = c2["p2"]["vals"]["C2load"]
-        okV = a is not None and b1 is not None and abs((c0["c2L"] or 0) - a) < 1e-9 and abs((c1["c2L"] or 0) - b1) < 1e-9 and t0 == fmt(a) + "%" and num(t1) is not None and abs(num(t1) - b1) < 0.06 and num(d2) is not None and abs(num(d2) - b2) < 0.06 and d2.endswith(" %")
+        okV = a is not None and b1 is not None and abs((c0["c2L"] or 0) - a) < 1e-9 and abs((c1["c2L"] or 0) - b1) < 1e-9 and t0 == fmt(a) + "%" and num(t1) is not None and abs(num(t1) - b1) < (0.5 if b1 >= 10 else 0.06) and num(d2) is not None and abs(num(d2) - b2) < (0.5 if b2 >= 10 else 0.06) and d2.endswith(" %")
         okSee = bool(c0["tvis"].get(N2) and c1["tvis"].get(N2) and c2["p2"]["box"].get("C2load"))
-        okHot = b1 is not None and r1["c1"] < 0.01 and b1 > 50 * max(a or 0, 1e-9) and abs(b1 - 100 * r1["Qv1"] / r1["cap2"]) < 0.02 * b1 and (r1["m2"] or 0) > 1 and str(c1["tags"].get("E-H071 응축 부하(계산)") or "–").startswith("–")
-        add("V5", "2차 응축기 부하 값 상자(3D '2차 부하' · 도면 'E-H072 부하'): 부하율 = 1차에서 응축되지 못하고 넘어온 증기의 응축 열 ÷ 2차 응축 능력 = Qv1·(1 − c1) ÷ cap2(1차와 같은 뜻 · 같은 형식). 1차 N-Brine 온도 상승(95 ℃)이면 증기가 모두 2차로 넘어가 부하율이 오르고 1차는 능력 0이라 '–'. 사용자 11-20 '2차콘덴서쪽도 2차 부하로 적어놓자'",
+        okHot = b1 is not None and r1["c1"] < 0.01 and b1 > 50 * max(a or 0, 1e-9) and abs(b1 - 100 * r1["Qv1"] / r1["cap2"]) < 0.02 * b1 and (r1["m2"] or 0) > 1 and str(c1["tags"].get("E-H071 응축 부하(계산)") or "–") in ("응축 불가",)
+        add("V5", "2차 응축기 부하 값 상자(3D '2차 부하' · 도면 'E-H072 부하'): 부하율 = 1차에서 응축되지 못하고 넘어온 증기의 응축 열 ÷ 2차 응축 능력 = Qv1·(1 − c1) ÷ cap2(1차와 같은 뜻 · 같은 형식). 1차 N-Brine 온도 상승(95 ℃)이면 증기가 모두 2차로 넘어가 부하율이 오르고 1차는 능력 0이라 '응축 불가'(v138 — 전에는 값 없음 '–'로 보여 구분이 안 됐다). 사용자 11-20 '2차콘덴서쪽도 2차 부하로 적어놓자'",
             bool(okV and okSee and okHot),
             f"정상: 넘어온 열 {c0['raw']['Qv1'] * (1 - c0['raw']['c1']):.3f} W ÷ 능력 {c0['raw']['cap2'] / 1000:.1f} kW = {(a or 0):.5f} % → 상자 '{t0}' · 1차 N-Brine 95 ℃: 1차 응축 비율 {r1['c1']:.3f} · 2차로 {(r1['m2'] or 0):.2f} kg/h · {r1['Qv1']:.0f} W ÷ {(r1['cap2'] or 0) / 1000:.1f} kW = {(b1 or 0):.3f} % → 상자 '{t1}' · 도면 '{d2}' · 1차 상자 '{c1['tags'].get('E-H071 응축 부하(계산)')}' · 화면에 보임 {okSee}", "상자 = 따로 구한 값 · 보임 · 냉매 온도 상승 때 50배 넘게 오름")
     t2, t3, t0 = g("v131 2차 부하", "t2"), g("v131 2차 부하", "t3"), g("v131 2차 부하", "t0")
@@ -639,19 +642,20 @@ def judge131(g, add):
     sn = "v131 스팀 게이지"; G = {k: g(sn, k) for k in ("g0", "g1", "g2", "g3", "g4", "g5", "h0", "h1", "h2", "h3", "h4", "h5")}
     if all(G.values()):
         g0, g1, g2, g3, g4, g5, h0, h1, h2, h3, h4, h5 = (G[k] for k in ("g0", "g1", "g2", "g3", "g4", "g5", "h0", "h1", "h2", "h3", "h4", "h5"))
+        AUTO = "레시피 개도" if g0.get("rule") == "mv" else "자동(PI) 조절 중"; LOGA = "스팀 레시피 개도로 복귀" if g0.get("rule") == "mv" else "스팀 자동(PI) 복귀"   # v138s: 레시피 개도면 '자동' = 레시피 개도
         bx = g0["box"]; vx = g0["valve"]; dist = math.hypot(max(bx[0], min(vx[0], bx[0] + bx[2])) - vx[0], max(bx[1], min(vx[1], bx[1] + bx[3])) - vx[1]) if bx and vx else 999
         same = bool(bx and g1["box"] and g4["box"]) and all(abs(a - b) < 0.6 for a, b in zip(bx, g1["box"])) and all(abs(a - b) < 0.6 for a, b in zip(bx, g4["box"]))
-        ok0 = g0["el"] and g0["recipe"] and not g0["hold"] and g0["chip"] is False and g0["mode"] == "자동(PI) 조절 중" and abs(g0["rv"] - round(g0["mv"])) <= 1 and dist <= 30 and g0["reach"] and not g0["pop"]
+        ok0 = g0["el"] and g0["recipe"] and not g0["hold"] and g0["chip"] is False and g0["mode"] == AUTO and abs(g0["rv"] - round(g0["mv"])) <= 1 and dist <= 30 and g0["reach"] and not g0["pop"]
         ok1 = g1["hold"] and g1["chip"] and g1["held"] and g1["mode"] == "수동 고정" and 45 <= g1["rv"] <= 55 and abs(g1["mv"] - g1["rv"]) < 0.6 and abs(g2["mv"] - g1["mv"]) < 0.6 and g2["vdot"] > g0["vdot"] + 0.3 and not g1["pop"] and same
         ok3 = g3["hold"] and 14 <= g3["rv"] <= 26 and abs(g3["mv"] - g3["rv"]) < 0.6
-        ok4 = (not g4["hold"]) and g4["chip"] is False and not g4["held"] and g4["mode"] == "자동(PI) 조절 중" and "스팀 자동(PI) 복귀" in " ".join(g4["log"]) and abs(g5["mv"] - g3["mv"]) > 0.3
-        add("V6", "스팀 밸브 옆 개도 게이지(3D): '스팀 개도' 값 상자 안의 막대가 지금 개도(자동이면 스팀 PI가 정한 값)와 '자동(PI) 조절 중'을 보인다. 막대를 누르거나 끌면 개도가 바로 바뀌고, 레시피 운전 중이면 그 개도로 고정되어 '수동 고정'과 [자동으로]가 나타난다. [자동으로]를 누르면 스팀 PI로 돌아간다(운전 패널의 '스팀 자동(PI)으로'와 같음). 상자 크기 · 자리는 그대로. 사용자 11-20 '스팀밸브옆에서 그냥 바로 게이지가있어서 내가 바로바로 게이지조절'",
+        ok4 = (not g4["hold"]) and g4["chip"] is False and not g4["held"] and g4["mode"] == AUTO and LOGA in " ".join(g4["log"]) and abs(g5["mv"] - g3["mv"]) > 0.3
+        add("V6", "스팀 밸브 옆 개도 게이지(3D): '스팀 개도' 값 상자 안의 막대가 지금 개도(자동이면 레시피 개도 — '스팀 개도 정하는 법'이 응축량 맞춤이면 스팀 PI가 정한 값)와 '레시피 개도'(응축량 맞춤이면 '자동(PI) 조절 중')를 보인다. 막대를 누르거나 끌면 개도가 바로 바뀌고, 레시피 운전 중이면 그 개도로 고정되어 '수동 고정'과 [자동으로]가 나타난다. [자동으로]를 누르면 레시피 개도(응축량 맞춤이면 스팀 PI)로 돌아간다(운전 패널의 '스팀 레시피 개도로' · '스팀 자동(PI)으로'와 같음). 상자 크기 · 자리는 그대로. 사용자 11-20 '스팀밸브옆에서 그냥 바로 게이지가있어서 내가 바로바로 게이지조절'",
             bool(ok0 and ok1 and ok3 and ok4),
-            f"자동: 막대 {g0['rv']} · 개도 {g0['mv']:.1f} % · '{g0['mode']}' · 밸브까지 {dist:.0f} px · 막대가 맨 위 {g0['reach']} → 가운데를 누름: {g1['mv']:.0f} %('{g1['mode']}' · [자동으로] {g1['chip']}) · 5초 뒤 {g2['mv']:.0f} % · 증발 {g0['vdot']:.2f} → {g2['vdot']:.2f} kg/h · 상자 그대로 {same} → 끌어서 {g3['mv']:.0f} % → [자동으로]: 고정 {g4['hold']} · '{g4['mode']}' · 6초 뒤 {g5['mv']:.1f} %", "누름 · 끌기 = 그 개도로 고정 · [자동으로] = PI 복귀 · 밸브에서 30 px 안")
+            f"자동: 막대 {g0['rv']} · 개도 {g0['mv']:.1f} % · '{g0['mode']}' · 밸브까지 {dist:.0f} px · 막대가 맨 위 {g0['reach']} → 가운데를 누름: {g1['mv']:.0f} %('{g1['mode']}' · [자동으로] {g1['chip']}) · 5초 뒤 {g2['mv']:.0f} % · 증발 {g0['vdot']:.2f} → {g2['vdot']:.2f} kg/h · 상자 그대로 {same} → 끌어서 {g3['mv']:.0f} % → [자동으로]: 고정 {g4['hold']} · '{g4['mode']}' · 6초 뒤 {g5['mv']:.1f} %", "누름 · 끌기 = 그 개도로 고정 · [자동으로] = 레시피 개도(또는 PI) 복귀 · 밸브에서 30 px 안")
         gg = h0["g2"] or {}; pos = (gg["cx"] - gg["x0"]) / (gg["x1"] - gg["x0"]) * 100 if gg else -1
-        ok20 = h0["iso"] and bool(gg) and not gg["auto"] and gg["mode"] == "자동(PI) 조절 중" and abs(pos - h0["mv"]) < 1.5 and (gg["hit"] or [0, 0])[0] > 20
+        ok20 = h0["iso"] and bool(gg) and not gg["auto"] and gg["mode"] == AUTO and abs(pos - h0["mv"]) < 1.5 and (gg["hit"] or [0, 0])[0] > 20
         ok21 = h1["hold"] and h1["g2"]["auto"] and h1["g2"]["mode"] == "수동 고정" and 55 <= h1["mv"] <= 70 and h1["g2"]["num"] == f"{h1['mv']:.1f} %" and 20 <= h2["mv"] <= 34 and h2["g2"]["view"] == h0["g2"]["view"]
-        ok22 = 78 <= h3["mv"] <= 92 and h3["hold"] and (not h4["hold"]) and not h4["g2"]["auto"] and h4["g2"]["mode"] == "자동(PI) 조절 중" and abs(h5["mv"] - h3["mv"]) > 0.2
+        ok22 = 78 <= h3["mv"] <= 92 and h3["hold"] and (not h4["hold"]) and not h4["g2"]["auto"] and h4["g2"]["mode"] == AUTO and abs(h5["mv"] - h3["mv"]) > 0.2
         add("V7", "스팀 밸브 옆 개도 게이지(도면): 'TCV-H071 개도' 값 상자 안의 막대 — 누름 · 끌기 · 터치 포인터로 개도가 바뀌고, 끄는 동안 도면은 움직이지 않는다. 상태 글(자동 · 수동 고정)과 [자동으로]는 3D와 같다",
             bool(ok20 and ok21 and ok22),
             f"도면 막대 자리 {pos:.1f} %(개도 {h0['mv']:.1f} % · '{gg.get('mode')}' · 누르는 자리 {[round(x) for x in (gg.get('hit') or [0, 0])]} px) → 누름 {h1['mv']:.0f} %('{h1['g2']['num']}' · '{h1['g2']['mode']}') → 끌기 {h2['mv']:.0f} % · 도면 보는 범위 그대로 {h2['g2']['view'] == h0['g2']['view']} → 터치 {h3['mv']:.0f} % → [자동으로]: 고정 {h4['hold']} · 5초 뒤 {h5['mv']:.1f} %", "누름 · 끌기 · 터치로 바뀜 · 도면 안 움직임 · 자동 복귀")
@@ -1095,10 +1099,13 @@ def _xj_steam(g, add):   # (G) 스팀 과다 · 펌프 쪽 넘침
     # ---------------- (G) 스팀 과다 · 펌프 쪽 넘침 ----------------
     sn = "현실성 스팀 과다 · 펌프 쪽 넘침"; g1, g3, g32 = g(sn, "g_1"), g(sn, "g_3"), g(sn, "g_3_2d")
     if g1:
+        _ov = lambda x: bool(x) and ((x["hot"] or 0) > 0 or (x["Tlim"] is not None and (x["TmaxL"] or 0) > x["Tlim"]))
+        _gs = [(nm, x) for nm, x in (("g_1", g1), ("g_2", g(sn, "g_2")), ("g_3", g3)) if x]; _hit = next(((nm, x) for nm, x in _gs if _ov(x)), None)   # v141f: 한계를 넘은 첫 표본(새 밸브 특성에서는 20분 뒤가 아니라 약 50분 뒤에 넘는다)
+        _tr = " → ".join(f"{x['T']} ℃" for _, x in _gs); g1 = _hit[1] if _hit else g1
         alarm = [t for t in g1["tags"] if re.search(r"bad|alarm|warn|hot", t[2] or "") and re.search(r"TICH071|탱크 내부|TIH", t[0] or "")]
         over = (g1["hot"] or 0) > 0 or (g1["Tlim"] is not None and (g1["TmaxL"] or 0) > g1["Tlim"])
         add("X53", f"열안정성 한계 초과(스팀 개도 과다) — {L3}: 넘은 액 비율이 0보다 크면 화면에 한계 초과 표현(글 · 붉은 빛 · 값 상자 경고 색 가운데 하나)이 보인다",
-            over and bool(g1["txtHot"] or g1["glow"] or alarm), f"내부 {g1['T']} ℃ · 최고 액온 {g1['TmaxL']} ℃ · 한계 {g1['Tlim']} ℃ · 넘은 액 비율 {g1['hot']} · 보이는 글 {g1['txtHot'] or '0건'} · 붉은 빛 {g1['glow']} · 경고 색 값 상자 {alarm or '0개'}", "한계를 넘으면 표현 있음")
+            over and bool(g1["txtHot"] or g1["glow"] or alarm), f"내부 온도 흐름 {_tr}({_hit[0] if _hit else '넘은 표본 없음'}에서 판정) · 내부 {g1['T']} ℃ · 최고 액온 {g1['TmaxL']} ℃ · 한계 {g1['Tlim']} ℃ · 넘은 액 비율 {g1['hot']} · 보이는 글 {g1['txtHot'] or '0건'} · 붉은 빛 {g1['glow']} · 경고 색 값 상자 {alarm or '0개'}", "한계를 넘으면 표현 있음")
     if g3 and g32 and not g32.get("hidden"):
         s = g3["S"]; liq3 = bool(s) and s[5] > 0 and s[6] == 0; onS = [x for x in g32["S"]["st"] if x[0] == 1]; liq2 = bool(onS) and any(_xisblue(x[2]) for x in onS); cov = _xcover(_xpng("x_g_3_2d.png"), g32["S"]["pts"])
         lostv = bool(g3["txtLost"]) or any(re.search(r"잃은|손실 액|펌프 쪽.{0,8}액", (t[0] or "") + (t[1] or "")) for t in g3["tags"]) or bool(g32["txt"])
@@ -1160,7 +1167,7 @@ def _xd_boil(g, add):   # N1 · N2 · N8
         "첫 보인 시각 끓음 ≤ 정제기 위 ≤ 목관 ≤ 컬럼 ≤ 증기관 ≤ 뚜껑 ≤ 관, 증기관 ≥ 꼭대기 넘음, 관 ≥ 응축 시작, 끓음 → 정제기 위 60 s(공정) 안")
     vs = b.get("vs") or []; dif = [abs(v[4] - v[1] / v[2]) for v in vs if v[4] is not None and v[3] and v[2]]
     add("X22", f"{DS3} 증기관 김 앞머리 = 지금 장면의 증기 앞머리(VF.headLenV ÷ VF.lenV)(N2)", bool(dif) and max(dif) <= 0.03, f"0.5 s마다 {len(dif)}표본 · 차 최대 {round(max(dif), 4) if dif else '–'}", "차 ≤ 0.03(관 길이 비)")
-    pairs = [("l.C", "v.tub"), ("l.C", "vpCond"), ("c1film", "v.tub"), ("pool", "v.tub"), ("c1str", "c1film"), ("l.R", "l.C"), ("RD", "l.R"), ("filmR", "RD"), ("filmC", "v.col"), ("neck", "v.col"), ("l.P", "l.C"), ("l.F", "l.P"), ("l.FL", "l.F"), ("foreStream", "l.FL"), ("vpDrops", "v.col")]
+    pairs = [("l.C", "v.tub"), ("l.C", "vpCond"), ("c1film", "v.tub"), ("pool", "v.tub"), ("c1str", "c1film"), ("pool", "c1str"), ("l.C", "c1str"), ("l.R", "l.C"), ("RD", "l.R"), ("filmR", "RD"), ("filmC", "v.col"), ("neck", "v.col"), ("l.P", "l.C"), ("l.F", "l.P"), ("l.FL", "l.F"), ("foreStream", "l.FL"), ("vpDrops", "v.col")]
     nm = {"l.C": "응축액 관", "v.tub": "응축기 관 김", "vpCond": "응축 시작", "c1film": "응축기 관 액막", "pool": "응축기 바닥 고임", "c1str": "관 끝 줄기", "l.R": "환류 관", "RD": "분배 줄기", "filmR": "충전층 적심", "filmC": "컬럼 맺힌 액막", "v.col": "컬럼 김", "neck": "목관 줄기", "l.P": "유출 관", "l.F": "초류 가지", "l.FL": "초류 입구 관", "foreStream": "초류 줄기", "vpDrops": "떨어지는 방울"}
     pc = lambda a, c: min([x for x in (f.get(c), f.get("rfx") if (a, c) == ("l.R", "l.C") else None) if x is not None], default=None)   # rfx136 v136 사본: 환류 관(U자 고인 액)은 응축액 관 또는 빈 환류관 관 벽 응축(PR.rfx.condTot > 0) 뒤
     bad = [f"{nm[a]}({m(a)}) < {nm[c]}({m(c)})" for a, c in pairs if f.get(a) is not None and (pc(a, c) is None or f[a] < pc(a, c) - 0.05)]; seen = [a for a, c in pairs if f.get(a) is not None]
@@ -1237,7 +1244,13 @@ def _xd_valve(g, add):   # N9 · N10 · N11 · N12 · N4
     r0, r1 = g(sn, "ds_r0"), g(sn, "ds_r1")
     if r0 and r1:
         a, b = r0.get("b"), r1.get("b"); ok = bool(a and b and a[1] > a[0] and abs(a[0] - b[0]) < 0.01 and abs(a[1] - b[1]) < 0.01)
-        add("X59", f"{DS3} 환류 밸브를 닫아 U자에 액이 남은 상태에서 도면을 다녀와도 남은 액 표시가 그대로(N11 · X12)", ok, f"닫고 8 s 남는 구간 {a} · 도면 3 s 다녀온 뒤 {b} · 실 루프 {r0.get('seal')} → {r1.get('seal')} kg · 밸브 {r0.get('VR')}", "남는 구간 있음 · 다녀온 뒤 = 바꾸기 전 ± 0.01(관 길이 비)")
+        s0, s1 = r0.get("sealp"), r1.get("sealp")
+        if s0 and s1:   # v141: U자 액봉 = 수평 액면(dsfSealStep) — 관 길 방향 '남는 구간'이 없어 액봉 질량 · 양쪽 액면 · 닫힌 밸브 앞 층 높이로 잰다
+            mF = (s0.get("geo") or {}).get("mFull") or 0; same = lambda k: s0.get(k) is not None and s1.get(k) is not None and abs(s0[k] - s1[k]) < 0.002
+            ok2 = bool(s0.get("vis") and s1.get("vis") and mF > 0 and s0["m"] >= 0.99 * mF and abs(s0["m"] - s1["m"]) < 0.005 and same("Yin") and same("Yout") and same("yup"))
+            add("X59", f"{DS3} 환류 밸브를 닫아 U자에 액이 남은 상태에서 도면을 다녀와도 남은 액 표시가 그대로(N11 · X12) — v141: 액봉 질량 · 양쪽 액면 · 닫힌 밸브 앞 층 높이", ok2,
+                f"닫고 8 s 액봉 {s0.get('m')} kg(다 찬 값 {mF}) · 액면 응축기 쪽 {s0.get('Yin')} · 컬럼 쪽 {s0.get('Yout')} · 밸브 앞 층 {s0.get('yup')} → 도면 3 s 다녀온 뒤 {s1.get('m')} · {s1.get('Yin')} · {s1.get('Yout')} · {s1.get('yup')} · 밸브 {r0.get('VR')}", "액봉이 보이고 다 찬 채로 남음 · 다녀온 뒤 질량 ± 0.005 kg · 높이 ± 2 mm(그림 길이 0.002)")
+        else: add("X59", f"{DS3} 환류 밸브를 닫아 U자에 액이 남은 상태에서 도면을 다녀와도 남은 액 표시가 그대로(N11 · X12)", ok, f"닫고 8 s 남는 구간 {a} · 도면 3 s 다녀온 뒤 {b} · 실 루프 {r0.get('seal')} → {r1.get('seal')} kg · 밸브 {r0.get('VR')}", "남는 구간 있음 · 다녀온 뒤 = 바꾸기 전 ± 0.01(관 길이 비)")
     hd = g(sn, "ds_hold")
     if hd and hd.get("s"):
         s = hd["s"]; i0 = next((i for i, r in enumerate(s) if r[11] == 0 and r[12] == 0), None)
@@ -1259,8 +1272,14 @@ def _xd_valve(g, add):   # N9 · N10 · N11 · N12 · N4
                 f"넘침 > 1 kg/h +{None if tov is None else round(tov - t0, 1)} s · 배기관 액 +{None if tT2 is None or tov is None else round(tT2 - tov, 2)} s · L2 액 +{None if tL2 is None or tov is None else round(tL2 - tov, 2)} s", "넘침 뒤 화면 1 s 안에 배기관 · L2 액")
     qs = [g(sn, f"ds_q{i}") for i in range(1, 6)]; qs = [q for q in qs if q]
     if qs:
-        ok = all(abs((q.get("ds") or 0) - min(1, max(0, q.get("spl") or 0))) < 0.002 for q in qs)
-        add("X5", f"{DS3} 환류 · 유출을 닫으면 분배기에 액이 고임 = 계산 분배기 액 비(N12 · X13)", ok, " / ".join(f"계산 {round(q.get('spl') or 0, 4)} · 그림 {q.get('ds')}" for q in qs), "15 s마다 그린 비 = 계산 비 ± 0.002")
+        ok = all(abs((q.get("ds") or 0) - min(1, max(0, q.get("spl") or 0))) < 0.002 for q in qs); lv = []
+        for q in qs:   # v141: 분배기 = T자 관 — 고임은 티 세로 관 액면으로 그린다. 높이 = max(닫는 순간의 층 높이, 가로 관 바닥 + 계산 분배기 액 비 × (티 위 끝 − 가로 관 바닥)), 응축액 관 몫은 그 위
+            s = q.get("seal") or {}; ge = s.get("geo") or {}
+            if ge.get("yTee") is None or s.get("yT") is None: continue
+            sp = min(1, max(0, q.get("spl") or 0)); cp = min(1, max(0, q.get("cp") or 0)); yc = (ge["invIn"] + sp * (ge["yTee"] - ge["invIn"]) if sp < 1 else ge["yTee"] + cp * (ge["yCt"] - ge["yTee"])) if sp > 0.002 else -1e9
+            ex = max(ge["invIn"], s["yup"] if s.get("yup") is not None else -1e9, yc); lv.append((round(s["yT"], 4), round(ex, 4)))
+        if lv: ok = ok and all(abs(a - b) < 0.002 for a, b in lv)
+        add("X5", f"{DS3} 환류 · 유출을 닫으면 분배기에 액이 고임 = 계산 분배기 액 비(N12 · X13)", ok, " / ".join(f"계산 {round(q.get('spl') or 0, 4)} · 그림 {q.get('ds')}" for q in qs) + (f" · 티 세로 관 액면(그림, 계산에서 정한 높이) {lv}" if lv else ""), "15 s마다 그린 비 = 계산 비 ± 0.002" + (" · 티 액면 = 정한 높이 ± 0.002" if lv else ""))
 
 def _xd_c1hot(g, add):   # N5
     sn = "새디자인 1차 냉매 95도"; p2, cv = g(sn, "ds_c2"), g(sn, "ds_cv")
@@ -1338,9 +1357,10 @@ def _xd_ab(g, add):   # N13(이상 상황 열 가지 — 1차 냉매 온도 상�
         b0, b2 = p0["calc"]["back"], p2["calc"]["back"]; fm0, fm2 = p0["liq"]["film"], p2["liq"]["film"]; c0, c2 = fm0.get("cvC"), fm2.get("cvC")
         # v135 사본(조율 쪽 지시 11-23): v134 규칙 — 맺혀 내려오는 액막의 덮는 비 = 같은 유량을 나르는 줄기 4줄의 지름 합 ÷ 액막 둘레(분배 · 목관 줄기와 같은 줄기 식, 사용자 지시 '액막도 같은 유량 기준').
         #  줄기 반지름 d(q) = max(1.1 mm, 2.585 mm × √(q ÷ 4)) — 4줄 바닥값 아래(q ≤ 0.72 kg/h)는 같은 덮는 비. 그래서 덮는 비의 비 = d(q2) ÷ d(q0)(화면 배율 · 둘레는 같은 카메라라 지워짐) ± 15 %. 전 판정(v132 규칙: 0.05 + 응축 ÷ 45)은 바꿈
-        d = lambda q: max(1.1, 2.585 * math.sqrt(max(0.0, q) / 4)); want = d(b2) / d(b0) if b0 > 0.05 else None
+        d = lambda q: max(1.1, 2.585 * math.sqrt(max(0.0, q) / 4)); q0x, q2x = (max(0.0, (p["calc"].get("L") or 0) - (p["calc"].get("R") or 0)) for p in (p0, p2))   # v141: 그림이 쓰는 양 = 컬럼 아래 액 − 환류(Lkg − Rkg)
+        want = d(q2x) / d(q0x) if b0 > 0.05 and q0x > 0.05 else None
         ok = bool(b2 > b0 and c0 and c2 and want and c2 >= c0 * (1 - 0.02) and abs(c2 / c0 - want) <= 0.15 * want)
-        add("X50", f"{DS3} {nm} — 컬럼 안 응축이 늘면 맺혀 내려오는 액막이 줄지 않고, 덮는 비가 줄기 식을 따른다(N13 · v135 사본: v134 같은 줄기 식 규칙)", ok, f"컬럼 안 응축 {b0} → {b2} kg/h · 덮는 비 {c0} → {c2}(비 {None if not (c0 and c2) else round(c2 / c0, 3)} · 줄기 식 비 {None if want is None else round(want, 3)}) · 셰이더 값 {fm0.get('c')} → {fm2.get('c')}", "응축이 늘고 덮는 비가 줄지 않음, 덮는 비의 비 = d(q2) ÷ d(q0) ± 15 %")
+        add("X50", f"{DS3} {nm} — 컬럼 안 응축이 늘면 맺혀 내려오는 액막이 줄지 않고, 덮는 비가 줄기 식을 따른다(N13 · v135 사본: v134 같은 줄기 식 규칙)", ok, f"컬럼 안 응축 {b0} → {b2} kg/h · 컬럼 아래 액 − 환류 {round(q0x, 3)} → {round(q2x, 3)} kg/h · 덮는 비 {c0} → {c2}(비 {None if not (c0 and c2) else round(c2 / c0, 3)} · 줄기 식 비 {None if want is None else round(want, 3)}) · 셰이더 값 {fm0.get('c')} → {fm2.get('c')}", "응축이 늘고 덮는 비가 줄지 않음, 덮는 비의 비 = d(q2) ÷ d(q0) ± 15 %(q = 컬럼 아래 액 − 환류)")
 
 def _xd_flood(g, add):   # N14
     sn = "새디자인 범람"; ps = [(t, g(sn, t)) for t in ("ds_fl0", "ds_fl1", "ds_fl2")]; ps = [(t, p) for t, p in ps if p]
@@ -1395,10 +1415,106 @@ def _xd_default(g, add):   # N16 · 와류(4단계 A17)
         add("X36", f"{DS3} 정제기 액면 = 교반 와류 모양(계산 액면 식 M.surfY), 넓이 평균 = 계산 평균 액면 PR.h(4단계 A17)", bool(vx) and (vx.get("wall") or 0) > 0 and (vx.get("center") or 0) < 0 and abs(vx.get("meanCheck", 1)) <= 0.003,
             f"벽 쪽 {vx.get('wall')} m · 가운데 {vx.get('center')} m · 넓이 평균 − 평균 액면 {vx.get('meanCheck')} m", "벽 쪽 > 0 · 가운데 < 0 · 평균 차 ≤ 3 mm")
 
+def _segh(a):   # 원의 활꼴 넓이 비 → 높이 비(지름에 대한) — 점검기 쪽에서 따로 푼다
+    a = max(0.0, min(1.0, a))
+    if a <= 0: return 0.0
+    if a >= 1: return 1.0
+    lo, hi = 0.0, 2 * math.pi
+    for _ in range(40):
+        th = (lo + hi) / 2
+        if (th - math.sin(th)) / (2 * math.pi) < a: lo = th
+        else: hi = th
+    return (1 - math.cos((lo + hi) / 4)) / 2
+def _xd_useal(g, add):   # v141: 환류 관 U자 액봉(수평 액면) — 요구목록 (Y)절
+    sn = "새디자인 U자 액봉"; u = g(sn, "ds_u")
+    if not u or not u.get("s") or not u.get("geo"): return
+    S = u["s"]; ge = u["geo"]; mF = ge["mFull"]; mS = u.get("mSeal") or 0.2 * mF; Ri = ge["Ri"]; yB0, yB1, inv = ge["yB0"], ge["yB1"], ge["inv"]
+    ic = next((i for i, r in enumerate(S) if r[23] == 0), len(S)); F = S[:ic]   # 환류 밸브를 닫기 전까지
+    first = lambda f: next((r[0] for r in F if f(r)), None); fm = lambda v: "–" if v is None else f"{v:.1f}"
+    tC, tp0, tp1, thq, tarr, tm, tfull, tov = first(lambda r: (r[21] or 0) >= 0.999), first(lambda r: r[17] > 0), first(lambda r: r[17] >= 1), first(lambda r: r[11] > 0), first(lambda r: r[15] == 1), first(lambda r: r[5] > 0.002), first(lambda r: r[16] == 1), first(lambda r: r[14] == 1)
+    seq = [tC, tp0, tp1, thq, tarr, tm, tfull, tov]
+    add("Y4", f"{DS3} U자 액봉 — 차례: 응축액 관 끝 → 티 아래 세로 관(데드 레그)이 차기 시작 → 다 참 → 환류 쪽 줄기 → 줄기가 고일 자리에 닿음 → 고임 → 다 참 → 넘침", all(x is not None for x in seq) and all(seq[i] <= seq[i + 1] + 0.11 for i in range(len(seq) - 1)),
+        " → ".join(f"{n} {fm(v)}" for n, v in zip(["응축액 관 끝", "데드 레그 시작", "다 참", "줄기 시작", "닿음", "고임", "액봉 다 참", "넘침"], seq)) + " (화면 s)", "첫 시각이 이 차례(0.1 s 표본 한 칸 여유) · 모두 일어남")
+    aft = [r for r in F if tarr is not None and r[0] >= tarr + 0.25]; dec = [(a[0], a[5], b[5]) for a, b in zip(F, F[1:]) if b[5] < a[5] - 1e-4]
+    ks = [(mF - r[5]) / (mF - r[4]) for r in aft if r[4] is not None and mF - r[4] > 0.02]; over = [r for r in F if r[5] > min(mF, r[4] or 0) + 1e-3]
+    tcf = first(lambda r: (r[4] or 0) >= mF - 1e-4); lag = None if tcf is None or tfull is None else round(tfull - tcf, 2)
+    add("Y1", f"{DS3} U자 액봉 — 그림 채움이 계산 액봉 질량을 따라간다: 줄기가 닿기 전에는 고이지 않고, 닿은 뒤에는 (다 찬 값 − 그림) ÷ (다 찬 값 − 계산)이 그대로(남은 용량 비례 — 가벼움 표현과 같은 규칙), 줄지 않고 계산을 앞지르지 않으며, 계산이 다 차는 때 함께 다 찬다",
+        bool(ks) and max(ks) / min(ks) - 1 <= 0.03 and not dec and not over and (tm is None or tarr is None or tm >= tarr - 0.11) and lag is not None and abs(lag) <= 0.35,
+        f"닿은 뒤 표본 {len(ks)} · 비 {round(min(ks), 3) if ks else '–'} ~ {round(max(ks), 3) if ks else '–'} · 줄어든 표본 {len(dec)} · 계산을 앞지른 표본 {len(over)} · 닿음 {fm(tarr)} s · 첫 고임 {fm(tm)} s · 계산 다 참 → 그림 다 참 {lag} s", "비가 ± 3 % 안에서 그대로 · 줄어듦 0 · 앞지름 0 · 고임은 닿은 뒤 · 다 차는 때 차 ≤ 0.35 s")
+    e1 = []; e2 = []; e3 = []; e0 = []
+    for r in F:
+        m, Yin, Yout, d, dP, rho = r[5], r[6], r[7], r[8], r[20], (r[25] or 1500)
+        if m <= 1e-4: continue
+        if m < mS - 1e-6: e0.append(max(abs(Yout - (yB0 + 2 * Ri * _segh(m / mS))), abs(Yin - Yout)))
+        elif m < mF - 1e-6:
+            lf = (m - mS) / (mF - mS); e1.append(abs(Yout - (yB1 + lf * (inv - yB1)))); e2.append(abs((Yin - Yout) - d * min(1, lf / 0.1)))
+            if tarr is not None and r[0] >= tarr + 3 and dP is not None and lf > 0.15:
+                dx = min(2.4 * Ri, dP * 133.322 / (rho * 9.81) / (ge["Dr"] / 1000) * 2 * Ri)
+                if dx > 1e-5: e3.append(abs(d / dx - 1))
+    add("Y2", f"{DS3} U자 액봉 — 액면 높이 = 식: 바닥 관은 활꼴 넓이 비 → 높이(양쪽 같음), 다리는 채움 비 × (넘침 높이 − 바닥 관 위 끝), 응축기 쪽 − 컬럼 쪽 = ΔP ÷ (ρ g)(계산 압력 차, 관 안지름에 대한 비)", bool(e1) and bool(e0) and max(e0) <= 0.001 and max(e1) <= 0.001 and max(e2) <= 0.0006 and bool(e3) and max(e3) <= 0.15,
+        f"바닥 관 표본 {len(e0)} · 차 최대 {round(max(e0), 5) if e0 else '–'} · 다리 표본 {len(e1)} · 컬럼 쪽 액면 차 최대 {round(max(e1), 5) if e1 else '–'} · 액면 차의 차 최대 {round(max(e2), 5) if e2 else '–'} · ΔP 머리 ÷ 따로 계산한 값 − 1 최대 {round(max(e3), 3) if e3 else '–'}({len(e3)}표본)", "높이 ± 0.001(그림 길이) · 액면 차 ± 0.0006 · ΔP 머리 ± 15 %(따라가기 0.5 s 몫)")
+    pre = [r for r in F if r[16] == 0 and r[10] < ge["xo"] - 1e-4]; ovbad = [r for r in F if r[14] == 1 and not ((r[3] or 0) > 0.05 and r[16] == 1)]
+    tend = first(lambda r: r[14] == 1 and r[10] <= ge["xe"] + 0.03); trd = first(lambda r: r[22] == 1)
+    add("Y3", f"{DS3} U자 액봉 — 넘침: 다 차기 전에는 컬럼 쪽 가로 관에 액이 없고, 넘침 층은 계산 환류가 흐를 때만, 앞머리는 2 s 안에 컬럼에 닿고 분배 줄기는 그 뒤", not pre and not ovbad and tov is not None and tend is not None and tend - tov <= 2 and (trd is None or trd >= tend - 0.31),
+        f"다 차기 전 컬럼 쪽 가로 관에 액이 있던 표본 {len(pre)} · 환류 없이 넘침 층이 있던 표본 {len(ovbad)} · 넘침 시작 {fm(tov)} → 컬럼 도착 {fm(tend)} s · 분배 줄기 {fm(trd)} s", "표본 0 · 0 · 2 s 안 · 분배 줄기 ≥ 도착")
+    fl = [r for r in F if (r[21] or 0) >= 0.999 and len(r) > 26 and r[26] is not None]; rate = (fl[-1][26] - fl[0][26]) / (fl[-1][0] - fl[0][0]) if len(fl) >= 10 and fl[-1][0] > fl[0][0] else None
+    add("Y7", f"{DS3} 관 속 액 — 흐르는 동안 무늬가 움직인다(응축액 관의 무늬 위치 값이 늘어남. v136 ~ v139는 이 값이 늘 0이라 액이 멈춰 보였다)", rate is not None and rate > 0.05,
+        f"응축액 관이 찬 표본 {len(fl)} · 무늬 위치 값 {fl[0][26] if fl else None} → {fl[-1][26] if fl else None} · 초당 {None if rate is None else round(rate, 3)}", "초당 0.05 넘게 늘어남")
+    px = g(sn, "ds_u_pix"); img = _xpng("x_ds_useal.png")
+    if px and img:
+        w, h, bpp, rows = img; liq = lambda x, yy: (lambda p: p[2] - p[0] > 18 and p[2] > 95)(rows[yy][x * bpp:x * bpp + 3])   # 액 = 파랑이 빨강보다 뚜렷이 큼(빈 유리 · 흰 반사 줄은 아님)
+        def tops(xs, y0, y1):
+            out = []
+            for x in xs:
+                x = int(round(x))
+                if not (0 <= x < w): continue
+                t = next((yy for yy in range(max(0, int(y0)), min(h, int(y1))) if liq(x, yy) and liq(x, min(h - 1, yy + 2))), None)
+                if t is not None: out.append(t)
+            return out
+        res = {}
+        for key, cols in (("up", lambda l, r: [l + (r - l) * f for f in (0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8)]), ("dn", lambda l, r: [l + (r - l) * f for f in (0.07, 0.10, 0.13, 0.87, 0.90, 0.93)])):
+            l, r = px[key]["l"], px[key]["r"]; ye = (l[1] + r[1]) / 2; tp = tops(cols(l[0], r[0]), ye - 60, ye + 60)
+            if len(tp) >= 5:   # 흰 무늬가 액면에 걸린 줄 하나는 뺀다
+                md = sorted(tp)[len(tp) // 2]; far = max(tp, key=lambda v: abs(v - md))
+                if abs(far - md) > 2: tp = [v for v in tp if v != far] if tp.count(far) == 1 else tp
+            res[key] = (ye, tp)
+        okp = all(len(tp) >= 4 and max(tp) - min(tp) <= 2 and abs(sum(tp) / len(tp) - ye) <= 4 for ye, tp in res.values())
+        if okp:
+            mu = lambda k: sum(res[k][1]) / len(res[k][1]); dpx = mu("up") - mu("dn"); dex = (px["Yin"] - px["Yout"]) * px["px"]; okp = abs(dpx - dex) <= 3
+        else: dpx = dex = None
+        add("Y5", f"{DS3} U자 액봉 — 화면 그림(멈춘 화면 화소): 양쪽 다리의 액면이 수평이고 계산한 높이에 있으며, 응축기 쪽이 ΔP 머리만큼 높다", bool(okp),
+            f"그림 채움 {px.get('m')} kg · 컬럼 쪽 다리 액면 줄 {res['up'][1]}(계산 자리 {round(res['up'][0], 1)}) · 응축기 쪽 다리(줄기 밖 양 끝) {res['dn'][1]}(계산 자리 {round(res['dn'][0], 1)}) · 두 다리 액면 차 {None if dpx is None else round(dpx, 1)} px(계산 {None if dex is None else round(dex, 1)} px) · 멈춤 {px.get('paused')}",
+            "다리마다 액면 줄의 흩어짐 ≤ 2 px · 계산 자리 ± 4 px · 두 다리 차 = 계산 ± 3 px")
+    pf, pc, po = g(sn, "ds_u_full"), g(sn, "ds_u_close"), g(sn, "ds_u_open")
+    if pf and pc and po:
+        sf, sc, so = ((p.get("liq") or {}).get("seal") or {} for p in (pf, pc, po)); Rc = (pc.get("calc") or {}).get("R") or 0
+        okc = Rc <= 0.05 and (sc.get("m") or 0) >= 0.999 * mF and abs((sc.get("Yout") or 0) - inv) <= 0.001 and (sc.get("ho") or 0) <= 0.002 and (sc.get("xh") or 0) >= ge["xo"] - 1e-3 and sc.get("yup") is not None and abs(sc["yup"] - (sf.get("Yin") or 0)) <= 0.002
+        oko = bool(so.get("ovOn")) and (so.get("xh") or 9) <= ge["xe"] + 0.03 and so.get("yup") is None
+        add("Y6", f"{DS3} U자 액봉 — 환류 밸브를 닫으면 넘침 층이 빠지고(컬럼 쪽 가로 관 빔) U자는 넘침 높이까지 남으며 밸브 앞 층은 닫는 순간의 높이로 멈춘다. 다시 열면 넘침이 이어진다", bool(okc and oko),
+            f"닫기 전 응축기 쪽 액면 {sf.get('Yin')} · 닫고 8 s: 환류 {Rc} kg/h · 액봉 {sc.get('m')} kg · 컬럼 쪽 액면 {sc.get('Yout')}(넘침 높이 {inv}) · 넘침 층 {sc.get('ho')} · 밸브 앞 층 {sc.get('yup')} → 다시 열고 6 s: 넘침 {so.get('ovOn')} · 앞머리 {so.get('xh')}(컬럼 끝 {ge['xe']})",
+            "닫음: 환류 ≤ 0.05 · 액봉 다 찬 채 · 컬럼 쪽 액면 = 넘침 높이 ± 0.001 · 층 ≤ 0.002 · 밸브 앞 층 = 닫기 전 액면 ± 0.002 / 다시 엶: 넘침 · 컬럼 도착")
+
+def _xd_usoff(g, add):   # v141 Y13: 스팀을 끈 뒤 U자 액봉 — 넘침 층 · 줄기는 화면의 응축액 흐름 표시와 함께 꺼지고 액봉은 남는다
+    sn = "새디자인 U자 액봉 스팀 끔"; s0, sa, sb = g(sn, "ds_so_0"), g(sn, "ds_so_a"), g(sn, "ds_so_b")
+    if not (s0 and sa and sb): return
+    q0, qa, qb = (x.get("seal") or {} for x in (s0, sa, sb)); ge = qa.get("geo") or q0.get("geo") or {}; mF = ge.get("mFull") or 0; Ri = ge.get("Ri") or 0; Dr = (ge.get("Dr") or 25) / 1000
+    head = lambda q: None if q.get("dP") is None or not Ri else min(2.4 * Ri, q["dP"] * 133.322 / ((q.get("rho") or 1500) * 9.81) / Dr * 2 * Ri)   # ΔP ÷ (ρ g)를 그림 길이로(관 안지름에 대한 비 그대로)
+    ha = head(qa); da = None if qa.get("Yin") is None else qa["Yin"] - qa["Yout"]
+    okA = bool(sa.get("mv") == 0 and (sa.get("V") or 0) < (s0.get("V") or 0) and sa.get("cw") == 1 and qa.get("ovOn") and qa.get("inflow") and mF > 0 and qa.get("m", 0) >= mF - 1e-3
+               and ha is not None and da is not None and abs(da - ha) <= max(0.15 * ha, 0.0005) and (qa.get("d") or 0) < (q0.get("d") or 0))
+    add("Y13", f"{DS3} U자 액봉 — 스팀을 끈 뒤에도 증발이 남아 있는 동안은 넘침 층 · 줄기가 이어지고 응축기 쪽 − 컬럼 쪽 액면 = ΔP ÷ (ρ g)(증기가 줄어 머리도 줄어듦)", okA,
+        f"6 h 증발 {s0.get('V')} kg/h · ΔP 머리 {q0.get('d')} → 스팀 0 % 뒤 {sa.get('t')} h: 증발 {sa.get('V')} · 환류 {sa.get('R')} · 유출 {sa.get('Dk')} kg/h · 응축액 관 흐름 표시 {sa.get('cw')} · 넘침 {qa.get('ovOn')} · 줄기 {qa.get('inflow')} · 액봉 {qa.get('m')} kg · 액면 차 {None if da is None else round(da, 4)}(식 {None if ha is None else round(ha, 4)})",
+        "스팀 개도 0 % · 증발이 줄었고 흐름 표시가 켜져 있음 · 넘침 · 줄기 있음 · 액봉 다 참 · 액면 차 = 식 ± 15 % · 머리가 6 h보다 작음")
+    offb = sb.get("cw") == 0   # 화면이 끓지 않는 것으로 그리는 때(증발 1 kg/h 아래 → 응축액 관 흐름 표시 꺼짐)
+    okB = bool(offb and not qb.get("ovOn") and not qb.get("inflow") and (qb.get("ho") or 0) <= 0.05 * Ri and mF > 0 and qb.get("m", 0) >= mF - 1e-3 and qb.get("vis")
+               and abs((qb.get("Yout") or 0) - (qb.get("inv") or 0)) <= 0.05 * Ri and (qb.get("pl") or 0) <= 0.02 and not (sb.get("C") and sb["C"][1] > sb["C"][0] + 1e-6))
+    add("Y13", f"{DS3} U자 액봉 — 화면에서 응축액 흐름이 꺼지면(증발 1 kg/h 아래) 넘침 층 · 줄기 · 데드 레그도 비고 액봉은 넘침 높이까지 찬 채 남는다", okB if offb else None,
+        f"{sb.get('t')} h: 증발 {sb.get('V')} · 계산 환류 {sb.get('R')} kg/h · 응축기 김 닿음 {sb.get('vc')} · 응축액 관 흐름 표시 {sb.get('cw')} · 응축액 관 그린 구간 {sb.get('C')} · 넘침 {qb.get('ovOn')} · 층 두께 {qb.get('ho')} · 줄기 {qb.get('inflow')} · 데드 레그 {qb.get('pl')} · 액봉 {qb.get('m')} kg(다 찬 값 {mF}) · 컬럼 쪽 액면 {qb.get('Yout')}(넘침 높이 {qb.get('inv')})",
+        "흐름 표시가 꺼진 때: 넘침 0 · 층 ≤ 0.05 × 관 반지름 · 줄기 0 · 데드 레그 ≤ 0.02 · 응축액 관 빔 · 액봉 다 참 · 컬럼 쪽 액면 = 넘침 높이" if offb else "(이 시각에 흐름 표시가 아직 켜져 있어 판정하지 않음 — 장면 시각을 늦춘다)")
 def judge_ds(g, add):
     """새 디자인 판정 줄 — 장면마다 따로 판정하고, 판정 계산에서 오류가 나면 그 장면만 'X0' 줄로 남긴다."""
     import traceback
-    for nm, fn in (("끓기 시작", _xd_boil), ("김 진하기 규칙", _xd_n3), ("6 h 밸브", _xd_valve), ("1차 냉매 95도", _xd_c1hot), ("진공 펌프 정지", _xd_pstop), ("배치 끝", _xd_end), ("이상 상황", _xd_ab), ("범람", _xd_flood), ("받는 탱크 고액위", _xd_lah), ("기본 표현", _xd_default)):
+    for nm, fn in (("끓기 시작", _xd_boil), ("김 진하기 규칙", _xd_n3), ("6 h 밸브", _xd_valve), ("U자 액봉", _xd_useal), ("U자 액봉 스팀 끔", _xd_usoff), ("1차 냉매 95도", _xd_c1hot), ("진공 펌프 정지", _xd_pstop), ("배치 끝", _xd_end), ("이상 상황", _xd_ab), ("범람", _xd_flood), ("받는 탱크 고액위", _xd_lah), ("기본 표현", _xd_default)):
         try: fn(g, add)
         except Exception as e: add("X0", f"새 디자인 판정 계산 오류 — {nm}", False, f"{type(e).__name__}: {e} · {traceback.format_exc(limit=3)[-400:]}", "오류 0")
 # <<< 새 디자인 판정 끝

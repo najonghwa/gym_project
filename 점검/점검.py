@@ -13,6 +13,7 @@ import json, os, re, subprocess, sys, time, argparse, pathlib, math
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import 점검_공식 as X   # v117: 공식 검산·이상 상황 반응 시험
 import 점검_합침 as Y   # v125: 사내망 v117~v124 합침 확인
+import 점검_스팀 as SV   # v138s: 스팀 개도 레시피 · 밸브 → 자켓 · 승온(현장 DB 판정 범위) — 장면 이름이 '스팀'으로 시작(--only 스팀)
 
 HERE = pathlib.Path(__file__).resolve().parent
 def _drive():   # 브라우저를 움직이는 도구: 같은 폴더 도구/drive.mjs(사내망용 사본, MIT) → 개발 PC의 anatomy 스킬
@@ -123,10 +124,10 @@ JS_TB_LIVE = r"""(async()=>{const D=window.__dt,t0=D.PR.t;D.STEPLOG.length=0;whi
 
 # v115: 끓기 시작 순서·점 수(흰 점이 응축해 파란 점이 된다), 지워지는 증기 점, 액막 높이, 2차 응축기 넘친 액
 # v128: 파란 점도 흰 점과 같은 구간(정제기 꼭대기 ~ 컬럼 바닥, 목관 둘레)에서 센다. 전에는 vaporStats의 nNeckLiq(목관 아래 정제기 위 공간으로 떨어지는 점까지)를 써서, 그림에서 목관을 줄이자(v128) 흰 점 구간만 짧아져 비가 2.38 → 3.75로 커졌다
-JS_ORDER = r"""(async()=>{const D=window.__dt,q=D.M.pipe;let tV=null,tL=null,dripMax=0,ratioMax=0,filmMax=0,lost0=D.vaporStats().lost,n=0;const t0=D.PR.t;
+JS_ORDER = r"""(async()=>{const D=window.__dt,q=D.M.pipe;let tV=null,tL=null,dripMax=0,ratioMax=0,filmMax=0,filmOver=-1,filmFront=null,lost0=D.vaporStats().lost,n=0;const t0=D.PR.t;
   while(D.PR.t<t0+__SPAN__){const s=D.vaporStats();let vN=0,dN=0,lN=0;for(const v of D.VP){if(v._y==null)continue;const inNeck=v._y>D.M.topY&&v._y<q.colBase&&Math.abs((v._x==null?q.xN:v._x)-q.xN)<q.rCol*1.5;if(v.liq||v._drop){if(inNeck)lN++;continue;}if(v._y>D.M.topY&&v._y<q.colBase)vN++;}for(const p of D.FXP)if(p.kind==='drip'&&Math.abs(p.x-q.xN)<q.rCol*1.2)dN++;
-    const tm=D.PR.t/60;if(vN>0&&tV==null)tV=tm;if(s.nNeckLiq>0&&tL==null)tL=tm;dripMax=Math.max(dripMax,dN);if(vN>=3)ratioMax=Math.max(ratioMax,lN/vN);if(!(D.FILL.RD&&D.FILL.RD.full))filmMax=Math.max(filmMax,s.filmH);n++;await new Promise(r=>setTimeout(r,250));}
-  return JSON.stringify({n,tV,tL,dripMax,ratio:+ratioMax.toFixed(2),filmMax,lost:D.vaporStats().lost-lost0})})()"""
+    const tm=D.PR.t/60;if(vN>0&&tV==null)tV=tm;if(s.nNeckLiq>0&&tL==null)tL=tm;dripMax=Math.max(dripMax,dN);if(vN>=3)ratioMax=Math.max(ratioMax,lN/vN);if(!(D.FILL.RD&&D.FILL.RD.full)){const fp=Math.max(0.02,Math.min(1,(q.colBase+s.front*(q.colTop-q.colBase)-q.packY0)/(q.packY1-q.packY0)));if(s.filmH>filmMax){filmMax=s.filmH;filmFront=+fp.toFixed(3);}filmOver=Math.max(filmOver,s.filmH-fp);}n++;await new Promise(r=>setTimeout(r,250));}
+  return JSON.stringify({n,tV,tL,dripMax,ratio:+ratioMax.toFixed(2),filmMax,filmOver:+filmOver.toFixed(3),filmFront,lost:D.vaporStats().lost-lost0})})()"""
 JS_OV = r"""(()=>{const D=window.__dt,P=D.PR,s=D.vaporStats();return JSON.stringify({ovKg:+(P.ovKg||0).toFixed(1),ov2:s.ov2,Tbot:P.Tbot,T1out:P.T1out,Tcw:D.CUR.Tcw})})()"""
 
 
@@ -390,14 +391,27 @@ XDS_GET_BOIL = r"""(()=>{const R=window.__xr;clearInterval(R.iv);return JSON.str
 XDS_REC_F = r"""(()=>{const D=window.__dt,X=window.__xd;if(window.__xf&&window.__xf.iv)clearInterval(window.__xf.iv);const R=window.__xf={s:[]};
 R.iv=setInterval(()=>{if(!D.dsfProbe)return;const l=D.dsfProbe().liq||{};R.s.push([+(performance.now()/1000).toFixed(2),X.r(X.ext(l.P),3),X.r(X.ext(l.F),3),X.r(X.ext(l.FL),3),X.r(X.flowA(l.F),3),X.r(X.flowA(l.FL),3),l.F&&l.F.b?l.F.b[0]:null,l.F&&l.F.b?l.F.b[1]:null,D.VLV.F?1:0])},100);return 1})()"""
 XDS_GET_F = r"""(()=>{const R=window.__xf;clearInterval(R.iv);return JSON.stringify({s:R.s})})()"""
-XDS_RLIQ = r"""(()=>{const D=window.__dt,l=(D.dsfProbe().liq||{}).R||{};return JSON.stringify({a:l.a||null,b:l.b||null,seal:+(D.PR.sealM||0).toFixed(4),VR:D.VLV.R?1:0,style:D.STYLE,ds:D.DS?D.DS.on:null})})()"""
+XDS_RLIQ = r"""(()=>{const D=window.__dt,l=(D.dsfProbe().liq||{}).R||{};return JSON.stringify({a:l.a||null,b:l.b||null,seal:+(D.PR.sealM||0).toFixed(4),VR:D.VLV.R?1:0,style:D.STYLE,ds:D.DS?D.DS.on:null,sealp:(D.dsfProbe().liq||{}).seal||null})})()"""   # v141: 액봉 탐침(X59)
 # 환류 · 유출 닫음 95 s(N4 · N12): 0.1 s마다 [화면 s, 공정 s, 계산 액위, 넘침, 그린 고임 비, 계산 고임 비, 배기관 · L2 액 길이, 배기관 · 2차 · 진공 라인 김 보임, 밸브 R · P], 1 s마다 김 (유량, 목표)
 XDS_REC_H = r"""(()=>{const D=window.__dt,X=window.__xd;if(window.__xh2&&window.__xh2.iv)clearInterval(window.__xh2.iv);const R=window.__xh2={s:[],n3:[],k:0};
 R.iv=setInterval(()=>{const P=D.PR;if(!P||!D.dsfProbe)return;const pr=D.dsfProbe(),v=pr.vap||{},l=pr.liq||{},po=l.pool||{};
  R.s.push([+(performance.now()/1000).toFixed(2),+P.t.toFixed(1),X.r(P.hC1,4),X.r(P.ovKg,3),po.frac==null?null:X.r(po.frac,4),po.calcFrac==null?null:X.r(po.calcFrac,4),X.r(X.ext(l.T2),3),X.r(X.ext(l.L2),3),v.T2&&v.T2.vis?1:0,v.C2&&v.C2.vis?1:0,v.S&&v.S.vis?1:0,D.VLV.R?1:0,D.VLV.P?1:0]);
  if(R.k%10===0)R.n3.push([+P.t.toFixed(1),X.n3(v)]);R.k++;},100);return 1})()"""
 XDS_GET_H = r"""(()=>{const R=window.__xh2;clearInterval(R.iv);return JSON.stringify({s:R.s,n3:R.n3})})()"""
-XDS_SPL = r"""(()=>{const D=window.__dt;return JSON.stringify({spl:D.PR.splFrac,hC1:D.PR.hC1,ds:D.dsfProbe().s4.spl})})()"""
+XDS_SPL = r"""(()=>{const D=window.__dt;return JSON.stringify({spl:D.PR.splFrac,cp:D.PR.cPipeFrac,hC1:D.PR.hC1,ds:D.dsfProbe().s4.spl,seal:(D.dsfProbe().liq||{}).seal||null})})()"""   # v141: 티 세로 관 액면(X5)
+# U자 액봉(v141, Y1 ~ Y6): 0.1 s마다 [화면 s, 공정 s, 넘는 증기, 환류, 계산 액봉 질량, 그림 질량, 응축기 쪽 · 컬럼 쪽 액면, ΔP 머리, 넘침 층 두께 · 앞머리 x, 줄기 앞머리 · 닿을 자리, 들어옴 · 넘침 · 닿음 · 다 참, 데드 레그 채움 · 줄기, 티 액면, ΔP torr, 응축액 관 끝, 분배 줄기, 환류 밸브, 닫힌 밸브 앞 층]
+XDS_REC_U = r"""(()=>{const D=window.__dt,X=window.__xd;if(window.__xu&&window.__xu.iv)clearInterval(window.__xu.iv);const R=window.__xu={s:[],geo:null,mSeal:null};const t0=performance.now();
+R.iv=setInterval(()=>{const P=D.PR,p=D.dsfProbe(),l=p.liq||{},s=l.seal;if(!s)return;if(!R.geo&&s.geo){R.geo=s.geo;R.mSeal=s.mSeal}const c=l.C||{},rd=l.RD||{};
+R.s.push([+((performance.now()-t0)/1000).toFixed(2),X.r(P.t,1),X.r(P.vpass,3),X.r(P.Rkg,3),X.r(P.sealM,4),s.m,s.Yin,s.Yout,s.d,s.ho,s.xh,s.hq,s.sSurf,s.inflow?1:0,s.ovOn?1:0,s.arr?1:0,s.full?1:0,s.pl,s.ps,s.yT,s.dP,c.a?c.a[1]:null,rd.on?1:0,D.VLV.R?1:0,s.yup,s.rho,D.DSF.L&&D.DSF.L.C?X.r(D.DSF.L.C.parts[0].mt.uniforms.uPh.value,4):null])},100);return 1})()"""
+XDS_GET_U = r"""(()=>{const R=window.__xu;clearInterval(R.iv);const D=window.__dt;return JSON.stringify({s:R.s,geo:R.geo,mSeal:R.mSeal,holdC:D.CUR.holdC})})()"""
+# 스팀을 끈 뒤(v141 Y13): 계산값(증발 · 응축기 통과 · 환류 · 유출 · 스팀 개도) · 화면 흐름 표시(응축기 김 닿음 PR.vpCond · 응축액 관 흐름 FILL.C.want) · 액봉 탐침 · 응축액 관 그린 구간
+XDS_SO = r"""(()=>{const D=window.__dt,X=window.__xd,P=D.PR,l=D.dsfProbe().liq||{},c=l.C||{};return JSON.stringify({t:X.r(P.t/3600,2),mv:X.r(D.CUR.jOpen*100,1),V:X.r(P.vdot,3),vp:X.r(P.vpass,3),R:X.r(P.Rkg,3),Dk:X.r(P.Dkg,3),stop:P.stopped?1:0,vc:P.vpCond?1:0,cw:D.FILL.C&&D.FILL.C.want?1:0,C:c.a||null,seal:l.seal||null,held:D.steamHeld?(D.steamHeld()?1:0):null})})()"""
+XDS_U_CAM = r"""(()=>{const D=window.__dt,c=D.camera,o=D.orbit,q=D.DSF.q;const x0=q.xRf-0.16,x1=q.xU1+0.16,sp=(x1-x0)/0.72,cx=(x0+x1)/2,cy=(q.yU+q.ySpl)/2-0.09*sp;o.target.set(cx,cy,0);c.position.set(cx,cy+0.03*sp,sp*1.35);c.lookAt(cx,cy,0);if(o.update)o.update();return 1})()"""
+# 멈춘 화면에서 양쪽 다리의 액면 자리(화소)와 잘라 찍을 범위 — 그림(x_ds_useal.png)의 화소로 액면이 수평인지, 계산한 높이에 있는지 본다
+XDS_U_PIX = r"""(()=>{const D=window.__dt,H=window.__xh,s=D.dsfProbe().liq.seal,g=s.geo,cam=D.camera,rc=D.canvas.getBoundingClientRect(),G=D.DS.root;G.updateMatrixWorld(true);
+const pr=(x,y)=>{const v=cam.position.clone().set(x,y,0);v.applyMatrix4(G.matrixWorld);v.project(cam);return [(v.x*0.5+0.5)*rc.width+rc.left,(-v.y*0.5+0.5)*rc.height+rc.top]};
+const a=pr(g.xRf-2.2*g.Ri,g.invIn-0.06),b=pr(g.xU1+2.2*g.Ri,g.yB1+0.05);const cr=H.crop('__xc_seg',Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.abs(b[0]-a[0]),Math.abs(b[1]-a[1]));const rel=(p)=>H.rel(cr,[p])[0];
+return JSON.stringify({m:s.m,Yin:s.Yin,Yout:s.Yout,up:{l:rel(pr(g.xRf-g.Ri,s.Yout)),r:rel(pr(g.xRf+g.Ri,s.Yout))},dn:{l:rel(pr(g.xU1-g.Ri,s.Yin)),r:rel(pr(g.xU1+g.Ri,s.Yin))},px:Math.abs(pr(0,1)[1]-pr(0,0)[1]),crop:cr,paused:/계속|다시|재생/.test(document.getElementById('btnPause').textContent)})})()"""
 # 상태가 바뀔 때(N5 · N6 · N7): 끓음 멈춤 · 응축 0 · 김이 처음 보인 · 사라진 화면 시각, 응축액 관이 빈 시각, 1 s마다 김 (유량, 목표)
 XDS_REC_V = r"""(()=>{const D=window.__dt,X=window.__xd;if(window.__xv&&window.__xv.iv)clearInterval(window.__xv.iv);const R=window.__xv={first:{},last:{},marks:{},n3:[],k:0};
 R.iv=setInterval(()=>{const P=D.PR;if(!P||!D.dsfProbe)return;const pr=D.dsfProbe(),v=pr.vap||{},l=pr.liq||{},now=+(performance.now()/1000).toFixed(2);
@@ -434,6 +448,16 @@ def ds_scenarios():
     for i in range(1, 6): v += [["wait", 15000], tag(f"ds_q{i}", XDS_SPL)]
     v += [["wait", 20000], tag("ds_hold", XDS_GET_H), XVB("R"), ["wait", 300], XVB("P"), ["wait", 3000]]
     D("새디자인 6 h 밸브", v)
+    # (2b) U자 액봉(v141 — Y1 ~ Y6): 끓기 시작 0.94 h부터 0.1 s마다 액봉 탐침 → 다리가 반쯤 찼을 때 멈추고 화면 그림(액면 화소) → 다 차서 넘친 뒤 5 s → 환류 밸브 닫음 8 s → 다시 엶 6 s
+    u = rec + [["eval", XH]] + XJUMP(0.94, 1500) + [["eval", XDS_U_CAM], ["eval", XDS_REC_U], XDL(60),
+        ["until", "(()=>{const s=(window.__dt.dsfProbe().liq||{}).seal;return !!(s&&s.m>=0.30)||performance.now()>window.__xdl})()", 70000], ["click", "#btnPause"], ["wait", 800], tag("ds_u_pix", XDS_U_PIX), XSHOT("x_ds_useal.png", "#__xc_seg"), ["click", "#btnPause"], XDL(60),
+        ["until", "(()=>{const s=(window.__dt.dsfProbe().liq||{}).seal;return !!(s&&s.ovOn&&s.geo&&s.xh<=s.geo.xe+0.03)||performance.now()>window.__xdl})()", 70000], ["wait", 5000], P("ds_u_full"),
+        XVB("R"), ["wait", 8000], P("ds_u_close"), XVB("R"), ["wait", 6000], P("ds_u_open"), tag("ds_u", XDS_GET_U)]
+    D("새디자인 U자 액봉", u)
+    # (2c) U자 액봉 — 스팀을 끈 뒤(v141 Y13): 6 h에서 스팀 개도를 0 %로 고정 → 10 h(증발이 남아 흐름이 이어짐) → 31 h(증발 1 kg/h 아래 = 화면이 끓지 않는 것으로 그리는 때)
+    so = rec + XJUMP(6, 4000) + [["wait", 2000], tag("ds_so_0", XDS_SO), ["eval", "(()=>{const D=window.__dt;D.steamSet(0,true);return 1})()"], ["wait", 1200]]
+    so += XJUMP(10, 4000) + [["wait", 1500], tag("ds_so_a", XDS_SO)] + XJUMP(31, 4000) + [["wait", 6000], tag("ds_so_b", XDS_SO)]
+    D("새디자인 U자 액봉 스팀 끔", so)
     # (3) 1차 N-Brine 온도 상승(N5): 40 s
     D("새디자인 1차 냉매 95도", rec + XJUMP(6, 4000) + [P("ds_c0"), ["eval", XDS_REC_V], ["eval", "String(window.__dt.ab('c1hot'))"], ["wait", 40000], P("ds_c2"), tag("ds_cv", XDS_GET_V)])
     # (4) 진공 펌프 정지(N6): 15 s(약 7분) · 40 s · 60 s(약 30분) → 되돌리고 40 s
@@ -505,6 +529,7 @@ def build_scenarios():
     S += Y.scenarios(scen, tag, BOOT, jump, SHOTS)
     S += real_scenarios()   # 현실성(X), 2026-11-22
     S += ds_scenarios()   # 새 디자인(v132~), 2026-11-22
+    S += SV.scenarios(scen, tag)   # v138s: 스팀 개도
     return S
 
 # >>> 표현 옵션(--look · --sim) 시작
@@ -615,7 +640,11 @@ def judge(out):
         s2 = g(sn, "state_reflux")
         if s2 and w == 1440:
             add("D13", "냉각수 흐름 그림", s2["cw"] == 0, s2["cw"], "0개")
-            add("E1", "기본 운전 2차 응축기로 가는 몫", s2.get("n2") is not None and s2["n2"] <= 2, f"{s2.get('n2')} %", "≤ 2 %")
+            f0 = g("현실성 1차 냉매 95도", "f_0")   # v141: 레시피 운전 6 h(정상 운전) 기록. 자유 운전 장면은 승온 개도가 그대로 남아 1차 응축기 능력을 넘는 조건이라 '기본 운전'이 아니다
+            if f0 and f0.get("n2") is not None and (f0.get("vdot") or 0) > 0:
+                n2r = ((f0.get("n2") or 0) + (f0.get("lostkg") or 0) / f0["vdot"]) * 100
+                add("E1", "기본 운전(레시피 6 h) 2차 응축기로 가는 몫", n2r <= 2, f"{n2r:.2f} %(증발 {f0['vdot']} kg/h) · 참고: 자유 운전 2.7 h(스팀 개도 고정 · 증발 {s2.get('vdot')} kg/h)에서는 {s2.get('n2')} %", "≤ 2 %")
+            else: add("E1", "기본 운전 2차 응축기로 가는 몫", s2.get("n2") is not None and s2["n2"] <= 2, f"{s2.get('n2')} %", "≤ 2 %")
     ge = g("기본", "geom")
     if ge:
         add("C9", "세 용기 간격 균형(정제기–본류 틈 ÷ 본류–초류 틈)", 0.6 <= ge["ratio"] <= 1.6, f"{ge['g1']} / {ge['g2']} m = {ge['ratio']}", "0.6 ~ 1.6")
@@ -658,7 +687,9 @@ def judge(out):
         add("D30", "목관에 흰 점과 따로 뿌린 파란 방울", od["dripMax"] == 0, f"최대 {od['dripMax']}개", "0개")
         add("D31", "목관 파란 점 ÷ 흰 점(흰 점 3개 이상일 때 최대, 둘 다 정제기 꼭대기 ~ 컬럼 바닥 구간에서 셈 — v128)", od["ratio"] <= 3, f"{od['ratio']}배", "≤ 3배")
         add("D3", "액이 되지 못하고 지워진 증기 점(정제기·목관·컬럼)", od["lost"] == 0, f"{od['lost']}개", "0개")
-        add("D32", "환류가 위에서 들어오기 전 충전층 액막 높이(충전층 비율)", od["filmMax"] <= 0.5, f"최대 {od['filmMax']}", "≤ 응축 전선(0.5 이하)")
+        if od.get("filmOver") is not None:   # v141: 표본마다 액막 높이 − 응축 전선(충전층 비율). 전: '0.5 이하'(환류가 일찍 오던 때의 어림 한계 — 실 루프 0.55 kg이 차는 동안 예열 전선이 충전층 끝까지 가면 넘는다)
+            add("D32", "환류가 위에서 들어오기 전 충전층 액막 높이 ≤ 응축 전선(충전층 비율, 표본마다)", od["filmOver"] <= 0.02, f"액막 최대 {od['filmMax']}(그때 응축 전선 {od.get('filmFront')}) · 전선을 넘은 양 최대 {od['filmOver']}", "액막 − 응축 전선 ≤ 0.02")
+        else: add("D32", "환류가 위에서 들어오기 전 충전층 액막 높이(충전층 비율)", od["filmMax"] <= 0.5, f"최대 {od['filmMax']}", "≤ 응축 전선(0.5 이하)")
     ov = g("1차 응축기 넘침", "ov")
     if ov:
         add("D33", "1차 응축기 넘침 때 2차 응축기 안을 지나는 액 점", ov["ov2"] > 0, f"넘침 {ov['ovKg']} kg/h · 2차 응축기 안 액 점 {ov['ov2']}개", "> 0")
@@ -738,6 +769,7 @@ def main():
         if only and not any(sc["name"].startswith(o) for o in only): continue
         print("▶", sc["name"], flush=True); out[sc["name"]] = run(sc, a.url); print("  ", out[sc["name"]]["sec"], "s", list(out[sc["name"]]["res"].keys()), flush=True)
     R = judge(out)
+    SV.judge(lambda s, t: (out.get(s) or {}).get("res", {}).get(t), lambda i, n, ok, v, c: R.append({"id": i, "name": n, "ok": ok, "val": v, "crit": c}))   # v138s
     S, ver = static_checks(); R += S
     R += Y.static(SIM_HTML)
     if a.reg: R += regress_checks(a.reg)
