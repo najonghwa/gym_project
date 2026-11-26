@@ -920,7 +920,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v143 · 11-25 23:03</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v144 · 11-26 16:47</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -1195,6 +1195,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
         <label><input type="checkbox" id="tParticles" checked> 입자 궤적</label>
         <label><input type="checkbox" id="tSurface" checked> 액면</label>
         <label><input type="checkbox" id="tVapor" checked> 증기</label>
+        <label title="끓는 동안 자켓 벽 · 바닥에서 올라오는 기포와 액면 보글거림을 그린다. 계산 아님 — 진공에서는 액 무게 때문에 액면 1 mm 아래로는 끓지 않는다(끄면 계산대로 액면 근처 기포만)"><input type="checkbox" id="tBubDisp" checked> 기포(보기용)</label>
         <input type="checkbox" id="tSection" hidden>
       </div>
       <h3>계산</h3>
@@ -3291,13 +3292,13 @@ const dsfStreamW = (q, n, kS) => (q > 0.05 ? n * 2 * dsfRO(q / n) * kS : 0);   /
 function dsfVapMat(o) {   /* v136 F: 만든 재질은 DSF.phMats에(빠르기 적분) */
   const S = DS.sh, u = o.u || 1, mt = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, defines: { FBM_N: SW_GL || LQ_SET ? 2 : 4 },
     uniforms: { uTime: { value: 0 }, uPh: { value: 0 }, uLen: { value: o.len }, uRad: { value: o.rad }, uDens: { value: 0 }, uSpeed: { value: 1 }, uFront: { value: 0 }, uEdge: { value: 0.16 * u }, uK: { value: (o.kf || 5) / u }, uClip: { value: 0 }, uYc: { value: 0 }, uYr: { value: 0 }, uRr: { value: 1 }, uAxis: { value: o.axis || 0 }, uRev: { value: o.rev ? 1 : 0 },
-      uFade: { value: 0 }, uF0: { value: 0.15 }, uF1: { value: 0.95 }, uSeed: { value: o.seed || 0 }, uFun: { value: o.funnel ? 1 : 0 }, uCol: { value: new THREE.Color(o.col || 0xeef4fa).convertSRGBToLinear() } },
+      uFade: { value: 0 }, uF0: { value: 0.15 }, uF1: { value: 0.95 }, uSeed: { value: o.seed || 0 }, uFun: { value: o.funnel ? 1 : 0 }, uX0: { value: 0 }, uI0: { value: 1 }, uI1: { value: 1 }, uG: { value: 0 }, uKv: { value: 4 }, uNet: { value: 0 }, uCol: { value: new THREE.Color(o.col || 0xeef4fa).convertSRGBToLinear() } },
     vertexShader: S.VSTD.replace("void main(){", "varying vec3 vW; attribute float aX; varying float vX; void main(){ vX=aX; vW=(modelMatrix*vec4(position,1.0)).xyz;"),   /* v142: aX = 깔때기의 흐름 방향 무늬 자리(정제기 위 김만, uFun 1) */   /* v138: 월드 자리(액면 아래 버리기) */
-    fragmentShader: ["uniform float uTime,uPh,uLen,uRad,uDens,uSpeed,uFront,uEdge,uAxis,uRev,uFade,uF0,uF1,uSeed,uK,uClip,uYc,uYr,uRr,uFun; uniform vec3 uCol; varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vW; varying float vX;", S.NOISE, DSF_FBM,
+    fragmentShader: ["uniform float uTime,uPh,uLen,uRad,uDens,uSpeed,uFront,uEdge,uAxis,uRev,uFade,uF0,uF1,uSeed,uK,uClip,uYc,uYr,uRr,uFun,uX0,uI0,uI1,uG,uKv,uNet; uniform vec3 uCol; varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vW; varying float vX;", S.NOISE, DSF_FBM,
       "void main(){ if(uDens<0.002) discard; if(uClip>0.5){ float rr=length(vW.xz)/uRr; if(vW.y<max(uYc+(uYr-uYc)*rr*rr,uYr)) discard; }",   /* v138: 정제기 위 김 띠는 소용돌이 액면(포물면 — 가운데 yc, 반지름 0.86 R에서 yr) 위에서만 */
       "  float s=mix(vUv.x,vUv.y,uAxis)*uLen; float a=mix(vUv.y,vUv.x,uAxis)*6.2831853;",
       "  if(uRev>0.5) s=uLen-s;",
-      "  float sx=mix(s,vX*uLen,uFun); float a9=a+0.55*sin(sx*uK*0.33+uTime*0.35)+0.35*sin(sx*uK*0.11-uTime*0.21); vec3 p=vec3(sx*uK-uPh*uK, cos(a9)*uRad, sin(a9)*uRad)+uSeed;",   /* v136 F: 빠르기 적분 */
+      "  float sx=mix(s,vX*uLen,uFun); float X9=uX0+mix(s*uI0+(uI1-uI0)*s*s/(2.0*max(uLen,1e-4)), vX*uLen*uI0, uFun); float xk=mix(sx*uK-uPh*uK,(X9-uG)*uKv,uNet); float xw=mix(sx*uK,X9*uKv,uNet); float a9=a+0.55*sin(xw*0.33+uTime*0.35)+0.35*sin(xw*0.11-uTime*0.21); vec3 p=vec3(xk, cos(a9)*uRad, sin(a9)*uRad)+uSeed;",   /* v136 F: 빠르기 적분 */
       "  vec3 q=p+1.7*vec3(vnoise(p*0.5+3.1+uTime*0.06)-0.5, vnoise(p*0.5+7.7-uTime*0.05)-0.5, vnoise(p*0.5+1.3)-0.5);",
       "  float n=fbm(q+vec3(0.0,uTime*0.07,uTime*0.13));",
       "  float w=smoothstep(0.34,0.66,n);",
@@ -3324,30 +3325,30 @@ function dsfBuild(m) {
   const VM = (o) => dsfVapMat(Object.assign({ u }, o));
   // ---- 2단계: 김 ----
   { // 정제기 위 공간: 액면 전체에서 올라와 노즐(목관) 쪽으로 모인다(사용자가 정한 것 9). 높이 1짜리를 걸음마다 액면 ~ 노즐로 늘린다
-    const mA = VM({ len: 1, rad: 1.6, seed: 3, kf: 3.2, axis: 1, funnel: true }), mB = VM({ len: 1, rad: 1.2, seed: 8, kf: 2.8, axis: 1, funnel: true });   /* v142: 둘레 · 높이 무늬 결을 비슷하게(전 rad 3.6 · 2.6 — 둘레가 약 4배 촘촘해 곧은 빛살처럼 보였다) */   /* v140: 무늬를 덩어리지게(줄무늬처럼 곧게 올라가 보이던 것) */   /* v134: axis 1 = 높이 방향(전: 둘레 방향 — 무늬가 위로 안 흐르고 둘레로 늘어나 매끈한 띠로 보였다) */
+    const mA = VM({ len: 1, rad: 3, seed: 3, kf: 3.2, axis: 1, funnel: true }), mB = VM({ len: 1, rad: 2.4, seed: 8, kf: 2.8, axis: 1, funnel: true });   /* v144: 김 사슬(dsfVapNet) — 무늬 결이 공용(액면 쪽 무늬가 짧아짐)이라 둘레 결도 촘촘히(전 1.6 · 1.2) */   /* v142: 둘레 · 높이 무늬 결을 비슷하게(전 rad 3.6 · 2.6 — 둘레가 약 4배 촘촘해 곧은 빛살처럼 보였다) */   /* v140: 무늬를 덩어리지게(줄무늬처럼 곧게 올라가 보이던 것) */   /* v134: axis 1 = 높이 방향(전: 둘레 방향 — 무늬가 위로 안 흐르고 둘레로 늘어나 매끈한 띠로 보였다) */
     const a = dsfAddMesh(dsfFunnel(0.86 * R, 1.25 * rn, xc, 40), mA), b = dsfAddMesh(dsfFunnel(0.49 * R, 0.67 * rn, xc - 0.03 * u, 28), mB); b.position.x = 0.03 * u;   /* v142: 곧은 원뿔 → 깔때기(사용자 11-25 "기체들이 너무 직선적이고") — dsseal_add.js의 dsfFunnel */
-    dsfVapEl("head", 1, [{ ms: a, mt: mA, kd: 0.55, ks: 0.7 }, { ms: b, mt: mB, kd: 0.5, ks: 1 }]); DSF.headTop = q.yNz; }
-  { const L = q.colBase - q.yNz, mt = VM({ len: L, rad: 0.9, seed: 2, kf: 9, axis: 1 }); const ms = dsfAddMesh(new THREE.CylinderGeometry(0.83 * rn, 0.83 * rn, L, 24, 1, true), mt, xc, (q.yNz + q.colBase) / 2, 0);
+    dsfVapEl("head", 1, [{ ms: a, mt: mA, kd: 0.47, ks: 0.7 }, { ms: b, mt: mB, kd: 0.43, ks: 1 }]);   /* v144: 무늬가 잘아져 밝아 보인 만큼(+17 %) 진하기 0.85배 */ DSF.headTop = q.yNz; }
+  { const L = q.colBase - q.yNz, mt = VM({ len: L, rad: 0.9, seed: 3, kf: 9, axis: 1 });   /* v144: 씨앗 = 사슬 A */ const ms = dsfAddMesh(new THREE.CylinderGeometry(0.83 * rn, 0.83 * rn, L, 24, 1, true), mt, xc, (q.yNz + q.colBase) / 2, 0);
     dsfVapEl("neck", L, [{ ms, mt, kd: 0.9, ks: 1 }]); }
-  { const L = q.colTop + 0.03 * u - q.colBase, mA = VM({ len: L, rad: 1.1, seed: 5, kf: 8, axis: 1 }), mB = VM({ len: L, rad: 0.7, seed: 9, kf: 9, axis: 1 });
+  { const L = q.colTop + 0.03 * u - q.colBase, mA = VM({ len: L, rad: 1.5, seed: 3, kf: 8, axis: 1 }), mB = VM({ len: L, rad: 0.7, seed: 8, kf: 9, axis: 1 });   /* v144: 씨앗 = 사슬 A · B, 둘레 결 1.1 → 1.5 */
     const a = dsfAddMesh(new THREE.CylinderGeometry(0.9 * rc, 0.9 * rc, L, 36, 1, true), mA, xc, q.colBase + L / 2, 0), b = dsfAddMesh(new THREE.CylinderGeometry(0.5 * rc, 0.5 * rc, L, 28, 1, true), mB, xc, q.colBase + L / 2, 0);
     dsfVapEl("col", L, [{ ms: a, mt: mA, kd: 1, ks: 1 }, { ms: b, mt: mB, kd: 0.8, ks: 1.5 }]); }
   const tube = (P, sc, seed, kf) => { const mt = VM({ len: P.len, rad: 0.35 + sc * 0.9, seed, kf: kf || 11 }); return { ms: dsfAddMesh(new THREE.TubeGeometry(P.path, P.segs, P.R * sc, 14, false), mt), mt }; };
-  if (DS.P.V) { const P = DS.P.V, a = tube(P, 0.74, 1), b = tube(P, 0.42, 6); dsfVapEl("V", P.len, [Object.assign(a, { kd: 0.95, ks: 1 }), Object.assign(b, { kd: 0.75, ks: 1.35 })]); }
+  if (DS.P.V) { const P = DS.P.V, a = tube(P, 0.74, 3), b = tube(P, 0.42, 8); a.mt.uniforms.uRad.value = 0.47; b.mt.uniforms.uRad.value = 0.25;   /* v144: 씨앗 = 사슬 A · B, 둘레 결은 빨라 늘어난 무늬에 맞춰 성기게(전 1.02 · 0.73) */ dsfVapEl("V", P.len, [Object.assign(a, { kd: 0.95, ks: 1 }), Object.assign(b, { kd: 0.75, ks: 1.35 })]); }
   if (DS.P.RS && DS.P.R && typeof rfxPath === "function" && q.yRf != null) {   /* v141: 빈 환류관 김 띠 — 그린 관 길(둥근 굽은 관) 그대로: 컬럼 벽 → U자 → 조절 밸브 → 티 */ const pts = [], addP = (Pp) => { if (!Pp) return; const n9 = Math.max(8, Math.round(Pp.len / u * 160)); for (let i = n9; i >= 0; i--) { const p = Pp.path.getPointAt(i / n9); if (!pts.length || pts[pts.length - 1].distanceTo(p) > 1e-5) pts.push(p.clone()); } }; addP(DS.P.RS); addP(DS.P.R); addP(DS.PR0);
     const cp = new THREE.CurvePath(); for (let i = 0; i + 1 < pts.length; i++) cp.add(new THREE.LineCurve3(pts[i], pts[i + 1]));
-    const Lr = cp.getLength(), Pr = { path: cp, segs: 200, R: DS.P.RS.R, len: Lr }, a = tube(Pr, 0.62, 21); dsfVapEl("rfx", Lr, [Object.assign(a, { kd: 0.9, ks: 1 })]); }
+    const Lr = cp.getLength(), Pr = { path: cp, segs: 200, R: DS.P.RS.R, len: Lr }, a = tube(Pr, 0.62, 3); dsfVapEl("rfx", Lr, [Object.assign(a, { kd: 0.9, ks: 1 })]); }
   { // 1차 응축기 위 뚜껑: 들어온 증기가 깔때기처럼 퍼져 관 다발로(사용자가 정한 것 5의 김)
-    const L = BH + 0.016 * u, y0 = K1 + 0.004 * u, mA = VM({ len: L, rad: 1.5, seed: 13, kf: 9, axis: 1, rev: true }), mB = VM({ len: L, rad: 0.9, seed: 15, kf: 10, axis: 1, rev: true });
+    const L = BH + 0.016 * u, y0 = K1 + 0.004 * u, mA = VM({ len: L, rad: 1.5, seed: 3, kf: 9, axis: 1, rev: true }), mB = VM({ len: L, rad: 0.9, seed: 8, kf: 10, axis: 1, rev: true });   /* v144: 씨앗 = 사슬 A · B */
     const a = dsfAddMesh(new THREE.CylinderGeometry(RV * 0.95, KR * 0.84, L, 32, 1, true), mA, KX, y0 + L / 2, 0), b = dsfAddMesh(new THREE.CylinderGeometry(RV * 0.5, KR * 0.5, L, 24, 1, true), mB, KX, y0 + L / 2, 0);
     dsfVapEl("bon", L, [{ ms: a, mt: mA, kd: 0.85, ks: 1 }, { ms: b, mt: mB, kd: 0.8, ks: 1.6 }]); }
-  if (DS.c1tubes) { const mt = VM({ len: LK, rad: 0.6, seed: 4, kf: 12, axis: 1, rev: true }), g = new THREE.CylinderGeometry(0.72 * 0.169 * KR, 0.72 * 0.169 * KR, LK, 12, 1, true), parts = [];
+  if (DS.c1tubes) { const mt = VM({ len: LK, rad: 0.6, seed: 3, kf: 12, axis: 1, rev: true }), g = new THREE.CylinderGeometry(0.72 * 0.169 * KR, 0.72 * 0.169 * KR, LK, 12, 1, true), parts = [];
     for (const tb of DS.c1tubes) parts.push({ ms: dsfAddMesh(g, mt, KX + tb[0], (K0 + K1) / 2, tb[1]), mt, kd: 1.2, ks: 1 });
     dsfVapEl("tub", LK, parts); }
-  if (DS.P.T2) { const P = DS.P.T2, a = tube(P, 0.7, 17); dsfVapEl("T2", P.len, [Object.assign(a, { kd: 0.75, ks: 1 })]); }
-  { const L = X1 - X0, mt = VM({ len: L, rad: 1.0, seed: 21, kf: 6, axis: 1 }), ms = dsfAddMesh(new THREE.CylinderGeometry(CR * 0.9, CR * 0.9, L, 24, 1, true), mt, (X0 + X1) / 2, CY, 0); ms.rotation.z = -Math.PI / 2;
+  if (DS.P.T2) { const P = DS.P.T2, a = tube(P, 0.7, 3); dsfVapEl("T2", P.len, [Object.assign(a, { kd: 0.75, ks: 1 })]); }
+  { const L = X1 - X0, mt = VM({ len: L, rad: 1.0, seed: 3, kf: 6, axis: 1 }), ms = dsfAddMesh(new THREE.CylinderGeometry(CR * 0.9, CR * 0.9, L, 24, 1, true), mt, (X0 + X1) / 2, CY, 0); ms.rotation.z = -Math.PI / 2;
     dsfVapEl("C2", L, [{ ms, mt, kd: 0.95, ks: 1 }]); }
-  if (DS.P.S) { const P = DS.P.S, a = tube(P, 0.7, 23); dsfVapEl("S", P.len, [Object.assign(a, { kd: 0.75, ks: 1 })]); }
+  if (DS.P.S) { const P = DS.P.S, a = tube(P, 0.7, 3); dsfVapEl("S", P.len, [Object.assign(a, { kd: 0.75, ks: 1 })]); }
   if (DS.P.J) { const P = DS.P.J, mt = VM({ len: P.len, rad: 1.0, seed: 29, kf: 11, col: 0xfff0e2 }), ms = dsfAddMesh(new THREE.TubeGeometry(P.path, P.segs, P.R * 0.65, 12, false), mt); dsfVapEl("J", P.len, [{ ms, mt, kd: 0.8, ks: 1 }]); }
   /* v142: 자켓 안 김(jk)은 그리지 않는다 — 스팀은 투명한 기체라 보이지 않고, 자켓이 액을 감싸 앞에서 보면 액 속 김처럼 보였다(사용자 11-25 "내부온도가 낮음에도 불구하고 스팀만들어가면 정제기 내부 액 안에 증기모양으로 김이 계속 생기는데"). 가열은 자켓 붉은 기 · TI 자켓 값으로 보인다. 액 속 기체는 끓을 때 그 깊이의 끓는점 이상인 자리에서만 기포로 생긴다(지금 장면 규칙 13) */
   dsfBuildLiq(m);   // 3단계
@@ -3463,12 +3464,12 @@ function dsfLiqMat(o) {
       "  float st=vnoise(vec3(X*16.0/uE-ph*16.0/uE, cos(A)*1.6, sin(A)*1.6)); st=smoothstep(0.42,0.85,st);",
       "  float st2=vnoise(vec3(X*42.0/uE-ph*30.0/uE, cos(A)*3.0, sin(A)*3.0)); st2=smoothstep(0.7,0.95,st2);",
       "  vec3 L=normalize(vec3(0.45,0.8,0.5)); float spc=pow(max(dot(reflect(-L,N),V),0.0),60.0);",
-      "  float fl9=1.0-0.75*vb9; vec3 col=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*fl9*(1.0-st))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+(st*0.5+st2*0.55)*fl9); { float bd9=pow(0.5+0.5*sin(6.2831853*(X-ph)*2.4/uE),6.0); col+=vec3(0.26,0.33,0.40)*bd9*fl9; }",
+      "  float fl9=1.0-0.75*vb9; vec3 col=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*fl9*(1.0-st))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+(st*0.12+st2*0.25)*fl9)+uCol*0.30*st*fl9; { float bd9=pow(0.5+0.5*sin(6.2831853*(X-ph)*2.4/uE),6.0); col+=vec3(0.07,0.10,0.13)*bd9*fl9; }",
       "#ifdef SEAL",
       "  if(!gl_FrontFacing) col=uCol*0.9+uSky*0.24+vec3(1.0)*0.08*st;",
       "  if(uIsT>0.5&&uPc>0.001&&gl_FrontFacing){ float dx9=abs(vW.x-uXc)/max(1e-5,uPr), dd9=(uYt-vW.y)/max(1e-5,uPd);",
       "    if(dx9<1.0&&dd9>=0.0&&dd9<1.0){ float w9=uPc*(1.0-dd9)*(1.0-dd9)*(1.0-dx9*dx9); float s9=smoothstep(0.42,0.85,vnoise(vec3((vSp*uViP+uXp)*16.0/uE-uPhC*16.0/uE, cos(A)*1.6, sin(A)*1.6)));",
-      "      vec3 cj=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*(1.0-s9))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+s9*0.5)+vec3(0.26,0.33,0.40)*pow(0.5+0.5*sin(6.2831853*(vSp*uViP+uXp-uPhC)*2.4/uE),6.0);",
+      "      vec3 cj=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*(1.0-s9))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+s9*0.12)+uCol*0.30*s9+vec3(0.07,0.10,0.13)*pow(0.5+0.5*sin(6.2831853*(vSp*uViP+uXp-uPhC)*2.4/uE),6.0);",
       "      col=mix(col,cj,w9); } }",   /* v142: 잠긴 줄기 — 떨어지는 줄기가 고인 액으로 들어가 관 지름 1배 깊이 안에서 옅어진다(표시 규칙). 무늬 자리 · 위치 = 응축액 관 줄기와 같아 수면에서 이어진다 */   /* 잘린 관 안쪽 면 = 액면처럼(위에서 내려다볼 때) */
       "#endif",
       "#if defined(TUBE) || defined(SEAL)",
@@ -3649,11 +3650,11 @@ function dsfLiqFrame(dt) {
       const endOn = on && (DSF.nwet || 0) >= LN - 1e-4, jet = false, top2 = q.yNz - 0.002 * u, Lj = Math.max(0.005, top2 - bot), rj = dsfRO(qc / nS) * kS;
       DSF.nk.forEach((s, i) => { const vis = jet && i < nS; s.ms.visible = vis; if (!vis) return; const ag = i / nS * Math.PI * 2 + 0.4, rr = 0.9 * rnk; s.ms.scale.set(rj, Lj, rj); s.ms.position.set(DSF.xc + rr * Math.cos(ag), (top2 + bot) / 2, rr * Math.sin(ag)); const un = s.mt.uniforms; un.uLen.value = Lj; un.uTime.value = DSF.t; un.uSpeed.value = 1.5; });
       const CD = DSF.cdr || (DSF.cdr = []), rdD = 0.0028 * u, VdD = 4.18879 * rdD * rdD * rdD, lamQ = (qq) => 4 * Math.PI * Math.pow(dsfRO(Math.max(0, qq) / 4) * kS, 2), nDps = (qq, hh) => lamQ(qq) * Math.sqrt(9.81 * Math.max(0.01, hh) / 2) / VdD;   /* v138: 방울 초당 개수 = 같은 유량 줄기(분배 줄기 기준 4줄)의 선밀도 × 평균 낙하 빠르기 ÷ 방울 부피 */
-      const kG = nDps(qc, q.packY0 - q.colBase), kD = 0.35 * Math.min(nDps(qc, Lj), kG);   /* v139: 목관 끝 방울이 위에서 떨어지는 양보다 많아 보여 줄임(표시 규칙) */
-      if (endOn && !jet) { DSF.cdA = (DSF.cdA || 0) + kD * h5; while (DSF.cdA >= 1 && CD.length < 1500) { DSF.cdA -= 1; const ag = Math.random() * Math.PI * 2, rr = (0.5 + 0.45 * Math.random()) * rnk; CD.push({ x: DSF.xc + rr * Math.cos(ag), y: top2, z: rr * Math.sin(ag), v: 0, y1: bot }); } } else if (!(endOn && !jet)) DSF.cdA = 0;
+      const kG = nDps(qc, q.packY0 - q.colBase), kD = 0.35 * Math.min(nDps(qc, Lj), kG), vF0 = (FN ? FN.mt.uniforms.uSpeed.value : 0.7) * 0.24 * u, aN = 5.25 * vF0 * vF0 / (2 * Lj), fSite = Math.min(3, 0.12 * qc);   /* v144: 노즐 끝 방울 = 목관 액막 무늬 빠르기 vF0(셰이더 0.7 × 1.2 ÷ 5)에서 출발해 액면에서 2.5배(가속 (2.5² − 1) v0² ÷ 2h — 받는 탱크 줄기와 같은 표시 규칙), 자리마다 잦기 0.12 × 유량(kg/h)회/s(최대 3) — 사용자 11-26 "우수수수" · "퍼버버벅" */   /* v139: 목관 끝 방울이 위에서 떨어지는 양보다 많아 보여 줄임(표시 규칙) */
+      if (endOn && !jet) { const PD = DSF.pdr && DSF.pdr.length === nS ? DSF.pdr : (DSF.pdr = Array.from({ length: nS }, () => Math.random())), rP = 0.9 * rnk; DSF.pdy = top2; DSF.pdx = rP; DSF.pdn = nS; for (let i = 0; i < nS; i++) { PD[i] += fSite * (0.85 + 0.3 * Math.random()) * h5; if (PD[i] >= 1) { PD[i] = Math.min(0.999, PD[i] - 1); if (CD.length < 1500) { const ag = i / nS * Math.PI * 2 + 0.4; CD.push({ x: DSF.xc + rP * Math.cos(ag), y: top2 - 0.0028 * u, z: rP * Math.sin(ag), v: vF0, a: aN, y1: bot }); } } } } else { DSF.cdA = 0; DSF.pdr = null; }   /* v144: 노즐 끝 둘레 방울 자리마다 맺혀 자라다(DSF.pdr = 맺힌 양 0 ~ 1) 떨어진다 — 전: 노즐 단면 아무 데서나 초당 수백 개가 실제 중력으로 쏟아졌다 */
       const yG = q.packY0 - 0.004 * u, gH = yG - q.colBase;   // 충전층 받침 아래 → 컬럼 바닥(목관 입구)
-      if (on && gH > 0.02 * u) { DSF.cgA = (DSF.cgA || 0) + kG * h5; while (DSF.cgA >= 1 && CD.length < 1500) { DSF.cgA -= 1; const r0 = 0.85 * DSF.rc * Math.sqrt(Math.random()), a0 = Math.random() * 2 * Math.PI; CD.push({ x: DSF.xc + r0 * Math.cos(a0), y: yG, z: r0 * Math.sin(a0), v: 0, y1: q.colBase }); } } else DSF.cgA = 0;
-      for (let k = CD.length - 1; k >= 0; k--) { const d = CD[k]; d.v += 9.81 * h5; d.y -= d.v * h5; if (d.y <= d.y1) CD.splice(k, 1); }
+      if (on && gH > 0.02 * u) { DSF.cgA = (DSF.cgA || 0) + 0.35 * kG * h5;   /* v144: 느리게 떨어져 오래 떠 있는 만큼 개수 0.35배 */ while (DSF.cgA >= 1 && CD.length < 1500) { DSF.cgA -= 1; const r0 = 0.85 * DSF.rc * Math.sqrt(Math.random()), a0 = Math.random() * 2 * Math.PI; CD.push({ x: DSF.xc + r0 * Math.cos(a0), y: yG, z: r0 * Math.sin(a0), v: vF0, a: 5.25 * vF0 * vF0 / (2 * gH), y1: q.colBase });   /* v144: 받침 아래 방울도 같은 출발 빠르기 · 2.5배 규칙 */ } } else DSF.cgA = 0;
+      for (let k = CD.length - 1; k >= 0; k--) { const d = CD[k]; d.v += (d.a != null ? d.a : 9.81) * h5; d.y -= d.v * h5; if (d.y <= d.y1) CD.splice(k, 1); }
       { const R4 = live ? Math.max(0, P.Rkg || 0) : 0, rdo = DSF.rd && DSF.rd[0] && DSF.rd[0].ms.visible ? 4 * Math.PI * Math.pow(dsfRO(R4 / 4) * kS, 2) : 0; let ng = 0, nz = 0; for (const d of CD) { if (d.y1 === q.colBase) ng++; else nz++; }   // 보이는 양 확인: 그린 선밀도 ÷ 유량
         DSF.bal = { rd: R4 > 0.05 ? rdo / R4 : null, grid: qc > 0.05 && gH > 0.02 * u ? ng * VdD / Math.max(1e-6, gH) / qc : null, noz: qc > 0.05 ? (jet ? nS * Math.PI * rj * rj : nz * VdD / Math.max(1e-6, Lj)) / qc : null, ng, nz }; }
       pr.neckF = { bal: DSF.bal, wet: +((DSF.nwet || 0) / LN).toFixed(3), dry: +((DSF.ndry || 0) / LN).toFixed(3), cv: FN ? +(FN.cv || 0).toFixed(4) : 0, sites: nS, fS: +fS.toFixed(2), jet, drops: CD.length }; }
@@ -3688,14 +3689,14 @@ function dsfDrops(dt) {
   let nD = 0, nB = 0, nP = 0; const DM = DSF.dropM, BM = DSF.bubM, PM = DSF.puffM, nDm = DM.instanceMatrix.count, nBm = BM.instanceMatrix.count, nPm = PM.instanceMatrix.count;
   const drop = (x, y, z, vx, vy, vz, r) => { if (nD >= nDm) return; const sp = Math.hypot(vx, vy, vz), st = 1 + Math.min(2.6, sp * 1.1 / u); if (sp > 1e-4) { dd.set(vx / sp, vy / sp, vz / sp); qq.setFromUnitVectors(UP, dd); } else qq.set(0, 0, 0, 1); vv.set(x, y, z); ss.set(r / Math.sqrt(st) * 1.15, r * st, r / Math.sqrt(st) * 1.15); mx.compose(vv, qq, ss); DM.setMatrixAt(nD++, mx); };
   { const pos = dpGeo.attributes.position.array, n = Math.min(dpGeo.drawRange.count || 0, pos.length / 3), q = DSF.q, nk = !!DSF.nkOn, yb = q.colBase, xr = DSF.rn * 1.6; for (let i = 0; i < n; i++) { const y = pos[i * 3 + 1]; if (nk && y < yb && Math.abs(pos[i * 3] - DSF.xc) < xr) continue; if (DSF.KX != null && y > DSF.K0 - 1.05 * DSF.BH && y < DSF.K0 + DSF.LK + 1.3 * DSF.BH && Math.abs(pos[i * 3] - DSF.KX) < 1.08 * DSF.KR) continue;   /* 고침 10 ⑥ */ drop(pos[i * 3], y, pos[i * 3 + 2], 0, -0.35 * u, 0, 0.0032 * u); } }   /* v134: 목관 줄기가 있으면 목관 안 방울은 뺀다 */   // 지금 장면의 액 점(컬럼을 내려가는 액 · 응축 방울 · 응축기에서 떨어지는 방울 · 2차 응축기 바닥을 지나는 액)
-  if (DSF.cdr) for (const d of DSF.cdr) drop(d.x, d.y, d.z, 0, -Math.max(0.05, d.v), 0, 0.0028 * u);   /* v137: 목관 노즐 끝 · 충전층 받침 아래 방울 */
+  if (DSF.cdr) for (const d of DSF.cdr) drop(d.x, d.y, d.z, 0, -Math.max(0.05, d.v), 0, 0.0028 * u); if (DSF.pdr && DSF.nkOn) for (let i = 0; i < DSF.pdr.length; i++) { const f = Math.max(0, Math.min(1, DSF.pdr[i])), r = 0.0028 * u * (0.35 + 0.65 * Math.cbrt(f)), ag = i / DSF.pdr.length * Math.PI * 2 + 0.4; drop(DSF.xc + DSF.pdx * Math.cos(ag), DSF.pdy - r, DSF.pdx * Math.sin(ag), 0, 0, 0, r); }   /* v144: 노즐 끝에 맺혀 자라는 방울 */   /* v137: 목관 노즐 끝 · 충전층 받침 아래 방울 */
   for (const p of FXP) {
     if (p.kind === "spl" || p.kind === "drip") drop(p.x, p.y, p.z, p.vx || 0, p.vy || 0, p.vz || 0, 0.0028 * u);
     else if (p.kind === "ent" && FX.entPath) { fxAlong(FX.entPath, p.s, DSF.fp); drop(DSF.fp[0], DSF.fp[1], DSF.fp[2], 0, 0.5 * u, 0, 0.0026 * u); }
     else if ((p.kind === "bub" || p.kind === "bubS" || p.kind === "fb") && nB < nBm) { const r = (p.kind === "fb" ? 0.0045 : 0.0035) * u; vv.set(p.x, p.y, p.z); qq.set(0, 0, 0, 1); ss.set(r, r * 1.18, r); mx.compose(vv, qq, ss); BM.setMatrixAt(nB++, mx); }
     else if ((p.kind === "pump" || p.kind === "air" || p.kind === "rel") && nP < nPm) { const a = Math.max(0, Math.min(1, p.life || 0)), r = (p.kind === "rel" ? 0.012 : 0.008) * u * (1.6 - 0.6 * a); vv.set(p.x, p.y, p.z); qq.set(0, 0, 0, 1); ss.set(r, r, r); mx.compose(vv, qq, ss); PM.setMatrixAt(nP++, mx); } }
   // 액면에서 터지는 기포 뚜껑: 지금 장면의 액면 끓음 기포와 같은 빈도 규칙(초당 12 + 증발/3, 최대 80)의 1/4. 터지면 물결 · 튀는 방울 두 개 — 표시 규칙
-  { const S = DS.ves.still, boil = live && P.vdot > 1 && S && S.on && !!($("tVapor") && $("tVapor").checked); DSF.dmAcc = (DSF.dmAcc || 0) + (boil ? Math.min(80, 12 + P.vdot / 3) * 0.25 * dt : 0); if (DSF.dmAcc > 3) DSF.dmAcc = 3;
+  { const S = DS.ves.still, boil = live && P.vdot > 1 && S && S.on && !!($("tVapor") && $("tVapor").checked); DSF.dmAcc = (DSF.dmAcc || 0) + (boil ? ($("tBubDisp") && $("tBubDisp").checked ? Math.min(260, 40 + P.vdot * 9) : Math.min(80, 12 + P.vdot / 3)) * 0.25 * dt : 0);   /* v144: 보기용 기포가 켜져 있으면 액면 증발 기포(가벼운 계산 규칙 40 + 9 × kg/h)의 1/4 — 사용자 11-26 '액 속 기포도'(계산 아님) */ if (DSF.dmAcc > 3) DSF.dmAcc = 3;
     while (DSF.dmAcc >= 1 && DSF.dm.length < DSF.domeM.instanceMatrix.count) { DSF.dmAcc -= 1; const rr = S.rs * 0.92 * Math.sqrt(Math.random()), ag = Math.random() * 6.283; DSF.dm.push({ x: rr * Math.cos(ag), z: rr * Math.sin(ag), r: (0.004 + 0.006 * Math.random()) * u, t: 0, life: 0.22 + Math.random() * 0.18 }); }
     let n = 0, ri = DSF.ri || 0; for (let i = DSF.dm.length - 1; i >= 0; i--) { const d = DSF.dm[i]; d.t += dt; if (d.t >= d.life || !S) { DSF.dm.splice(i, 1); if (S) { const un = S.sm.uniforms; un.uRip.value[ri].set(d.x, -d.z, DS.t); ri = (ri + 1) % 4; for (let k = 0; k < 2; k++) { const a = Math.random() * 6.283, sp = (0.1 + Math.random() * 0.22) * u; DSF.sp.push({ x: d.x, y: S.level + 0.004 * u, z: d.z, vx: Math.cos(a) * sp, vy: (0.45 + Math.random() * 0.55) * u, vz: Math.sin(a) * sp * 0.6, y0: S.level }); } } continue; }
       const g = Math.min(1, d.t / 0.08); vv.set(d.x, S.level, d.z); qq.set(0, 0, 0, 1); ss.set(d.r * g, d.r * g * 0.8, d.r * g); mx.compose(vv, qq, ss); DSF.domeM.setMatrixAt(n++, mx); }
@@ -3776,7 +3777,7 @@ function dsfFrame(now, dt) {
   dsfFrame4(dt || 0);
   dsfVortex();
   { const h = typeof paused !== "undefined" && paused ? 0 : dt || 0; for (const mt of DSF.phMats || []) { const un = mt.uniforms; if (un.uPh && un.uSpeed) un.uPh.value += un.uSpeed.value * h; } }   /* v136 F: 무늬 위치 = 빠르기 적분 */
-  if (typeof dsfNet === "function") dsfNet(typeof paused !== "undefined" && paused ? 0 : dt || 0);   /* v143: 흐르는 관 · 티 · U자 · 떨어지는 줄기의 무늬를 노드 앞뒤로 잇는다(dsseal_add.js) */
+  if (typeof dsfNet === "function") dsfNet(typeof paused !== "undefined" && paused ? 0 : dt || 0); if (typeof dsfVapNet === "function") dsfVapNet(typeof paused !== "undefined" && paused ? 0 : dt || 0);   /* v144: 김 띠도 이음매 앞뒤로 잇는다(dsseal_add.js) */   /* v143: 흐르는 관 · 티 · U자 · 떨어지는 줄기의 무늬를 노드 앞뒤로 잇는다(dsseal_add.js) */
   dsfFpsGuard(now);
 }
 /* 시험용: 김 · 액 · 방울의 지금 값 */
@@ -3930,6 +3931,32 @@ function dsfNet(dt) {
   const rEnd = (k) => { const Lk = L[k]; if (!Lk || !Lk.parts.length) return null; const lp = Lk.parts[Lk.parts.length - 1], f = Math.max(0, Math.min(1, lp.mt.uniforms.uFill.value)); return lp.Ri * Math.sqrt(f); };   // 들어오는 관 끝의 관 속 액 반지름
   if (DSF.rv) { fall(DSF.rv.fore, XL1, sp("FL"), rEnd("FL")); fall(DSF.rv.main, XM1, sp("M"), rEnd("M")); net.rv = { fore: XL1 != null && DSF.rv.fore.ms.visible ? +DSF.rv.fore.mt.uniforms.uK0.value.toFixed(2) : null, main: XM1 != null && DSF.rv.main.ms.visible ? +DSF.rv.main.mt.uniforms.uK0.value.toFixed(2) : null }; }
   if (DSF.rd) { const SR = DSF.Ls && DSF.Ls.R, vR = SR && SR.sp > 0 ? SR.sp : 0; for (const s of DSF.rd) fall(s, XR1, vR, null); }
+}
+/* v144(v143에서 남긴 김 띠 잇기 — 사용자 11-25 밤 "노드별로 구간별로 … 흐름이 하나로이어져야돼"): 김 띠를 하나의 흐름으로 잇는다.
+   공용 위상 G(1 m/s로 늘어남)와 무늬 자리 X = 앞 띠 끝의 X + ∫ ds ÷ v(그 자리 보이는 빠르기). 이음매(노즐 · 컬럼 바닥 · 컬럼 꼭대기 · 응축기 입구 · 관판) 앞뒤 X가 같고,
+   한 자리를 지나는 무늬 박자(무늬 결 KV × 1 m/s)가 어디서나 같다 — 빨라지는 곳에서 무늬가 길게 늘어나고 느려지는 곳에서 짧아진다(흐름을 따라 움직이는 김 덩어리와 같다).
+   보이는 빠르기 = 0.6 T × ∛(실제 속도 ÷ 6 m/s)(v111 김 규칙): 정제기 위 액면 k0(깔때기 무늬 자리 aX가 노즐로 갈수록 빨라짐), 목관 = 컬럼 속도 × (컬럼 ÷ 목관 단면 1.78),
+   컬럼 kc, 증기관 kp, 응축기 뚜껑 = 증기관 빠르기 × (입구 ÷ 단면 반지름)^(2/3)(넓어지며 느려짐), 관 = 뚜껑 바닥 단면 ÷ 관 단면 합의 세제곱근만큼 빨라졌다가 응축되며 끝에서 절반(표시 규칙),
+   2차 쪽(T2 · C2 · S)은 전 빠르기 그대로. 안쪽 겹(B)은 바깥 겹(A)의 1.3배. 띠 안 1/v는 길이를 따라 곧게 바뀐다(X = X0 + s/v0 + (1/v1 − 1/v0) s²/(2L)) */
+function dsfVapNet(dt) {
+  const V = DSF.V, q = DSF.q; if (!V || !V.head || !q || !M) return; const KV = 4, CORE = 1.3;
+  DSF.GV = (DSF.GV || 0) + (dt || 0); const G = DSF.GV, T = M.p.T, Uv = 0.6 * T, VS = typeof VSP !== "undefined" && VSP ? VSP : { k0: 1, kc: 1, kp: 1 };
+  const kU = (x) => Math.max(0.35, Math.min(3, Math.cbrt(Math.max(1e-6, x) / 6))), uc = VS.u && VS.u[1] > 0 ? VS.u[1] : 6;
+  const vH0 = Uv * VS.k0, vN = Uv * kU(uc / 0.5625), vC = Uv * VS.kc, vV = Uv * VS.kp;   // 목관 반지름 = 0.75 × 컬럼 → 단면 0.5625배
+  const set = (pt, X0, v0, v1) => { const u = pt.mt.uniforms; if (!u.uNet) return; u.uX0.value = X0; u.uI0.value = 1 / v0; u.uI1.value = 1 / (v1 || v0); u.uG.value = G; u.uKv.value = KV; u.uNet.value = 1; };
+  const net = DSF.vnet = { G: +G.toFixed(4), KV, v: { head: +vH0.toFixed(3), neck: +vN.toFixed(3), col: +vC.toFixed(3), V: +vV.toFixed(3) }, X: {} };
+  let XA = 0, XB = 0; const hs = V.head.len;
+  { const pA = V.head.parts[0], pB = V.head.parts[1], fA = pA.ms.geometry.userData.funnel, fB = pB && pB.ms.geometry.userData.funnel; set(pA, 0, vH0); XA = hs * (fA ? fA.top : 1) / vH0; if (pB) { set(pB, 0, vH0 * CORE); XB = hs * (fB ? fB.top : 1) / (vH0 * CORE); } }
+  net.X.head = [+XA.toFixed(4), +XB.toFixed(4)];
+  if (V.neck) { set(V.neck.parts[0], XA, vN); XA += V.neck.len / vN; XB += V.neck.len / (vN * CORE); net.X.neck = +XA.toFixed(4); }   // 안쪽 겹은 목관에 따로 그리지 않지만 걸린 시간은 센다
+  let XC0 = XA; if (V.col) { const c = V.col.parts; set(c[0], XA, vC); if (c[1]) set(c[1], XB, vC * CORE); XC0 = XA; XA += V.col.len / vC; XB += V.col.len / (vC * CORE); net.X.col = [+XA.toFixed(4), +XB.toFixed(4)]; }
+  if (V.V) { const c = V.V.parts; set(c[0], XA, vV); if (c[1]) set(c[1], XB, vV * CORE); XA += V.V.len / vV; XB += V.V.len / (vV * CORE); net.X.V = [+XA.toFixed(4), +XB.toFixed(4)]; }
+  let vB1 = vV; if (V.bon) { const c = V.bon.parts, gA = c[0].ms.geometry.parameters, fA = Math.pow(gA.radiusTop / gA.radiusBottom, 2 / 3); set(c[0], XA, vV, vV * fA); XA += V.bon.len * (1 / vV + 1 / (vV * fA)) / 2; vB1 = vV * fA;
+    if (c[1]) { const gB = c[1].ms.geometry.parameters, fB = Math.pow(gB.radiusTop / gB.radiusBottom, 2 / 3); set(c[1], XB, vV * CORE, vV * CORE * fB); XB += V.bon.len * (1 / (vV * CORE) + 1 / (vV * CORE * fB)) / 2; } net.X.bon = [+XA.toFixed(4), +XB.toFixed(4)]; net.v.bon1 = +vB1.toFixed(3); }
+  if (V.tub) { const KR = DSF.KR, n = V.tub.parts.length, Ab = Math.PI * Math.pow(0.84 * KR, 2), At = n * Math.PI * Math.pow(0.169 * KR, 2), vT0 = vB1 * Math.cbrt(Ab / Math.max(1e-9, At)), vT1 = 0.5 * vT0;
+    for (const pt of V.tub.parts) set(pt, XA, vT0, vT1); XA += V.tub.len * (1 / vT0 + 1 / vT1) / 2; net.v.tub = +vT0.toFixed(3); net.X.tub = +XA.toFixed(4); }
+  for (const k of ["T2", "C2", "S"]) { const E = V[k]; if (!E) continue; const sp = k === "C2" ? 0.3 * T : Uv; for (const pt of E.parts) set(pt, XA, sp); XA += E.len / sp; net.X[k] = +XA.toFixed(4); }   // 1차 관 끝 → 2차 쪽(전 빠르기)
+  if (V.rfx) { const vR = Math.max(1e-3, Uv * VS.kc * (typeof rfxKU === "function" ? rfxKU() : 1)), X0 = XC0 + Math.max(0, (q.yRf - q.colBase)) / vC; for (const pt of V.rfx.parts) set(pt, X0, vR); net.X.rfx0 = +X0.toFixed(4); }   // 빈 환류관: 컬럼 노즐 높이의 X에서 갈라짐
 }
 /* ===== v136 D · E: 김 입자(새 디자인) — 교반조 시뮬레이터(교반조_유동_시뮬레이터.html stepParticles · writeParticles)처럼 흐름을 따라 움직이는 입자 + 꼬리 선 =====
   근거(계산값 · 식) — 표시 규칙은 따로 밝힌다:
@@ -4636,11 +4663,17 @@ function fxUpdate(dtReal) {
       const d = Math.min(Math.max(0, ys - 0.01 * t), Math.random() < 0.5 ? -Math.log(1 - Math.random()) * 0.012 * t : Math.random() * ys), y = ys - d;   // 절반은 액면 근처(진공은 맨 위 1~2 cm만 끓는다), 절반은 고르게
       if (tempAt(x, y, z) >= tbDepth(d) - 0.05) FXP.push({ kind: "bub", x, y, z, vy: 0.12 + 0.1 * Math.random(), ys, life: 4 }); }
     // 액면 증발(번쩍 끓음): 증발량에 비례해 맨 위 1 cm 안에서 작은 기포가 터진다 (진공에서는 이것만 보인다)
-    fxEmit("bubS", (solver.kind === "LUMP" ? 0 : Math.min(60, 12 + PR.vdot / 3)) * (live ? 1 : 0), dt, () => { const r = M.R * 0.92 * Math.sqrt(Math.random()), a = Math.random() * 6.283, x = r * Math.cos(a), z = r * Math.sin(a), ys = M.surfY(x, z);
+    fxEmit("bubS", (solver.kind === "LUMP" ? 0 : ($("tBubDisp") && $("tBubDisp").checked ? Math.min(260, 40 + PR.vdot * 9) : Math.min(60, 12 + PR.vdot / 3))) * (live ? 1 : 0), dt, () => { const r = M.R * 0.92 * Math.sqrt(Math.random()), a = Math.random() * 6.283, x = r * Math.cos(a), z = r * Math.sin(a), ys = M.surfY(x, z);
       return { kind: "bub", x, y: ys - (0.006 + 0.014 * Math.random()) * t, z, vy: 0.012 + 0.012 * Math.random(), ys, life: 2 }; }); }
   if (boiling && solver.kind === "LUMP" && $("tVapor").checked) fxEmit("bubS", Math.min(260, 40 + PR.vdot * 9) * (live ? 1 : 0), dt, () => { const bu = PR.boilU, zN = bu && bu.zN > 0 ? bu.zN : 0, fN = bu && bu.fN > 0 ? bu.fN : 0, wall = zN > 0.02 * t && Math.random() < Math.max(0.15, fN);   /* v111: 완전 혼합에서도 액면 끓음 ∝ 증발량 · v137: 계산 핵비등 깊이까지는 자켓 벽에서 */
     const r = M.R * (wall ? 0.88 + 0.08 * Math.random() : 0.92 * Math.sqrt(Math.random())), a = Math.random() * 6.283, x = r * Math.cos(a), z = r * Math.sin(a), ys = M.surfY(x, z), d = wall ? Math.min(zN, Math.max(0.01 * t, ys - M.hh)) * Math.random() : (0.006 + 0.014 * Math.random()) * t;
     return { kind: "bub", x, y: ys - d, z, vy: wall ? 0.05 + 0.04 * Math.random() : 0.012 + 0.012 * Math.random(), ys, life: wall ? 4 : 2 }; });
+  /* v144: 보기용 기포(사용자 11-26 '액 속 기포도') — 끓는 동안 자켓 벽(70 %) · 바닥(30 %)에서 기포가 생겨 액면까지 올라온다. 계산 아님: 진공에서는 액 무게(1 cm ≈ 1.1 torr) 때문에 액면 1 mm 아래로는 끓지 않는다(핵비등 깊이 PR.boilU.zN · 깊이 끓는점 tbDepth).
+     개수 ∝ 증발량(초당 6 + 4 × kg/h, 최대 120 — 표시 규칙). 표시 탭 '기포(보기용)'를 끄면 계산대로(그 깊이 끓는점 이상인 자리 · 액면 증발 기포만) */
+  if (boiling && $("tVapor").checked && $("tBubDisp") && $("tBubDisp").checked) { fxAcc.bubD = (fxAcc.bubD || 0) + Math.min(120, 6 + 4 * PR.vdot) * dt * (typeof FX_SCALE === "number" ? FX_SCALE : 1);
+    while (fxAcc.bubD >= 1 && FXP.length < FXN) { fxAcc.bubD -= 1; const wall = Math.random() < 0.7, a = Math.random() * 6.283, r = M.R * (wall ? 0.82 + 0.12 * Math.random() : 0.75 * Math.sqrt(Math.random())), x = r * Math.cos(a), z = r * Math.sin(a), ys = M.surfY(x, z), hh = M.hh || 0.25 * t, yb = hh * (1 - Math.sqrt(Math.max(0, 1 - (r / M.R) * (r / M.R)))) + 0.01 * t, y = wall ? yb + Math.random() * Math.max(0, ys - 0.03 * t - yb) : yb + 0.004 * t;
+      if (y < ys - 0.02 * t) FXP.push({ kind: "bub", x, y, z, vy: 0.1 + 0.08 * Math.random(), ys, life: 8, disp: 1 }); }
+    if (fxAcc.bubD > 3) fxAcc.bubD = 3; }
   // 10 냉각수 흐름 점(유량 비례, 나가는 쪽은 따뜻한 색), 스팀 흐름 점(열림 비례), 자켓 응축수 방울
   for (const key of ["W1", "W2"]) { const segs = null; if (!segs || !segs.length) continue;   /* v61: 냉각수 흐름은 그리지 않는다 */ const on = key === "W1" ? VLV.C1 : VLV.C2; if (!on) continue;
     fxEmit("cw" + key, Math.min(30, 6 * (p.mcw || 0) / 2000), dt, () => { const i = Math.floor(Math.random() * segs.length); return { kind2: key, seg: i, f: 0, v: 0.35 * t, life: 1e9, warm: i > 0 ? 1 : 0 }; }); }
@@ -9113,9 +9146,9 @@ function pid2Build() {
       for (const f of fl) { const d = f.el.getAttribute("d"), a = pts2(d), cc = cum(a), w = +f.el.getAttribute("stroke-width") || 10, e = document.createElementNS(NS, "path");
         e.setAttribute("d", d); e.setAttribute("class", "p2-hold"); e.setAttribute("stroke-width", String(Math.max(9, Math.round(w * 0.9)))); e.setAttribute("display", "none"); f.el.after(e);   /* 그 관의 흐름 점 바로 위(밸브 · 값 상자보다 아래) */
         parts.push({ el: e, off, len: cc[cc.length - 1], a, cc }); for (const x of cc) if (!cor.length || Math.abs(off + x - cor[cor.length - 1]) > 1e-6) cor.push(off + x); off += cc[cc.length - 1]; }
-      if (VLP[k]) { const vx = +X(VLP[k][0]), vy = +Y(VLP[k][1]); let best = 0, bd = 1e18; for (const pt of parts) for (let i = 1; i < pt.a.length; i++) { const p0 = pt.a[i - 1], p1 = pt.a[i], dx = p1[0] - p0[0], dy = p1[1] - p0[1], l2 = dx * dx + dy * dy, u = l2 > 0 ? Math.max(0, Math.min(1, ((vx - p0[0]) * dx + (vy - p0[1]) * dy) / l2)) : 0, dd = Math.hypot(p0[0] + dx * u - vx, p0[1] + dy * u - vy); if (dd < bd) { bd = dd; best = pt.off + pt.cc[i - 1] + u * (pt.cc[i] - pt.cc[i - 1]); } }
-        cor.push(best); cor.sort((x, y) => x - y); }
-      PID2.hold[k] = { parts, L: off, cor, seal: k === "R" && cor.length >= 5 ? [cor[1], cor[4]] : null, key: "" }; }
+      let vc = null; if (VLP[k]) { const vx = +X(VLP[k][0]), vy = +Y(VLP[k][1]); let best = 0, bd = 1e18; for (const pt of parts) for (let i = 1; i < pt.a.length; i++) { const p0 = pt.a[i - 1], p1 = pt.a[i], dx = p1[0] - p0[0], dy = p1[1] - p0[1], l2 = dx * dx + dy * dy, u = l2 > 0 ? Math.max(0, Math.min(1, ((vx - p0[0]) * dx + (vy - p0[1]) * dy) / l2)) : 0, dd = Math.hypot(p0[0] + dx * u - vx, p0[1] + dy * u - vy); if (dd < bd) { bd = dd; best = pt.off + pt.cc[i - 1] + u * (pt.cc[i] - pt.cc[i - 1]); } }
+        cor.push(best); cor.sort((x, y) => x - y); vc = best; }
+      PID2.hold[k] = { parts, L: off, cor, vc, seal: k === "R" && cor.length >= 5 ? [cor[1], cor[4]] : null, key: "" }; }   /* v144: vc = 도면 밸브 자리(관 길이) */
     PID2.tank = {};   /* X9: 받는 탱크 고액위 띠(3D 고액위 고리와 같은 97 % 자리) · 넘침 줄기 · 바닥 웅덩이(3D와 같은 판정: PR.lah, 넘친 양 PR.spill이 공정 30 s 안에 늘었을 때) */
     for (const key of ["fore", "main"]) { const fo = key === "fore", x = fo ? q.xF : q.xMn, r = fo ? q.rRF : q.rRM, y0 = fo ? q.yRvF : q.yRvM, y1 = fo ? q.yTopF : q.yTopM, hd = (fo ? q.hdF : q.hdM) || 0, yl = y0 + 0.97 * (y1 - y0), xs = x + r + 0.035, ref = PID2.dyn[key];
       const ring = el("path", { d: L([[x - 1.1 * r, yl], [x + 1.1 * r, yl]]), class: "p2-lah", display: "none" }), sp = el("path", { d: L([[x + 0.5 * r, y1 + hd * 0.86], [xs, y1], [xs, 0.004]]), class: "p2-spill", display: "none" }), pd = el("ellipse", { cx: X(xs), cy: Y(0.004), rx: 40, ry: 12, class: "p2-pud", display: "none" });
@@ -9163,7 +9196,7 @@ function pid2Frame(now) {
   { /* v133: 도면의 관 채움 · 고액위 · 넘침 · 범람 액 · 넘어가는 액 색(3D와 같은 상태 · 판정값) */
     for (const f of PID2.flows) if (f.k === "T2" || f.k === "S") { if (!f.k0) f.k0 = f.kind; const lq = f.k === "T2" ? (PR.ovKg || 0) > 1 : (PR.pumpLiqKg || 0) > 0.5, kd = lq ? "liq" : f.k0; if (f.kind !== kd) { f.el.classList.remove(f.kind); f.el.classList.add(kd); f.kind = kd; } }   /* X2 · X3: 넘어가는 것이 액이면 액 색 점(3D 액 모양과 같은 판정) */
     if (PID2.hold) for (const k in PID2.hold) { const H = PID2.hold[k], f = FILL[k]; let iv = [];   /* X10 · X11 · X6: 흐름 점이 꺼진 관에 액이 있으면(3D 덧관과 같은 구간) 멈춘 액 색 선 */
-      if (f && f.Ltot > 0 && !f.parallel && !on2[k] && (FILL_KIND[k] === "liq" || f.vapNow === false)) { const c3 = f.segs.map((sg) => sg.s0).concat([f.Ltot]), cr = H.cor;
+      if (f && f.Ltot > 0 && !f.parallel && !on2[k] && (FILL_KIND[k] === "liq" || f.vapNow === false)) { let c3 = f.segs.map((sg) => sg.s0).concat([f.Ltot]), cr = H.cor;   if (H.vc != null && f.sV != null && c3.length === cr.length) { const i3 = c3.findIndex((x) => Math.abs(x - f.sV) < 1e-6), ic = cr.indexOf(H.vc); if (i3 > 0 && i3 === ic && ic + 1 < cr.length) { const hw = Math.min(34, 0.45 * (cr[ic] - cr[ic - 1]), 0.45 * (cr[ic + 1] - cr[ic])); c3 = c3.slice(0, i3 + 1).concat(c3.slice(i3)); cr = cr.slice(0, ic).concat([cr[ic] - hw, cr[ic] + hw], cr.slice(ic + 1)); } }   /* v144 X10 · X11: 3D 밸브 자리(sV)를 도면 밸브 기호의 두 끝(± 34 — 나비넥타이가 관을 덮는 길이)에 맞춘다. 전: 밸브 자리 한 점에 맞춰 짧은 고인 액(유출 2 kg/h · 닫고 6 s 0.031 m)이 기호 밑에 가려졌다 */
         const mp = (x) => { if (c3.length !== cr.length) return x / f.Ltot * H.L; for (let i = 1; i < c3.length; i++) if (x <= c3[i] + 1e-9) { const u = c3[i] > c3[i - 1] ? (x - c3[i - 1]) / (c3[i] - c3[i - 1]) : 0; return cr[i - 1] + u * (cr[i] - cr[i - 1]); } return H.L; };
         for (const ab of p2FillIv(f)) { const x0 = mp(ab[0]), x1 = mp(ab[1]); if (H.seal) { if (x0 < H.seal[0]) iv.push([x0, Math.min(x1, H.seal[0])]); if (x1 > H.seal[1]) iv.push([Math.max(x0, H.seal[1]), x1]); } else iv.push([x0, x1]); } }   /* U자는 위의 U자 액봉 선이 그린다 */
       iv = iv.filter((ab) => ab[1] - ab[0] > 0.5); const key = iv.map((ab) => ab[0].toFixed(0) + "-" + ab[1].toFixed(0)).join(","); if (key === H.key) continue; H.key = key;

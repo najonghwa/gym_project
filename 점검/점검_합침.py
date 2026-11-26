@@ -1583,10 +1583,16 @@ def _xd_v142pm(g, add):   # v142 Y18 · Y19 · Y20(사용자 11-25 오후): U자
             "상태 일치 · 색 일치 · 몸통 ≥ 0.5 · 배수 밸브 모두 빨강 · 자체 발광 ÷ 바탕색 ≥ 1.5")
     fu = g("새디자인 6 h 밸브", "ds_fun")
     if fu and not fu.get("none"):
-        P = fu.get("parts") or []; ok = bool(P) and all((p.get("K") or 0) >= 2 and p.get("aX") and p.get("fun") == 1 and (p.get("vr") or 0) >= 2 and (p.get("rad") or 9) <= 2 for p in P) and any(p.get("vis") for p in P)
+        P = fu.get("parts") or []
+        def _asp(p, e):   # v144: 높이 e에서 흐름 방향 무늬 길이(보이는 빠르기 ÷ 무늬 박자) ÷ 둘레 무늬 크기(띠 반지름 ÷ rad) — 1이면 둥근 덩어리, 클수록 곧은 빛살
+            if not all(p.get(x) for x in ("r0", "r1", "i0", "kv", "rad", "K")): return None
+            r = p["r0"] + (p["r1"] - p["r0"]) * e ** p["K"]; v = (1 / p["i0"]) * (p["r0"] / r) ** (2 / 3)
+            return round((v / p["kv"]) / (r / p["rad"]), 2)
+        AS = [[_asp(p, e) for e in (0, 0.5, 1)] for p in P]
+        ok = bool(P) and all((p.get("K") or 0) >= 2 and p.get("aX") and p.get("fun") == 1 and (p.get("vr") or 0) >= 2 and p.get("net") == 1 for p in P) and all(a9[1] is not None and 0.4 <= a9[1] <= 3 and a9[2] <= 10 for a9 in AS) and any(p.get("vis") for p in P)
         add("Y20", f"{DS3} 정제기 위 김은 액면에서 곧게 오르다 노즐 가까이에서 휘어 모이는 깔때기이고, 단면이 좁아지는 만큼 무늬가 빨라진다(실제 속도 ∝ 1/r², 보이는 빠르기는 김 규칙 세제곱근 ∝ r^(−2/3)). 둘레 무늬 결은 높이 방향과 비슷하게(곧은 빛살 줄 없음)", bool(ok),
-            " · ".join(f"띠 {i + 1}: 모이는 정도 η^{p.get('K')} · 노즐 쪽 무늬 빠르기 ÷ 액면 {p.get('vr')}배(무늬 자리 끝 {p.get('top')} — 높이 1) · 무늬 자리 속성 {p.get('aX')} · 깔때기 무늬 {p.get('fun')} · 둘레 결 rad {p.get('rad')} · 보임 {p.get('vis')}" for i, p in enumerate(P)) + f" · 진하기 {fu.get('d')}",
-            "K ≥ 2 · 노즐 쪽 무늬 빠르기 ÷ 액면 ≥ 2 · 깔때기 무늬 · rad ≤ 2 · 보임")
+            " · ".join(f"띠 {i + 1}: 모이는 정도 η^{p.get('K')} · 노즐 쪽 무늬 빠르기 ÷ 액면 {p.get('vr')}배(무늬 자리 끝 {p.get('top')} — 높이 1) · 무늬 자리 속성 {p.get('aX')} · 깔때기 무늬 {p.get('fun')} · 김 사슬 {p.get('net')} · 둘레 결 rad {p.get('rad')} · 무늬 길이 ÷ 둘레 결 액면 {AS[i][0]} · 가운데 {AS[i][1]} · 노즐 {AS[i][2]} · 보임 {p.get('vis')}" for i, p in enumerate(P)) + f" · 진하기 {fu.get('d')}",
+            "K ≥ 2 · 노즐 쪽 무늬 빠르기 ÷ 액면 ≥ 2 · 깔때기 무늬 · 김 사슬 · 무늬 길이 ÷ 둘레 결 가운데 0.4 ~ 3 · 노즐 ≤ 10(v143: 노즐 18 · 30 — 곧은 빛살) · 보임")
 
 def _xd_net(g, add):   # v143 Y21: 노드별 흐름 잇기(사용자 11-25 밤)
     a = g("새디자인 6 h 밸브", "ds_net")
@@ -1611,10 +1617,75 @@ def _xd_net(g, add):   # v143 Y21: 노드별 흐름 잇기(사용자 11-25 밤)
     add("Y21", f"{DS3} 노드별 흐름 잇기 — 흐르는 관(응축액 C · 유출 P · 초류 F · 초류 탱크 입구 FL) · 티 기둥 · 초류 탱크 줄기가 공용 위상을 같이 쓰고, 노드마다 무늬 자리가 이어진다. 탱크 줄기 위 끝 굵기 = 들어오는 관 속 액 굵기, 아래로 빨라진다", bool(ok),
         f"공용 위상 {G} · " + " · ".join(rows) + " · 빠르기 " + " · ".join(f"{k} {C[k]['spd']}" for k in C), "위상 = 공용 · 무늬 자리 차 ≤ 0.001 · 위 끝 반지름 ± 10 % · 가속 > 0")
 
+def _xd_white(g, add):   # v144 Y22: 관 속 액 흰빛(사용자 11-26 "물이 흰색이너무 쎄게표현되어서 이렇게 전체가 하얗게표현될때도잇던데 좀 과하지않나")
+    w = g("새디자인 이상 상황 스팀 과다", "ds_wh"); WH_MAX = 0.05
+    if not w or w.get("none"): return
+    res = []
+    for nm in ("x_ds_wh_a.png", "x_ds_wh_b.png", "x_ds_wh_c.png"):
+        img = _xpng(nm)
+        if not img: res.append(None); continue
+        wd, h, bpp, rows = img; cs = [(rows[y9][x * bpp], rows[y9][x * bpp + 1], rows[y9][x * bpp + 2]) for y9 in (0, h - 1) for x in (0, wd - 1)]
+        bg = tuple(sorted(c[i] for c in cs)[len(cs) // 2] for i in range(3))   # 배경(네 모서리 가운데값)
+        liq = wht = 0
+        for y9 in range(h):
+            r9 = rows[y9]
+            for x in range(wd):
+                R, G, B = r9[x * bpp], r9[x * bpp + 1], r9[x * bpp + 2]
+                if abs(R - bg[0]) + abs(G - bg[1]) + abs(B - bg[2]) <= 40: continue
+                liq += 1; mn = min(R, G, B)
+                if mn >= 190 and max(R, G, B) - mn <= 45: wht += 1
+        res.append((wht, liq))
+    fr = [round(r9[0] / r9[1], 3) if r9 and r9[1] else None for r9 in res]
+    ok = all(r9 is not None and r9[1] >= 2000 for r9 in res) and all(f is not None and f <= WH_MAX for f in fr) and (w.get("vC") or 0) > 0.4
+    add("Y22", f"{DS3} 관 속 액 흰빛 — 응축액이 많을 때(스팀 과다) 응축기 아래 떨어지는 줄기 · 분배기 티 · 환류 관의 액이 통째로 하얗게 보이지 않는다(관 속 액 재질만 남긴 화면 3장의 거의 흰 화소 몫 — 흰 무늬는 작은 반짝임 · 빛 반사만, 밝은 덩어리는 옅은 파랑)", bool(ok),
+        " · ".join((f"그림 {i + 1}: 액 화소 {r9[1]} · 거의 흰 {r9[0]}({fr[i]})" if r9 else f"그림 {i + 1} 없음") for i, r9 in enumerate(res)) + f" · 응축액 관 무늬 빠르기 {w.get('vC')} · 무늬 자리 배율 {w.get('viC')} · 환류 {w.get('R')} · 유출 {w.get('D')} · 증발 {w.get('vdot')} kg/h · 끈 재질 {w.get('hid')}",
+        f"그림마다 거의 흰(가장 어두운 색 ≥ 190 · 색 차 ≤ 45) ≤ {WH_MAX} · 액 화소 ≥ 2000 · 빠르기 > 0.4")
+
+def _xd_vnet(g, add):   # v144 Y23: 김 띠 잇기(v143에서 남긴 것 — 사용자 11-25 밤 노드별 흐름 잇기)
+    a = g("새디자인 6 h 밸브", "ds_vnet")
+    if not a or a.get("none"): return
+    B = a.get("b") or {}; G = a.get("G"); rows = []; ok = G is not None and "head" in B
+    chain = [k for k in ("head", "neck", "col", "V", "bon", "tub", "T2", "C2", "S") if k in B]
+    def end(k):
+        b = B[k]; p = b["p"][0]
+        if k == "head": return p["x0"] + b["len"] * (p["top"] or 1) * p["i0"]
+        return p["x0"] + b["len"] * (p["i0"] + p["i1"]) / 2
+    kv0 = B["head"]["p"][0].get("kv") if "head" in B else None
+    for k in chain + (["rfx"] if "rfx" in B else []):
+        for p in B[k]["p"]:
+            if p.get("net") != 1 or p.get("g") is None or G is None or abs(p["g"] - G) > 1e-4 or p.get("kv") != kv0: ok = False
+    for up, dn in zip(chain, chain[1:]):
+        e = abs(end(up) - B[dn]["p"][0]["x0"]); rows.append(f"{up} → {dn} {e:.5f}"); ok = ok and e <= 1e-3
+    sA = sorted({B[k]["p"][0]["seed"] for k in chain}); sB = sorted({B[k]["p"][1]["seed"] for k in ("head", "col", "V", "bon") if k in B and len(B[k]["p"]) > 1})
+    ok = ok and len(sA) == 1 and len(sB) == 1
+    sp = lambda k, j="i0": (1 / B[k]["p"][0][j]) if B.get(k) and B[k]["p"][0].get(j) else 0
+    okv = sp("neck") > sp("col") > 0 and 0 < sp("bon", "i1") < sp("bon", "i0"); ok = ok and okv
+    add("Y23", f"{DS3} 김 띠 잇기 — 정제기 위 → 목관 → 컬럼 → 증기관 → 응축기 뚜껑 → 관 → 2차 쪽 김 띠가 공용 위상 · 같은 무늬 박자를 쓰고 이음매마다 무늬 자리가 이어진다(사슬마다 씨앗 하나). 보이는 빠르기는 김 규칙(실제 속도의 세제곱근) — 좁은 목관은 컬럼보다 빠르고, 넓어지는 응축기 뚜껑에서 느려진다", bool(ok),
+        f"공용 위상 {G} · 무늬 결 {kv0} · 이음매 무늬 자리 차 " + " · ".join(rows) + f" · 씨앗 A {sA} · B {sB} · 빠르기 목관 {sp('neck'):.3f} · 컬럼 {sp('col'):.3f} · 증기관 {sp('V'):.3f} · 뚜껑 {sp('bon'):.3f} → {sp('bon', 'i1'):.3f} · 관 {sp('tub'):.3f} m/s(화면)",
+        "위상 = 공용 · 무늬 결 같음 · 이음매 차 ≤ 0.001 · 씨앗 사슬마다 하나 · 목관 > 컬럼 · 뚜껑 끝 < 입구")
+
+def _xd_drip(g, add):   # v144 Y24: 목관 끝 → 정제기 액(사용자 11-26 "너무 우수수수 떨어지는느낌 … 컬럼하부배관에선 천천히나오다가 정제기로갈땐 퍼버버벅 … 자연스럽게 이을수있을까")
+    d = g("새디자인 6 h 밸브", "ds_drip")
+    if not d: return   # 그 장면을 안 돌린 묶음
+    if not d.get("on"): add("Y24", f"{DS3} 목관 끝 → 정제기 액 — 6 h에 목관 줄기가 꺼져 있음", False, f"{d}", "켜짐"); return
+    v0 = d.get("v0") or 0; n = d.get("n") or 0; rim = d.get("rim") or 0
+    ok = (d.get("sites") or 0) >= 3 and d.get("pend") == d.get("sites") and 0 < n <= 40 and v0 > 0 and (d.get("vmin") or 0) >= 0.95 * v0 and (d.get("vmax") or 9) <= 2.5 * v0 * 1.05 and rim > 0 and abs((d.get("rmin") or 0) - rim) <= 0.05 * rim and abs((d.get("rmax") or 0) - rim) <= 0.05 * rim
+    add("Y24", f"{DS3} 목관 끝 → 정제기 액 — 목관 벽 액막이 노즐 끝 둘레 방울 자리마다 맺혀 자라다 떨어지고, 떨어지는 방울은 목관 액막 무늬 빠르기에서 출발해 액면에서 2.5배까지 고르게 빨라진다(받는 탱크 줄기와 같은 표시 규칙 — 전: 노즐 단면 아무 데서나 초당 수백 개가 실제 중력으로 쏟아져 공중 130개 · 액면 초속 2.9 m)", bool(ok),
+        f"컬럼 아래 액 {d.get('Lkg')} kg/h · 방울 자리 {d.get('sites')} · 맺힌 방울 {d.get('pend')} · 공중 방울 {n}개 · 빠르기 {d.get('vmin')} ~ {d.get('vmax')} m/s(목관 액막 무늬 {v0}) · 노즐 가운데에서 {d.get('rmin')} ~ {d.get('rmax')} m(자리 {rim}) · 떨어지는 높이 {d.get('h')} m",
+        "자리 ≥ 3 · 맺힌 방울 = 자리 · 공중 1 ~ 40개 · 출발 ≥ 0.95 × 액막 · 끝 ≤ 2.5 × 1.05 × 액막 · 자리 반지름 ± 5 %")
+
+def _xd_bubd(g, add):   # v144 Y25: 보기용 기포(사용자 11-26 '액 속 기포도')
+    b = g("새디자인 6 h 밸브", "ds_bubd")
+    if not b: return
+    ok = (b.get("vdot") or 0) > 1 and b.get("on") == 1 and "보기용" in (b.get("label") or "") and "계산 아님" in (b.get("tip") or "") and (b.get("deep") or 0) + (b.get("mid") or 0) >= 10 and (b.get("disp") or 0) >= 10 and (b.get("domes") or 0) >= 3
+    add("Y25", f"{DS3} 정제기 끓는 모습 — 끓는 동안 자켓 벽 · 바닥에서 기포가 올라오고 액면이 보글거린다(표시 탭 '기포(보기용)', 기본 켜짐 · 계산 아님이라고 밝힘 — 진공에서는 액 무게 때문에 액면 1 mm 아래로는 끓지 않는다)", bool(ok),
+        f"증발 {b.get('vdot')} kg/h · 정제기 {b.get('P')} torr · 핵비등 깊이 {b.get('zN')} m · 기포 {b.get('n')}개(액면 10 cm 아래 {b.get('deep')} · 2 ~ 10 cm {b.get('mid')} · 보기용 {b.get('disp')}) · 액면 터지는 기포 {b.get('domes')} · 표시 칸 '{b.get('label')}' 켜짐 {b.get('on')} · 설명 '{b.get('tip')}'",
+        "끓는 중 · 켜짐 · 이름 '보기용' · 설명 '계산 아님' · 액면 2 cm 아래 기포 ≥ 10 · 보기용 ≥ 10 · 터지는 기포 ≥ 3")
+
 def judge_ds(g, add):
     """새 디자인 판정 줄 — 장면마다 따로 판정하고, 판정 계산에서 오류가 나면 그 장면만 'X0' 줄로 남긴다."""
     import traceback
-    for nm, fn in (("끓기 시작", _xd_boil), ("김 진하기 규칙", _xd_n3), ("6 h 밸브", _xd_valve), ("U자 액봉", _xd_useal), ("U자 액봉 스팀 끔", _xd_usoff), ("티 고인 액", _xd_tee), ("둘러보기", _xd_walk), ("승온", _xd_warm), ("v142 오후", _xd_v142pm), ("흐름 잇기", _xd_net), ("1차 냉매 95도", _xd_c1hot), ("진공 펌프 정지", _xd_pstop), ("배치 끝", _xd_end), ("이상 상황", _xd_ab), ("범람", _xd_flood), ("받는 탱크 고액위", _xd_lah), ("기본 표현", _xd_default)):
+    for nm, fn in (("끓기 시작", _xd_boil), ("김 진하기 규칙", _xd_n3), ("6 h 밸브", _xd_valve), ("U자 액봉", _xd_useal), ("U자 액봉 스팀 끔", _xd_usoff), ("티 고인 액", _xd_tee), ("둘러보기", _xd_walk), ("승온", _xd_warm), ("v142 오후", _xd_v142pm), ("흐름 잇기", _xd_net), ("흰빛", _xd_white), ("김 잇기", _xd_vnet), ("목관 끝 방울", _xd_drip), ("보기용 기포", _xd_bubd), ("1차 냉매 95도", _xd_c1hot), ("진공 펌프 정지", _xd_pstop), ("배치 끝", _xd_end), ("이상 상황", _xd_ab), ("범람", _xd_flood), ("받는 탱크 고액위", _xd_lah), ("기본 표현", _xd_default)):
         try: fn(g, add)
         except Exception as e: add("X0", f"새 디자인 판정 계산 오류 — {nm}", False, f"{type(e).__name__}: {e} · {traceback.format_exc(limit=3)[-400:]}", "오류 0")
 # <<< 새 디자인 판정 끝
