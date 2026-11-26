@@ -1588,10 +1588,33 @@ def _xd_v142pm(g, add):   # v142 Y18 · Y19 · Y20(사용자 11-25 오후): U자
             " · ".join(f"띠 {i + 1}: 모이는 정도 η^{p.get('K')} · 노즐 쪽 무늬 빠르기 ÷ 액면 {p.get('vr')}배(무늬 자리 끝 {p.get('top')} — 높이 1) · 무늬 자리 속성 {p.get('aX')} · 깔때기 무늬 {p.get('fun')} · 둘레 결 rad {p.get('rad')} · 보임 {p.get('vis')}" for i, p in enumerate(P)) + f" · 진하기 {fu.get('d')}",
             "K ≥ 2 · 노즐 쪽 무늬 빠르기 ÷ 액면 ≥ 2 · 깔때기 무늬 · rad ≤ 2 · 보임")
 
+def _xd_net(g, add):   # v143 Y21: 노드별 흐름 잇기(사용자 11-25 밤)
+    a = g("새디자인 6 h 밸브", "ds_net")
+    if not a or not a.get("ch"): return
+    C = a["ch"]; G = a.get("G"); rows = []; ok = G is not None
+    for k in ("C", "P", "F", "FL"):
+        c = C.get(k)
+        if not c or not (c.get("spd") or 0) > 0 or c.get("ph") is None or abs(c["ph"] - G) > 1e-4: ok = False
+    end = lambda c: c["x0"] + c["len"] * c["vi"]
+    for up, dn in (("C", "P"), ("P", "F"), ("F", "FL")):
+        cu, cd = C.get(up), C.get(dn)
+        if not (cu and cd): ok = False; continue
+        e = abs(end(cu) - cd["x0"]); rows.append(f"{up} → {dn} 무늬 자리 차 {e:.5f}"); ok = ok and e <= 1e-3
+    rv = a.get("rv")
+    if rv and C.get("FL"):
+        e = abs(end(C["FL"]) - rv["x0"]); rt = (rv["rS"] or 0) * (rv["k0"] or 0); rp = rv.get("rP") or 0
+        okr = e <= 1e-3 and rp > 0 and abs(rt - rp) <= 0.1 * rp and (rv.get("acc") or 0) > 0 and G is not None and abs((rv.get("ph") or 0) - G) <= 1e-4
+        rows.append(f"FL → 초류 탱크 줄기 무늬 자리 차 {e:.5f} · 줄기 위 끝 반지름 {rt * 1000:.2f} mm(관 속 액 {rp * 1000:.2f} mm) · 가속 {rv.get('acc')}"); ok = ok and okr
+    else: ok = False; rows.append("초류 탱크 줄기 없음")
+    t = a.get("tee")
+    if t: rows.append(f"티 기둥 위상 {t.get('ph')}(× (1 − {t.get('bv')}) = 공용 {G}) · 잠긴 줄기 위상 {t.get('phc')}"); ok = ok and t.get("ph") is not None and abs(t["ph"] * (1 - (t.get("bv") or 0)) - G) <= 1e-3 and t.get("phc") is not None and abs(t["phc"] - G) <= 1e-4
+    add("Y21", f"{DS3} 노드별 흐름 잇기 — 흐르는 관(응축액 C · 유출 P · 초류 F · 초류 탱크 입구 FL) · 티 기둥 · 초류 탱크 줄기가 공용 위상을 같이 쓰고, 노드마다 무늬 자리가 이어진다. 탱크 줄기 위 끝 굵기 = 들어오는 관 속 액 굵기, 아래로 빨라진다", bool(ok),
+        f"공용 위상 {G} · " + " · ".join(rows) + " · 빠르기 " + " · ".join(f"{k} {C[k]['spd']}" for k in C), "위상 = 공용 · 무늬 자리 차 ≤ 0.001 · 위 끝 반지름 ± 10 % · 가속 > 0")
+
 def judge_ds(g, add):
     """새 디자인 판정 줄 — 장면마다 따로 판정하고, 판정 계산에서 오류가 나면 그 장면만 'X0' 줄로 남긴다."""
     import traceback
-    for nm, fn in (("끓기 시작", _xd_boil), ("김 진하기 규칙", _xd_n3), ("6 h 밸브", _xd_valve), ("U자 액봉", _xd_useal), ("U자 액봉 스팀 끔", _xd_usoff), ("티 고인 액", _xd_tee), ("둘러보기", _xd_walk), ("승온", _xd_warm), ("v142 오후", _xd_v142pm), ("1차 냉매 95도", _xd_c1hot), ("진공 펌프 정지", _xd_pstop), ("배치 끝", _xd_end), ("이상 상황", _xd_ab), ("범람", _xd_flood), ("받는 탱크 고액위", _xd_lah), ("기본 표현", _xd_default)):
+    for nm, fn in (("끓기 시작", _xd_boil), ("김 진하기 규칙", _xd_n3), ("6 h 밸브", _xd_valve), ("U자 액봉", _xd_useal), ("U자 액봉 스팀 끔", _xd_usoff), ("티 고인 액", _xd_tee), ("둘러보기", _xd_walk), ("승온", _xd_warm), ("v142 오후", _xd_v142pm), ("흐름 잇기", _xd_net), ("1차 냉매 95도", _xd_c1hot), ("진공 펌프 정지", _xd_pstop), ("배치 끝", _xd_end), ("이상 상황", _xd_ab), ("범람", _xd_flood), ("받는 탱크 고액위", _xd_lah), ("기본 표현", _xd_default)):
         try: fn(g, add)
         except Exception as e: add("X0", f"새 디자인 판정 계산 오류 — {nm}", False, f"{type(e).__name__}: {e} · {traceback.format_exc(limit=3)[-400:]}", "오류 0")
 # <<< 새 디자인 판정 끝

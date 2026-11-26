@@ -920,7 +920,7 @@ details.glref{margin:6px 0 4px}details.glref summary{cursor:pointer;font-size:12
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg></div>
-      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v142 · 11-25 22:35</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
+      <div><h1>정제 탱크 시뮬레이터<span class="ver" title="판 번호 · 빌드 시각(예전 판을 보고 있지 않은지 확인)">v143 · 11-25 23:03</span></h1><div class="sub">가상 정제 운전실 · 자켓 가열 → 충전 컬럼 → 응축 → 초류·본류</div></div>
     </div>
     <div class="status">
       <p class="phase" id="phase">계산 준비 중</p>
@@ -3417,9 +3417,9 @@ function dsfLiqHex() { const sel = ($("liqCol") || {}).value || "mint"; return s
 /* 관 속 액(TUBE: 가로 구간은 바닥에 깔리고 세로 구간은 가운데 줄기) · 떨어지는 물줄기(원기둥). 두 구간: 흐르는 액 [uTail, uHead] · 남는 액 [uH0, uH1](닫힌 밸브 앞 · U자 액봉, 멈춰 있음) */
 function dsfLiqMat(o) {
   const S = DS.sh, mt = new THREE.ShaderMaterial({ transparent: true, depthWrite: !!(o.tube || o.seal), side: THREE.DoubleSide, defines: o.seal ? { SEAL: 1 } : o.tube ? { TUBE: 1 } : {},
-    uniforms: { uTime: { value: 0 }, uPh: { value: 0 }, uLen: { value: o.len }, uR: { value: o.R || 1 }, uFill: { value: 0 }, uFillB: { value: 1 }, uSpeed: { value: 1 }, uHead: { value: 0 }, uTail: { value: 0 }, uH0: { value: 0 }, uH1: { value: 0 }, uE: { value: o.u || 1 }, uOff: { value: o.off || 0 }, uBv: { value: 1 }, uYin: { value: -1e9 }, uYout: { value: -1e9 }, uYup: { value: -1e9 }, uXm: { value: 0 }, uXv: { value: 1e9 }, uXo: { value: -1e9 }, uXh: { value: -1e9 }, uWd: { value: 0.05 }, uYinv: { value: 0 }, uXt: { value: 1e9 }, uYt: { value: -1e9 }, uIsT: { value: 0 }, uXc: { value: 0 }, uZc: { value: 0 }, uRt: { value: 0 }, uPr: { value: 0 }, uPd: { value: 0 }, uPhC: { value: 0 }, uPc: { value: 0 }, uPhL: { value: -9 }, uYs: { value: -1e9 }, uFlL: { value: 0.04 },
+    uniforms: { uTime: { value: 0 }, uPh: { value: 0 }, uLen: { value: o.len }, uR: { value: o.R || 1 }, uFill: { value: 0 }, uFillB: { value: 1 }, uSpeed: { value: 1 }, uHead: { value: 0 }, uTail: { value: 0 }, uH0: { value: 0 }, uH1: { value: 0 }, uE: { value: o.u || 1 }, uOff: { value: o.off || 0 }, uBv: { value: 1 }, uYin: { value: -1e9 }, uYout: { value: -1e9 }, uYup: { value: -1e9 }, uXm: { value: 0 }, uXv: { value: 1e9 }, uXo: { value: -1e9 }, uXh: { value: -1e9 }, uWd: { value: 0.05 }, uYinv: { value: 0 }, uXt: { value: 1e9 }, uYt: { value: -1e9 }, uIsT: { value: 0 }, uXc: { value: 0 }, uZc: { value: 0 }, uRt: { value: 0 }, uPr: { value: 0 }, uPd: { value: 0 }, uPhC: { value: 0 }, uPc: { value: 0 }, uPhL: { value: -9 }, uYs: { value: -1e9 }, uFlL: { value: 0.04 }, uVi: { value: 1 }, uX0: { value: 0 }, uAcc: { value: 0 }, uXp: { value: 0 }, uViP: { value: 1 }, uK0: { value: 1 }, uKL: { value: 0.05 },
       uCol: { value: new THREE.Color(DSF.liqHex || 0x2f9cc8).convertSRGBToLinear() }, uSky: { value: S.SKY.clone() } },
-    vertexShader: ["attribute float aH; uniform float uLen,uR,uFill,uFillB,uHead,uTail,uH0,uH1,uTime,uE,uOff,uBv,uYs,uFlL; varying vec3 vW; varying float vSp; varying float vS; varying float vA; varying float vB; varying float vFl; varying float vFF; varying vec3 vN; varying vec3 vV;",
+    vertexShader: ["attribute float aH; uniform float uLen,uR,uFill,uFillB,uHead,uTail,uH0,uH1,uTime,uE,uOff,uBv,uYs,uFlL,uK0,uKL; varying vec3 vW; varying float vSp; varying float vS; varying float vA; varying float vB; varying float vFl; varying float vFF; varying vec3 vN; varying vec3 vV;",
       "void main(){ vec3 p=position; vec3 n=normal;",
       "#ifdef SEAL",
       "  vS=uOff+uv.x*uLen; vA=uv.y; vB=uBv; vFl=0.0; vFF=1.0;",   /* v141: U자 액봉 = 관 전체 굵기, 액면 위는 조각 셰이더가 버린다 */
@@ -3438,7 +3438,7 @@ function dsfLiqMat(o) {
       "#else",
       "  vS=(1.0-uv.y)*uLen; vA=uv.x; vB=0.0; vFl=0.0; vFF=1.0;",
       "  float wob=1.0+0.16*sin(vS*34.0/uE-uTime*13.0)+0.09*sin(vS*83.0/uE-uTime*21.0);",
-      "  p.xz*=wob*mix(1.0,0.6,smoothstep(0.0,uLen,vS));",
+      "  p.xz*=wob*mix(1.0,0.6,smoothstep(0.0,uLen,vS))*max(1.0,uK0*pow(1.0+2.0*uKL*vS,-0.25));",   /* v143: 떨어지는 줄기 위 끝 = 들어오는 관 속 액 굵기(uK0배) — 빨라지는 만큼 좁아진다 r ∝ (1 + 2 a s)^(−1/4)(처음에 빨리, 뒤로 천천히) */
       "  p.x+=0.35*sin(vS*9.0/uE-uTime*5.0)*smoothstep(0.0,uLen,vS);",
       "#endif",
       "#endif",
@@ -3447,7 +3447,7 @@ function dsfLiqMat(o) {
       "  vSp+=uOff;",   /* v141: 무늬 자리는 사슬 길이로 — 관 토막 경계에서 무늬가 끊겨 보이던 것 */
       "#endif",
       "  vW=(modelMatrix*vec4(p,1.0)).xyz; vec4 mv=modelViewMatrix*vec4(p,1.0); vN=normalMatrix*n; vV=-mv.xyz; gl_Position=projectionMatrix*mv; }"].join("\n"),
-    fragmentShader: ["uniform float uTime,uPh,uLen,uSpeed,uHead,uTail,uH0,uH1,uE,uYin,uYout,uYup,uXm,uXv,uXo,uXh,uWd,uYinv,uXt,uYt,uIsT,uXc,uZc,uRt,uPr,uPd,uPhC,uPc,uPhL; uniform vec3 uCol,uSky; varying vec3 vW; varying float vSp; varying float vS; varying float vA; varying float vB; varying float vFl; varying float vFF; varying vec3 vN; varying vec3 vV;", S.NOISE,
+    fragmentShader: ["uniform float uTime,uPh,uLen,uSpeed,uHead,uTail,uH0,uH1,uE,uYin,uYout,uYup,uXm,uXv,uXo,uXh,uWd,uYinv,uXt,uYt,uIsT,uXc,uZc,uRt,uPr,uPd,uPhC,uPc,uPhL,uVi,uX0,uAcc,uXp,uViP; uniform vec3 uCol,uSky; varying vec3 vW; varying float vSp; varying float vS; varying float vA; varying float vB; varying float vFl; varying float vFF; varying vec3 vN; varying vec3 vV;", S.NOISE,
       "void main(){",
       "#ifdef TUBE",
       "  bool inA=uHead>uTail&&vS<=uHead&&vS>=uTail; if(!inA&&vB<0.5) discard;",
@@ -3456,19 +3456,19 @@ function dsfLiqMat(o) {
       "  { float yl=vW.x<uXm?uYout:(vW.x<uXv?uYin:uYup); if(vW.x<uXo){ if(vW.x<uXh) discard; yl=min(yl,uYinv+(uYout-uYinv)*smoothstep(uXh,uXh+uWd,vW.x)); } if(uIsT<0.5&&(vW.x-uXc)*(vW.x-uXc)+(vW.z-uZc)*(vW.z-uZc)<uRt*uRt) discard; if(vW.x>=uXt) yl=uYt; if(vW.y>yl) discard; }",   /* 액면: 컬럼 쪽 · 응축기 쪽 · 닫힌 밸브 앞 · 티의 세로 관, 넘침 층 앞머리 */
       "#endif",
       "  vec3 N=normalize(vN), V=normalize(vV); if(!gl_FrontFacing) N=-N;",
-      "  float fr=pow(1.0-max(dot(N,V),0.0),2.2); float A=vA*6.2831853; float ph=uPh*(1.0-vB); float vb9=vB;",
+      "  float fr=pow(1.0-max(dot(N,V),0.0),2.2); float A=vA*6.2831853; float ph=uPh*(1.0-vB); float vb9=vB; float sX=uAcc>0.0?(sqrt(1.0+2.0*uAcc*max(vSp,0.0))-1.0)/uAcc:vSp; float X=sX*uVi+uX0;",   /* v143: 무늬 자리 X = 관 안 자리 × (기준 빠르기 ÷ 이 관 빠르기) + 앞 관 끝의 X(dsfNet). 떨어지는 줄기는 중력으로 빨라진다(v = v0 √(1 + 2 a s)) */
       "#ifdef SEAL",
       "  if(uIsT<0.5&&vW.x<uXo&&uPhL>-1.0){ ph=uPhL; vb9=0.0; }",   /* v142: 컬럼 쪽 가로 관의 넘침 층 = 흐르는 줄기(무늬 위치 · 진하기), 관 전체가 찬 액봉은 느리고 옅게 */
       "#endif",   /* v136 F */
-      "  float st=vnoise(vec3(vSp*16.0/uE-ph*16.0/uE, cos(A)*1.6, sin(A)*1.6)); st=smoothstep(0.42,0.85,st);",
-      "  float st2=vnoise(vec3(vSp*42.0/uE-ph*30.0/uE, cos(A)*3.0, sin(A)*3.0)); st2=smoothstep(0.7,0.95,st2);",
+      "  float st=vnoise(vec3(X*16.0/uE-ph*16.0/uE, cos(A)*1.6, sin(A)*1.6)); st=smoothstep(0.42,0.85,st);",
+      "  float st2=vnoise(vec3(X*42.0/uE-ph*30.0/uE, cos(A)*3.0, sin(A)*3.0)); st2=smoothstep(0.7,0.95,st2);",
       "  vec3 L=normalize(vec3(0.45,0.8,0.5)); float spc=pow(max(dot(reflect(-L,N),V),0.0),60.0);",
-      "  float fl9=1.0-0.75*vb9; vec3 col=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*fl9*(1.0-st))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+(st*0.5+st2*0.55)*fl9); { float bd9=pow(0.5+0.5*sin(6.2831853*(vSp-ph)*2.4/uE),6.0); col+=vec3(0.26,0.33,0.40)*bd9*fl9; }",
+      "  float fl9=1.0-0.75*vb9; vec3 col=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*fl9*(1.0-st))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+(st*0.5+st2*0.55)*fl9); { float bd9=pow(0.5+0.5*sin(6.2831853*(X-ph)*2.4/uE),6.0); col+=vec3(0.26,0.33,0.40)*bd9*fl9; }",
       "#ifdef SEAL",
       "  if(!gl_FrontFacing) col=uCol*0.9+uSky*0.24+vec3(1.0)*0.08*st;",
       "  if(uIsT>0.5&&uPc>0.001&&gl_FrontFacing){ float dx9=abs(vW.x-uXc)/max(1e-5,uPr), dd9=(uYt-vW.y)/max(1e-5,uPd);",
-      "    if(dx9<1.0&&dd9>=0.0&&dd9<1.0){ float w9=uPc*(1.0-dd9)*(1.0-dd9)*(1.0-dx9*dx9); float s9=smoothstep(0.42,0.85,vnoise(vec3(vSp*16.0/uE-uPhC*16.0/uE, cos(A)*1.6, sin(A)*1.6)));",
-      "      vec3 cj=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*(1.0-s9))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+s9*0.5)+vec3(0.26,0.33,0.40)*pow(0.5+0.5*sin(6.2831853*(vSp-uPhC)*2.4/uE),6.0);",
+      "    if(dx9<1.0&&dd9>=0.0&&dd9<1.0){ float w9=uPc*(1.0-dd9)*(1.0-dd9)*(1.0-dx9*dx9); float s9=smoothstep(0.42,0.85,vnoise(vec3((vSp*uViP+uXp)*16.0/uE-uPhC*16.0/uE, cos(A)*1.6, sin(A)*1.6)));",
+      "      vec3 cj=uCol*(0.5+0.5*max(dot(N,L),0.0))*(1.0-0.3*(1.0-s9))+uSky*fr*0.55+vec3(1.0)*(spc*1.1+s9*0.5)+vec3(0.26,0.33,0.40)*pow(0.5+0.5*sin(6.2831853*(vSp*uViP+uXp-uPhC)*2.4/uE),6.0);",
       "      col=mix(col,cj,w9); } }",   /* v142: 잠긴 줄기 — 떨어지는 줄기가 고인 액으로 들어가 관 지름 1배 깊이 안에서 옅어진다(표시 규칙). 무늬 자리 · 위치 = 응축액 관 줄기와 같아 수면에서 이어진다 */   /* 잘린 관 안쪽 면 = 액면처럼(위에서 내려다볼 때) */
       "#endif",
       "#if defined(TUBE) || defined(SEAL)",
@@ -3776,6 +3776,7 @@ function dsfFrame(now, dt) {
   dsfFrame4(dt || 0);
   dsfVortex();
   { const h = typeof paused !== "undefined" && paused ? 0 : dt || 0; for (const mt of DSF.phMats || []) { const un = mt.uniforms; if (un.uPh && un.uSpeed) un.uPh.value += un.uSpeed.value * h; } }   /* v136 F: 무늬 위치 = 빠르기 적분 */
+  if (typeof dsfNet === "function") dsfNet(typeof paused !== "undefined" && paused ? 0 : dt || 0);   /* v143: 흐르는 관 · 티 · U자 · 떨어지는 줄기의 무늬를 노드 앞뒤로 잇는다(dsseal_add.js) */
   dsfFpsGuard(now);
 }
 /* 시험용: 김 · 액 · 방울의 지금 값 */
@@ -3813,7 +3814,7 @@ function dsfSealBuild(q, u) {
   if (DS.PCS && Lc && Pp && DSF.vS && DSF.vS.P != null) { RiT = Lc.parts[Lc.parts.length - 1].Ri; sVp = DSF.vS.P; yVp = Pp.path.getPointAt(Math.max(0, Math.min(1, sVp / Pp.len))).y; yTee = q.ySpl + 0.6 * q.sSpl;
     const p0 = DS.P.C ? DS.P.C.path.getPointAt(0) : null; yCt = p0 && Math.abs(p0.x - q.xSpl) < 1e-3 * u && p0.y > yTee ? p0.y : yTee;   // 응축액 관(응축기 아래 노즐)까지 — 계산이 분배기 위로 고였다고 할 때(PR.splFrac · cPipeFrac) 그 높이까지 보이게
     if (yCt > yVp + 0.01 * u) { teeMs = add(new THREE.LineCurve3(new THREE.Vector3(q.xSpl, yCt, 0), new THREE.Vector3(q.xSpl, yVp, 0)), yCt - yVp, 0, 20, RiT * 0.997);   /* v142: 위 → 아래로 그린다 — 무늬가 흐름 쪽(아래)으로 움직인다(전: 아래 → 위라 무늬가 위로 갔다). 무늬 자리 = 응축액 관 사슬과 같은 높이 좌표(yCt − y) */
-      const tm9 = teeMs.material; tm9.uniforms = Object.assign({}, tm9.uniforms, { uSpeed: { value: 0 }, uPh: { value: 0 }, uBv: { value: 1 }, uIsT: { value: 1 }, uPc: { value: 0 }, uPhC: { value: 0 }, uPr: { value: 0 }, uPd: { value: 0 } }); (DSF.phMats || (DSF.phMats = [])).push(tm9); }   /* 빠르기 · 무늬 위치는 환류 관 액봉과 따로 — 유출이 흐를 때만 움직인다, 잠긴 줄기 값(dsfSealStep) */
+      const tm9 = teeMs.material; tm9.uniforms = Object.assign({}, tm9.uniforms, { uSpeed: { value: 0 }, uPh: { value: 0 }, uBv: { value: 1 }, uIsT: { value: 1 }, uPc: { value: 0 }, uPhC: { value: 0 }, uPr: { value: 0 }, uPd: { value: 0 } , uVi: { value: 1 }, uX0: { value: 0 }, uXp: { value: 0 }, uViP: { value: 1 } }); (DSF.phMats || (DSF.phMats = [])).push(tm9); }   /* 빠르기 · 무늬 위치는 환류 관 액봉과 따로 — 유출이 흐를 때만 움직인다, 잠긴 줄기 값(dsfSealStep) */
     else { yVp = null; sVp = null; } }
   let xV = null; if (DSF.vS && DSF.vS.R != null) { let bi = 0, bd = 1e9; for (let i = 0; i < n; i++) { const d = Math.abs(tb[i][0] - DSF.vS.R); if (d < bd) { bd = d; bi = i; } } xV = tb[bi][1]; }
   const xe = tb[n - 1][1], un = base.uniforms; un.uXm.value = (q.xU1 + q.xRf) / 2; un.uXo.value = q.xRf - Ri; un.uWd.value = 4 * Ri; un.uYinv.value = q.yRf - Ri; un.uXt.value = teeMs ? q.xSpl - RiT : 1e9; un.uXc.value = q.xSpl; un.uZc.value = 0; un.uRt.value = teeMs ? RiT * 0.999 : 0;   /* v142: 티 세로 관 원기둥(가로 갈래 액봉 관은 그 안쪽을 그리지 않는다 — 장면 좌표 = 세계 좌표) */
@@ -3901,6 +3902,35 @@ function dsfFunnel(r0, r1, dx, seg) {
   for (let i = 1; i <= N; i++) tab.push(tab[i - 1] + Math.pow(rf((i - 0.5) / N) / r0, 2 / 3) / N);
   for (let i = 0; i < n; i++) { const x = ps.getX(i), y = ps.getY(i), z = ps.getZ(i), e = Math.max(0, Math.min(1, y + 0.5)), r = rf(e), k = e * N, k0 = Math.min(N - 1, Math.floor(k)); ps.setXYZ(i, x * r + dx * Math.pow(e, K), y, z * r); aX[i] = tab[k0] + (tab[k0 + 1] - tab[k0]) * (k - k0); }
   g.setAttribute("aX", new THREE.BufferAttribute(aX, 1)); g.computeVertexNormals(); g.userData.funnel = { r0, r1, dx, K, top: tab[N] }; return g; }
+/* v143(사용자 11-25 밤 "노드별로 구간별로 배관과 밸브사이 배관과 배관사이 탱크사이 등 흐름이 하나로이어져야돼 따로만들어져서 더해지니 어색한느낌이있는거야"): 액 무늬를 하나로 잇는다.
+   흐르는 관은 공용 위상 G(기준 빠르기 0.3 m/s로 늘어남)를 같이 쓰고, 무늬 자리 X = 관 안 자리 × (0.3 ÷ 그 관 무늬 빠르기) + 앞 관 끝의 X.
+   노드(분배기 티 · 밸브 · 갈림 티 · 합류 티 · 탱크 입구) 앞뒤 X가 같아 무늬가 이어지고, 무늬는 관마다 제 빠르기로 흐른다(빠른 관은 무늬가 길게 늘어난다 — 흐름이 빨라지면 늘어나는 것과 같다).
+   멈춘 관(밸브 닫힘 · 고인 액)은 전처럼 제 위상으로 멈춰 있다. 나무: 응축액 관 C(분배기 티 세로 관까지) → 유출 P → 갈림 티 → 초류 F → 초류 탱크 입구 FL → 떨어지는 줄기 / 본류 M → 떨어지는 줄기,
+   C의 티 가운데 → 환류(PR0 · R · U자 RS) → 컬럼 노즐 → 분배관 줄기. 떨어지는 줄기는 위 끝에서 들어오는 관 빠르기 · 굵기로 시작해 아래로 빨라지고(중력 — 바닥에서 2.5배, 표시 규칙) 좁아진다 */
+function dsfNet(dt) {
+  const L = DSF.L, q = DSF.q; if (!L || !L.C || !q) return; const VREF = 0.3, KT = 2.5;
+  DSF.G = (DSF.G || 0) + VREF * (dt || 0); const G = DSF.G, net = DSF.net = { G: +G.toFixed(4) };
+  const sp = (k) => { const Lk = L[k]; return Lk && Lk.parts.length ? Lk.parts[0].mt.uniforms.uSpeed.value : 0; };   // 이번 걸음 그 관 무늬 빠르기(흐르거나 빠지는 중이면 > 0)
+  const put = (k, X0) => { const Lk = L[k]; if (!Lk) return null; const v = sp(k), on = v > 1e-4 && X0 != null;
+    for (const pt of Lk.parts) { const u = pt.mt.uniforms; if (!u.uVi) continue; if (on) { u.uVi.value = VREF / v; u.uX0.value = X0; u.uPh.value = G; } else { u.uVi.value = 1; u.uX0.value = 0; } }
+    if (!on) { net[k] = null; return null; } const X1 = X0 + Lk.len * VREF / v; net[k] = { X0: +X0.toFixed(4), X1: +X1.toFixed(4), v: +v.toFixed(3) }; return X1; };
+  const XC1 = put("C", 0), XP1 = put("P", XC1), XF1 = put("F", XP1), XL1 = put("FL", XF1), XM1 = put("M", XP1);
+  const vC = sp("C"), viC = vC > 1e-4 ? VREF / vC : 1, sMid = DS.P && DS.P.C ? DS.P.C.len + 0.6 * q.sSpl : 0;   // 응축액 사슬에서 분배기 티 가운데의 자리(환류가 갈라지는 곳)
+  // 분배기 티 기둥: 고인 액은 유출 관처럼(티 바닥에서 유출 관 시작과 같은 X), 잠긴 줄기는 응축액 관 줄기 그대로(무늬 자리 = 응축액 사슬 높이 좌표)
+  { const U = DSF.sU, tm = U && U.teeMs; if (tm && tm.material.uniforms.uVi) { const tu = tm.material.uniforms, vP = sp("P");
+      if (tu.uBv.value < 1 && vP > 1e-4 && XC1 != null) { const viP = VREF / vP, sb = U.yCt - (q.ySpl - 0.67 * q.sSpl); tu.uVi.value = viP; tu.uX0.value = XC1 - sb * viP; tu.uPh.value = G / Math.max(0.05, 1 - tu.uBv.value); net.tee = { X0: +(XC1 - sb * viP).toFixed(4), vi: +viP.toFixed(3) }; } else { tu.uVi.value = 1; tu.uX0.value = 0; }
+      if (vC > 1e-4) { tu.uViP.value = viC; tu.uXp.value = 0; tu.uPhC.value = G; } else { tu.uViP.value = 1; tu.uXp.value = 0; } } }
+  // 환류: 티 가운데에서 갈라져 PR0 · R · U자(RS)를 지나 컬럼 노즐로 — U자 액봉 그림(재질 값을 토막들이 같이 쓴다)이 넘칠 때(흐를 때) 환류 줄기 빠르기로
+  let XR1 = null; { const U = DSF.sU, un = U && U.un, SR = DSF.Ls && DSF.Ls.R, Lr = L.R; if (un && un.uVi && Lr) { const vR = SR && SR.sp > 0 ? SR.sp : 0;
+      if (un.uBv.value < 1 && vR > 1e-4 && vC > 1e-4) { const viR = VREF / vR, X0 = sMid * viC; un.uVi.value = viR; un.uX0.value = X0; un.uPh.value = G / Math.max(0.05, 1 - un.uBv.value); un.uPhL.value = G; XR1 = X0 + Lr.len * viR; net.R = { X0: +X0.toFixed(4), X1: +XR1.toFixed(4), v: +vR.toFixed(3) }; } else { un.uVi.value = 1; un.uX0.value = 0; } } }
+  // 떨어지는 줄기: 받는 탱크(초류 FL · 본류 M 끝) · 분배관(환류 끝 컬럼 노즐 아래)
+  const fall = (s, X0, v, rP) => { if (!s) return; const u = s.mt.uniforms; if (!u.uVi) return;
+    if (s.ms.visible && X0 != null && v > 1e-4) { const Lt = Math.max(0.005, u.uLen.value); u.uVi.value = VREF / v; u.uX0.value = X0; u.uPh.value = G; u.uAcc.value = (KT * KT - 1) / (2 * Lt); const rS = Math.max(1e-5, s.ms.scale.x); u.uK0.value = rP != null ? Math.max(1, Math.min(4, rP / rS)) : 1; { const s1 = Math.min(0.5 * Lt, 0.15 * DSF.u); u.uKL.value = (Math.pow(u.uK0.value, 4) - 1) / (2 * Math.max(1e-4, s1)); } }   /* 좁아짐 빠르기 a: s1(약 15 cm, 떨어지는 길이의 절반까지)에서 줄기 굵기 — 짧으면 노즐 아래가 뾰족한 원뿔로 보였다 */
+    else { u.uVi.value = 1; u.uX0.value = 0; u.uAcc.value = 0; u.uK0.value = 1; } };
+  const rEnd = (k) => { const Lk = L[k]; if (!Lk || !Lk.parts.length) return null; const lp = Lk.parts[Lk.parts.length - 1], f = Math.max(0, Math.min(1, lp.mt.uniforms.uFill.value)); return lp.Ri * Math.sqrt(f); };   // 들어오는 관 끝의 관 속 액 반지름
+  if (DSF.rv) { fall(DSF.rv.fore, XL1, sp("FL"), rEnd("FL")); fall(DSF.rv.main, XM1, sp("M"), rEnd("M")); net.rv = { fore: XL1 != null && DSF.rv.fore.ms.visible ? +DSF.rv.fore.mt.uniforms.uK0.value.toFixed(2) : null, main: XM1 != null && DSF.rv.main.ms.visible ? +DSF.rv.main.mt.uniforms.uK0.value.toFixed(2) : null }; }
+  if (DSF.rd) { const SR = DSF.Ls && DSF.Ls.R, vR = SR && SR.sp > 0 ? SR.sp : 0; for (const s of DSF.rd) fall(s, XR1, vR, null); }
+}
 /* ===== v136 D · E: 김 입자(새 디자인) — 교반조 시뮬레이터(교반조_유동_시뮬레이터.html stepParticles · writeParticles)처럼 흐름을 따라 움직이는 입자 + 꼬리 선 =====
   근거(계산값 · 식) — 표시 규칙은 따로 밝힌다:
   - 내는 양: 정제기 액면에서 초당 kP × 증발량(kg/h)개(kP = 6, 표시 규칙). 어느 구간이든 지나가는 입자 수(초당)는 그 구간 김 질량 유량에 비례한다(같은 김은 같은 식).
