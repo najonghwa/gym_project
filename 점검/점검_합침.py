@@ -879,8 +879,8 @@ def _xj_tank(g, add):   # (B) 받는 탱크 가득 참
                 red = cnt(ll) - cnt(bl0)
             v2 = (B["b_lah_2d"] or {}).get("valveF") or []
             ok = bool(closed) and inc is not None and inc <= 0.05 and l10["VLV"]["F"] == 0 and bool(ring) and red is not None and red >= 30 and any("shut" in c for c in v2)
-            add("X8", f"받는 탱크 고액위(97 %)에서 받는 밸브가 닫힘 — {L3} · 도면: 97 % 도달 뒤 공정 60초 안에 초류 밸브가 닫힘(밸브 빨강 · 밸브 줄 단추 · 도면 밸브)이고 닫힌 채 공정 10분 동안 초류 증가 ≤ 0.05 kg, 고액위 고리가 화면에 보인다(실제: 고액위 인터록이 닫고 운전원이 풀 때까지 그대로) (사용자 판단 대기)",
-                ok, f"고액위 {tl / 3600:.2f} h 초류 {fl0:.3f} kg → 60초 안 닫힘 {'있음' if closed else '없음'}(밸브 상태 {lg[min(len(lg) - 1, il + 20)][3]} · 단추 {lg[min(len(lg) - 1, il + 20)][4]} · 색 {lg[min(len(lg) - 1, il + 20)][5]}) · 10분 뒤 초류 +{inc if inc is None else round(inc, 3)} kg(밸브 {l10['VLV']['F'] if l10 else None}, 단계 {l10['st'] if l10 else None}) · 고리 보임 {'있음' if ring else '없음'} · 고리 자리 빨간 화소 +{red} · 도면 밸브 {v2}",
+            add("X8", f"받는 탱크 LT HH(97 %)에서 받는 밸브가 닫힘 — {L3} · 도면: 97 % 도달 뒤 공정 60초 안에 초류 밸브가 닫힘(밸브 빨강 · 밸브 줄 단추 · 도면 밸브)이고 닫힌 채 공정 10분 동안 초류 증가 ≤ 0.05 kg, LT HH 고리가 화면에 보인다(실제: LT HH Interlock이 닫고 운전원이 열 때까지 그대로 — v145부터 레시피도 다시 열지 않는다)",
+                ok, f"LT HH {tl / 3600:.2f} h 초류 {fl0:.3f} kg → 60초 안 닫힘 {'있음' if closed else '없음'}(밸브 상태 {lg[min(len(lg) - 1, il + 20)][3]} · 단추 {lg[min(len(lg) - 1, il + 20)][4]} · 색 {lg[min(len(lg) - 1, il + 20)][5]}) · 10분 뒤 초류 +{inc if inc is None else round(inc, 3)} kg(밸브 {l10['VLV']['F'] if l10 else None}, 단계 {l10['st'] if l10 else None}) · 고리 보임 {'있음' if ring else '없음'} · 고리 자리 빨간 화소 +{red} · 도면 밸브 {v2}",
                 "60초 안 닫힘 · ≤ 0.05 kg · 고리 보임 · 도면 닫힘")
         isp = next((i for i, r in enumerate(lg) if r[7] > 0.05), None)
         sp, sp2, lsp = B["b_spill"], B["b_spill2"], B["b_lad_spill"]
@@ -903,7 +903,7 @@ def _xj_tank(g, add):   # (B) 받는 탱크 가득 참
         t2l, t2s = B["b_lah_2d"], B["b_spill_2d"]
         if t2l and t2s and not t2l.get("hidden") and not t2s.get("hidden"):
             il2, is2, in2 = _xpng("x_b_lah_2d.png"), _xpng("x_b_spill_2d.png"), _xpng("x_b_near_2d.png"); redL = blueS = None; t2n = B.get("b_near_2d") or {}
-            same = bool(in2) and t2n.get("rect") == t2l.get("rect") == t2s.get("rect")   # 고액위 전 도면 그림과 같은 자리를 찍었으면, 그때 없던 색만 센다(범례 · 밸브 기호 같은 늘 있는 색은 빠짐)
+            same = bool(in2) and t2n.get("rect") == t2l.get("rect") == t2s.get("rect")   # LT HH 전 도면 그림과 같은 자리를 찍었으면, 그때 없던 색만 센다(범례 · 밸브 기호 같은 늘 있는 색은 빠짐)
             isred = lambda c: c[0] > 190 and c[1] < 130 and c[2] < 130
             if il2:
                 (x0, y0), (x1, y1) = t2l["tank"]; vp = t2l.get("vpos") or []; offv = lambda x, y: all(math.hypot(x - v[1], y - v[2]) > v[3] for v in vp)   # 밸브 기호(닫히면 빨강)는 빼고 센다
@@ -911,8 +911,8 @@ def _xj_tank(g, add):   # (B) 받는 탱크 가득 참
             if is2:
                 (x0, y0), (x1, y1) = t2s["tank"]; blueS = sum(1 for y in range(int(y0), int(y1 + 28)) for x in range(int(x1 + 3), int(x1 + 38)) if _xblue(_xpx(is2, x, y)) and not (same and _xblue(_xpx(in2, x, y))))
             okL = bool(t2l["hits"]) or (redL is not None and redL >= 30); okS = bool(t2s["hits"]) or (blueS is not None and blueS >= 40)
-            add("X9", "받는 탱크 고액위 · 넘침 — 도면: 고액위가 되면 표시(요소 또는 탱크 둘레 빨간 표시)가 보이고, 넘치면 넘침 표시(요소 또는 탱크 옆 액 색)가 보인다(도면 그림 화소 · 요소)",
-                okL and okS, f"고액위 때 표시 요소 {t2l['hits'] or '0개'} · 새로 생긴 빨간 화소 {redL} · 밸브 {t2l['valveF']} / 넘침 때(넘친 양 {t2s['spill']} kg) 표시 요소 {t2s['hits'] or '0개'} · 탱크 옆에 새로 생긴 액 색 화소 {blueS}" + ("" if same else " · 고액위 전 기준 그림 없음(늘 있는 색도 셈)"), "고액위 표시 · 넘침 표시 모두 있음")
+            add("X9", "받는 탱크 LT HH · 넘침 — 도면: LT HH가 되면 표시(요소 또는 탱크 둘레 빨간 표시)가 보이고, 넘치면 넘침 표시(요소 또는 탱크 옆 액 색)가 보인다(도면 그림 화소 · 요소)",
+                okL and okS, f"LT HH 때 표시 요소 {t2l['hits'] or '0개'} · 새로 생긴 빨간 화소 {redL} · 밸브 {t2l['valveF']} / 넘침 때(넘친 양 {t2s['spill']} kg) 표시 요소 {t2s['hits'] or '0개'} · 탱크 옆에 새로 생긴 액 색 화소 {blueS}" + ("" if same else " · LT HH 전 기준 그림 없음(늘 있는 색도 셈)"), "LT HH 표시 · 넘침 표시 모두 있음")
 
 def _xj_level(g, add):   # 액면(받는 탱크 · 정제기)
     # ---------------- 액면(받는 탱크 · 정제기) ----------------
@@ -929,7 +929,7 @@ def _xj_level(g, add):   # 액면(받는 탱크 · 정제기)
             fc, fm, top = _xlevels3d(ld, base[k], a, b, k)
             if fm is None or abs(fm - fc) > 0.03: ok7 = False
             rows7.append(f"{h} h {'초류' if k == 'fore' else '본류'} {ld[k]['m']:.1f} kg 계산 {100 * fc:.1f} % · 화면 {'-' if fm is None else f'{100 * fm:.1f} %'}")
-    for tg, nm in (("b_lad_near", "고액위 직전"), ("b_lad_spill", "넘침")):
+    for tg, nm in (("b_lad_near", "LT HH 직전"), ("b_lad_spill", "넘침")):
         ld = B.get(tg); bb0 = _xpng("x_b0_fore.png"); stem = {"b_lad_near": "x_b_near_fore", "b_lad_spill": "x_b_spill_fore"}[tg]; a, b = _xpng(stem + "_a.png"), _xpng(stem + "_b.png")
         if ld and bb0 and a and b:
             fc, fm, top = _xlevels3d(ld, bb0, a, b, "fore")
@@ -1300,15 +1300,24 @@ def _xd_pstop(g, add):   # N6 · 4단계 A7
     # 4단계 A7(11-22 고침): 제안은 '40 s 한 점에서 증발 < 1 kg/h면 목표 0'이었다. 40 s는 끓음이 멈추는 때와 겹쳐(1회차: 펌프 정지 뒤 38.5 s에 증발 < 1) 같은 빌드 규칙에서도
     # 시각에 따라 통과(v132 4단계 — 넘는 증기 0.047 kg/h) · 실패(1회차 — 0.066 kg/h)가 갈린다. 그래서 되돌리기 전까지 끓지 않는 1 s 표본 전부로 본다. 기준 '증발 < 1이면 증기 김 목표 0'은 그대로.
     # 끓지 않음 = 정제기 위 계산 유량 0(dsflow.js: 끓을 때 — 증발 > 1 kg/h — 만 증발을 넣음)
-    t30 = ((mk.get("30분") or {}).get("calc") or {}).get("t"); nbs = []; hit = []
+    # v145 X29(사용자 11-27 "실제처럼해줘"): 끓음이 멈춘 뒤에도 관에 남은 증기는 응축기로 빠진다(계산 넘는 증기 vpass). 그 동안 증기관 · 뚜껑 · 관 김은 그 띠 계산 유량대로 옅게 —
+    #  0.05 kg/h 넘으면 김 진하기 규칙(N3과 같은 식), 넘는 증기가 0.05 아래면 0. 정제기 위 · 목관 · 컬럼은 증발이 0이라 0. 전(4단계 A7): 끓지 않으면 모든 김 목표 0 — 계산이 넘는 증기를 두는 동안 어긋났다
+    t30 = ((mk.get("30분") or {}).get("calc") or {}).get("t"); nbs = []; bad = []; shown = []
     for tt, arr in pv.get("n3") or []:
         if t30 is None or tt > t30 or not arr or not arr[0] or arr[0][0] != 0: continue
-        nbs.append(tt); on = [(k, e[0]) for k, e in zip(VK_DS[:9], arr[:9]) if e and e[1] > 0]
-        if on: hit.append(on)
-    c2 = (p2 or {}).get("calc") or {}; tg2 = [k for k in VK_DS[:9] if p2 and ((((p2.get("vap") or {}).get(k) or {}).get("tgt") or 0) > 0)]
-    add("X29", f"{DS3} 진공 펌프 정지 — 끓지 않는 동안(증발 < 1 kg/h) 증기 김 목표 진하기 0(4단계 A7). 제안의 '40 s 한 점'은 끓음이 멈추는 때와 겹쳐 시각에 달려, 되돌리기 전까지의 1 s 표본 전부로 잰다", bool(nbs) and not hit,
-        f"끓지 않는 1 s 표본 {len(nbs)}개 가운데 목표가 0이 아닌 증기 김이 있는 표본 {len(hit)}개" + (f"({' / '.join(_dsnm([k for k, _ in on]) + ' 계산 유량 ' + str(on[0][1]) + ' kg/h' for on in hit[:3])})" if hit else "")
-        + f" · 40 s 한 점: 증발 {c2.get('vdot')} · 넘는 증기 {c2.get('vpass')} kg/h · 목표가 0이 아닌 증기 김 {_dsnm(tg2)}", "끓지 않는 표본마다 증기 김(정제기 위 ~ 진공 라인) 목표 0")
+        nbs.append(tt)
+        for k, e in zip(VK_DS[:9], arr[:9]):
+            if not e: continue
+            q, tg = e
+            if q <= 0.05 or k in ("head", "neck", "col"):
+                if tg > 0: bad.append((k, round(tt / 60, 1), q, tg))
+            elif tg > 0:
+                if abs(tg / G_DS(q) - 1) > 0.005: bad.append((k, round(tt / 60, 1), q, tg))
+                else: shown.append((k, q))
+    c2 = (p2 or {}).get("calc") or {}
+    add("X29", f"{DS3} 진공 펌프 정지 — 끓지 않는 동안(증발 < 1 kg/h) 정제기 위 · 목관 · 컬럼 김은 0, 증기관 · 뚜껑 · 관 김은 관에 남아 응축기로 빠지는 증기(계산 넘는 증기)대로 — 0.05 kg/h 넘는 동안만 김 진하기 규칙만큼 옅게(현장 실제, 사용자 11-27 '실제처럼해줘'. 전: 끓지 않으면 모두 0)", bool(nbs) and not bad,
+        f"끓지 않는 1 s 표본 {len(nbs)}개 · 규칙과 다른 김 {len(bad)}개" + (f"({bad[:3]})" if bad else "") + f" · 남은 증기로 옅게 보인 띠 {len(shown)}번" + (f"({_dsnm(sorted(set(k for k, _ in shown)))} · 최대 {max(q for _, q in shown):.3f} kg/h)" if shown else "")
+        + f" · 40 s 한 점: 증발 {c2.get('vdot')} · 넘는 증기 {c2.get('vpass')} kg/h", "정제기 위 · 목관 · 컬럼 0 · 그 밖은 그 띠 계산 유량의 김 진하기 규칙(0.05 kg/h 이하면 0)")
 
 def _xd_end(g, add):   # N7
     sn = "새디자인 배치 끝"; ev, e1 = g(sn, "ds_ev"), g(sn, "ds_e1")
@@ -1379,9 +1388,9 @@ def _xd_lah(g, add):   # N15
     d = g("새디자인 받는 탱크 고액위", "ds_lah")
     if not d or not d.get("s"): return
     s = d["s"]; bad = [r for r in s if r[3] != r[4]]; saw = any(r[3] for r in s); sp = next((r for r in s if r[5]), None)
-    add("X8", f"{DS3} 받는 탱크 고액위 고리 = 계산 고액위(PR.lah)(N15). 레시피가 밸브를 다시 여는 것(X8 어긋남)은 계산 · 운전 논리라 그대로", saw and not bad,
-        f"표본 {len(s)} · 고액위 본 표본 {sum(r[3] for r in s)} · 고리와 계산이 다른 표본 {len(bad)} · 넘침 줄기 {('켜짐 ' + str(round(sp[0] - s[0][0], 1)) + ' s') if sp else '없음'} · 마지막 넘친 양 {s[-1][7]} kg · 초류 밸브 {s[-1][8]}", "고리 = PR.lah(모든 표본) · 고액위를 본 표본 있음")
-    # N15의 뒷부분(넘친 양이 늘면 넘침 줄기 · 웅덩이 반지름 증가 — 그쪽 4단계 A10은 적기만 했다). 표본 = [화면 s, 공정 s, 초류 kg, 계산 고액위, 고리, 줄기, 웅덩이 반지름, 넘친 양 kg, 초류 밸브]
+    add("X8", f"{DS3} 받는 탱크 LT HH 고리 = 계산 LT HH(PR.lah)(N15). v145부터 레시피도 인터록이 닫은 밸브를 다시 열지 않는다(이 장면은 운전원이 밸브 단추로 다시 열어 넘침을 본다)", saw and not bad,
+        f"표본 {len(s)} · LT HH 본 표본 {sum(r[3] for r in s)} · 고리와 계산이 다른 표본 {len(bad)} · 넘침 줄기 {('켜짐 ' + str(round(sp[0] - s[0][0], 1)) + ' s') if sp else '없음'} · 마지막 넘친 양 {s[-1][7]} kg · 초류 밸브 {s[-1][8]}", "고리 = PR.lah(모든 표본) · LT HH를 본 표본 있음")
+    # N15의 뒷부분(넘친 양이 늘면 넘침 줄기 · 웅덩이 반지름 증가 — 그쪽 4단계 A10은 적기만 했다). 표본 = [화면 s, 공정 s, 초류 kg, 계산 LT HH, 고리, 줄기, 웅덩이 반지름, 넘친 양 kg, 초류 밸브]
     # 넘친 양 0.05 kg과 켜지는 데 화면 2 s 여유는 가벼움 화면 X9 기준과 같은 값
     i0 = next((i for i, r in enumerate(s) if r[7] > 0.05), None)
     if i0 is None:
@@ -1685,7 +1694,7 @@ def _xd_bubd(g, add):   # v144 Y25: 보기용 기포(사용자 11-26 '액 속 �
 def judge_ds(g, add):
     """새 디자인 판정 줄 — 장면마다 따로 판정하고, 판정 계산에서 오류가 나면 그 장면만 'X0' 줄로 남긴다."""
     import traceback
-    for nm, fn in (("끓기 시작", _xd_boil), ("김 진하기 규칙", _xd_n3), ("6 h 밸브", _xd_valve), ("U자 액봉", _xd_useal), ("U자 액봉 스팀 끔", _xd_usoff), ("티 고인 액", _xd_tee), ("둘러보기", _xd_walk), ("승온", _xd_warm), ("v142 오후", _xd_v142pm), ("흐름 잇기", _xd_net), ("흰빛", _xd_white), ("김 잇기", _xd_vnet), ("목관 끝 방울", _xd_drip), ("보기용 기포", _xd_bubd), ("1차 냉매 95도", _xd_c1hot), ("진공 펌프 정지", _xd_pstop), ("배치 끝", _xd_end), ("이상 상황", _xd_ab), ("범람", _xd_flood), ("받는 탱크 고액위", _xd_lah), ("기본 표현", _xd_default)):
+    for nm, fn in (("끓기 시작", _xd_boil), ("김 진하기 규칙", _xd_n3), ("6 h 밸브", _xd_valve), ("U자 액봉", _xd_useal), ("U자 액봉 스팀 끔", _xd_usoff), ("티 고인 액", _xd_tee), ("둘러보기", _xd_walk), ("승온", _xd_warm), ("v142 오후", _xd_v142pm), ("흐름 잇기", _xd_net), ("흰빛", _xd_white), ("김 잇기", _xd_vnet), ("목관 끝 방울", _xd_drip), ("보기용 기포", _xd_bubd), ("1차 냉매 95도", _xd_c1hot), ("진공 펌프 정지", _xd_pstop), ("배치 끝", _xd_end), ("이상 상황", _xd_ab), ("범람", _xd_flood), ("받는 탱크 LT HH", _xd_lah), ("기본 표현", _xd_default)):
         try: fn(g, add)
         except Exception as e: add("X0", f"새 디자인 판정 계산 오류 — {nm}", False, f"{type(e).__name__}: {e} · {traceback.format_exc(limit=3)[-400:]}", "오류 0")
 # <<< 새 디자인 판정 끝
@@ -1695,6 +1704,10 @@ def static(html_path):
     left = {k: h.count(k) for k in OLD if h.count(k)}
     R.append({"id": "M1", "name": "환류 = FICH073·FCV-H073, 유출 = FICH072·FCV-H072 — 옛 번호(FIC-072·073, FCV-072·073)와 옛 이름표(유출 FT-H073, TIC-H071D 응축액 출구, TI-H075 탑 온도) 0개", "ok": not left and h.count("FICH073") >= 10 and h.count("FICH072") >= 5 and h.count("FCV-H073") >= 5,
               "val": (f"옛 표기 남음 {left}" if left else "옛 표기 0개") + f" · FICH073 {h.count('FICH073')}곳 · FICH072 {h.count('FICH072')}곳 · FCV-H073 {h.count('FCV-H073')}곳 · FCV-H072 {h.count('FCV-H072')}곳", "crit": "옛 표기 0개"})
+    # v145 Y27: LT HH Interlock 표기(사용자 11-27) — 주석(/* */ · //)을 뺀 빌드 글에 '고액위' 0개, 'LT HH Interlock' 5곳 이상
+    hs = re.sub(r"/\*.*?\*/", "", h, flags=re.S); hs = re.sub(r"(?m)(^|[^:'\"])//[^\n]*$", r"\1", hs)
+    o27, n27 = hs.count("고액위"), hs.count("LT HH Interlock")
+    R.append({"id": "Y27", "name": "LT HH Interlock 표기(사용자 11-27 '고액위 인토록이런건 단어가 너무 이상하다 LT HH Interlock 이라고하면되지') — 화면 글(코드 주석을 뺀 빌드)에 '고액위' 0개 · 'LT HH Interlock'이 운전 패널 · 알림 칩 · 운전 안내 · 기록 · 입력 설명에", "ok": o27 == 0 and n27 >= 5, "val": f"'고액위' {o27}곳 · 'LT HH Interlock' {n27}곳", "crit": "'고액위' 0 · 'LT HH Interlock' ≥ 5"})
     miss = [w for w in PID_WORDS if w not in h]
     R.append({"id": "M13", "name": "설비 설명 = P&ID 라인 번호·형식·연결(PCH-PID-H107)", "ok": not miss, "val": f"{len(PID_WORDS) - len(miss)}/{len(PID_WORDS)}개" + (" · 없음 " + ", ".join(miss) if miss else ""), "crit": "모두 있음"})
     a1 = 'anc ? 2 : S.p.type === "pbt" ? 4 : 3' in h; a2 = 'p.type === "anchor" ? 3 : 2' in h and "S.type === 3 ? 2 : 3" in h

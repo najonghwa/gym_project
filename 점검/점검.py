@@ -274,7 +274,7 @@ XRSNAP = r"""(()=>{const D=window.__dt,H=window.__xh,P=D.PR,f=D.FILL.R;const u=D
 # 도면: 초류 탱크 둘레(고액위 · 넘침 표시)
 XP2TANK = r"""(()=>{const D=window.__dt,H=window.__xh,Q=D.PID2,P=D.PR,q=D.M.pipe;const T=H.p2();if(!T)return JSON.stringify({hidden:true});
  const x=q.xF,R=q.rRF,hd=q.hdF,y0=q.yRvF-hd,y1=q.yTopF+hd,a=T.f(x-R,y1),b=T.f(x+R,y0);const rc=H.crop('__xc_p2',Math.min(a[0],b[0])-45,Math.min(a[1],b[1])-35,Math.abs(b[0]-a[0])+90,Math.abs(b[1]-a[1])+70);
- const tok=/^(p2-)?(lah|spill|ovf|overflow|pud|hilevel|hiLevel|alarm)/;const hits=[];for(const e of Q.svg.querySelectorAll('*')){if(e===Q.dyn.col)continue;const cl=(e.getAttribute('class')||'').split(/\s+/);const tx=e.tagName==='text'?e.textContent:'';if((cl.some(c=>tok.test(c))||/고액위|넘침|LAH/.test(tx))&&+getComputedStyle(e).opacity>0.05&&getComputedStyle(e).display!=='none')hits.push((e.getAttribute('class')||e.tagName)+':'+tx.slice(0,20))}
+ const tok=/^(p2-)?(lah|spill|ovf|overflow|pud|hilevel|hiLevel|alarm)/;const hits=[];for(const e of Q.svg.querySelectorAll('*')){if(e===Q.dyn.col)continue;const cl=(e.getAttribute('class')||'').split(/\s+/);const tx=e.tagName==='text'?e.textContent:'';if((cl.some(c=>tok.test(c))||/고액위|넘침|LAH|LT HH/.test(tx))&&+getComputedStyle(e).opacity>0.05&&getComputedStyle(e).display!=='none')hits.push((e.getAttribute('class')||e.tagName)+':'+tx.slice(0,20))}
  const vf=(Q.valves.F||[]).map(g=>g.getAttribute('class'));const vpos=[];for(const k in Q.valves)for(const g of Q.valves[k]){const r=g.getBoundingClientRect();vpos.push([k,+(r.left+r.width/2-rc[0]+4).toFixed(1),+(r.top+r.height/2-rc[1]+4).toFixed(1),+(Math.max(r.width,r.height)/2+4).toFixed(1)])}
  return JSON.stringify({rect:rc,tank:H.rel(rc,[[Math.min(a[0],b[0]),Math.min(a[1],b[1])],[Math.max(a[0],b[0]),Math.max(a[1],b[1])]]),hits,valveF:vf,vpos,VF:D.VLV.F?1:0,spill:H.r(P.spill.fore,4),lah:P.lah.fore,fore:H.r(P.ves.fore.A+P.ves.fore.B,4),box:(()=>{const e=Q.dyn.fore;if(!e)return null;const r=e.getBoundingClientRect();return H.rel(rc,[[r.left,r.top],[r.right,r.bottom]])})()})})()"""
 
@@ -332,7 +332,8 @@ def real_scenarios():
     # (C) 끓기 시작 3D · (D) 도면: 레시피, 1.0 h부터 실제 속도로 환류가 자리 잡을 때까지 — X6 · X22 · X24
     done = "(()=>{const D=window.__dt,P=D.PR,F=D.FILL;return !!(F.RD&&F.RD.full&&(P.Rkg||0)>3)||performance.now()>window.__xdl})()"
     S.append(scen("현실성 끓기 시작 3D", rec + XJUMP(1.0, 2500) + [["eval", XPOLL_ON3], XDL(420), ["until", done, 450000], ["wait", 4000], tag("c_log", XGET)], 1440, 900))
-    S.append(scen("현실성 끓기 시작 도면", rec + XJUMP(1.0, 2500) + [Y.V_2D, ["wait", 3000], ["eval", XPOLL_ON2], XDL(420), ["until", done, 450000], ["wait", 4000], tag("d_log", XGET)], 1440, 900))
+    # v145: 도면으로 먼저 바꾼 뒤 건너뛴다 — 전에는 건너뛴 뒤 도면으로 바꾸고 3초 기다려(공정 약 2.9분) 기록이 62.9분부터였고, v145(자켓 전열 현장 맞춤)에서 U자가 62.6분에 가득 차 X6(도면)이 차는 구간을 놓쳤다. 3D 장면과 같은 때부터 기록
+    S.append(scen("현실성 끓기 시작 도면", rec + [Y.V_2D, ["wait", 3000]] + XJUMP(1.0, 2500) + [["eval", XPOLL_ON2], XDL(420), ["until", done, 450000], ["wait", 4000], tag("d_log", XGET)], 1440, 900))
     # (E) 레시피 기본 배치: 0 · 6 · 30 · 50 h 액면(3D 그림 화소 · 도면 도형) · 무게 증가율 · 증기 점 수 · 줄기 굵기, 배치 끝 — X7 · X36 · X40 · X32 · X34 · X19 · X28 · X31
     e = rec + [["wait", 1500], tag("e_lad0", XLAD3), XSHOT("x_e0_fore.png", "#__xc_fore"), XSHOT("x_e0_main.png", "#__xc_main")]
     for hh in (6, 30, 50):
