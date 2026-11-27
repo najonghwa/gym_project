@@ -46,7 +46,10 @@ def serve_local():   # 시뮬레이터 파일을 로컬 서버로(아무 경로�
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return f"http://127.0.0.1:{srv.server_address[1]}/x.html"
 
-BOOT = [["wait", 2000], ["until", "!!window.__dt&&!!window.__dt.M&&!!window.__dt.PR", 120000], ["wait", 4000]]
+# v146: 입력 기본 초기 액 온도가 35 ℃(현장 DB 승온 시작 30 ~ 40 ℃의 가운데)로 바뀌었다. 점검 장면은 25 ℃ 출발 시각(끓기 시작 · 전환류 · U자 액봉 · 수동 끓기 등)에 맞춰 짜여 있어
+#  시작 단계에서 25 ℃로 고정한다(T0을 바꾸면 계산이 처음부터 다시 시작). 기본값 35 ℃는 점검_스팀.py ST8(기본 레시피 운전)과 정적 줄 Y28에서 본다
+T0PIN = "(()=>{const e=document.getElementById('T0');if(!e)return 'no';e.value='25';e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));return e.value})()"
+BOOT = [["wait", 2000], ["until", "!!window.__dt&&!!window.__dt.M&&!!window.__dt.PR", 120000], ["wait", 4000], ["eval", T0PIN], ["wait", 1200], ["until", "!!(window.__dt.CUR&&window.__dt.CUR.T0===25&&window.__dt.PR&&window.__dt.PR.t<900)", 60000], ["wait", 800]]
 def jump(h):
     return [["eval", f"window.__dt.startJump('at',{h});1"],
             ["until", f"(()=>{{const D=window.__dt,P=D.PR;return !!(P&&!D.TURBO&&P.t>={h}*3600-120)}})()", 900000]]
