@@ -1707,10 +1707,17 @@ def static(html_path):
     # v145 Y27: LT HH Interlock 표기(사용자 11-27) — 주석(/* */ · //)을 뺀 빌드 글에 '고액위' 0개, 'LT HH Interlock' 5곳 이상
     hs = re.sub(r"/\*.*?\*/", "", h, flags=re.S); hs = re.sub(r"(?m)(^|[^:'\"])//[^\n]*$", r"\1", hs)
     o27, n27 = hs.count("고액위"), hs.count("LT HH Interlock")
-    R.append({"id": "Y27", "name": "LT HH Interlock 표기(사용자 11-27 '고액위 인토록이런건 단어가 너무 이상하다 LT HH Interlock 이라고하면되지') — 화면 글(코드 주석을 뺀 빌드)에 '고액위' 0개 · 'LT HH Interlock'이 운전 패널 · 알림 칩 · 운전 안내 · 기록 · 입력 설명에", "ok": o27 == 0 and n27 >= 5, "val": f"'고액위' {o27}곳 · 'LT HH Interlock' {n27}곳", "crit": "'고액위' 0 · 'LT HH Interlock' ≥ 5"})
+    R.append({"id": "Y27", "name": "LT HH Interlock 표기(사용자 11-27 '고액위 인토록이런건 단어가 너무 이상하다 LT HH Interlock 이라고하면되지') — 화면 글(코드 주석을 뺀 빌드)에 '고액위' 0개 · 'LT HH Interlock'이 운전 패널 · 상태 줄 · 운전 안내 · 기록 · 입력 설명에", "ok": o27 == 0 and n27 >= 5, "val": f"'고액위' {o27}곳 · 'LT HH Interlock' {n27}곳", "crit": "'고액위' 0 · 'LT HH Interlock' ≥ 5"})
     # v146 Y28: 입력 기본 초기 액 온도 35 ℃(사용자 11-27 "35 ℃로 바꾸기") — 입력칸 기본값과 빈칸일 때 쓰는 값
     m28 = re.search(r'<input id="T0"[^>]*value="([0-9.]+)"', h); fb28 = 'num("T0", -50, 300, 35)' in h
     R.append({"id": "Y28", "name": "입력 기본 초기 액 온도 35 ℃(사용자 11-27 '35 ℃로 바꾸기' — 현장 DB 승온 시작 30 ~ 40 ℃의 가운데): 입력칸 기본값 · 빈칸일 때 쓰는 값", "ok": bool(m28) and m28.group(1) == "35" and fb28, "val": f"입력칸 {m28.group(1) if m28 else '없음'} ℃ · 빈칸일 때 {'35' if fb28 else '35 아님'} ℃", "crit": "35 · 35"})
+    # v147 Y29: 죽은 코드 지움(사용자 11-28 "죽은코드는 지워줘") — 주석을 뺀 빌드(hs, Y27과 같은 글)에서 늘 거짓 조건 0곳 · 지운 기능 이름 0곳 · 살려 둔 glPocket 호출 1곳
+    dead29 = [m.start() for m in re.finditer(r"\bfalse\s*&&", hs) if not re.search(r"[=!]==?\s*$", hs[max(0, m.start() - 6):m.start()])]
+    dead29 += [m.start() for m in re.finditer(r"&&\s*false\b", hs) if not re.match(r"\s*[=!]==?", hs[m.end():m.end() + 6])]
+    dead29 += [m.start() for m in re.finditer(r"\bif\s*\(\s*(false|0)\s*\)", hs)]
+    GONE29 = ["hudRender", "fxFocusOf", "fx1Build", "liqBody()", "colorKey()", "lumpColorOld", "LPAT", "dsfStandR", "FX.vGlow", "FX.hotGlow", "VES.swirl", "VES.c1str", "DSF.ugD"]
+    left29 = [w for w in GONE29 if w in hs]; keep29 = hs.count("if (g.trap) glPocket(g, p, 0, rg);")
+    R.append({"id": "Y29", "name": "죽은 코드 지움(사용자 11-28 '죽은코드는 지워줘') — 늘 거짓 조건(false && … · … && false · if (false)) 0곳 · 지운 기능(위 알림 칩 · 마하수 칸 · 초킹 빛 · 액 몸통 색 · 색 범례 · 평면 단면 등) 이름 0곳 · 값은 안 쓰지만 유출관 가스 록 상태를 바꾸는 glPocket() 호출은 그대로 1곳", "ok": not dead29 and not left29 and keep29 == 1, "val": f"늘 거짓 조건 {len(dead29)}곳 · 지운 이름 남음 {left29 or '없음'} · glPocket 호출 {keep29}곳", "crit": "0곳 · 없음 · 1곳"})
     miss = [w for w in PID_WORDS if w not in h]
     R.append({"id": "M13", "name": "설비 설명 = P&ID 라인 번호·형식·연결(PCH-PID-H107)", "ok": not miss, "val": f"{len(PID_WORDS) - len(miss)}/{len(PID_WORDS)}개" + (" · 없음 " + ", ".join(miss) if miss else ""), "crit": "모두 있음"})
     a1 = 'anc ? 2 : S.p.type === "pbt" ? 4 : 3' in h; a2 = 'p.type === "anchor" ? 3 : 2' in h and "S.type === 3 ? 2 : 3" in h
