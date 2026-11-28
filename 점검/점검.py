@@ -483,8 +483,9 @@ def ds_scenarios():
     v += [["wait", 20000], tag("ds_hold", XDS_GET_H), XVB("R"), ["wait", 300], XVB("P"), ["wait", 3000]]
     v += [["eval", XH], ["eval", XDS_VAP_CAM], ["wait", 900], tag("ds_vap", XDS_VAP_PIX), XSHOT("x_ds_vap_a.png", "#__xc_seg"), ["wait", 350], XSHOT("x_ds_vap_b.png", "#__xc_seg")]   # v142 Y16: 목관 김만 남긴 확대 화면 2장(장면 끝 — 재질을 끈다)
     D("새디자인 6 h 밸브", v)
-    # (2b) U자 액봉(v141 — Y1 ~ Y6): 끓기 시작 0.94 h부터 0.1 s마다 액봉 탐침 → 다리가 반쯤 찼을 때 멈추고 화면 그림(액면 화소) → 다 차서 넘친 뒤 5 s → 환류 밸브 닫음 8 s → 다시 엶 6 s
-    u = rec + [["eval", XH]] + XJUMP(0.94, 1500) + [["eval", XDS_U_CAM], ["eval", XDS_REC_U], XDL(60),
+    # (2b) U자 액봉(v141 — Y1 ~ Y6): 끓기 시작 0.91 h부터(v147 보충 — 전 0.94 h: v146부터 시작 단계의 25 ℃ 고정이 계산을 다시 시작해 처음부터 가벼운 계산으로 돌고,
+    #   성능 측정 동안 격자로 돌던 v145까지보다 응축액이 약 25 s 일찍 와 0.94 h엔 액봉이 이미 차기 시작했다. 다시 시작한 계산에서 액봉은 공정 약 3405 s부터 찬다) 0.1 s마다 액봉 탐침 → 다리가 반쯤 찼을 때 멈추고 화면 그림(액면 화소) → 다 차서 넘친 뒤 5 s → 환류 밸브 닫음 8 s → 다시 엶 6 s
+    u = rec + [["eval", XH]] + XJUMP(0.91, 1500) + [["eval", XDS_U_CAM], ["eval", XDS_REC_U], XDL(60),
         ["until", "(()=>{const s=(window.__dt.dsfProbe().liq||{}).seal;return !!(s&&s.m>=0.30)||performance.now()>window.__xdl})()", 70000], ["click", "#btnPause"], ["wait", 800], tag("ds_u_pix", XDS_U_PIX), XSHOT("x_ds_useal.png", "#__xc_seg"), ["click", "#btnPause"], XDL(60),
         ["until", "(()=>{const s=(window.__dt.dsfProbe().liq||{}).seal;return !!(s&&s.ovOn&&s.geo&&s.xh<=s.geo.xe+0.03)||performance.now()>window.__xdl})()", 70000], ["wait", 5000], P("ds_u_full"),
         XVB("R"), ["wait", 8000], P("ds_u_close"), XVB("R"), ["wait", 6000], P("ds_u_open"), tag("ds_u", XDS_GET_U)]
